@@ -29,6 +29,15 @@ export default class MFDIPlugin extends Plugin {
     this.addRibbonIcon("pencil", "Mobile First Daily Interface", async () => {
       await this.attachMFDIView();
     });
+
+    this.addCommand({
+      id: "mfdi-open-view",
+      name: "Open Mobile First Daily Interface",
+      callback: async () => {
+        const leaf = await this.attachMFDIView();
+        if (leaf) this.app.workspace.revealLeaf(leaf);
+      },
+    });
   }
 
   async onunload() {
@@ -42,7 +51,7 @@ export default class MFDIPlugin extends Plugin {
     const existed = this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).at(0);
     if (existed) {
       existed.setViewState({ type: VIEW_TYPE_MFDI, active: true });
-      return;
+      return existed;
     }
 
     const targetLeaf =
@@ -62,6 +71,7 @@ export default class MFDIPlugin extends Plugin {
       type: VIEW_TYPE_MFDI,
       active: true,
     });
+    return targetLeaf;
   }
 
   async saveSettings(): Promise<void> {

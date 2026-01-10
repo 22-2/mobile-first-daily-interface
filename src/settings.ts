@@ -9,6 +9,7 @@ export interface Settings {
   blueskyIdentifier: string;
   blueskyAppPassword: string;
   postFormatOption: PostFormatOption;
+  insertAfter: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,12 +18,14 @@ export const DEFAULT_SETTINGS: Settings = {
   blueskyIdentifier: "",
   blueskyAppPassword: "",
   postFormatOption: "コードブロック",
+  insertAfter: "",
 };
 
 const leafOptions = ["left", "current", "right"];
 
 export const postFormatMap = {
   コードブロック: { type: "codeblock" },
+  Thino: { type: "thino" },
   見出し1: { type: "header", level: 1 },
   見出し2: { type: "header", level: 2 },
   見出し3: { type: "header", level: 3 },
@@ -59,6 +62,21 @@ export class MFDISettingTab extends PluginSettingTab {
             this.plugin.settings.postFormatOption = value as PostFormatOption;
             await this.plugin.saveSettings();
             this.plugin.rerenderView();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("挿入位置 (文字列の後ろ)")
+      .setDesc(
+        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。"
+      )
+      .addText((tc) =>
+        tc
+          .setPlaceholder("## MFDI")
+          .setValue(this.plugin.settings.insertAfter)
+          .onChange(async (value) => {
+            this.plugin.settings.insertAfter = value;
+            await this.plugin.saveSettings();
           })
       );
 

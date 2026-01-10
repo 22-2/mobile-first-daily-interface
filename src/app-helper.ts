@@ -6,12 +6,16 @@ export interface CodeBlock {
   meta: string;
   code: string;
   offset: number;
+  endOffset: number;
+  codeStartOffset: number;
 }
 
 export interface Header {
   title: string;
   body: string;
   titleOffset: number;
+  bodyStartOffset: number;
+  endOffset: number;
 }
 
 export interface Task {
@@ -36,6 +40,19 @@ export class AppHelper {
 
   async loadFile(path: string): Promise<string> {
     return this.unsafeApp.vault.adapter.read(path);
+  }
+
+  async replaceRange(
+    path: string,
+    startOffset: number,
+    endOffset: number,
+    replacement: string
+  ): Promise<void> {
+    const origin = await this.loadFile(path);
+    await this.unsafeApp.vault.adapter.write(
+      path,
+      origin.slice(0, startOffset) + replacement + origin.slice(endOffset)
+    );
   }
 
   async setCheckMark(
@@ -68,6 +85,26 @@ export class AppHelper {
     return this.unsafeApp.vault.adapter.append(file.path, text);
   }
 
+  async insertTextAfter(file: TFile, text: string, after: string) {
+    if (!after) {
+      return this.insertTextToEnd(file, text);
+    }
+
+    const content = await this.loadFile(file.path);
+    const index = content.indexOf(after);
+    if (index === -1) {
+      return this.insertTextToEnd(file, text);
+    }
+
+    const insertIndex = index + after.length;
+    const newContent =
+      content.slice(0, insertIndex) +
+      "\n" +
+      text +
+      content.slice(insertIndex);
+    await this.unsafeApp.vault.adapter.write(file.path, newContent);
+  }
+
   async getCodeBlocks(file: TFile): Promise<CodeBlock[] | null> {
     const content = await this.loadFile(file.path);
 
@@ -85,12 +122,16 @@ export class AppHelper {
           const lang = lines[0].split(" ")[0].replace("````", "");
           const meta = lines[0].split(" ")[1];
           const offset = x.position.start.offset;
+          const endOffset = x.position.end.offset;
+          const codeStartOffset = offset + lines[0].length + 1;
 
           return {
             lang,
             meta,
             code: lines.slice(1, -1).join("\n"),
             offset,
+            endOffset,
+            codeStartOffset,
           };
         }) ?? null
     );
@@ -108,15 +149,17 @@ export class AppHelper {
 
     return (
       headings.map((x, i) => {
+        const bodyStartOffset = x.position.end.offset + 1;
+        const endOffset =
+          i < headings.length - 1
+            ? headings[i + 1].position.start.offset
+            : content.length;
         return {
           title: x.heading,
-          body: content.slice(
-            x.position.end.offset + 1,
-            i < headings.length - 1
-              ? headings[i + 1].position.start.offset - 1
-              : undefined
-          ),
+          body: content.slice(bodyStartOffset, endOffset),
           titleOffset: x.position.start.offset,
+          bodyStartOffset,
+          endOffset,
         };
       }) ?? null
     );

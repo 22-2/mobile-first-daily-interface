@@ -1,7 +1,7 @@
 import * as React from "react";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, Flex, HStack, Input, Textarea } from "@chakra-ui/react";
-import { App, moment, Notice, TFile } from "obsidian";
+import { App, moment, Notice, TFile, Menu, Modal } from "obsidian";
 import { AppHelper, Task } from "../app-helper";
 import { sorter } from "../utils/collections";
 import {
@@ -18,16 +18,61 @@ import {
   ExternalLinkIcon,
 } from "@chakra-ui/icons";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { Moment } from "moment";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
 import { replaceDayToJa } from "../utils/strings";
 import { PostFormat, Settings, postFormatMap } from "../settings";
+import { parseThinoEntries } from "../utils/thino";
+
+type MomentLike = ReturnType<typeof moment>;
+
+class DeleteConfirmModal extends Modal {
+  onConfirm: () => Promise<void>;
+
+  constructor(app: App, onConfirm: () => Promise<void>) {
+    super(app);
+    this.onConfirm = onConfirm;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.createEl("h2", { text: "削除確認" });
+    contentEl.createEl("p", { text: "この投稿を削除しますか？" });
+
+    const buttonContainer = contentEl.createDiv();
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "10px";
+    buttonContainer.style.marginTop = "20px";
+    buttonContainer.style.justifyContent = "flex-end";
+
+    buttonContainer
+      .createEl("button", { text: "キャンセル" })
+      .addEventListener("click", () => {
+        this.close();
+      });
+
+    const deleteButton = buttonContainer.createEl("button", { text: "削除" });
+    deleteButton.style.color = "var(--text-error)";
+    deleteButton.addEventListener("click", async () => {
+      await this.onConfirm();
+      this.close();
+    });
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+}
 
 export interface Post {
-  timestamp: Moment;
+  timestamp: MomentLike;
   message: string;
   offset: number;
+  startOffset: number;
+  endOffset: number;
+  bodyStartOffset: number;
+  kind: "codeblock" | "header" | "thino";
 }
 
 function toText(
@@ -42,6 +87,21 @@ function toText(
   }
 
   const ts = moment().toISOString(true);
+
+  if (postFormat.type === "thino") {
+    const time = moment().format("HH:mm:ss");
+    const body = input
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .split("\n")
+      .map((x) => (x.length === 0 ? "" : `    ${x}`))
+      .join("\n");
+
+    return `
+- ${time}
+${body}
+`;
+  }
 
   if (postFormat.type === "codeblock") {
     return `
@@ -67,14 +127,22 @@ export const ReactView = ({
 }) => {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
-  const [date, setDate] = useState<Moment>(moment());
+  const [date, setDate] = useState<MomentLike>(moment());
   // デイリーノートが存在しないとnull
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const [input, setInput] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [asTask, setAsTask] = useState(false);
-  const canSubmit = useMemo(() => input.trim().length > 0, [input]);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const canSubmit = useMemo(() => {
+    if (!editingPost) {
+      return input.trim().length > 0;
+    }
+    // When editing, disable update button if content hasn't changed.
+    return input !== editingPost.message;
+  }, [input, editingPost]);
 
   const updateCurrentDailyNote = () => {
     const n = getDailyNote(date, getAllDailyNotes()) as TFile | null;
@@ -102,6 +170,57 @@ export const ReactView = ({
       return;
     }
 
+    if (editingPost) {
+      if (!currentDailyNote) {
+        return;
+      }
+
+      const path = currentDailyNote.path;
+      const origin = await appHelper.loadFile(path);
+
+      const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      if (editingPost.kind === "header") {
+        const replacement = `\n${normalizedInput.replace(/\n+$/g, "")}\n`;
+        await appHelper.replaceRange(
+          path,
+          editingPost.bodyStartOffset,
+          editingPost.endOffset,
+          replacement
+        );
+      } else if (editingPost.kind === "thino") {
+        const body = normalizedInput
+          .split("\n")
+          .map((x) => (x.length === 0 ? "" : `    ${x}`))
+          .join("\n");
+        const replacement = body.length === 0 ? "" : `${body}\n`;
+        await appHelper.replaceRange(
+          path,
+          editingPost.bodyStartOffset,
+          editingPost.endOffset,
+          replacement
+        );
+      } else {
+        // codeblock: keep fence/meta lines, replace only code part.
+        const block = origin.slice(editingPost.startOffset, editingPost.endOffset);
+        const lines = block.split("\n");
+        const firstLine = lines[0] ?? "";
+        const lastLine = lines.length >= 2 ? lines[lines.length - 1] : "";
+        const code = normalizedInput.replace(/\n+$/g, "");
+        const replacement = `${firstLine}\n${code}\n${lastLine}`;
+        await appHelper.replaceRange(
+          path,
+          editingPost.startOffset,
+          editingPost.endOffset,
+          replacement
+        );
+      }
+
+      setEditingPost(null);
+      setInput("");
+      await updatePosts(currentDailyNote);
+      return;
+    }
+
     const text = toText(input, asTask, postFormat);
 
     if (!currentDailyNote) {
@@ -112,30 +231,52 @@ export const ReactView = ({
     }
 
     // デイリーノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
-    await appHelper.insertTextToEnd(
+    await appHelper.insertTextAfter(
       getDailyNote(date, getAllDailyNotes()),
-      text
+      text,
+      settings.insertAfter
     );
     setInput("");
   };
 
   const updatePosts = async (note: TFile) => {
-    const _posts =
-      postFormat.type === "codeblock"
-        ? ((await appHelper.getCodeBlocks(note)) ?? [])
-            ?.filter((x) => x.lang === "fw")
-            .map((x) => ({
-              timestamp: moment(x.meta),
-              message: x.code,
-              offset: x.offset,
-            }))
-        : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
-            .filter((x) => moment(x.title).isValid())
-            .map((x) => ({
-              timestamp: moment(x.title),
-              message: x.body,
-              offset: x.titleOffset,
-            }));
+    const _posts: Post[] =
+      postFormat.type === "thino"
+        ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => ({
+            timestamp: moment(
+              `${date.format("YYYY-MM-DD")} ${x.time}`,
+              "YYYY-MM-DD HH:mm:ss"
+            ),
+            message: x.message,
+            offset: x.offset,
+            startOffset: x.startOffset,
+            endOffset: x.endOffset,
+            bodyStartOffset: x.bodyStartOffset,
+            kind: "thino" as const,
+          }))
+        : postFormat.type === "codeblock"
+          ? ((await appHelper.getCodeBlocks(note)) ?? [])
+              ?.filter((x) => x.lang === "fw")
+              .map((x) => ({
+                timestamp: moment(x.meta),
+                message: x.code,
+                offset: x.offset,
+                startOffset: x.offset,
+                endOffset: x.endOffset,
+                bodyStartOffset: x.codeStartOffset,
+                kind: "codeblock" as const,
+              }))
+          : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
+              .filter((x) => moment(x.title).isValid())
+              .map((x) => ({
+                timestamp: moment(x.title),
+                message: x.body.replace(/^\n+/g, "").replace(/\n+$/g, ""),
+                offset: x.titleOffset,
+                startOffset: x.titleOffset,
+                endOffset: x.endOffset,
+                bodyStartOffset: x.bodyStartOffset,
+                kind: "header" as const,
+              }));
 
     setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
   };
@@ -241,6 +382,52 @@ export const ReactView = ({
     };
   }, [date, currentDailyNote]);
 
+  const startEdit = (post: Post) => {
+    setAsTask(false);
+    setEditingPost(post);
+    setInput(post.message);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const cancelEdit = () => {
+    setEditingPost(null);
+    setInput("");
+  };
+
+  const deletePost = async (post: Post) => {
+    if (!currentDailyNote) {
+      return;
+    }
+
+    const path = currentDailyNote.path;
+    const origin = await appHelper.loadFile(path);
+    let start = post.startOffset;
+    let end = post.endOffset;
+
+    // If there's a trailing newline, include it to avoid merging lines.
+    if (origin.slice(end, end + 1) === "\n") {
+      end += 1;
+    }
+
+    // If this is a header and there is a leading newline (ReactView's toText inserts one),
+    // remove it too when present.
+    if (post.kind === "header" && origin.slice(start - 1, start) === "\n") {
+      start -= 1;
+    }
+
+    await appHelper.replaceRange(path, start, end, "");
+
+    // Clean up excessive newlines after deletion.
+    let newContent = await appHelper.loadFile(path);
+    newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
+    await app.vault.adapter.write(path, newContent);
+
+    if (editingPost?.startOffset === post.startOffset) {
+      cancelEdit();
+    }
+    await updatePosts(currentDailyNote);
+  };
+
   const updateTaskChecked = async (task: Task, checked: boolean) => {
     if (!currentDailyNote) {
       return;
@@ -324,12 +511,35 @@ export const ReactView = ({
                 post={x}
                 settings={settings}
                 onClickTime={handleClickTime}
+                onContextMenu={(post, e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const menu = new Menu();
+                  menu.addItem((item) =>
+                    item.setTitle("投稿にジャンプ").onClick(() => {
+                      handleClickTime(post);
+                    })
+                  );
+                  menu.addItem((item) =>
+                    item.setTitle("編集").onClick(() => {
+                      startEdit(post);
+                    })
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("削除")
+                      .onClick(() => {
+                        new DeleteConfirmModal(app, () => deletePost(post)).open();
+                      })
+                  );
+                  menu.showAtMouseEvent(e as unknown as MouseEvent);
+                }}
               />
             </CSSTransition>
           ))}
         </TransitionGroup>
       ),
-    [posts, tasks, asTask]
+    [posts, tasks, asTask, editingPost]
   );
 
   return (
@@ -389,6 +599,7 @@ export const ReactView = ({
         minHeight={"8em"}
         resize="vertical"
         onKeyUp={handleKeyUp}
+        ref={inputRef}
       />
       <HStack>
         <Button
@@ -400,8 +611,20 @@ export const ReactView = ({
           cursor={canSubmit ? "pointer" : ""}
           onClick={handleSubmit}
         >
-          {asTask ? "タスク追加" : "投稿"}
+          {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
         </Button>
+        {editingPost ? (
+          <Button
+            minHeight={"2.4em"}
+            maxHeight={"2.4em"}
+            variant="ghost"
+            onClick={cancelEdit}
+          >
+            キャンセル
+          </Button>
+        ) : (
+          ""
+        )}
         <Box
           display="flex"
           gap="0.5em"

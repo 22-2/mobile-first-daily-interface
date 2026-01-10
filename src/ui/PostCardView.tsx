@@ -33,10 +33,12 @@ export const PostCardView = ({
   post,
   settings,
   onClickTime,
+  onContextMenu,
 }: {
   post: Post;
   settings: Settings;
   onClickTime: (post: Post) => void;
+  onContextMenu?: (post: Post, e: React.MouseEvent) => void;
 }) => {
   const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
   const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
@@ -91,6 +93,7 @@ export const PostCardView = ({
       borderWidth={"2px"}
       boxShadow={"0 1px 1px 0"}
       marginY={8}
+      onContextMenu={(e) => onContextMenu?.(post, e)}
     >
       <Box
         fontSize={"85%"}
