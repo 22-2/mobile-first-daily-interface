@@ -4,7 +4,7 @@ import { Notice } from "obsidian";
 import { Box, HStack, Flex, VStack, Text, IconButton, Tooltip, Spacer, Tag } from "@chakra-ui/react";
 import { Card } from "./Card";
 import Markdown from "marked-react";
-import { CopyIcon, TimeIcon, createIcon } from "@chakra-ui/icons";
+import { TimeIcon, createIcon } from "@chakra-ui/icons";
 import { pickUrls, replaceDayToJa } from "../utils/strings";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { isPresent } from "../utils/types";
@@ -47,10 +47,7 @@ export const PostCardView = ({
   const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
   const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);
 
-  const handleClickCopyIcon = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    new Notice("copied");
-  };
+  
 
   const handleClickPostBlueskyIcon = async () => {
     const nt = new Notice("🦋 Blueskyに投稿中...", 30 * 1000);
@@ -128,16 +125,6 @@ export const PostCardView = ({
           <Spacer />
 
           <HStack gap={2}>
-            <Tooltip label="Copy message">
-              <IconButton
-                aria-label="copy"
-                size="sm"
-                icon={<CopyIcon />}
-                onClick={() => handleClickCopyIcon(post.message)}
-                variant="ghost"
-              />
-            </Tooltip>
-
             {settings.blueskyIdentifier && settings.blueskyAppPassword ? (
               <Tooltip label="Post to Bluesky">
                 <IconButton

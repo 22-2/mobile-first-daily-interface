@@ -604,6 +604,12 @@ export const ReactView = ({
                     })
                   );
                   menu.addItem((item) =>
+                    item.setTitle("コピー").onClick(async () => {
+                      await navigator.clipboard.writeText(post.message);
+                      new Notice("copied");
+                    })
+                  );
+                  menu.addItem((item) =>
                     item
                       .setTitle("削除")
                       .onClick(() => {
