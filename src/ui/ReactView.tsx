@@ -603,7 +603,7 @@ export const ReactView = ({
       />
       <HStack>
         <Button
-          isDisabled={!canSubmit}
+          disabled={!canSubmit}
           className={canSubmit ? "mod-cta" : ""}
           minHeight={"2.4em"}
           maxHeight={"2.4em"}
