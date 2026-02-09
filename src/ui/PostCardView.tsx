@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { Notice } from "obsidian";
-import { Box, HStack } from "@chakra-ui/react";
+import { Box, HStack, Flex, VStack, Text, IconButton, Tooltip, Spacer, Tag } from "@chakra-ui/react";
 import Markdown from "marked-react";
 import { CopyIcon, TimeIcon, createIcon } from "@chakra-ui/icons";
 import { pickUrls, replaceDayToJa } from "../utils/strings";
@@ -53,14 +53,13 @@ export const PostCardView = ({
     const nt = new Notice("🦋 Blueskyに投稿中...", 30 * 1000);
 
     // 画像のメタデータを優先するが、Blueskyが両方指定を許容するなら対応するのもアリ
-    const meta =
-      imageMetas.length > 0 ? imageMetas.slice(0, 4) : htmlMetas.first();
+    const meta = imageMetas.length > 0 ? imageMetas.slice(0, 4) : htmlMetas.slice(0, 4);
     try {
       await postToBluesky(
         settings.blueskyIdentifier,
         settings.blueskyAppPassword,
         post.message,
-        meta
+        meta as HTMLMeta | ImageMeta[]
       );
       nt.setMessage("投稿に成功しました");
       await sleep(5 * 1000);
@@ -88,56 +87,83 @@ export const PostCardView = ({
   return (
     <Box
       borderStyle={"solid"}
-      borderRadius={"10px"}
+      borderRadius={"12px"}
       borderColor={"var(--table-border-color)"}
-      borderWidth={"2px"}
-      boxShadow={"0 1px 1px 0"}
-      marginY={8}
+      borderWidth={"1px"}
+      boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
+      marginY={6}
+      overflow="hidden"
+      transition="all 0.15s ease"
+      _hover={{ transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
       onContextMenu={(e) => onContextMenu?.(post, e)}
     >
-      <Box
-        fontSize={"85%"}
-        paddingX={16}
-        wordBreak={"break-all"}
-        className="markdown-rendered"
-      >
-        <Markdown gfm breaks>
-          {post.message}
-        </Markdown>
-        {htmlMetas.map((meta) => (
-          <HTMLCard key={meta.originUrl} meta={meta} />
-        ))}
-        {imageMetas.map((meta) => (
-          <ImageCard key={meta.originUrl} meta={meta} />
-        ))}
-        {twitterMetas.map((meta) => (
-          <TwitterCard key={meta.url} meta={meta} />
-        ))}
-      </Box>
-      <HStack
-        color={"var(--text-muted)"}
-        fontSize={"75%"}
-        paddingBottom={4}
-        paddingRight={10}
-        justify="end"
-      >
-        <Box cursor="pointer" onClick={() => onClickTime(post)}>
-          <TimeIcon marginRight={2} />
-          {replaceDayToJa(post.timestamp.format("YYYY-MM-DD(ddd) H:mm:ss"))}
+      <Flex direction="column">
+        <Box padding={5} className="markdown-rendered">
+          <VStack align="stretch" gap={4}>
+            <Box fontSize={"93%"} paddingX={2} wordBreak={"break-word"}>
+              <Markdown gfm breaks>
+                {post.message}
+              </Markdown>
+            </Box>
+
+            <Box paddingX={2}>
+              {htmlMetas.map((meta) => (
+                <HTMLCard key={meta.originUrl} meta={meta} />
+              ))}
+              {imageMetas.map((meta) => (
+                <ImageCard key={meta.originUrl} meta={meta} />
+              ))}
+              {twitterMetas.map((meta) => (
+                <TwitterCard key={meta.url} meta={meta} />
+              ))}
+            </Box>
+          </VStack>
         </Box>
-        <Box cursor="pointer" onClick={() => handleClickCopyIcon(post.message)}>
-          <CopyIcon marginRight={2} />
-          copy
-        </Box>
-        {settings.blueskyIdentifier && settings.blueskyAppPassword ? (
-          <Box cursor="pointer" onClick={handleClickPostBlueskyIcon}>
-            <BlueskyIcon marginRight={2} />
-            post
+
+        <HStack
+          color={"var(--text-muted)"}
+          fontSize={"80%"}
+          padding={3}
+          paddingRight={4}
+          align="center"
+          gap={3}
+        >
+          <Box cursor="pointer" onClick={() => onClickTime(post)} display="flex" alignItems="center">
+            <TimeIcon marginRight={2} />
+            <Text>{replaceDayToJa(post.timestamp.format("YYYY-MM-DD(ddd) H:mm:ss"))}</Text>
           </Box>
-        ) : (
-          ""
-        )}
-      </HStack>
+
+          <Spacer />
+
+          <HStack gap={2}>
+            <Tooltip label="Copy message">
+              <IconButton
+                aria-label="copy"
+                size="sm"
+                icon={<CopyIcon />}
+                onClick={() => handleClickCopyIcon(post.message)}
+                variant="ghost"
+              />
+            </Tooltip>
+
+            {settings.blueskyIdentifier && settings.blueskyAppPassword ? (
+              <Tooltip label="Post to Bluesky">
+                <IconButton
+                  aria-label="post-bluesky"
+                  size="sm"
+                  icon={<BlueskyIcon />}
+                  onClick={handleClickPostBlueskyIcon}
+                  variant="ghost"
+                />
+              </Tooltip>
+            ) : null}
+
+            <Tag size="sm" variant="subtle" colorScheme="gray">
+              {imageMetas.length > 0 ? `${imageMetas.length} image` : htmlMetas.length > 0 ? `${htmlMetas.length} link` : "text"}
+            </Tag>
+          </HStack>
+        </HStack>
+      </Flex>
     </Box>
   );
 };

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, Flex, HStack, Input, Textarea } from "@chakra-ui/react";
-import { App, moment, Notice, TFile, Menu, Modal } from "obsidian";
+import { App, Notice, TFile, Menu, Modal } from "obsidian";
 import { AppHelper, Task } from "../app-helper";
 import { sorter } from "../utils/collections";
 import {
@@ -24,7 +24,7 @@ import { replaceDayToJa } from "../utils/strings";
 import { PostFormat, Settings, postFormatMap } from "../settings";
 import { parseThinoEntries } from "../utils/thino";
 
-type MomentLike = ReturnType<typeof moment>;
+type MomentLike = ReturnType<typeof window.moment>;
 
 class DeleteConfirmModal extends Modal {
   onConfirm: () => Promise<void>;
@@ -86,10 +86,10 @@ function toText(
 `;
   }
 
-  const ts = moment().toISOString(true);
+  const ts = window.moment().toISOString(true);
 
   if (postFormat.type === "thino") {
-    const time = moment().format("HH:mm:ss");
+    const time = window.moment().format("HH:mm:ss");
     const body = input
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
@@ -127,7 +127,7 @@ export const ReactView = ({
 }) => {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
-  const [date, setDate] = useState<MomentLike>(moment());
+  const [date, setDate] = useState<MomentLike>(window.moment());
   // デイリーノートが存在しないとnull
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const [input, setInput] = useState("");
@@ -243,7 +243,7 @@ export const ReactView = ({
     const _posts: Post[] =
       postFormat.type === "thino"
         ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => ({
-            timestamp: moment(
+            timestamp: window.moment(
               `${date.format("YYYY-MM-DD")} ${x.time}`,
               "YYYY-MM-DD HH:mm:ss"
             ),
@@ -258,7 +258,7 @@ export const ReactView = ({
           ? ((await appHelper.getCodeBlocks(note)) ?? [])
               ?.filter((x) => x.lang === "fw")
               .map((x) => ({
-                timestamp: moment(x.meta),
+                timestamp: window.moment(x.meta),
                 message: x.code,
                 offset: x.offset,
                 startOffset: x.offset,
@@ -267,9 +267,9 @@ export const ReactView = ({
                 kind: "codeblock" as const,
               }))
           : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
-              .filter((x) => moment(x.title).isValid())
+              .filter((x) => window.moment(x.title).isValid())
               .map((x) => ({
-                timestamp: moment(x.title),
+                timestamp: window.moment(x.title),
                 message: x.body.replace(/^\n+/g, "").replace(/\n+$/g, ""),
                 offset: x.titleOffset,
                 startOffset: x.titleOffset,
@@ -301,7 +301,7 @@ export const ReactView = ({
   const handleChangeCalendarDate = (
     event: ChangeEvent<HTMLInputElement>
   ): void => {
-    setDate(moment(event.target.value));
+    setDate(window.moment(event.target.value));
   };
   const handleClickMovePrevious = () => {
     setDate(date.clone().subtract(1, "day"));
@@ -310,7 +310,7 @@ export const ReactView = ({
     setDate(date.clone().add(1, "day"));
   };
   const handleClickToday = async () => {
-    setDate(moment());
+    setDate(window.moment());
   };
 
   const handleKeyUp = (event: React.KeyboardEvent) => {
