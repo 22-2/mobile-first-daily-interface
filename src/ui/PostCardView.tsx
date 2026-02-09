@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Notice } from "obsidian";
 import { Box, HStack, Flex, VStack, Text, IconButton, Tooltip, Spacer, Tag } from "@chakra-ui/react";
+import { Card } from "./Card";
 import Markdown from "marked-react";
 import { CopyIcon, TimeIcon, createIcon } from "@chakra-ui/icons";
 import { pickUrls, replaceDayToJa } from "../utils/strings";
@@ -87,19 +88,7 @@ export const PostCardView = ({
   }, [post.message]);
 
   return (
-    <Box
-      borderStyle={"solid"}
-      borderRadius={"12px"}
-      borderColor={"var(--table-border-color)"}
-      borderWidth={"1px"}
-      boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
-      marginY={6}
-      overflow="hidden"
-      transition="all 0.15s ease"
-      _hover={{ transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
-      onContextMenu={(e) => onContextMenu?.(post, e)}
-      onDoubleClick={() => onEdit?.(post)}
-    >
+    <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
       <Flex direction="column">
         <Box padding={5} className="markdown-rendered">
           <VStack align="stretch" gap={4}>
@@ -167,6 +156,6 @@ export const PostCardView = ({
           </HStack>
         </HStack>
       </Flex>
-    </Box>
+    </Card>
   );
 };

@@ -329,6 +329,7 @@ export const ReactView = ({
       // TODO: 今後必要に応じてAppHelperにだす
       const leaf = app.workspace.getLeaf(true);
       await leaf.openFile(currentDailyNote);
+      await app.workspace.revealLeaf(leaf);
 
       const editor = appHelper.getActiveMarkdownEditor()!;
       const pos = editor.offsetToPos(post.offset);
@@ -428,6 +429,53 @@ export const ReactView = ({
     await updatePosts(currentDailyNote);
   };
 
+  const openTaskInEditor = (task: Task) => {
+    (async () => {
+      if (!currentDailyNote) {
+        return;
+      }
+
+      const leaf = app.workspace.getLeaf(true);
+      await leaf.openFile(currentDailyNote);
+
+      const editor = appHelper.getActiveMarkdownEditor()!;
+      const pos = editor.offsetToPos(task.offset);
+      editor.setCursor(pos);
+      await leaf.openFile(currentDailyNote, {
+        eState: { line: pos.line },
+      });
+    })();
+  };
+
+  const deleteTask = async (task: Task) => {
+    if (!currentDailyNote) {
+      return;
+    }
+
+    const path = currentDailyNote.path;
+    const origin = await appHelper.loadFile(path);
+
+    // remove the line starting at task.offset
+    let start = task.offset;
+    // find end of line
+    let end = origin.indexOf("\n", start);
+    if (end === -1) {
+      end = origin.length;
+    } else {
+      // include newline
+      end = end + 1;
+    }
+
+    await appHelper.replaceRange(path, start, end, "");
+
+    // cleanup excessive newlines
+    let newContent = await appHelper.loadFile(path);
+    newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
+    await app.vault.adapter.write(path, newContent);
+
+    await updateTasks(currentDailyNote);
+  };
+
   const updateTaskChecked = async (task: Task, checked: boolean) => {
     if (!currentDailyNote) {
       return;
@@ -443,15 +491,6 @@ export const ReactView = ({
       asTask ? (
         <>
           {tasks.filter((x) => x.mark === " ").length > 0 && (
-            <Box
-              borderStyle={"solid"}
-              borderRadius={"10px"}
-              borderColor={"var(--table-border-color)"}
-              borderWidth={"2px"}
-              boxShadow={"0 1px 1px 0"}
-              marginY={8}
-              minHeight={50}
-            >
               <TransitionGroup className="list">
                 {tasks
                   .filter((x) => x.mark === " ")
@@ -465,24 +504,36 @@ export const ReactView = ({
                         <TaskView
                           task={x}
                           onChange={(c) => updateTaskChecked(x, c)}
+                          onContextMenu={(task, e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const menu = new Menu();
+                            menu.addItem((item) =>
+                              item.setTitle("タスクにジャンプ").onClick(() => {
+                                openTaskInEditor(task);
+                              })
+                            );
+                            menu.addItem((item) =>
+                              item.setTitle("編集").onClick(() => {
+                                openTaskInEditor(task);
+                              })
+                            );
+                            menu.addItem((item) =>
+                              item
+                                .setTitle("削除")
+                                .onClick(() => {
+                                  new DeleteConfirmModal(app, () => deleteTask(task)).open();
+                                })
+                            );
+                            menu.showAtMouseEvent(e as unknown as MouseEvent);
+                          }}
                         />
                       </Box>
                     </CSSTransition>
                   ))}
               </TransitionGroup>
-            </Box>
           )}
-
           {tasks.filter((x) => x.mark !== " ").length > 0 && (
-            <Box
-              borderStyle={"solid"}
-              borderRadius={"10px"}
-              borderColor={"var(--table-border-color)"}
-              borderWidth={"2px"}
-              boxShadow={"0 1px 1px 0"}
-              marginY={8}
-              minHeight={50}
-            >
               <TransitionGroup className="list">
                 {tasks
                   .filter((x) => x.mark !== " ")
@@ -496,12 +547,34 @@ export const ReactView = ({
                         <TaskView
                           task={x}
                           onChange={(c) => updateTaskChecked(x, c)}
+                          onContextMenu={(task, e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const menu = new Menu();
+                            menu.addItem((item) =>
+                              item.setTitle("タスクにジャンプ").onClick(() => {
+                                openTaskInEditor(task);
+                              })
+                            );
+                            menu.addItem((item) =>
+                              item.setTitle("編集").onClick(() => {
+                                openTaskInEditor(task);
+                              })
+                            );
+                            menu.addItem((item) =>
+                              item
+                                .setTitle("削除")
+                                .onClick(() => {
+                                  new DeleteConfirmModal(app, () => deleteTask(task)).open();
+                                })
+                            );
+                            menu.showAtMouseEvent(e as unknown as MouseEvent);
+                          }}
                         />
                       </Box>
                     </CSSTransition>
                   ))}
               </TransitionGroup>
-            </Box>
           )}
         </>
       ) : (
