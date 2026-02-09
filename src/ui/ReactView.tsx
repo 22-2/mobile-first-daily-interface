@@ -327,15 +327,13 @@ export const ReactView = ({
 
       // TODO: 今後必要に応じてAppHelperにだす
       const leaf = app.workspace.getLeaf(true);
-      await leaf.openFile(currentDailyNote);
+      await app.workspace.revealLeaf(leaf);
+      await leaf.openFile(currentDailyNote, { active: true });
       await app.workspace.revealLeaf(leaf);
 
       const editor = appHelper.getActiveMarkdownEditor()!;
       const pos = editor.offsetToPos(post.offset);
-      editor.setCursor(pos);
-      await leaf.openFile(currentDailyNote, {
-        eState: { line: pos.line },
-      });
+      queueMicrotask(() => editor.setCursor(pos));
     })();
   };
 
