@@ -23,16 +23,23 @@ function isThinoHeading(line: string): boolean {
   return /^#{1,6}\s+thino\s*$/i.test(line.trim());
 }
 
-function matchTimeBullet(line: string): { time: string; dashIndex: number } | null {
-  // Allows leading spaces.
-  const m = line.match(/^([ \t]*)-\s*(\d{2}:\d{2}:\d{2})\s*$/);
+function matchTimeBullet(
+  line: string
+):
+  | { time: string; dashIndex: number; message?: string; messageIndex?: number }
+  | null {
+  // Allows leading spaces. Accept optional trailing text after the time.
+  // Allow optional task checkbox like "- [ ] 12:34:56" before the time.
+  const m = line.match(/^([ \t]*)-\s*(?:\[\s*[ xX]\s*\]\s*)?(\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
   if (!m) {
     return null;
   }
 
   const indent = m[1] ?? "";
   const time = m[2];
-  return { time, dashIndex: indent.length };
+  const message = m[3];
+  const messageIndex = message ? line.indexOf(message) : undefined;
+  return { time, dashIndex: indent.length, message, messageIndex };
 }
 
 function deindentBodyLine(line: string): string {
@@ -118,14 +125,23 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
 
     const timeBullet = matchTimeBullet(line);
     if (timeBullet) {
-      flush(offset);
-      current = {
-        time: timeBullet.time,
-        offset: offset + timeBullet.dashIndex,
-        startOffset: offset,
-        bodyStartOffset: offset + rawLine.length + 1,
-        bodyLines: [],
-      };
+        flush(offset);
+        const bodyLines: string[] = [];
+        let bodyStartOffset = offset + rawLine.length + 1;
+
+        // If there's an inline message after the time, treat it as the first body line
+        if (timeBullet.message != null && timeBullet.messageIndex != null) {
+          bodyLines.push(deindentBodyLine(timeBullet.message));
+          bodyStartOffset = offset + timeBullet.messageIndex;
+        }
+
+        current = {
+          time: timeBullet.time,
+          offset: offset + timeBullet.dashIndex,
+          startOffset: offset,
+          bodyStartOffset,
+          bodyLines,
+        };
       offset += rawLine.length + 1;
       continue;
     }

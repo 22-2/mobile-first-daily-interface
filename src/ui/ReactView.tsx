@@ -23,6 +23,7 @@ import { TaskView } from "./TaskView";
 import { replaceDayToJa } from "../utils/strings";
 import { PostFormat, Settings, postFormatMap } from "../settings";
 import { parseThinoEntries } from "../utils/thino";
+import { formatTaskText } from "../utils/task-text";
 
 type MomentLike = ReturnType<typeof window.moment>;
 
@@ -81,9 +82,7 @@ function toText(
   postFormat: PostFormat
 ): string {
   if (asTask) {
-    return `
-- [ ] ${input}
-`;
+    return formatTaskText(input);
   }
 
   const ts = window.moment().toISOString(true);
@@ -496,7 +495,7 @@ export const ReactView = ({
                   .filter((x) => x.mark === " ")
                   .map((x) => (
                     <CSSTransition
-                      key={date.format() + x.name + x.mark}
+                      key={date.format() + String(x.offset)}
                       timeout={300}
                       classNames="item"
                     >
@@ -539,7 +538,7 @@ export const ReactView = ({
                   .filter((x) => x.mark !== " ")
                   .map((x) => (
                     <CSSTransition
-                      key={date.format() + x.name + x.mark}
+                      key={date.format() + String(x.offset)}
                       timeout={300}
                       classNames="item"
                     >

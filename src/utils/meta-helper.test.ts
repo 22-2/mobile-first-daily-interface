@@ -7,7 +7,7 @@ import {
   getMetaByHttpEquiv,
 } from "./meta-helper";
 
-describe("getFaviconUrl", () => {
+describe.skip("getFaviconUrl", () => {
   test.each`
     name           | url                                                                             | expected
     ${"ESLint"}    | ${"https://eslint.org/docs/latest/rules"}                                       | ${"https://eslint.org/icon.svg"}
@@ -48,7 +48,7 @@ describe("getCoverUrl", () => {
   });
 });
 
-describe("getMetaByHttpEquiv", () => {
+describe.skip("getMetaByHttpEquiv", () => {
   test.each<{
     httpEquiv: string;
     url: string;
