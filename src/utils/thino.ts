@@ -29,8 +29,9 @@ function matchTimeBullet(
   | { time: string; dashIndex: number; message?: string; messageIndex?: number }
   | null {
   // Allows leading spaces. Accept optional trailing text after the time.
-  // Allow optional task checkbox like "- [ ] 12:34:56" before the time.
-  const m = line.match(/^([ \t]*)-\s*(?:\[\s*[ xX]\s*\]\s*)?(\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
+  // Allows leading spaces. Do NOT accept checkbox tokens before the time
+  // so that task list items are not treated as Thino entries.
+  const m = line.match(/^([ \t]*)-\s*(\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
   if (!m) {
     return null;
   }
@@ -124,6 +125,12 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
     }
 
     const timeBullet = matchTimeBullet(line);
+    // If this line is a markdown task (checkbox), treat it as not part of Thino body.
+    if (/^[ \t]*-\s*\[\s*[ xX]?\s*\]/.test(line)) {
+      flush(offset);
+      offset += rawLine.length + 1;
+      continue;
+    }
     if (timeBullet) {
         flush(offset);
         const bodyLines: string[] = [];
