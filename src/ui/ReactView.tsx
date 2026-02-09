@@ -331,9 +331,17 @@ export const ReactView = ({
       await leaf.openFile(currentDailyNote, { active: true });
       await app.workspace.revealLeaf(leaf);
 
-      const editor = appHelper.getActiveMarkdownEditor()!;
-      const pos = editor.offsetToPos(post.offset);
-      queueMicrotask(() => editor.setCursor(pos));
+      const editor = app.workspace.activeEditor!;
+      const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
+      const endPos = editor.editor!.offsetToPos(
+        post.bodyStartOffset + post.message.length
+      );
+      const from = { line: startPos.line, ch: startPos.ch };
+      const to = { line: endPos.line, ch: endPos.ch };
+      queueMicrotask(() => {
+        // @ts-expect-error
+        editor.editMode!.highlightSearchMatches([{from, to}]);
+      });
     })();
   };
 
