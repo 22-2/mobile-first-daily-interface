@@ -442,62 +442,67 @@ export const ReactView = ({
     () =>
       asTask ? (
         <>
-          <Box
-            borderStyle={"solid"}
-            borderRadius={"10px"}
-            borderColor={"var(--table-border-color)"}
-            borderWidth={"2px"}
-            boxShadow={"0 1px 1px 0"}
-            marginY={8}
-            minHeight={50}
-          >
-            <TransitionGroup className="list">
-              {tasks
-                .filter((x) => x.mark === " ")
-                .map((x) => (
-                  <CSSTransition
-                    key={date.format() + x.name + x.mark}
-                    timeout={300}
-                    classNames="item"
-                  >
-                    <Box m={10}>
-                      <TaskView
-                        task={x}
-                        onChange={(c) => updateTaskChecked(x, c)}
-                      />
-                    </Box>
-                  </CSSTransition>
-                ))}
-            </TransitionGroup>
-          </Box>
-          <Box
-            borderStyle={"solid"}
-            borderRadius={"10px"}
-            borderColor={"var(--table-border-color)"}
-            borderWidth={"2px"}
-            boxShadow={"0 1px 1px 0"}
-            marginY={8}
-            minHeight={50}
-          >
-            <TransitionGroup className="list">
-              {tasks
-                .filter((x) => x.mark !== " ")
-                .map((x) => (
-                  <CSSTransition
-                    key={date.format() + x.name + x.mark}
-                    timeout={300}
-                    classNames="item"
-                  >
-                    <Box m={10}>
-                      <TaskView
-                        task={x}
-                        onChange={(c) => updateTaskChecked(x, c)}
-                      />
-                    </Box>
-                  </CSSTransition>
-                ))}
-            </TransitionGroup>
-          </Box>
+          {tasks.filter((x) => x.mark === " ").length > 0 && (
+            <Box
+              borderStyle={"solid"}
+              borderRadius={"10px"}
+              borderColor={"var(--table-border-color)"}
+              borderWidth={"2px"}
+              boxShadow={"0 1px 1px 0"}
+              marginY={8}
+              minHeight={50}
+            >
+              <TransitionGroup className="list">
+                {tasks
+                  .filter((x) => x.mark === " ")
+                  .map((x) => (
+                    <CSSTransition
+                      key={date.format() + x.name + x.mark}
+                      timeout={300}
+                      classNames="item"
+                    >
+                      <Box m={10}>
+                        <TaskView
+                          task={x}
+                          onChange={(c) => updateTaskChecked(x, c)}
+                        />
+                      </Box>
+                    </CSSTransition>
+                  ))}
+              </TransitionGroup>
+            </Box>
+          )}
+
+          {tasks.filter((x) => x.mark !== " ").length > 0 && (
+            <Box
+              borderStyle={"solid"}
+              borderRadius={"10px"}
+              borderColor={"var(--table-border-color)"}
+              borderWidth={"2px"}
+              boxShadow={"0 1px 1px 0"}
+              marginY={8}
+              minHeight={50}
+            >
+              <TransitionGroup className="list">
+                {tasks
+                  .filter((x) => x.mark !== " ")
+                  .map((x) => (
+                    <CSSTransition
+                      key={date.format() + x.name + x.mark}
+                      timeout={300}
+                      classNames="item"
+                    >
+                      <Box m={10}>
+                        <TaskView
+                          task={x}
+                          onChange={(c) => updateTaskChecked(x, c)}
+                        />
+                      </Box>
+                    </CSSTransition>
+                  ))}
+              </TransitionGroup>
+            </Box>
+          )}
         </>
       ) : (
         <TransitionGroup className="list">
