@@ -511,6 +511,7 @@ export const ReactView = ({
                 post={x}
                 settings={settings}
                 onClickTime={handleClickTime}
+                onEdit={startEdit}
                 onContextMenu={(post, e) => {
                   e.preventDefault();
                   e.stopPropagation();

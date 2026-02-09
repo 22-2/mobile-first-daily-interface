@@ -34,11 +34,13 @@ export const PostCardView = ({
   settings,
   onClickTime,
   onContextMenu,
+  onEdit,
 }: {
   post: Post;
   settings: Settings;
   onClickTime: (post: Post) => void;
   onContextMenu?: (post: Post, e: React.MouseEvent) => void;
+  onEdit?: (post: Post) => void;
 }) => {
   const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
   const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
@@ -96,6 +98,7 @@ export const PostCardView = ({
       transition="all 0.15s ease"
       _hover={{ transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
       onContextMenu={(e) => onContextMenu?.(post, e)}
+      onDoubleClick={() => onEdit?.(post)}
     >
       <Flex direction="column">
         <Box padding={5} className="markdown-rendered">
