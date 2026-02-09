@@ -547,7 +547,7 @@ export const ReactView = ({
       flexDirection="column"
       gap="0.75rem"
       height="95%"
-      maxWidth="30rem"
+      // maxWidth="30rem"
       position={"relative"}
     >
       <HStack justify="center">
