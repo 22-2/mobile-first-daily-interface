@@ -6,15 +6,24 @@ export const Card = (props: BoxProps) => {
 
   return (
     <Box
+      position="relative"
+      borderRadius={"22px"}
+      borderBottomRightRadius={"6px"}
       borderStyle={"solid"}
-      borderRadius={"12px"}
-      borderColor={"var(--table-border-color)"}
       borderWidth={"1px"}
-      boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
-      marginY={6}
+      borderColor={"var(--table-border-color)"}
+      background={"var(--background-primary)"}
+      color={"var(--text-normal)"}
+      marginY={3}
+      marginLeft={"auto"}
+      marginRight={0}
       overflow="hidden"
-      transition="all 0.15s ease"
-      _hover={{ transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+      transition="all 0.18s ease"
+      boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
+      _hover={{
+        boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
+        backgroundColor: "var(--background-secondary)",
+      }}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
       {...rest}

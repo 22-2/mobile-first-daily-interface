@@ -98,16 +98,18 @@ export const PostCardView = ({
   return (
     <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
       <Flex direction="column">
-        <Box padding={5} className="markdown-rendered">
-          <VStack align="stretch" gap={4}>
-            <Box fontSize={"93%"} paddingX={2} wordBreak={"break-word"}>
+        <Box padding={5} paddingTop={4} className="markdown-rendered">
+          <VStack align="stretch" gap={3}>
+
+            {/* Message Body */}
+            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
               <Markdown gfm breaks>
                 {post.message}
               </Markdown>
             </Box>
 
             {settings.enabledCardView && (
-              <Box paddingX={2}>
+              <Box paddingX={1}>
                 {htmlMetas.map((meta) => (
                   <HTMLCard key={meta.originUrl} meta={meta} />
                 ))}
@@ -119,24 +121,21 @@ export const PostCardView = ({
                 ))}
               </Box>
             )}
+
           </VStack>
         </Box>
 
+        {/* Footer: Bluesky + Info Tag */}
         <HStack
           color={"var(--text-muted)"}
           fontSize={"80%"}
           padding={3}
+          paddingTop={0}
           paddingRight={4}
           align="center"
           gap={3}
         >
-          <Box cursor="pointer" onClick={() => onClickTime(post)} display="flex" alignItems="center">
-            <ObsidianIcon name="clock" marginRight={2} size={13} />
-            <Text>{replaceDayToJa(post.timestamp.format("YYYY-MM-DD(ddd) H:mm:ss"))}</Text>
-          </Box>
-
           <Spacer />
-
           <HStack gap={2}>
             {settings.blueskyIdentifier && settings.blueskyAppPassword ? (
               <Tooltip label="Post to Bluesky">
@@ -151,8 +150,9 @@ export const PostCardView = ({
             ) : null}
 
             <Tag size="sm" variant="subtle" colorScheme="gray">
-              {imageMetas.length > 0 ? `${imageMetas.length} image` : htmlMetas.length > 0 ? `${htmlMetas.length} link` : "text"}
+              {post.timestamp.format("hh:mm A")}
             </Tag>
+            
           </HStack>
         </HStack>
       </Flex>

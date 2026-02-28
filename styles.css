@@ -36,6 +36,8 @@ If your plugin does not need CSS, delete this file.
   backdrop-filter: brightness(101%);
   margin-bottom: 1em;
   border-radius: 16px;
+  overflow: hidden;
+  transition: backdrop-filter 0.2s;
 }
 
 .mfdi-html-card-image {
@@ -59,7 +61,6 @@ If your plugin does not need CSS, delete this file.
   cursor: pointer;
   border: 1px solid #b58900;
   backdrop-filter: brightness(98%);
-  transition: backdrop-filter 0.2s;
 }
 
 .mfdi-html-card-content {
@@ -96,4 +97,3 @@ If your plugin does not need CSS, delete this file.
   object-fit: contain !important;
   border-radius: 16px;
 }
-
