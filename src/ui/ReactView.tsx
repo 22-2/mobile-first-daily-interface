@@ -19,6 +19,7 @@ import { toText } from "./post-utils";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
 import { Granularity, Post } from "./types";
+import { MFDIStorage } from "../utils/storage";
 
 export type { Post };
 
@@ -33,15 +34,25 @@ export const ReactView = ({
 }) => {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
-  const [granularity, setGranularity] = useState<Granularity>("day");
-  const [date, setDate] = useState(() => window.moment());
+  const storage = useMemo(() => new MFDIStorage(appHelper.getAppId()), [appHelper]);
+
+  const [granularity, setGranularity] = useState<Granularity>(
+    () => storage.get<Granularity>("granularity", "day")
+  );
+  const [date, setDate] = useState(() => {
+    const saved = storage.get<string | null>("date", null);
+    // 保存された日付が有効でない場合は「今日」を返す
+    const m = saved ? window.moment(saved) : window.moment();
+    return m.isValid() ? m : window.moment();
+  });
   // 対象ノートが存在しないとnull
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
-  const LOCAL_STORAGE_KEY_INPUT = `mfdi-textarea-input-${(app as unknown as { appId: string }).appId}`;
   const [input, setInput] = useState(
-    () => localStorage.getItem(LOCAL_STORAGE_KEY_INPUT) || ""
+    () => storage.get<string>("input", "")
   );
-  const [asTask, setAsTask] = useState(false);
+  const [asTask, setAsTask] = useState<boolean>(
+    () => storage.get<boolean>("asTask", false)
+  );
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const inputRef = useRef<any>(null); // Quick fix to avoid import recursion for interface or just use any/ObsidianLiveEditorRef
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -219,8 +230,20 @@ export const ReactView = ({
   // Local storage persistence
   // ────────────────────────────────────────────────────────────
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY_INPUT, input);
-  }, [input]);
+    storage.set("granularity", granularity);
+  }, [granularity, storage]);
+
+  useEffect(() => {
+    storage.set("date", date.toISOString());
+  }, [date, storage]);
+
+  useEffect(() => {
+    storage.set("asTask", asTask);
+  }, [asTask, storage]);
+
+  useEffect(() => {
+    storage.set("input", input);
+  }, [input, storage]);
 
   // ────────────────────────────────────────────────────────────
   // Handlers — input / submit

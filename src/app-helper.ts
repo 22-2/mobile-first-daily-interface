@@ -25,6 +25,7 @@ export interface Task {
 }
 
 interface UnsafeAppInterface {
+  appId: string;
   commands: {
     commands: { [commandId: string]: any };
     executeCommandById(commandId: string): boolean;
@@ -36,6 +37,10 @@ export class AppHelper {
 
   constructor(app: App) {
     this.unsafeApp = app as any;
+  }
+
+  getAppId(): string {
+    return this.unsafeApp.appId;
   }
 
   async loadFile(path: string): Promise<string> {
