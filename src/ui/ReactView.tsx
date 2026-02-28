@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Button, Flex, HStack, Input, Textarea } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Input, Select, Textarea } from "@chakra-ui/react";
 import { App, Notice, TFile, Menu, Modal } from "obsidian";
 import { AppHelper, Task } from "../app-helper";
 import { sorter } from "../utils/collections";
@@ -9,6 +9,19 @@ import {
   getAllDailyNotes,
   getDailyNote,
   getDailyNoteSettings,
+  createWeeklyNote,
+  getAllWeeklyNotes,
+  getWeeklyNote,
+  getWeeklyNoteSettings,
+  createMonthlyNote,
+  getAllMonthlyNotes,
+  getMonthlyNote,
+  getMonthlyNoteSettings,
+  createYearlyNote,
+  getAllYearlyNotes,
+  getYearlyNote,
+  getYearlyNoteSettings,
+  IPeriodicNoteSettings,
 } from "obsidian-daily-notes-interface";
 import {
   ChatIcon,
@@ -26,6 +39,93 @@ import { parseThinoEntries } from "../utils/thino";
 import { formatTaskText } from "../utils/task-text";
 
 type MomentLike = ReturnType<typeof window.moment>;
+
+type Granularity = "day" | "week" | "month" | "year";
+
+const getAllNotes = (g: Granularity): Record<string, TFile> => {
+  switch (g) {
+    case "week":  return getAllWeeklyNotes();
+    case "month": return getAllMonthlyNotes();
+    case "year":  return getAllYearlyNotes();
+    default:      return getAllDailyNotes();
+  }
+};
+
+const getNote = (
+  date: MomentLike,
+  notes: Record<string, TFile>,
+  g: Granularity
+): TFile | null => {
+  switch (g) {
+    case "week":  return getWeeklyNote(date, notes) as TFile | null;
+    case "month": return getMonthlyNote(date, notes) as TFile | null;
+    case "year":  return getYearlyNote(date, notes) as TFile | null;
+    default:      return getDailyNote(date, notes) as TFile | null;
+  }
+};
+
+const createNote = (date: MomentLike, g: Granularity): Promise<TFile> => {
+  switch (g) {
+    case "week":  return createWeeklyNote(date);
+    case "month": return createMonthlyNote(date);
+    case "year":  return createYearlyNote(date);
+    default:      return createDailyNote(date);
+  }
+};
+
+const getNoteSettings = (g: Granularity): IPeriodicNoteSettings => {
+  switch (g) {
+    case "week":  return getWeeklyNoteSettings();
+    case "month": return getMonthlyNoteSettings();
+    case "year":  return getYearlyNoteSettings();
+    default:      return getDailyNoteSettings();
+  }
+};
+
+const granularityConfig: Record<
+  Granularity,
+  {
+    todayLabel: string;
+    unit: "day" | "week" | "month" | "year";
+    inputType: string;
+    inputFormat: string;
+    parseInput: (v: string) => MomentLike;
+    showWeekday: boolean;
+  }
+> = {
+  day: {
+    todayLabel: "今日",
+    unit: "day",
+    inputType: "date",
+    inputFormat: "YYYY-MM-DD",
+    parseInput: (v) => window.moment(v),
+    showWeekday: true,
+  },
+  week: {
+    todayLabel: "今週",
+    unit: "week",
+    inputType: "week",
+    inputFormat: "GGGG-[W]WW",
+    parseInput: (v) => window.moment(v, "GGGG-[W]WW"),
+    showWeekday: false,
+  },
+  month: {
+    todayLabel: "今月",
+    unit: "month",
+    inputType: "month",
+    inputFormat: "YYYY-MM",
+    parseInput: (v) => window.moment(v, "YYYY-MM"),
+    showWeekday: false,
+  },
+  year: {
+    todayLabel: "今年",
+    unit: "year",
+    inputType: "number",
+    inputFormat: "YYYY",
+    parseInput: (v) => window.moment(v, "YYYY"),
+    showWeekday: false,
+  },
+};
 
 class DeleteConfirmModal extends Modal {
   onConfirm: () => Promise<void>;
@@ -126,8 +226,9 @@ export const ReactView = ({
 }) => {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
+  const [granularity, setGranularity] = useState<Granularity>("day");
   const [date, setDate] = useState<MomentLike>(window.moment());
-  // デイリーノートが存在しないとnull
+  // 対象ノートが存在しないとnull
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const [input, setInput] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
@@ -144,7 +245,7 @@ export const ReactView = ({
   }, [input, editingPost]);
 
   const updateCurrentDailyNote = () => {
-    const n = getDailyNote(date, getAllDailyNotes()) as TFile | null;
+    const n = getNote(date, getAllNotes(granularity), granularity);
     if (n?.path !== currentDailyNote?.path) {
       setCurrentDailyNote(n);
     }
@@ -152,7 +253,7 @@ export const ReactView = ({
 
   useEffect(() => {
     updateCurrentDailyNote();
-  }, [date]);
+  }, [date, granularity]);
 
   useEffect(() => {
     if (!currentDailyNote) {
@@ -223,15 +324,15 @@ export const ReactView = ({
     const text = toText(input, asTask, postFormat);
 
     if (!currentDailyNote) {
-      new Notice("デイリーノートが存在しなかったので新しく作成しました");
-      await createDailyNote(date);
+      new Notice("ノートが存在しなかったので新しく作成しました");
+      await createNote(date, granularity);
       // 再読み込みをするためにクローンを入れて参照を更新
       setDate(date.clone());
     }
 
-    // デイリーノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
+    // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
     await appHelper.insertTextAfter(
-      getDailyNote(date, getAllDailyNotes()),
+      getNote(date, getAllNotes(granularity), granularity),
       text,
       settings.insertAfter
     );
@@ -286,27 +387,27 @@ export const ReactView = ({
 
   const handleClickOpenDailyNote = async () => {
     if (!currentDailyNote) {
-      new Notice("デイリーノートが存在しなかったので新しく作成しました");
-      await createDailyNote(date);
+      new Notice("ノートが存在しなかったので新しく作成しました");
+      await createNote(date, granularity);
       // 再読み込みをするためにクローンを入れて参照を更新
       setDate(date.clone());
     }
 
-    // デイリーノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
+    // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
     await app.workspace
       .getLeaf(true)
-      .openFile(getDailyNote(date, getAllDailyNotes()));
+      .openFile(getNote(date, getAllNotes(granularity), granularity));
   };
   const handleChangeCalendarDate = (
     event: ChangeEvent<HTMLInputElement>
   ): void => {
-    setDate(window.moment(event.target.value));
+    setDate(granularityConfig[granularity].parseInput(event.target.value));
   };
   const handleClickMovePrevious = () => {
-    setDate(date.clone().subtract(1, "day"));
+    setDate(date.clone().subtract(1, granularityConfig[granularity].unit));
   };
   const handleClickMoveNext = async () => {
-    setDate(date.clone().add(1, "day"));
+    setDate(date.clone().add(1, granularityConfig[granularity].unit));
   };
   const handleClickToday = async () => {
     setDate(window.moment());
@@ -355,10 +456,10 @@ export const ReactView = ({
         }
 
         if (currentDailyNote == null) {
-          const ds = getDailyNoteSettings();
+          const ds = getNoteSettings(granularity);
           const dir = ds.folder ? `${ds.folder}/` : "";
-          const entry = date.format(ds.format);
-          // 更新されたファイルがcurrentDailyNoteになるべきファイルではなければ処理は不要
+          const entry = date.format(ds.format ?? "YYYY-MM-DD");
+          // 更新されたファイルがcurrentNoteになるべきファイルではなければ処理は不要
           if (file.path !== `${dir}${entry}.md`) {
             return;
           }
@@ -386,7 +487,7 @@ export const ReactView = ({
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [date, currentDailyNote]);
+  }, [date, currentDailyNote, granularity]);
 
   const startEdit = (post: Post) => {
     setAsTask(false);
@@ -655,18 +756,20 @@ export const ReactView = ({
             cursor="pointer"
             onClick={handleClickToday}
           >
-            今日
+            {granularityConfig[granularity].todayLabel}
           </Button>
           <Input
             size="md"
-            type="date"
-            value={date.format("YYYY-MM-DD")}
+            type={granularityConfig[granularity].inputType}
+            value={date.format(granularityConfig[granularity].inputFormat)}
             onChange={handleChangeCalendarDate}
-            width={"9em"}
+            width={granularity === "year" ? "5.5em" : "9em"}
           />
-          <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
-            {replaceDayToJa(date.format("(ddd)"))}
-          </Box>
+          {granularityConfig[granularity].showWeekday && (
+            <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
+              {replaceDayToJa(date.format("(ddd)"))}
+            </Box>
+          )}
         </Box>
         <ChevronRightIcon
           boxSize="1.5em"
@@ -674,7 +777,23 @@ export const ReactView = ({
           onClick={handleClickMoveNext}
         />
       </HStack>
-      <Box position="absolute" right={0}>
+      <Box position="absolute" right={0} display="flex" alignItems="center" gap="0.5em">
+        <Select
+          size="sm"
+          value={granularity}
+          onChange={(e) => {
+            setGranularity(e.target.value as Granularity);
+            setCurrentDailyNote(null);
+            setPosts([]);
+            setTasks([]);
+          }}
+          width={"5em"}
+        >
+          <option value="day">日</option>
+          <option value="week">週</option>
+          <option value="month">月</option>
+          <option value="year">年</option>
+        </Select>
         <ExternalLinkIcon
           boxSize="1.25em"
           cursor="pointer"
