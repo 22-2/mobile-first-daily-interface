@@ -57,8 +57,8 @@ export default class MFDIPlugin extends Plugin {
     const targetLeaf =
       this.settings.leaf === "left"
         ? this.app.workspace.getLeftLeaf(false)
-        : this.settings.leaf === "current"
-        ? this.app.workspace.getActiveViewOfType(View)?.leaf
+        : this.settings.leaf === "center"
+        ? this.app.workspace.getLeaf(true)
         : this.settings.leaf === "right"
         ? this.app.workspace.getRightLeaf(false)
         : undefined;

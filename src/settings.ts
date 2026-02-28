@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
   insertAfter: "",
 };
 
-const leafOptions = ["left", "current", "right"];
+const leafOptions = ["left", "center", "right"];
 
 export const postFormatMap = {
   コードブロック: { type: "codeblock" },
