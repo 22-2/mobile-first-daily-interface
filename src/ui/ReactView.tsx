@@ -497,7 +497,7 @@ export const ReactView = ({
     >
       <ObsidianIcon name="feather" boxSize="2.5em" opacity={0.35} />
       <Box fontSize="var(--font-ui-small)" opacity={0.6} textAlign="center">
-        この日の記録はまだありません
+        この{granularityConfig[granularity].label}の記録はまだありません
       </Box>
     </Flex>
   );
