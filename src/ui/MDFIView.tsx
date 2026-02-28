@@ -19,6 +19,8 @@ export class MFDIView extends ItemView {
   public onOpenDailyNoteAction?: () => void;
   public granularity: Granularity = "day";
   public onChangeGranularity?: (g: Granularity) => void;
+  public asTask: boolean = false;
+  public onChangeAsTask?: (asTask: boolean) => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -51,6 +53,30 @@ export class MFDIView extends ItemView {
           });
       });
     }
+
+    // --- 投稿モード ---
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item.setTitle("投稿モード").setIcon("pencil").setDisabled(true);
+    });
+    menu.addItem((item) => {
+      item
+        .setTitle("メッセージ投稿モード")
+        .setIcon("message-square")
+        .setChecked(!this.asTask)
+        .onClick(() => {
+          this.onChangeAsTask?.(false);
+        });
+    });
+    menu.addItem((item) => {
+      item
+        .setTitle("タスク投稿モード")
+        .setIcon("check-circle")
+        .setChecked(this.asTask)
+        .onClick(() => {
+          this.onChangeAsTask?.(true);
+        });
+    });
 
     super.onPaneMenu(menu, prev);
   }

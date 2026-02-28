@@ -160,6 +160,20 @@ export const ReactView = ({
     };
   }, [view]);
 
+  // asTask を view に同期
+  useEffect(() => {
+    view.asTask = asTask;
+  }, [view, asTask]);
+
+  useEffect(() => {
+    view.onChangeAsTask = (t: boolean) => {
+      setAsTask(t);
+    };
+    return () => {
+      view.onChangeAsTask = undefined;
+    };
+  }, [view]);
+
   // ────────────────────────────────────────────────────────────
   // Initial scroll position
   // ────────────────────────────────────────────────────────────
@@ -624,36 +638,7 @@ export const ReactView = ({
             ) : (
               ""
             )}
-            <Box
-              display="flex"
-              gap="0.5em"
-              padding={4}
-              marginRight={8}
-              borderStyle={"solid"}
-              borderRadius={"10px"}
-              borderColor={"var(--table-border-color)"}
-              borderWidth={"2px"}
-              cursor={"pointer"}
-              _hover={{
-                borderColor: "var(--text-success)",
-                transitionDuration: "0.5s",
-              }}
-              transitionDuration={"0.5s"}
-              onClick={() => setAsTask(!asTask)}
-            >
-              <ObsidianIcon
-                name="message-square"
-                boxSize={"1.5em"}
-                color={asTask ? "var(--text-faint)" : "var(--text-success)"}
-                opacity={asTask ? 0.2 : 1}
-              />
-              <ObsidianIcon
-                name="check-circle"
-                boxSize={"1.5em"}
-                color={asTask ? "var(--text-success)" : "var(--text-faint)"}
-                opacity={asTask ? 1 : 0.2}
-              />
-            </Box>
+
           </HStack>
         </>
       )}
@@ -704,36 +689,7 @@ export const ReactView = ({
             ) : (
               ""
             )}
-            <Box
-              display="flex"
-              gap="0.5em"
-              padding={4}
-              marginRight={8}
-              borderStyle={"solid"}
-              borderRadius={"10px"}
-              borderColor={"var(--table-border-color)"}
-              borderWidth={"2px"}
-              cursor={"pointer"}
-              _hover={{
-                borderColor: "var(--text-success)",
-                transitionDuration: "0.5s",
-              }}
-              transitionDuration={"0.5s"}
-              onClick={() => setAsTask(!asTask)}
-            >
-              <ObsidianIcon
-                name="message-square"
-                boxSize={"1.5em"}
-                color={asTask ? "var(--text-faint)" : "var(--text-success)"}
-                opacity={asTask ? 0.2 : 1}
-              />
-              <ObsidianIcon
-                name="check-circle"
-                boxSize={"1.5em"}
-                color={asTask ? "var(--text-success)" : "var(--text-faint)"}
-                opacity={asTask ? 1 : 0.2}
-              />
-            </Box>
+
           </HStack>
         </>
       )}
