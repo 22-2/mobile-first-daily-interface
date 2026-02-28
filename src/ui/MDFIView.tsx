@@ -4,16 +4,21 @@ import { ReactView } from "./ReactView";
 import { createRoot, Root } from "react-dom/client";
 import { AppHelper } from "../app-helper";
 import { Settings } from "src/settings";
+import { Granularity } from "./types";
+import { granularityConfig } from "./granularity-config";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
 // Why private?
 type IconName = string;
 
+
 export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
   public onOpenDailyNoteAction?: () => void;
+  public granularity: Granularity = "day";
+  public onChangeGranularity?: (g: Granularity) => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -29,6 +34,24 @@ export class MFDIView extends ItemView {
           this.onOpenDailyNoteAction?.();
         });
     });
+
+    // --- 年月日の表示形式 ---
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item.setTitle("年月日の表示形式").setIcon("calendar").setDisabled(true);
+    });
+    const granularities: Granularity[] = ["day", "week", "month", "year"];
+    for (const g of granularities) {
+      menu.addItem((item) => {
+        item
+          .setTitle(granularityConfig[g].menuLabel)
+          .setChecked(this.granularity === g)
+          .onClick(() => {
+            this.onChangeGranularity?.(g);
+          });
+      });
+    }
+
     super.onPaneMenu(menu, prev);
   }
 

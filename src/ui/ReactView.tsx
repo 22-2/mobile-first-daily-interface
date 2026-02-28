@@ -142,6 +142,23 @@ export const ReactView = ({
     };
   }, [view, handleClickOpenDailyNote]);
 
+  // granularity を view に同期（paneMenu の setChecked / onChangeGranularity 用）
+  useEffect(() => {
+    view.granularity = granularity;
+  }, [view, granularity]);
+
+  useEffect(() => {
+    view.onChangeGranularity = (g: Granularity) => {
+      setGranularity(g);
+      setCurrentDailyNote(null);
+      setPosts([]);
+      setTasks([]);
+    };
+    return () => {
+      view.onChangeGranularity = undefined;
+    };
+  }, [view]);
+
   // ────────────────────────────────────────────────────────────
   // Handlers — input / submit
   // ────────────────────────────────────────────────────────────
@@ -542,24 +559,6 @@ export const ReactView = ({
           onClick={handleClickMoveNext}
         />
       </HStack>
-      <Box position="absolute" right={0} display="flex" alignItems="center" gap="0.5em">
-        <Select
-          size="sm"
-          value={granularity}
-          onChange={(e) => {
-            setGranularity(e.target.value as Granularity);
-            setCurrentDailyNote(null);
-            setPosts([]);
-            setTasks([]);
-          }}
-          width={"5em"}
-        >
-          <option value="day">日</option>
-          <option value="week">週</option>
-          <option value="month">月</option>
-          <option value="year">年</option>
-        </Select>
-      </Box>
 
       <Textarea
         placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}

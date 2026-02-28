@@ -17,6 +17,10 @@ import {
   getYearlyNote,
   getYearlyNoteSettings,
   IPeriodicNoteSettings,
+  DEFAULT_DAILY_NOTE_FORMAT,
+  DEFAULT_WEEKLY_NOTE_FORMAT,
+  DEFAULT_MONTHLY_NOTE_FORMAT,
+  DEFAULT_YEARLY_NOTE_FORMAT,
 } from "obsidian-daily-notes-interface";
 import { Granularity, MomentLike } from "./types";
 
@@ -63,44 +67,59 @@ export const getNoteSettings = (g: Granularity): IPeriodicNoteSettings => {
 export const granularityConfig: Record<
   Granularity,
   {
+    label: string;
+    menuLabel: string;
     todayLabel: string;
     unit: "day" | "week" | "month" | "year";
     inputType: string;
     inputFormat: string;
+    displayFormat: string;
     parseInput: (v: string) => MomentLike;
     showWeekday: boolean;
   }
 > = {
   day: {
+    label: "日",
+    menuLabel: "日ごと",
     todayLabel: "今日",
     unit: "day",
     inputType: "date",
-    inputFormat: "YYYY-MM-DD",
-    parseInput: (v) => window.moment(v),
+    inputFormat: DEFAULT_DAILY_NOTE_FORMAT,
+    displayFormat: "YYYY年MM月DD日",
+    parseInput: (v) => window.moment(v, DEFAULT_DAILY_NOTE_FORMAT),
     showWeekday: true,
   },
   week: {
+    label: "週",
+    menuLabel: "週ごと",
     todayLabel: "今週",
     unit: "week",
     inputType: "week",
-    inputFormat: "GGGG-[W]WW",
-    parseInput: (v) => window.moment(v, "GGGG-[W]WW"),
+    inputFormat: DEFAULT_WEEKLY_NOTE_FORMAT,
+    displayFormat: "GGGG年 [W]WW週",
+    parseInput: (v) => window.moment(v, DEFAULT_WEEKLY_NOTE_FORMAT),
     showWeekday: false,
   },
   month: {
+    label: "月",
+    menuLabel: "月ごと",
     todayLabel: "今月",
     unit: "month",
     inputType: "month",
-    inputFormat: "YYYY-MM",
-    parseInput: (v) => window.moment(v, "YYYY-MM"),
+    inputFormat: DEFAULT_MONTHLY_NOTE_FORMAT,
+    displayFormat: "YYYY年MM月",
+    parseInput: (v) => window.moment(v, DEFAULT_MONTHLY_NOTE_FORMAT),
     showWeekday: false,
   },
   year: {
+    label: "年",
+    menuLabel: "年ごと",
     todayLabel: "今年",
     unit: "year",
     inputType: "number",
-    inputFormat: "YYYY",
-    parseInput: (v) => window.moment(v, "YYYY"),
+    inputFormat: DEFAULT_YEARLY_NOTE_FORMAT,
+    displayFormat: "YYYY年",
+    parseInput: (v) => window.moment(v, DEFAULT_YEARLY_NOTE_FORMAT),
     showWeekday: false,
   },
 };
