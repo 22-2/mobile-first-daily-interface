@@ -585,36 +585,52 @@ export const ReactView = ({
   // ────────────────────────────────────────────────────────────
   // JSX helpers
   // ────────────────────────────────────────────────────────────
-  const inputArea = (
-    <Flex
-      flexDirection="column"
-      className="mfdi-input-area"
-      borderRadius="22px 22px 0 0"
-      margin={0}
-      marginRight="var(--size-4-3)"
-      padding={0}
-      backgroundColor="var(--background-secondary)"
-      border="1px solid var(--table-border-color)"
-    >
-      <HStack justify="center">
-        <ObsidianIcon
-          name="chevron-left"
-          boxSize="1.5em"
-          cursor="pointer"
-          onClick={handleClickMovePrevious}
-        />
+    const isToday = date.isSame(
+      window.moment(),
+      granularityConfig[granularity].unit
+    );
 
-        <Box textAlign={"center"} marginY={"1em"}>
-          <Button
-            marginRight={"0.3em"}
-            fontSize={"80%"}
-            width="3em"
-            height="2em"
+    const inputArea = (
+      <Flex
+        flexDirection="column"
+        className="mfdi-input-area"
+        borderRadius="22px 22px 0 0"
+        margin={0}
+        marginRight="var(--size-4-3)"
+        padding={0}
+        backgroundColor="var(--background-secondary)"
+        border="1px solid var(--table-border-color)"
+      >
+        <HStack justify="center">
+          <ObsidianIcon
+            name="chevron-left"
+            boxSize="1.5em"
             cursor="pointer"
-            onClick={handleClickToday}
-          >
-            {granularityConfig[granularity].todayLabel}
-          </Button>
+            onClick={handleClickMovePrevious}
+          />
+
+          <Box textAlign={"center"} marginY={"1em"}>
+            <Button
+              marginRight={"0.3em"}
+              fontSize={"80%"}
+              width="3em"
+              height="2em"
+              cursor="pointer"
+              onClick={handleClickToday}
+              bg={
+                !isToday
+                  ? "var(--color-accent)!important;"
+                  : "var(--background-modifier-border)"
+              }
+              color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
+              _hover={{
+                bg: !isToday
+                  ? "var(--color-accent-2)"
+                  : "var(--background-modifier-border)",
+              }}
+            >
+              {granularityConfig[granularity].todayLabel}
+            </Button>
           <Input
             size="md"
             type={granularityConfig[granularity].inputType}
