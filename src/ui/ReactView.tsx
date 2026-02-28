@@ -485,6 +485,23 @@ export const ReactView = ({
     menu.showAtMouseEvent(e as unknown as MouseEvent);
   };
 
+  const emptyState = (
+    <Flex
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      height="100%"
+      gap="var(--size-4-3)"
+      color="var(--text-faint)"
+      style={{ userSelect: "none", pointerEvents: "none" }}
+    >
+      <ObsidianIcon name="feather" boxSize="2.5em" opacity={0.35} />
+      <Box fontSize="var(--font-ui-small)" opacity={0.6} textAlign="center">
+        この日の記録はまだありません
+      </Box>
+    </Flex>
+  );
+
   const contents = useMemo(
     () =>
       asTask ? (
@@ -581,6 +598,9 @@ export const ReactView = ({
       ),
     [posts, tasks, asTask, editingPost]
   );
+
+  // 投稿もタスクもない（ノートがない、またはノートはあるが空）かどうか
+  const isEmpty = !currentDailyNote || (asTask ? tasks.length === 0 : posts.length === 0);
 
   // ────────────────────────────────────────────────────────────
   // JSX helpers
@@ -719,7 +739,7 @@ export const ReactView = ({
         flexDirection={settings.reverseOrder ? "column-reverse" : "column"}
         ref={scrollContainerRef}
       >
-        {currentDailyNote && contents}
+        {isEmpty ? emptyState : contents}
       </Box>
 
       {settings.reverseOrder && inputArea}
