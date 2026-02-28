@@ -101,7 +101,7 @@ export const PostCardView = ({
 
 
             <Tag size="sm" variant="subtle" colorScheme="gray">
-              {post.timestamp.format("hh:mm A")}
+              {post.timestamp.format("HH:mm")}
             </Tag>
             
           </HStack>
