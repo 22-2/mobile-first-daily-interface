@@ -554,16 +554,10 @@ export const ReactView = ({
   );
 
   // ────────────────────────────────────────────────────────────
-  // JSX
+  // JSX helpers
   // ────────────────────────────────────────────────────────────
-  return (
-    <Flex
-      flexDirection="column"
-      gap="0.75rem"
-      height="95%"
-      // maxWidth="30rem"
-      position={"relative"}
-    >
+  const inputArea = (
+    <Flex flexDirection="column" className="mfdi-input-area">
       <HStack justify="center">
         <ObsidianIcon
           name="chevron-left"
@@ -571,7 +565,8 @@ export const ReactView = ({
           cursor="pointer"
           onClick={handleClickMovePrevious}
         />
-        <Box textAlign={"center"}>
+
+        <Box textAlign={"center"} marginY={"1em"}>
           <Button
             marginRight={"0.3em"}
             fontSize={"80%"}
@@ -603,47 +598,62 @@ export const ReactView = ({
         />
       </HStack>
 
-      {!settings.reverseOrder && (
-        <>
-          <Textarea
-            placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            minHeight={"8em"}
-            resize="vertical"
-            onKeyUp={handleKeyUp}
-            ref={inputRef}
-          />
-          <HStack>
-            <Button
-              disabled={!canSubmit}
-              className={canSubmit ? "mod-cta" : ""}
-              minHeight={"2.4em"}
-              maxHeight={"2.4em"}
-              flexGrow={1}
-              cursor={canSubmit ? "pointer" : ""}
-              onClick={handleSubmit}
-            >
-              {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
-            </Button>
-            {editingPost ? (
-              <Button
-                minHeight={"2.4em"}
-                maxHeight={"2.4em"}
-                variant="ghost"
-                onClick={cancelEdit}
-              >
-                キャンセル
-              </Button>
-            ) : (
-              ""
-            )}
+      <Textarea
+        placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        minHeight={"8em"}
+        resize="vertical"
+        onKeyUp={handleKeyUp}
+        ref={inputRef}
+      />
 
-          </HStack>
-        </>
-      )}
+      <HStack justify="flex-end">
+        {editingPost && (
+          <Button
+            minHeight={"2.4em"}
+            maxHeight={"2.4em"}
+            variant="ghost"
+            onClick={cancelEdit}
+          >
+            キャンセル
+          </Button>
+        )}
+        <Button
+          disabled={!canSubmit}
+          bg={canSubmit ? "var(--color-accent)!important;" : "var(--background-modifier-border)"}
+          color={canSubmit ? "var(--text-on-accent)" : "var(--text-muted)"}
+          _hover={{
+            bg: canSubmit ? "var(--color-accent-2)" : "var(--background-modifier-border)",
+          }}
+          marginRight={"2.4em"}
+          marginY={"1em"}
+          minHeight={"2.4em"}
+          maxHeight={"2.4em"}
+          cursor={canSubmit ? "pointer" : ""}
+          onClick={handleSubmit}
+        >
+          {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+        </Button>
+      </HStack>
+    </Flex>
+  );
+
+  // ────────────────────────────────────────────────────────────
+  // JSX
+  // ────────────────────────────────────────────────────────────
+  return (
+    <Flex
+      flexDirection="column"
+      gap="0.75rem"
+      height="95%"
+      // maxWidth="30rem"
+      position={"relative"}
+    >
+      {!settings.reverseOrder && inputArea}
 
       <Box
+        className="mfdi-scroll-container"
         flexGrow={1}
         overflowY="scroll"
         overflowX="hidden"
@@ -654,45 +664,7 @@ export const ReactView = ({
         {currentDailyNote && contents}
       </Box>
 
-      {settings.reverseOrder && (
-        <>
-          <Textarea
-            placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            minHeight={"8em"}
-            resize="vertical"
-            onKeyUp={handleKeyUp}
-            ref={inputRef}
-          />
-          <HStack>
-            <Button
-              disabled={!canSubmit}
-              className={canSubmit ? "mod-cta" : ""}
-              minHeight={"2.4em"}
-              maxHeight={"2.4em"}
-              flexGrow={1}
-              cursor={canSubmit ? "pointer" : ""}
-              onClick={handleSubmit}
-            >
-              {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
-            </Button>
-            {editingPost ? (
-              <Button
-                minHeight={"2.4em"}
-                maxHeight={"2.4em"}
-                variant="ghost"
-                onClick={cancelEdit}
-              >
-                キャンセル
-              </Button>
-            ) : (
-              ""
-            )}
-
-          </HStack>
-        </>
-      )}
+      {settings.reverseOrder && inputArea}
     </Flex>
   );
 };

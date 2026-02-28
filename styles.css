@@ -100,8 +100,26 @@ If your plugin does not need CSS, delete this file.
 
 [data-type="mfdi-view"] .view-content {
   padding-bottom: 0;
+  background-color: transparent !important;
 }
 
 [data-type="mfdi-view"] .view-content > div {
   height: 100%;
+  background-color: transparent !important;
+}
+
+.mfdi-input-area {
+  border-radius: 22px 22px 6px;
+  margin: 0 1.25rem;
+  margin-top: 0;
+  padding: 1em 0;
+  background-color: var(--background-secondary);
+}
+
+.mfdi-input-area textarea {
+  margin: 0 1.25rem;
+}
+
+.mfdi-scroll-container {
+  margin: 0 0.75rem;
 }

@@ -6,6 +6,7 @@ export const Card = (props: BoxProps) => {
 
   return (
     <Box
+      className="mfdi-card"
       position="relative"
       borderRadius={"22px"}
       borderBottomRightRadius={"6px"}
@@ -15,8 +16,6 @@ export const Card = (props: BoxProps) => {
       background={"var(--background-primary)"}
       color={"var(--text-normal)"}
       marginY={3}
-      marginLeft={"auto"}
-      marginRight={0}
       overflow="hidden"
       transition="all 0.18s ease"
       boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
