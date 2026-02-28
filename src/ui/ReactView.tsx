@@ -288,7 +288,7 @@ export const ReactView = ({
       return;
     }
 
-    const text = toText(input, asTask, postFormat);
+    const text = toText(input, asTask, postFormat, granularity);
 
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
@@ -560,6 +560,7 @@ export const ReactView = ({
               <PostCardView
                 post={x}
                 settings={settings}
+                granularity={granularity}
                 onClickTime={handleClickTime}
                 onEdit={startEdit}
                 onContextMenu={(post, e) => {

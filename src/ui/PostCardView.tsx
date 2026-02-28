@@ -11,18 +11,21 @@ import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
+import { Granularity } from "./types";
 
 
 
 export const PostCardView = ({
   post,
   settings,
+  granularity,
   onClickTime,
   onContextMenu,
   onEdit,
 }: {
   post: Post;
   settings: Settings;
+  granularity: Granularity;
   onClickTime: (post: Post) => void;
   onContextMenu?: (post: Post, e: React.MouseEvent) => void;
   onEdit?: (post: Post) => void;
@@ -101,7 +104,9 @@ export const PostCardView = ({
 
 
             <Tag size="sm" variant="subtle" colorScheme="gray">
-              {post.timestamp.format("HH:mm")}
+              {post.timestamp.format(
+                granularity === "day" ? "HH:mm" : "MM/DD HH:mm"
+              )}
             </Tag>
             
           </HStack>
