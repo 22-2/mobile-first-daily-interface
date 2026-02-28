@@ -4,7 +4,7 @@ import { Notice } from "obsidian";
 import { Box, HStack, Flex, VStack, Text, IconButton, Tooltip, Spacer, Tag } from "@chakra-ui/react";
 import { Card } from "./Card";
 import Markdown from "marked-react";
-import { TimeIcon, createIcon } from "@chakra-ui/icons";
+import { ObsidianIcon } from "./ObsidianIcon";
 import { pickUrls, replaceDayToJa } from "../utils/strings";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { isPresent } from "../utils/types";
@@ -15,10 +15,14 @@ import { postToBluesky } from "../clients/bluesky";
 import { Settings } from "../settings";
 import { Post } from "./ReactView";
 
-const BlueskyIcon = createIcon({
-  displayName: "BlueskyIcon",
-  viewBox: "5 5 45 45",
-  path: (
+const BlueskyIcon = (props: any) => (
+  <svg
+    viewBox="5 5 45 45"
+    width="1em"
+    height="1em"
+    fill="none"
+    {...props}
+  >
     <path
       fill="#1185FE"
       d="M27.5,25.73c-1.6-3.1-5.94-8.89-9.98-11.74c-3.87-2.73-5.35-2.26-6.31-1.82c-1.12,0.51-1.32,2.23-1.32,3.24
@@ -27,8 +31,8 @@ const BlueskyIcon = createIcon({
 	c-0.2-0.02-0.41-0.05-0.61-0.08c0.21,0.03,0.41,0.05,0.61,0.08c3.92,0.44,8.18-0.92,9.37-4.94c0.36-1.22,0.92-8.5,0.92-9.51
 	c0-1.01-0.2-2.73-1.32-3.24c-0.97-0.44-2.44-0.91-6.31,1.82C33.44,16.85,29.1,22.63,27.5,25.73z"
     />
-  ),
-});
+  </svg>
+);
 
 export const PostCardView = ({
   post,
@@ -127,7 +131,7 @@ export const PostCardView = ({
           gap={3}
         >
           <Box cursor="pointer" onClick={() => onClickTime(post)} display="flex" alignItems="center">
-            <TimeIcon marginRight={2} />
+            <ObsidianIcon name="clock" marginRight={2} size={13} />
             <Text>{replaceDayToJa(post.timestamp.format("YYYY-MM-DD(ddd) H:mm:ss"))}</Text>
           </Box>
 

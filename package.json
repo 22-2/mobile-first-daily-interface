@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@atproto/api": "^0.9.6",
-    "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.7.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

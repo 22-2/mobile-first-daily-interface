@@ -23,13 +23,7 @@ import {
   getYearlyNoteSettings,
   IPeriodicNoteSettings,
 } from "obsidian-daily-notes-interface";
-import {
-  ChatIcon,
-  CheckCircleIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ExternalLinkIcon,
-} from "@chakra-ui/icons";
+import { ObsidianIcon } from "./ObsidianIcon";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
@@ -742,7 +736,8 @@ export const ReactView = ({
       position={"relative"}
     >
       <HStack justify="center">
-        <ChevronLeftIcon
+        <ObsidianIcon
+          name="chevron-left"
           boxSize="1.5em"
           cursor="pointer"
           onClick={handleClickMovePrevious}
@@ -771,7 +766,8 @@ export const ReactView = ({
             </Box>
           )}
         </Box>
-        <ChevronRightIcon
+        <ObsidianIcon
+          name="chevron-right"
           boxSize="1.5em"
           cursor="pointer"
           onClick={handleClickMoveNext}
@@ -794,7 +790,8 @@ export const ReactView = ({
           <option value="month">月</option>
           <option value="year">年</option>
         </Select>
-        <ExternalLinkIcon
+        <ObsidianIcon
+          name="external-link"
           boxSize="1.25em"
           cursor="pointer"
           onClick={handleClickOpenDailyNote}
@@ -851,12 +848,14 @@ export const ReactView = ({
           transitionDuration={"0.5s"}
           onClick={() => setAsTask(!asTask)}
         >
-          <ChatIcon
+          <ObsidianIcon
+            name="message-square"
             boxSize={"1.5em"}
             color={asTask ? "var(--text-faint)" : "var(--text-success)"}
             opacity={asTask ? 0.2 : 1}
           />
-          <CheckCircleIcon
+          <ObsidianIcon
+            name="check-circle"
             boxSize={"1.5em"}
             color={asTask ? "var(--text-success)" : "var(--text-faint)"}
             opacity={asTask ? 1 : 0.2}
