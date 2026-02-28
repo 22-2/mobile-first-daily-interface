@@ -103,23 +103,21 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent !important;
 }
 
-[data-type="mfdi-view"] .view-content > div {
+.root {
   height: 100%;
   background-color: transparent !important;
+  margin: 0 var(--size-4-2);
 }
 
 .mfdi-input-area {
-  border-radius: 22px 22px 6px;
-  margin: 0 1.25rem;
-  margin-top: 0;
-  padding: 1em 0;
+  border-radius: 22px 22px 0 0;
+  margin: 0;
+  margin-right: 10px;
+  padding: 0;
   background-color: var(--background-secondary);
-}
-
-.mfdi-input-area textarea {
-  margin: 0 1.25rem;
+  border: 1px solid var(--table-border-color);
 }
 
 .mfdi-scroll-container {
-  margin: 0 0.75rem;
+  margin: 0;
 }

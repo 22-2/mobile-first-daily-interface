@@ -603,6 +603,7 @@ export const ReactView = ({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         minHeight={"8em"}
+        marginX={"1em"}
         resize="vertical"
         onKeyUp={handleKeyUp}
         ref={inputRef}
@@ -645,9 +646,9 @@ export const ReactView = ({
   return (
     <Flex
       flexDirection="column"
-      gap="0.75rem"
       height="95%"
       // maxWidth="30rem"
+      className="root"
       position={"relative"}
     >
       {!settings.reverseOrder && inputArea}
