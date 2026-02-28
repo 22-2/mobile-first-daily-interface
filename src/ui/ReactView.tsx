@@ -186,13 +186,13 @@ export const ReactView = ({
     // 初期化時、少し待ってからスクロールを適用（DOMレンダリングを待つ）
     const timer = setTimeout(() => {
       if (settings.reverseOrder) {
-        scrollContainerRef.current?.scrollTo({ top: 0 });
-      } else {
         scrollContainerRef.current?.scrollTo({
           top: scrollContainerRef.current.scrollHeight,
         });
+      } else {
+        scrollContainerRef.current?.scrollTo({ top: 0 });
       }
-    }, 100);
+    }, 0);
     return () => clearTimeout(timer);
   }, [currentDailyNote, settings.reverseOrder]);
 
