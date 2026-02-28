@@ -36,7 +36,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     const init = async () => {
       if (containerRef.current) {
         containerRef.current.empty();
-        const wrapper = await MagicalEditorWrapper.create(leaf, app, {
+        const wrapper = await MagicalEditorWrapper.create(app, leaf, {
           onChange: (text) => {
              if (active) onChange(text);
           },

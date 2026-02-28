@@ -21,6 +21,7 @@ export class MFDIView extends ItemView {
   public onChangeGranularity?: (g: Granularity) => void;
   public asTask: boolean = false;
   public onChangeAsTask?: (asTask: boolean) => void;
+  public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);

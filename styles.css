@@ -30,6 +30,10 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent !important;
 }
 
+[data-type="mfdi-view"] .view-header {
+  display: none;
+}
+
 [data-type="mfdi-view"] .cm-content {
   padding-bottom: 0!important;
 }
