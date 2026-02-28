@@ -61,8 +61,7 @@ export const getAllNotes = (g: Granularity): Record<string, TFile> => {
     case "week":  return getAllNotesByGranularity("week");
     case "month": return getAllNotesByGranularity("month");
     case "year":  return getAllNotesByGranularity("year");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    default:      return getAllDailyNotes() as any;
+    default:      return getAllDailyNotes() as Record<string, TFile>;
   }
 };
 
