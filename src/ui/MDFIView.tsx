@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf, Menu } from "obsidian";
 import * as React from "react";
 import { ReactView } from "./ReactView";
 import { createRoot, Root } from "react-dom/client";
@@ -13,10 +13,23 @@ type IconName = string;
 export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
+  public onOpenDailyNoteAction?: () => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
     this.settings = settings;
+  }
+
+  onPaneMenu(menu: Menu, prev: string): void {
+    menu.addItem((item) => {
+      item
+        .setTitle("現在のデイリーノートを開く")
+        .setIcon("external-link")
+        .onClick(() => {
+          this.onOpenDailyNoteAction?.();
+        });
+    });
+    super.onPaneMenu(menu, prev);
   }
 
   getIcon(): IconName {
@@ -41,7 +54,9 @@ export class MFDIView extends ItemView {
 
   renderNewView() {
     this.root = createRoot(this.containerEl.children[1]);
-    this.root.render(<ReactView app={this.app} settings={this.settings} />);
+    this.root.render(
+      <ReactView app={this.app} settings={this.settings} view={this} />
+    );
   }
 
   updateSettings(settings: Settings) {

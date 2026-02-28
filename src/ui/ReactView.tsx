@@ -214,9 +214,11 @@ ${input}
 export const ReactView = ({
   app,
   settings,
+  view,
 }: {
   app: App;
   settings: Settings;
+  view: any;
 }) => {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
@@ -392,6 +394,13 @@ export const ReactView = ({
       await app.workspace.getLeaf(true).openFile(note);
     }
   };
+
+  useEffect(() => {
+    view.onOpenDailyNoteAction = handleClickOpenDailyNote;
+    return () => {
+      view.onOpenDailyNoteAction = undefined;
+    };
+  }, [view, handleClickOpenDailyNote]);
   const handleChangeCalendarDate = (
     event: ChangeEvent<HTMLInputElement>
   ): void => {
@@ -790,12 +799,6 @@ export const ReactView = ({
           <option value="month">月</option>
           <option value="year">年</option>
         </Select>
-        <ObsidianIcon
-          name="external-link"
-          boxSize="1.25em"
-          cursor="pointer"
-          onClick={handleClickOpenDailyNote}
-        />
       </Box>
 
       <Textarea
