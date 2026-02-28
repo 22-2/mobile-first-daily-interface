@@ -331,11 +331,10 @@ export const ReactView = ({
     }
 
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
-    await appHelper.insertTextAfter(
-      getNote(date, getAllNotes(granularity), granularity),
-      text,
-      settings.insertAfter
-    );
+    const note = getNote(date, getAllNotes(granularity), granularity);
+    if (note) {
+      await appHelper.insertTextAfter(note, text, settings.insertAfter);
+    }
     setInput("");
   };
 
@@ -394,9 +393,10 @@ export const ReactView = ({
     }
 
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
-    await app.workspace
-      .getLeaf(true)
-      .openFile(getNote(date, getAllNotes(granularity), granularity));
+    const note = getNote(date, getAllNotes(granularity), granularity);
+    if (note) {
+      await app.workspace.getLeaf(true).openFile(note);
+    }
   };
   const handleChangeCalendarDate = (
     event: ChangeEvent<HTMLInputElement>
