@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { App, WorkspaceLeaf } from "obsidian";
+import { App, EventRef, WorkspaceLeaf } from "obsidian";
 import { MagicalEditorWrapper } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
@@ -31,8 +31,15 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     },
   }));
 
+  const deleyedFocus = () => {
+    setTimeout(() => {
+      wrapperRef.current?.focus();
+    });
+  };
+
   useEffect(() => {
     let active = true;
+    let ref: EventRef;
     const init = async () => {
       if (containerRef.current) {
         containerRef.current.empty();
@@ -45,7 +52,8 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
         if (active && containerRef.current) {
           wrapperRef.current = wrapper;
           containerRef.current.appendChild(wrapper.view.containerEl);
-          wrapper.focus();
+          deleyedFocus();
+          ref = app.workspace.on("active-leaf-change", deleyedFocus);
         } else {
           wrapper.destroy();
         }
@@ -56,6 +64,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
 
     return () => {
       active = false;
+      app.workspace.offref(ref);
       wrapperRef.current?.destroy();
       wrapperRef.current = null;
     };

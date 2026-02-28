@@ -1,12 +1,12 @@
-import esbuild from "esbuild";
-import process from "process";
+import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
 import builtins from "builtin-modules";
-import fs from "fs";
+import esbuild from "esbuild";
 import path from "path";
-import chokidar from "chokidar";
+import process from "process";
 
-const VAULT_DIR = "/mnt/c/Users/syoum/work/minerva";
-const FILES = ["main.js", "manifest.json", "styles.css"];
+
+const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
+const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
 
 // ---
 
@@ -46,6 +46,13 @@ const context = await esbuild.context({
   sourcemap: prod ? false : "inline",
   treeShaking: true,
   outfile: "main.js",
+  minify: prod,
+  plugins: [
+    obsidianCopyPlugin({
+      pluginsDir: PLUGINS_DIR,
+      force: true,
+    }),
+  ],
 });
 
 if (prod) {
@@ -53,27 +60,4 @@ if (prod) {
   process.exit(0);
 } else {
   await context.watch();
-
-  const pluginDir = path.join(
-    VAULT_DIR,
-    ".obsidian/plugins/mobile-first-daily-interface"
-  );
-
-  console.log(`📁 Creating ${pluginDir} (if not existed)`);
-  fs.mkdirSync(pluginDir, { recursive: true });
-
-  const hotreloadPath = path.join(pluginDir, ".hotreload", "");
-  console.log(`🌶️ Creating a ${hotreloadPath}`);
-  fs.writeFileSync(hotreloadPath, "");
-
-  const watcher = chokidar.watch(FILES, { persistent: true });
-  watcher
-    .on("add", (p) => {
-      console.log(`♨️  ${p} is added`);
-      fs.copyFileSync(p, path.join(pluginDir, p));
-    })
-    .on("change", (p) => {
-      console.log(`♨️  ${p} is changed`);
-      fs.copyFileSync(p, path.join(pluginDir, p));
-    });
 }
