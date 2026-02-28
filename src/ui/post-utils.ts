@@ -1,5 +1,6 @@
 import { PostFormat } from "../settings";
 import { formatTaskText } from "../utils/task-text";
+import { DATE_TIME_FORMAT, TIME_FORMAT } from "./date-formats";
 import { Granularity } from "./types";
 
 export function toText(
@@ -16,7 +17,7 @@ export function toText(
 
   if (postFormat.type === "thino") {
     // 日ごと以外は年月日を追加。
-    const timeFormat = granularity === "day" ? "HH:mm:ss" : "YYYY-MM-DD HH:mm:ss";
+    const timeFormat = granularity === "day" ? TIME_FORMAT : DATE_TIME_FORMAT;
     const time = window.moment().format(timeFormat);
     const body = input
       .replace(/\r\n/g, "\n")

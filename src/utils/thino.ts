@@ -29,9 +29,8 @@ function matchTimeBullet(
   | { time: string; dashIndex: number; message?: string; messageIndex?: number }
   | null {
   // Allows leading spaces. Accept optional trailing text after the time.
-  // Allows leading spaces. Do NOT accept checkbox tokens before the time
-  // so that task list items are not treated as Thino entries.
-  const m = line.match(/^([ \t]*)-\s*(\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
+  // Support both "HH:mm:ss" and "YYYY-MM-DD HH:mm:ss" formats.
+  const m = line.match(/^([ \t]*)-\s*((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
   if (!m) {
     return null;
   }

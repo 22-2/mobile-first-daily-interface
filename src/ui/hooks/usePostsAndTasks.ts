@@ -4,6 +4,7 @@ import { AppHelper, Task } from "../../app-helper";
 import { PostFormat } from "../../settings";
 import { sorter } from "../../utils/collections";
 import { parseThinoEntries } from "../../utils/thino";
+import { DATE_FORMAT, DATE_TIME_FORMAT } from "../date-formats";
 import { Granularity, MomentLike, Post } from "../types";
 
 interface UsePostsAndTasksOptions {
@@ -34,18 +35,23 @@ export function usePostsAndTasks({
   const updatePosts = async (note: TFile) => {
     const _posts: Post[] =
       postFormat.type === "thino"
-        ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => ({
-            timestamp: window.moment(
-              `${date.format("YYYY-MM-DD")} ${x.time}`,
-              "YYYY-MM-DD HH:mm:ss"
-            ),
-            message: x.message,
-            offset: x.offset,
-            startOffset: x.startOffset,
-            endOffset: x.endOffset,
-            bodyStartOffset: x.bodyStartOffset,
-            kind: "thino" as const,
-          }))
+        ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => {
+            const hasDate = x.time.includes("-");
+            return {
+              timestamp: hasDate
+                ? window.moment(x.time, DATE_TIME_FORMAT)
+                : window.moment(
+                    `${date.format(DATE_FORMAT)} ${x.time}`,
+                    DATE_TIME_FORMAT
+                  ),
+              message: x.message,
+              offset: x.offset,
+              startOffset: x.startOffset,
+              endOffset: x.endOffset,
+              bodyStartOffset: x.bodyStartOffset,
+              kind: "thino" as const,
+            };
+          })
         : postFormat.type === "codeblock"
           ? ((await appHelper.getCodeBlocks(note)) ?? [])
               ?.filter((x) => x.lang === "fw")

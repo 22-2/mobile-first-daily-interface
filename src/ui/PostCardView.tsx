@@ -7,6 +7,10 @@ import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
 import { Card } from "./Card";
+import {
+  DISPLAY_DATE_TIME_FORMAT,
+  DISPLAY_TIME_FORMAT,
+} from "./date-formats";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
@@ -105,7 +109,9 @@ export const PostCardView = ({
 
             <Tag size="sm" variant="subtle" colorScheme="gray">
               {post.timestamp.format(
-                granularity === "day" ? "HH:mm" : "MM/DD HH:mm"
+                granularity === "day"
+                  ? DISPLAY_TIME_FORMAT
+                  : DISPLAY_DATE_TIME_FORMAT
               )}
             </Tag>
             

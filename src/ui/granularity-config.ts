@@ -1,15 +1,9 @@
-import { normalizePath, TFile, Vault } from "obsidian";
+import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import {
     createDailyNote, createMonthlyNote, createWeeklyNote, createYearlyNote, DEFAULT_DAILY_NOTE_FORMAT, DEFAULT_MONTHLY_NOTE_FORMAT, DEFAULT_WEEKLY_NOTE_FORMAT, DEFAULT_YEARLY_NOTE_FORMAT, getAllDailyNotes, getDailyNoteSettings, getDateFromFile, getDateUID, getMonthlyNoteSettings, getWeeklyNoteSettings, getYearlyNoteSettings, IPeriodicNoteSettings
 } from "obsidian-daily-notes-interface";
 import { Granularity, MomentLike } from "./types";
 
-/**
- * obsidian-daily-notes-interface の getAllWeeklyNotes / getAllMonthlyNotes /
- * getAllYearlyNotes はプラグイン有効チェック（appHasWeeklyNotesPluginLoaded 等）で
- * プラグインが未設定の場合に空オブジェクトを返してしまう。
- * そのため、vault から直接フォルダを走査する独自実装を使う。
- */
 function getAllNotesByGranularity(
   g: Exclude<Granularity, "day">
 ): Record<string, TFile> {
@@ -23,9 +17,13 @@ function getAllNotesByGranularity(
   };
   const { folder } = getSettings[g]();
   const { vault } = (window as any).app;
-  const folderPath = normalizePath(folder || "/");
-  const folderFile = vault.getAbstractFileByPath(folderPath);
-  if (!folderFile) return {};
+
+  const folderFile = folder
+    ? vault.getAbstractFileByPath(normalizePath(folder))
+    : vault.getRoot();
+
+  if (!folderFile || !(folderFile instanceof TFolder)) return {};
+
   const result: Record<string, TFile> = {};
   Vault.recurseChildren(folderFile, (note) => {
     if (note instanceof TFile) {
