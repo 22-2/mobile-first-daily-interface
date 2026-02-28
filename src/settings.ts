@@ -1,7 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import MFDIPlugin from "./main";
 import { mirrorMap } from "./utils/collections";
-import { TextComponentEvent } from "./obsutils/settings";
 
 export interface Settings {
   leaf: string;

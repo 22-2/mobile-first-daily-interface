@@ -1,18 +1,16 @@
+import { Box, Flex, HStack, Spacer, Tag, VStack } from "@chakra-ui/react";
+import Markdown from "marked-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Notice } from "obsidian";
-import { Box, HStack, Flex, VStack, Text, IconButton, Tooltip, Spacer, Tag } from "@chakra-ui/react";
-import { Card } from "./Card";
-import Markdown from "marked-react";
-import { ObsidianIcon } from "./ObsidianIcon";
-import { pickUrls, replaceDayToJa } from "../utils/strings";
+import { Settings } from "../settings";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
+import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
+import { Card } from "./Card";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
-import { TwitterCard } from "./TwitterCard";
-import { Settings } from "../settings";
 import { Post } from "./ReactView";
+import { TwitterCard } from "./TwitterCard";
 
 
 

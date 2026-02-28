@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { App, TFile } from "obsidian";
-import { MomentLike, Granularity, Post } from "../types";
+import { useEffect } from "react";
 import { Task } from "../../app-helper";
-import { getNoteSettings, getNote, getAllNotes } from "../granularity-config";
+import { getNoteSettings } from "../granularity-config";
+import { Granularity, MomentLike, Post } from "../types";
 
 interface UseNoteSyncOptions {
   app: App;

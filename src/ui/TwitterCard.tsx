@@ -1,7 +1,7 @@
+import { Box, Image, Link, Text } from "@chakra-ui/react";
+import parse from "html-react-parser";
 import * as React from "react";
 import { TwitterMeta } from "../utils/meta";
-import parse from "html-react-parser";
-import { Box, Image, Text, Link } from "@chakra-ui/react";
 
 export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
   return (

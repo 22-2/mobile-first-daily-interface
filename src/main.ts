@@ -1,7 +1,7 @@
-import { Notice, Plugin, View } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { AppHelper } from "./app-helper";
-import { MFDIView, VIEW_TYPE_MFDI } from "./ui/MDFIView";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
+import { MFDIView, VIEW_TYPE_MFDI } from "./ui/MDFIView";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;

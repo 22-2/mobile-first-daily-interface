@@ -1,8 +1,8 @@
-import { App, WorkspaceLeaf } from "obsidian";
-import * as React from "react";
-import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { Box, BoxProps } from "@chakra-ui/react";
+import { App, WorkspaceLeaf } from "obsidian";
 import { MagicalEditorWrapper } from "obsidian-magical-editor";
+import * as React from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange"> {
   leaf: WorkspaceLeaf;

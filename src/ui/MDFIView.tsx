@@ -1,11 +1,10 @@
-import { ItemView, WorkspaceLeaf, Menu } from "obsidian";
+import { ItemView, Menu, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
-import { ReactView } from "./ReactView";
 import { createRoot, Root } from "react-dom/client";
-import { AppHelper } from "../app-helper";
 import { Settings } from "src/settings";
-import { Granularity } from "./types";
 import { granularityConfig } from "./granularity-config";
+import { ReactView } from "./ReactView";
+import { Granularity } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

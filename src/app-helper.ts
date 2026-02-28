@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, moment, TFile } from "obsidian";
+import { App, Editor, MarkdownView, TFile } from "obsidian";
 import { pickTaskName } from "./utils/strings";
 
 export interface CodeBlock {

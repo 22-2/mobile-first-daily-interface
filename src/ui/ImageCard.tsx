@@ -1,6 +1,6 @@
+import { Box, Image } from "@chakra-ui/react";
 import * as React from "react";
 import { ImageMeta } from "../utils/meta";
-import { Box, Image } from "@chakra-ui/react";
 
 export const ImageCard = ({ meta }: { meta: ImageMeta }) => {
   const url = window.URL || window.webkitURL;

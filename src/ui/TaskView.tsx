@@ -1,8 +1,8 @@
+import { HStack } from "@chakra-ui/react";
+import Markdown from "marked-react";
 import * as React from "react";
 import { Task } from "../app-helper";
-import { HStack } from "@chakra-ui/react";
 import { excludeWikiLink } from "../utils/strings";
-import Markdown from "marked-react";
 import { Card } from "./Card";
 
 export const TaskView = ({

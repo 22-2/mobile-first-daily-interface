@@ -1,26 +1,24 @@
+import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
+import { App, Menu, Notice, TFile } from "obsidian";
 import * as React from "react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Button, Flex, HStack, Input, Select } from "@chakra-ui/react";
-import { App, Notice, TFile, Menu } from "obsidian";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { AppHelper } from "../app-helper";
+import { postFormatMap, Settings } from "../settings";
+import { replaceDayToJa } from "../utils/strings";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import {
+    createNote, getAllNotes,
+    getNote, granularityConfig
+} from "./granularity-config";
+import { useNoteSync } from "./hooks/useNoteSync";
+import { usePostsAndTasks } from "./hooks/usePostsAndTasks";
 import { ObsidianIcon } from "./ObsidianIcon";
 import { ObsidianLiveEditor } from "./ObsidianLiveEditor";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { toText } from "./post-utils";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
-import { replaceDayToJa } from "../utils/strings";
-import { Settings, postFormatMap } from "../settings";
-import { Post, Granularity } from "./types";
-import {
-  getAllNotes,
-  getNote,
-  createNote,
-  granularityConfig,
-} from "./granularity-config";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { toText } from "./post-utils";
-import { usePostsAndTasks } from "./hooks/usePostsAndTasks";
-import { useNoteSync } from "./hooks/useNoteSync";
+import { Granularity, Post } from "./types";
 
 export type { Post };
 

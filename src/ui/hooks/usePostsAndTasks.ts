@@ -1,10 +1,10 @@
-import { useState, Dispatch, SetStateAction } from "react";
 import { TFile } from "obsidian";
+import { Dispatch, SetStateAction, useState } from "react";
 import { AppHelper, Task } from "../../app-helper";
+import { PostFormat } from "../../settings";
 import { sorter } from "../../utils/collections";
 import { parseThinoEntries } from "../../utils/thino";
-import { PostFormat } from "../../settings";
-import { Post, MomentLike, Granularity } from "../types";
+import { Granularity, MomentLike, Post } from "../types";
 
 interface UsePostsAndTasksOptions {
   appHelper: AppHelper;

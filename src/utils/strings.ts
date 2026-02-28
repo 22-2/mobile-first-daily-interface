@@ -1,5 +1,5 @@
-import { RegExpMatchedArray } from "./types";
 import * as Encoding from "encoding-japanese";
+import { RegExpMatchedArray } from "./types";
 
 export function excludeWikiLink(text: string): string {
   return text
