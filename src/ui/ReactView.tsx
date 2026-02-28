@@ -123,12 +123,32 @@ export const ReactView = ({
   };
 
   // ────────────────────────────────────────────────────────────
+  // Helpers — create note with insertAfter header
+  // ────────────────────────────────────────────────────────────
+  /**
+   * ノートを新規作成し、settings.insertAfter が設定されている場合は
+   * その文字列がノート内にまだ存在しなければ末尾に追記する。
+   */
+  const createNoteWithInsertAfter = async () => {
+    const created = await createNote(date, granularity);
+    if (created && settings.insertAfter) {
+      const content = await app.vault.read(created);
+      if (!content.includes(settings.insertAfter)) {
+        await app.vault.modify(
+          created,
+          content ? `${content}\n${settings.insertAfter}` : settings.insertAfter
+        );
+      }
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────
   // Handlers — open daily note
   // ────────────────────────────────────────────────────────────
   const handleClickOpenDailyNote = async () => {
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      await createNote(date, granularity);
+      await createNoteWithInsertAfter();
       // 再読み込みをするためにクローンを入れて参照を更新
       setDate(date.clone());
     }
@@ -274,7 +294,7 @@ export const ReactView = ({
 
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      await createNote(date, granularity);
+      await createNoteWithInsertAfter();
       // 再読み込みをするためにクローンを入れて参照を更新
       setDate(date.clone());
     }

@@ -1,21 +1,17 @@
-import { TFile } from "obsidian";
+import { TFile, Vault, normalizePath } from "obsidian";
 import {
   createDailyNote,
   getAllDailyNotes,
   getDailyNote,
   getDailyNoteSettings,
   createWeeklyNote,
-  getAllWeeklyNotes,
-  getWeeklyNote,
-  getWeeklyNoteSettings,
   createMonthlyNote,
-  getAllMonthlyNotes,
-  getMonthlyNote,
-  getMonthlyNoteSettings,
   createYearlyNote,
-  getAllYearlyNotes,
-  getYearlyNote,
+  getWeeklyNoteSettings,
+  getMonthlyNoteSettings,
   getYearlyNoteSettings,
+  getDateUID,
+  getDateFromFile,
   IPeriodicNoteSettings,
   DEFAULT_DAILY_NOTE_FORMAT,
   DEFAULT_WEEKLY_NOTE_FORMAT,
@@ -24,12 +20,49 @@ import {
 } from "obsidian-daily-notes-interface";
 import { Granularity, MomentLike } from "./types";
 
+/**
+ * obsidian-daily-notes-interface の getAllWeeklyNotes / getAllMonthlyNotes /
+ * getAllYearlyNotes はプラグイン有効チェック（appHasWeeklyNotesPluginLoaded 等）で
+ * プラグインが未設定の場合に空オブジェクトを返してしまう。
+ * そのため、vault から直接フォルダを走査する独自実装を使う。
+ */
+function getAllNotesByGranularity(
+  g: Exclude<Granularity, "day">
+): Record<string, TFile> {
+  const getSettings: Record<
+    Exclude<Granularity, "day">,
+    () => IPeriodicNoteSettings
+  > = {
+    week: getWeeklyNoteSettings,
+    month: getMonthlyNoteSettings,
+    year: getYearlyNoteSettings,
+  };
+  const { folder } = getSettings[g]();
+  const { vault } = (window as any).app;
+  const folderPath = normalizePath(folder || "/");
+  const folderFile = vault.getAbstractFileByPath(folderPath);
+  if (!folderFile) return {};
+  const result: Record<string, TFile> = {};
+  Vault.recurseChildren(folderFile, (note) => {
+    if (note instanceof TFile) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const date = getDateFromFile(note as any, g);
+      if (date) {
+        const uid = getDateUID(date, g);
+        result[uid] = note;
+      }
+    }
+  });
+  return result;
+}
+
 export const getAllNotes = (g: Granularity): Record<string, TFile> => {
   switch (g) {
-    case "week":  return getAllWeeklyNotes();
-    case "month": return getAllMonthlyNotes();
-    case "year":  return getAllYearlyNotes();
-    default:      return getAllDailyNotes();
+    case "week":  return getAllNotesByGranularity("week");
+    case "month": return getAllNotesByGranularity("month");
+    case "year":  return getAllNotesByGranularity("year");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    default:      return getAllDailyNotes() as any;
   }
 };
 
@@ -38,12 +71,8 @@ export const getNote = (
   notes: Record<string, TFile>,
   g: Granularity
 ): TFile | null => {
-  switch (g) {
-    case "week":  return getWeeklyNote(date, notes) as TFile | null;
-    case "month": return getMonthlyNote(date, notes) as TFile | null;
-    case "year":  return getYearlyNote(date, notes) as TFile | null;
-    default:      return getDailyNote(date, notes) as TFile | null;
-  }
+  const uid = getDateUID(date, g);
+  return notes[uid] ?? null;
 };
 
 export const createNote = (date: MomentLike, g: Granularity): Promise<TFile> => {

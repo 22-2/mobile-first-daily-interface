@@ -31,7 +31,7 @@ export class MFDIView extends ItemView {
   onPaneMenu(menu: Menu, prev: string): void {
     menu.addItem((item) => {
       item
-        .setTitle("現在のデイリーノートを開く")
+        .setTitle("現在のノートを開く")
         .setIcon("external-link")
         .onClick(() => {
           this.onOpenDailyNoteAction?.();
