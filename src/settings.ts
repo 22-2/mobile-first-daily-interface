@@ -10,6 +10,7 @@ export interface Settings {
   blueskyAppPassword: string;
   postFormatOption: PostFormatOption;
   insertAfter: string;
+  enabledCardView: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
   blueskyAppPassword: "",
   postFormatOption: "コードブロック",
   insertAfter: "",
+  enabledCardView: true,
 };
 
 const leafOptions = ["left", "center", "right"];
@@ -103,6 +105,19 @@ export class MFDISettingTab extends PluginSettingTab {
           async (value) => {
             this.plugin.settings.autoStartOnLaunch = value;
             await this.plugin.saveSettings();
+          }
+        );
+      });
+
+    new Setting(containerEl)
+      .setName("リンクのカード表示")
+      .setDesc("有効にすると投稿内のリンクをリッチなカード形式で表示します。")
+      .addToggle((tc) => {
+        tc.setValue(this.plugin.settings.enabledCardView).onChange(
+          async (value) => {
+            this.plugin.settings.enabledCardView = value;
+            await this.plugin.saveSettings();
+            this.plugin.rerenderView();
           }
         );
       });

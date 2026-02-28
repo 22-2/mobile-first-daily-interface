@@ -71,6 +71,13 @@ export const PostCardView = ({
   };
 
   useEffect(() => {
+    if (!settings.enabledCardView) {
+      setHtmlMetas([]);
+      setImageMetas([]);
+      setTwitterMetas([]);
+      return;
+    }
+
     (async function () {
       const urls = pickUrls(post.message);
       const results = (await Promise.all(urls.map(createMeta))).filter(
@@ -82,7 +89,7 @@ export const PostCardView = ({
         results.filter((x): x is TwitterMeta => x.type === "twitter")
       );
     })();
-  }, [post.message]);
+  }, [post.message, settings.enabledCardView]);
 
   return (
     <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
@@ -95,17 +102,19 @@ export const PostCardView = ({
               </Markdown>
             </Box>
 
-            <Box paddingX={2}>
-              {htmlMetas.map((meta) => (
-                <HTMLCard key={meta.originUrl} meta={meta} />
-              ))}
-              {imageMetas.map((meta) => (
-                <ImageCard key={meta.originUrl} meta={meta} />
-              ))}
-              {twitterMetas.map((meta) => (
-                <TwitterCard key={meta.url} meta={meta} />
-              ))}
-            </Box>
+            {settings.enabledCardView && (
+              <Box paddingX={2}>
+                {htmlMetas.map((meta) => (
+                  <HTMLCard key={meta.originUrl} meta={meta} />
+                ))}
+                {imageMetas.map((meta) => (
+                  <ImageCard key={meta.originUrl} meta={meta} />
+                ))}
+                {twitterMetas.map((meta) => (
+                  <TwitterCard key={meta.url} meta={meta} />
+                ))}
+              </Box>
+            )}
           </VStack>
         </Box>
 
