@@ -1,6 +1,7 @@
 import * as React from "react";
 import { HTMLMeta } from "../utils/meta";
 import { useState } from "react";
+import { Box, Image, Text, Link } from "@chakra-ui/react";
 
 export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
   const [faviconUrl, setFaviconUrl] = useState(meta.faviconUrl);
@@ -16,26 +17,77 @@ export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
   };
 
   return (
-    <div className="mfdi-html-card">
+    <Box
+      className="mfdi-html-card"
+      position="relative"
+      zIndex={1}
+      border="1px dotted #b5890077"
+      backdropFilter="brightness(101%)"
+      marginBottom="var(--size-4-4)"
+      borderRadius="16px"
+      overflow="hidden"
+      transition="backdrop-filter 0.2s"
+      _hover={{
+        cursor: "pointer",
+        border: "1px solid #b58900",
+        backdropFilter: "brightness(98%)",
+      }}
+    >
       {coverUrl && (
-        <img
+        <Image
           src={coverUrl}
           onError={handleCoverImageError}
           className="mfdi-html-card-image"
+          width="100%"
+          objectFit="contain"
+          borderTopLeftRadius="16px"
+          borderTopRightRadius="16px"
         />
       )}
-      <div className="mfdi-html-card-content">
-        <div className="mfdi-html-card-header">
-          <img
+      <Box className="mfdi-html-card-content" padding="var(--size-4-4)">
+        <Box
+          className="mfdi-html-card-header"
+          marginBottom="var(--size-4-2)"
+          color="var(--text-muted)"
+          display="flex"
+          alignItems="center"
+        >
+          <Image
             src={faviconUrl}
             onError={handleFaviconImageError}
             className="mfdi-html-card-site-icon"
+            objectFit="contain"
+            height="1em"
+            marginRight="var(--size-2-3)"
           />
-          <span className="mfdi-html-card-site-name">{meta.siteName}</span>
-        </div>
-        <div className="mfdi-html-card-body">{meta.title}</div>
-      </div>
-      <a href={meta.originUrl}></a>
-    </div>
+          <Text
+            className="mfdi-html-card-site-name"
+            height="1em"
+            lineHeight="1em"
+          >
+            {meta.siteName}
+          </Text>
+        </Box>
+        <Box
+          className="mfdi-html-card-body"
+          marginBottom="var(--size-4-2)"
+          fontWeight="semibold"
+        >
+          {meta.title}
+        </Box>
+      </Box>
+      <Link
+        href={meta.originUrl}
+        isExternal
+        position="absolute"
+        top={0}
+        left={0}
+        width="100%"
+        height="100%"
+        textIndent="-9999px"
+        zIndex={2}
+      />
+    </Box>
   );
 };
+

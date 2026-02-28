@@ -38,7 +38,10 @@ export const ReactView = ({
   const [date, setDate] = useState(() => window.moment());
   // 対象ノートが存在しないとnull
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
-  const [input, setInput] = useState("");
+  const LOCAL_STORAGE_KEY_INPUT = `mfdi-textarea-input-${(app as unknown as { appId: string }).appId}`;
+  const [input, setInput] = useState(
+    () => localStorage.getItem(LOCAL_STORAGE_KEY_INPUT) || ""
+  );
   const [asTask, setAsTask] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -192,6 +195,13 @@ export const ReactView = ({
     }, 100);
     return () => clearTimeout(timer);
   }, [currentDailyNote, settings.reverseOrder]);
+
+  // ────────────────────────────────────────────────────────────
+  // Local storage persistence
+  // ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY_INPUT, input);
+  }, [input]);
 
   // ────────────────────────────────────────────────────────────
   // Handlers — input / submit
@@ -461,7 +471,7 @@ export const ReactView = ({
       asTask ? (
         <>
           {tasks.filter((x) => x.mark === " ").length > 0 && (
-              <TransitionGroup className="list">
+              <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
                 {tasks
                   .filter((x) => x.mark === " ")
                   .map((x) => (
@@ -482,7 +492,7 @@ export const ReactView = ({
               </TransitionGroup>
           )}
           {tasks.filter((x) => x.mark !== " ").length > 0 && (
-              <TransitionGroup className="list">
+              <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
                 {tasks
                   .filter((x) => x.mark !== " ")
                   .map((x) => (
@@ -504,7 +514,7 @@ export const ReactView = ({
           )}
         </>
       ) : (
-        <TransitionGroup className="list">
+        <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
           {posts.map((x) => (
             <CSSTransition
               key={x.timestamp.unix()}
@@ -557,7 +567,16 @@ export const ReactView = ({
   // JSX helpers
   // ────────────────────────────────────────────────────────────
   const inputArea = (
-    <Flex flexDirection="column" className="mfdi-input-area">
+    <Flex
+      flexDirection="column"
+      className="mfdi-input-area"
+      borderRadius="22px 22px 0 0"
+      margin={0}
+      marginRight="var(--size-4-3)"
+      padding={0}
+      backgroundColor="var(--background-secondary)"
+      border="1px solid var(--table-border-color)"
+    >
       <HStack justify="center">
         <ObsidianIcon
           name="chevron-left"
@@ -602,8 +621,8 @@ export const ReactView = ({
         placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        minHeight={"8em"}
-        marginX={"1em"}
+        minHeight="var(--size-4-18)"
+        marginX="var(--size-4-4)"
         resize="vertical"
         onKeyUp={handleKeyUp}
         ref={inputRef}
@@ -646,10 +665,11 @@ export const ReactView = ({
   return (
     <Flex
       flexDirection="column"
-      height="95%"
-      // maxWidth="30rem"
+      height="100%"
       className="root"
-      position={"relative"}
+      position="relative"
+      backgroundColor="transparent"
+      marginX="var(--size-4-2)"
     >
       {!settings.reverseOrder && inputArea}
 

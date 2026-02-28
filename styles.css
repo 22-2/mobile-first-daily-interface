@@ -6,96 +6,23 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.remove-btn {
-  margin-right: 0.5rem;
-}
 
 .item-enter {
   opacity: 0;
 }
+
 .item-enter-active {
   opacity: 1;
   transition: opacity 500ms ease-in;
 }
+
 .item-exit {
   opacity: 1;
 }
+
 .item-exit-active {
   opacity: 0;
   transition: opacity 500ms ease-in;
-}
-
-/************************/
-/* card link
-/************************/
-
-.mfdi-html-card {
-  position: relative;
-  z-index: 1;
-  border: 1px dotted #b5890077;
-  backdrop-filter: brightness(101%);
-  margin-bottom: 1em;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: backdrop-filter 0.2s;
-}
-
-.mfdi-html-card-image {
-  width: 100% !important;
-  object-fit: contain !important;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-}
-
-.mfdi-html-card a {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  text-indent: -999px;
-  z-index: 2;
-}
-
-.mfdi-html-card:hover {
-  cursor: pointer;
-  border: 1px solid #b58900;
-  backdrop-filter: brightness(98%);
-}
-
-.mfdi-html-card-content {
-  padding: 1em;
-}
-
-.mfdi-html-card-header {
-  margin-bottom: 0.5em;
-  /*noinspection CssUnresolvedCustomProperty*/
-  color: var(--text-muted);
-}
-.mfdi-html-card-site-icon {
-  object-fit: contain !important;
-  height: 1em !important;
-  margin-right: 0.3em;
-}
-.mfdi-html-card-site-name {
-  height: 1em !important;
-}
-
-.mfdi-html-card-body {
-  margin-bottom: 0.5em;
-}
-
-.mfdi-image-card {
-  position: relative;
-  z-index: 1;
-  backdrop-filter: brightness(101%);
-  margin-bottom: 1em;
-}
-
-.mfdi-image-card-image {
-  width: 100% !important;
-  object-fit: contain !important;
-  border-radius: 16px;
 }
 
 [data-type="mfdi-view"] .view-content {
@@ -103,21 +30,3 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent !important;
 }
 
-.root {
-  height: 100%;
-  background-color: transparent !important;
-  margin: 0 var(--size-4-2);
-}
-
-.mfdi-input-area {
-  border-radius: 22px 22px 0 0;
-  margin: 0;
-  margin-right: 10px;
-  padding: 0;
-  background-color: var(--background-secondary);
-  border: 1px solid var(--table-border-color);
-}
-
-.mfdi-scroll-container {
-  margin: 0;
-}
