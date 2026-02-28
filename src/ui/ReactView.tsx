@@ -42,6 +42,7 @@ export const ReactView = ({
   const [asTask, setAsTask] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const postFormat = postFormatMap[settings.postFormatOption];
 
@@ -160,6 +161,25 @@ export const ReactView = ({
   }, [view]);
 
   // ────────────────────────────────────────────────────────────
+  // Initial scroll position
+  // ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!currentDailyNote || !scrollContainerRef.current) return;
+
+    // 初期化時、少し待ってからスクロールを適用（DOMレンダリングを待つ）
+    const timer = setTimeout(() => {
+      if (settings.reverseOrder) {
+        scrollContainerRef.current?.scrollTo({ top: 0 });
+      } else {
+        scrollContainerRef.current?.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [currentDailyNote, settings.reverseOrder]);
+
+  // ────────────────────────────────────────────────────────────
   // Handlers — input / submit
   // ────────────────────────────────────────────────────────────
   const handleKeyUp = (event: React.KeyboardEvent) => {
@@ -240,6 +260,15 @@ export const ReactView = ({
       await appHelper.insertTextAfter(note, text, settings.insertAfter);
     }
     setInput("");
+
+    // 投稿後にスクロールを調整
+    if (settings.reverseOrder) {
+      scrollContainerRef.current?.scrollTo({ top: 0 });
+    } else {
+      scrollContainerRef.current?.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+      });
+    }
   };
 
   // ────────────────────────────────────────────────────────────
@@ -560,74 +589,154 @@ export const ReactView = ({
         />
       </HStack>
 
-      <Textarea
-        placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        minHeight={"8em"}
-        resize="vertical"
-        onKeyUp={handleKeyUp}
-        ref={inputRef}
-      />
-      <HStack>
-        <Button
-          disabled={!canSubmit}
-          className={canSubmit ? "mod-cta" : ""}
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
-          flexGrow={1}
-          cursor={canSubmit ? "pointer" : ""}
-          onClick={handleSubmit}
-        >
-          {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
-        </Button>
-        {editingPost ? (
-          <Button
-            minHeight={"2.4em"}
-            maxHeight={"2.4em"}
-            variant="ghost"
-            onClick={cancelEdit}
-          >
-            キャンセル
-          </Button>
-        ) : (
-          ""
-        )}
-        <Box
-          display="flex"
-          gap="0.5em"
-          padding={4}
-          marginRight={8}
-          borderStyle={"solid"}
-          borderRadius={"10px"}
-          borderColor={"var(--table-border-color)"}
-          borderWidth={"2px"}
-          cursor={"pointer"}
-          _hover={{
-            borderColor: "var(--text-success)",
-            transitionDuration: "0.5s",
-          }}
-          transitionDuration={"0.5s"}
-          onClick={() => setAsTask(!asTask)}
-        >
-          <ObsidianIcon
-            name="message-square"
-            boxSize={"1.5em"}
-            color={asTask ? "var(--text-faint)" : "var(--text-success)"}
-            opacity={asTask ? 0.2 : 1}
+      {!settings.reverseOrder && (
+        <>
+          <Textarea
+            placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            minHeight={"8em"}
+            resize="vertical"
+            onKeyUp={handleKeyUp}
+            ref={inputRef}
           />
-          <ObsidianIcon
-            name="check-circle"
-            boxSize={"1.5em"}
-            color={asTask ? "var(--text-success)" : "var(--text-faint)"}
-            opacity={asTask ? 1 : 0.2}
-          />
-        </Box>
-      </HStack>
+          <HStack>
+            <Button
+              disabled={!canSubmit}
+              className={canSubmit ? "mod-cta" : ""}
+              minHeight={"2.4em"}
+              maxHeight={"2.4em"}
+              flexGrow={1}
+              cursor={canSubmit ? "pointer" : ""}
+              onClick={handleSubmit}
+            >
+              {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+            </Button>
+            {editingPost ? (
+              <Button
+                minHeight={"2.4em"}
+                maxHeight={"2.4em"}
+                variant="ghost"
+                onClick={cancelEdit}
+              >
+                キャンセル
+              </Button>
+            ) : (
+              ""
+            )}
+            <Box
+              display="flex"
+              gap="0.5em"
+              padding={4}
+              marginRight={8}
+              borderStyle={"solid"}
+              borderRadius={"10px"}
+              borderColor={"var(--table-border-color)"}
+              borderWidth={"2px"}
+              cursor={"pointer"}
+              _hover={{
+                borderColor: "var(--text-success)",
+                transitionDuration: "0.5s",
+              }}
+              transitionDuration={"0.5s"}
+              onClick={() => setAsTask(!asTask)}
+            >
+              <ObsidianIcon
+                name="message-square"
+                boxSize={"1.5em"}
+                color={asTask ? "var(--text-faint)" : "var(--text-success)"}
+                opacity={asTask ? 0.2 : 1}
+              />
+              <ObsidianIcon
+                name="check-circle"
+                boxSize={"1.5em"}
+                color={asTask ? "var(--text-success)" : "var(--text-faint)"}
+                opacity={asTask ? 1 : 0.2}
+              />
+            </Box>
+          </HStack>
+        </>
+      )}
 
-      <Box flexGrow={1} overflowY="scroll" overflowX="hidden">
+      <Box
+        flexGrow={1}
+        overflowY="scroll"
+        overflowX="hidden"
+        display="flex"
+        flexDirection={settings.reverseOrder ? "column-reverse" : "column"}
+        ref={scrollContainerRef}
+      >
         {currentDailyNote && contents}
       </Box>
+
+      {settings.reverseOrder && (
+        <>
+          <Textarea
+            placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            minHeight={"8em"}
+            resize="vertical"
+            onKeyUp={handleKeyUp}
+            ref={inputRef}
+          />
+          <HStack>
+            <Button
+              disabled={!canSubmit}
+              className={canSubmit ? "mod-cta" : ""}
+              minHeight={"2.4em"}
+              maxHeight={"2.4em"}
+              flexGrow={1}
+              cursor={canSubmit ? "pointer" : ""}
+              onClick={handleSubmit}
+            >
+              {editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+            </Button>
+            {editingPost ? (
+              <Button
+                minHeight={"2.4em"}
+                maxHeight={"2.4em"}
+                variant="ghost"
+                onClick={cancelEdit}
+              >
+                キャンセル
+              </Button>
+            ) : (
+              ""
+            )}
+            <Box
+              display="flex"
+              gap="0.5em"
+              padding={4}
+              marginRight={8}
+              borderStyle={"solid"}
+              borderRadius={"10px"}
+              borderColor={"var(--table-border-color)"}
+              borderWidth={"2px"}
+              cursor={"pointer"}
+              _hover={{
+                borderColor: "var(--text-success)",
+                transitionDuration: "0.5s",
+              }}
+              transitionDuration={"0.5s"}
+              onClick={() => setAsTask(!asTask)}
+            >
+              <ObsidianIcon
+                name="message-square"
+                boxSize={"1.5em"}
+                color={asTask ? "var(--text-faint)" : "var(--text-success)"}
+                opacity={asTask ? 0.2 : 1}
+              />
+              <ObsidianIcon
+                name="check-circle"
+                boxSize={"1.5em"}
+                color={asTask ? "var(--text-success)" : "var(--text-faint)"}
+                opacity={asTask ? 1 : 0.2}
+              />
+            </Box>
+          </HStack>
+        </>
+      )}
     </Flex>
   );
 };

@@ -9,6 +9,7 @@ export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
+  reverseOrder: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "コードブロック",
   insertAfter: "",
   enabledCardView: true,
+  reverseOrder: false,
 };
 
 const leafOptions = ["left", "center", "right"];
@@ -112,6 +114,21 @@ export class MFDISettingTab extends PluginSettingTab {
         tc.setValue(this.plugin.settings.enabledCardView).onChange(
           async (value) => {
             this.plugin.settings.enabledCardView = value;
+            await this.plugin.saveSettings();
+            this.plugin.rerenderView();
+          }
+        );
+      });
+
+    new Setting(containerEl)
+      .setName("チャット風の表示順")
+      .setDesc(
+        "有効にすると投稿を下から上へ（新しい投稿が一番下）に表示します。"
+      )
+      .addToggle((tc) => {
+        tc.setValue(this.plugin.settings.reverseOrder).onChange(
+          async (value) => {
+            this.plugin.settings.reverseOrder = value;
             await this.plugin.saveSettings();
             this.plugin.rerenderView();
           }
