@@ -77,10 +77,10 @@ export const getNote = (
 
 export const createNote = (date: MomentLike, g: Granularity): Promise<TFile> => {
   switch (g) {
-    case "week":  return createWeeklyNote(date);
-    case "month": return createMonthlyNote(date);
-    case "year":  return createYearlyNote(date);
-    default:      return createDailyNote(date);
+    case "week":  return createWeeklyNote(date) as Promise<TFile>;
+    case "month": return createMonthlyNote(date) as Promise<TFile>;
+    case "year":  return createYearlyNote(date) as Promise<TFile>;
+    default:      return createDailyNote(date) as Promise<TFile>;
   }
 };
 
