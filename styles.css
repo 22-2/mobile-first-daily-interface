@@ -30,3 +30,11 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent !important;
 }
 
+[data-type="mfdi-view"] .cm-content {
+  padding-bottom: 0!important;
+}
+
+[data-type="mfdi-view"] .cm-scroller {
+  margin: var(--size-4-2) var(--size-4-4) !important;
+  padding: 0!important;
+}

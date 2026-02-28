@@ -16,5 +16,5 @@
     "jsx": "react",
     "types": ["@types/bun"]
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "src/ui/ObsidianLiveEditor.tsx"]
 }

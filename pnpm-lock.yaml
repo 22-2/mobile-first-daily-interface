@@ -32,6 +32,9 @@ importers:
       obsidian-daily-notes-interface:
         specifier: ^0.9.4
         version: 0.9.4(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
+      obsidian-magical-editor:
+        specifier: file:..\..\my-projects-02\obsidian-magical-editor
+        version: file:../../my-projects-02/obsidian-magical-editor
       react:
         specifier: ~18.2.0
         version: 18.2.0
@@ -2229,6 +2232,9 @@ packages:
   obsidian-daily-notes-interface@0.9.4:
     resolution: {integrity: sha512-PILoRtZUB5wEeGnDQAPMlkVlXwDYoxkLR8Wl4STU2zLNwhcq9kKvQexiXi7sfjGlpTnL+LeAOfEVWyeVndneKg==}
     hasBin: true
+
+  obsidian-magical-editor@file:../../my-projects-02/obsidian-magical-editor:
+    resolution: {directory: ../../my-projects-02/obsidian-magical-editor, type: directory}
 
   obsidian@1.11.4:
     resolution: {integrity: sha512-n0KD3S+VndgaByrEtEe8NELy0ya6/s+KZ7OcxA6xOm5NN4thxKpQjo6eqEudHEvfGCeT/TYToAKJzitQ1I3XTg==}
@@ -5476,6 +5482,8 @@ snapshots:
     transitivePeerDependencies:
       - '@codemirror/state'
       - '@codemirror/view'
+
+  obsidian-magical-editor@file:../../my-projects-02/obsidian-magical-editor: {}
 
   obsidian@1.11.4(@codemirror/state@6.5.0)(@codemirror/view@6.38.6):
     dependencies:

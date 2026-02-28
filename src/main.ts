@@ -40,9 +40,9 @@ export default class MFDIPlugin extends Plugin {
     });
   }
 
-  async onunload() {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_MFDI);
-  }
+  // async onunload() {
+  //   this.app.workspace.detachLeavesOfType(VIEW_TYPE_MFDI);
+  // }
 
   /**
    * MFDIのViewをアタッチします

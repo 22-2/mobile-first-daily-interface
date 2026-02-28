@@ -1,9 +1,10 @@
 import * as React from "react";
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Button, Flex, HStack, Input, Select, Textarea } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Input, Select } from "@chakra-ui/react";
 import { App, Notice, TFile, Menu } from "obsidian";
 import { AppHelper } from "../app-helper";
 import { ObsidianIcon } from "./ObsidianIcon";
+import { ObsidianLiveEditor } from "./ObsidianLiveEditor";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
@@ -44,7 +45,7 @@ export const ReactView = ({
   );
   const [asTask, setAsTask] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const inputRef = useRef<any>(null); // Quick fix to avoid import recursion for interface or just use any/ObsidianLiveEditorRef
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const postFormat = postFormatMap[settings.postFormatOption];
@@ -287,11 +288,11 @@ export const ReactView = ({
 
     // 投稿後にスクロールを調整
     if (settings.reverseOrder) {
-      scrollContainerRef.current?.scrollTo({ top: 0 });
-    } else {
       scrollContainerRef.current?.scrollTo({
         top: scrollContainerRef.current.scrollHeight,
       });
+    } else {
+      scrollContainerRef.current?.scrollTo({ top: 0 });
     }
   };
 
@@ -617,15 +618,16 @@ export const ReactView = ({
         />
       </HStack>
 
-      <Textarea
-        placeholder={asTask ? "タスクを入力" : "思ったことなどを記入"}
+
+      <ObsidianLiveEditor
+        ref={inputRef}
+        leaf={view.leaf}
+        app={app}
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={setInput}
         minHeight="var(--size-4-18)"
         marginX="var(--size-4-4)"
-        resize="vertical"
         onKeyUp={handleKeyUp}
-        ref={inputRef}
       />
 
       <HStack justify="flex-end">
@@ -647,7 +649,8 @@ export const ReactView = ({
             bg: canSubmit ? "var(--color-accent-2)" : "var(--background-modifier-border)",
           }}
           marginRight={"2.4em"}
-          marginY={"1em"}
+          marginTop={"0.5em"}
+          marginBottom={"1em"}
           minHeight={"2.4em"}
           maxHeight={"2.4em"}
           cursor={canSubmit ? "pointer" : ""}
