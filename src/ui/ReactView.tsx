@@ -740,6 +740,41 @@ export const ReactView = ({
     </Flex>
   );
 
+  const countDisplay = (() => {
+    const unitMap: Record<Granularity, string> = {
+      day: "日",
+      week: "週間",
+      month: "ヶ月",
+      year: "年",
+    };
+    const unit = granularityConfig[granularity].unit;
+    const now = window.moment().startOf(unit);
+    const current = date.clone().startOf(unit);
+    const diff = current.diff(now, unit);
+    const relativeText =
+      diff !== 0
+        ? ` (${Math.abs(diff)}${unitMap[granularity]}${diff > 0 ? "後" : "前"})`
+        : "";
+
+    return (
+      <HStack
+        fontSize="var(--font-ui-smaller)"
+        color="var(--text-muted)"
+        marginX="var(--size-4-4)"
+        marginY="var(--size-4-2)"
+        opacity={0.8}
+        spacing={0}
+        justifyContent="space-between"
+      >
+        <Box>
+          {date.format(granularityConfig[granularity].displayFormat)}
+          {relativeText}
+        </Box>
+        <Box>{asTask ? `${tasks.length} tasks` : `${posts.length} posts`}</Box>
+      </HStack>
+    );
+  })();
+
   // ────────────────────────────────────────────────────────────
   // JSX
   // ────────────────────────────────────────────────────────────
@@ -753,6 +788,7 @@ export const ReactView = ({
       marginX="var(--size-4-2)"
     >
       {!settings.reverseOrder && inputArea}
+      {!settings.reverseOrder && countDisplay}
 
       <Box
         className="mfdi-scroll-container"
@@ -766,6 +802,7 @@ export const ReactView = ({
         {isEmpty ? emptyState : contents}
       </Box>
 
+      {settings.reverseOrder && countDisplay}
       {settings.reverseOrder && inputArea}
     </Flex>
   );
