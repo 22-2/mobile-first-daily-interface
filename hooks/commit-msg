@@ -33,10 +33,10 @@ function validateType() {
 # $1: scope
 function validateScope() {
   case $1 in
-  ポストビュー | タスクビュー | Bluesky | "") ;;
+  ポストビュー | タスクビュー | "") ;;
   *)
     echo "Invalid scope: $1"
-    echo ">> ポストビュー | タスクビュー | Bluesky"
+    echo ">> ポストビュー | タスクビュー"
     exit 1
     ;;
   esac

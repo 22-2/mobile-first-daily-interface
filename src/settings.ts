@@ -6,8 +6,6 @@ import { TextComponentEvent } from "./obsutils/settings";
 export interface Settings {
   leaf: string;
   autoStartOnLaunch: boolean;
-  blueskyIdentifier: string;
-  blueskyAppPassword: string;
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
@@ -16,8 +14,6 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   leaf: "left",
   autoStartOnLaunch: false,
-  blueskyIdentifier: "",
-  blueskyAppPassword: "",
   postFormatOption: "コードブロック",
   insertAfter: "",
   enabledCardView: true,
@@ -122,30 +118,5 @@ export class MFDISettingTab extends PluginSettingTab {
         );
       });
 
-    containerEl.createEl("h3", { text: "🦋 Bluesky" });
-
-    new Setting(containerEl).setName("Blueskyのidentifier").addText((cb) => {
-      TextComponentEvent.onChange(cb, async (value) => {
-        this.plugin.settings.blueskyIdentifier = value;
-        await this.plugin.saveSettings();
-        this.plugin.rerenderView();
-      })
-        .setValue(this.plugin.settings.blueskyIdentifier)
-        .setPlaceholder("例: mfdi.bsky.social");
-    });
-
-    new Setting(containerEl)
-      .setName("Blueskyのアプリパスワード")
-      .addText((cb) => {
-        TextComponentEvent.onChange(
-          cb,
-          async (value) => {
-            this.plugin.settings.blueskyAppPassword = value;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          },
-          { secret: true }
-        ).setValue(this.plugin.settings.blueskyAppPassword);
-      });
   }
 }
