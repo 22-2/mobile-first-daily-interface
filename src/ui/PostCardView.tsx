@@ -65,7 +65,7 @@ export const PostCardView = ({
 
   return (
     <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
-      <Flex direction="column" maxHeight={"50vh"}>
+      <Flex direction="column" maxHeight={"50vh"} padding={"var(--size-4-2)"}>
         <Box
           padding={5}
           paddingTop={4}
