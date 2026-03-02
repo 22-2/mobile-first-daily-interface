@@ -711,7 +711,7 @@ export const ReactView = ({
         onKeyUp={handleKeyUp}
       />
 
-      <HStack justify="flex-end">
+      <HStack justify="flex-end" alignItems="center" paddingY={"0.5em"} paddingBottom={"1em"} marginRight={"2.4em"}>
         {editingPost && (
           <Button
             minHeight={"2.4em"}
@@ -729,9 +729,6 @@ export const ReactView = ({
           _hover={{
             bg: canSubmit ? "var(--color-accent-2)" : "var(--background-modifier-border)",
           }}
-          marginRight={"2.4em"}
-          marginTop={"0.5em"}
-          marginBottom={"1em"}
           minHeight={"2.4em"}
           maxHeight={"2.4em"}
           cursor={canSubmit ? "pointer" : ""}
