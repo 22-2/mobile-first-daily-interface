@@ -56,6 +56,10 @@ const context = await esbuild.context({
       pluginsDir: "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
       force: true,
     }),
+    obsidianCopyPlugin({
+      pluginsDir: "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+      force: true,
+    }),
   ],
 });
 
