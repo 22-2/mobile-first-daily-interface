@@ -1,6 +1,6 @@
 import { Box, BoxProps } from "@chakra-ui/react";
 import { App, EventRef, WorkspaceLeaf } from "obsidian";
-import { MagicalEditorWrapper } from "obsidian-magical-editor";
+import { MagicalEditor } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
@@ -23,7 +23,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
   ...props
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<MagicalEditorWrapper | null>(null);
+  const wrapperRef = useRef<MagicalEditor | null>(null);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -31,7 +31,10 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     },
   }));
 
-  const deleyedFocus = () => {
+  const delayedFocus = () => {
+    if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
+      return;
+    }
     setTimeout(() => {
       wrapperRef.current?.focus();
     });
@@ -39,23 +42,23 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
 
   useEffect(() => {
     let active = true;
-    let ref: EventRef;
+    let eventRef: EventRef;
     const init = async () => {
       if (containerRef.current) {
         containerRef.current.empty();
-        const wrapper = await MagicalEditorWrapper.create(app, leaf, {
+        const editor = await MagicalEditor.create(app, leaf, {
           onChange: (text) => {
              if (active) onChange(text);
           },
           initialContent: value,
         });
         if (active && containerRef.current) {
-          wrapperRef.current = wrapper;
-          containerRef.current.appendChild(wrapper.view.containerEl);
-          deleyedFocus();
-          ref = app.workspace.on("active-leaf-change", deleyedFocus);
+          wrapperRef.current = editor;
+          containerRef.current.appendChild(editor.view.containerEl);
+          delayedFocus();
+          eventRef = app.workspace.on("active-leaf-change", delayedFocus);
         } else {
-          wrapper.destroy();
+          editor.destroy();
         }
       }
     };
@@ -64,11 +67,11 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
 
     return () => {
       active = false;
-      app.workspace.offref(ref);
+      app.workspace.offref(eventRef);
       wrapperRef.current?.destroy();
       wrapperRef.current = null;
     };
-  }, [leaf, app]); 
+  }, []); 
 
   // Handle external value changes (e.g. clearing after submit or starting edit)
   useEffect(() => {

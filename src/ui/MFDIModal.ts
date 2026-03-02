@@ -14,6 +14,7 @@ export class MFDIModal extends ModalEditor {
       onChange: options.onChange,
       onClose: options.onClose,
     });
+    this.modalEl.addClass("mfdi-modal-editor");
 
     this.scope = new Scope(this.app.scope as Scope);
     const close = () => {
