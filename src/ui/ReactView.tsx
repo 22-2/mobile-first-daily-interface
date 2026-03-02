@@ -650,7 +650,9 @@ export const ReactView = ({
         </>
       ) : (
         <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-          {filteredPosts.map((x) => (
+          {filteredPosts
+            .filter((x) => x.startOffset !== editingPostOffset)
+            .map((x) => (
             <CSSTransition
               key={x.timestamp.unix()}
               timeout={300}
@@ -696,7 +698,7 @@ export const ReactView = ({
           ))}
         </TransitionGroup>
       ),
-    [filteredPosts, tasks, asTask, editingPost]
+    [filteredPosts, tasks, asTask, editingPost, editingPostOffset]
   );
 
   // 投稿もタスクもない（ノートがない、またはノートはあるが空）かどうか
