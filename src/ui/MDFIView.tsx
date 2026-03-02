@@ -1,4 +1,4 @@
-import { ItemView, Menu, WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
@@ -22,6 +22,7 @@ export class MFDIView extends ItemView {
   public onChangeAsTask?: (asTask: boolean) => void;
   public timeFilter: TimeFilter = "all";
   public onChangeTimeFilter?: (f: TimeFilter) => void;
+  public onOpenModalEditor?: () => void;
   public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -36,6 +37,14 @@ export class MFDIView extends ItemView {
         .setIcon("external-link")
         .onClick(() => {
           this.onOpenDailyNoteAction?.();
+        });
+    });
+    menu.addItem((item) => {
+      item
+        .setTitle("モーダルエディタで開く")
+        .setIcon("maximize")
+        .onClick(() => {
+          this.onOpenModalEditor?.();
         });
     });
 
@@ -115,6 +124,12 @@ export class MFDIView extends ItemView {
 
   async onOpen() {
     this.renderNewView();
+    // Ctrl+Shift+Alt+O でモーダルエディタを開く（thino-extension と同じショートカット）
+    this.scope = new Scope(this.app.scope);
+    this.scope?.register(["Ctrl", "Shift", "Alt"], "o", () => {
+      this.onOpenModalEditor?.();
+      return true;
+    });
   }
 
   async onClose() {

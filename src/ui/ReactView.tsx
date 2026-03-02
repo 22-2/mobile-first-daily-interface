@@ -20,6 +20,7 @@ import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
 import { Granularity, Post, TimeFilter } from "./types";
 import { MFDIStorage } from "../utils/storage";
+import { MFDIModal } from "./MFDIModal";
 
 export type { Post };
 
@@ -223,6 +224,25 @@ export const ReactView = ({
       view.onChangeTimeFilter = undefined;
     };
   }, [view]);
+
+  // openModalEditor を view に同期
+  useEffect(() => {
+    view.onOpenModalEditor = () => {
+      const modal = new MFDIModal(app, {
+        initialContent: input,
+        onChange: (content) => {
+          setInput(content);
+        },
+        onClose: (content) => {
+          setInput(content);
+        },
+      });
+      modal.open();
+    };
+    return () => {
+      view.onOpenModalEditor = undefined;
+    };
+  }, [view, app, input]);
 
   // ────────────────────────────────────────────────────────────
   // Initial scroll position
