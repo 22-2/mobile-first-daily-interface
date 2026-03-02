@@ -16,7 +16,6 @@ export const Card = (props: BoxProps) => {
       background={"var(--background-primary)"}
       color={"var(--text-normal)"}
       marginY="var(--size-4-3)"
-      overflow="hidden"
       transition="all 0.18s ease"
       boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
       _hover={{

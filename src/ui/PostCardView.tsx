@@ -65,8 +65,30 @@ export const PostCardView = ({
 
   return (
     <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
-      <Flex direction="column">
-        <Box padding={5} paddingTop={4} className="markdown-rendered">
+      <Flex direction="column" maxHeight={"50vh"}>
+        <Box
+          padding={5}
+          paddingTop={4}
+          className="markdown-rendered"
+          overflowY="auto"
+          flex="1"
+          sx={{
+            "&::-webkit-scrollbar": {
+              width: "4px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "transparent",
+              borderRadius: "10px",
+            },
+            "&:hover::-webkit-scrollbar-thumb": {
+              backgroundColor: "var(--scrollbar-thumb-bg, rgba(0,0,0,0.1))",
+            },
+            "scrollbarWidth": "none",
+            "&:hover": {
+              "scrollbarWidth": "thin",
+            },
+          }}
+        >
           <VStack align="stretch" gap={3}>
 
             {/* Message Body */}
