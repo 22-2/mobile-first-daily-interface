@@ -4,7 +4,7 @@ import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { granularityConfig } from "./granularity-config";
 import { ReactView } from "./ReactView";
-import { Granularity } from "./types";
+import { TimeFilter, Granularity } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -20,6 +20,8 @@ export class MFDIView extends ItemView {
   public onChangeGranularity?: (g: Granularity) => void;
   public asTask: boolean = false;
   public onChangeAsTask?: (asTask: boolean) => void;
+  public timeFilter: TimeFilter = "all";
+  public onChangeTimeFilter?: (f: TimeFilter) => void;
   public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -77,6 +79,24 @@ export class MFDIView extends ItemView {
           this.onChangeAsTask?.(true);
         });
     });
+
+    // --- 表示期間 ---
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item.setTitle("表示期間").setIcon("clock").setDisabled(true);
+    });
+    const filters: TimeFilter[] = [1, 3, 6, 12, "all"];
+    for (const f of filters) {
+      menu.addItem((item) => {
+        item
+          .setTitle(f === "all" ? "すべて表示" : `直近${f}時間`)
+          .setChecked(this.timeFilter === f)
+          .setDisabled(this.granularity !== "day")
+          .onClick(() => {
+            this.onChangeTimeFilter?.(f);
+          });
+      });
+    }
 
     super.onPaneMenu(menu, prev);
   }

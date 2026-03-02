@@ -18,7 +18,7 @@ import { ObsidianLiveEditor } from "./ObsidianLiveEditor";
 import { toText } from "./post-utils";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
-import { Granularity, Post } from "./types";
+import { Granularity, Post, TimeFilter } from "./types";
 import { MFDIStorage } from "../utils/storage";
 
 export type { Post };
@@ -54,6 +54,9 @@ export const ReactView = ({
     () => storage.get<boolean>("asTask", false)
   );
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>(
+    () => storage.get<TimeFilter>("timeFilter", "all")
+  );
   const inputRef = useRef<any>(null); // Quick fix to avoid import recursion for interface or just use any/ObsidianLiveEditorRef
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -207,6 +210,20 @@ export const ReactView = ({
     };
   }, [view]);
 
+  // timeFilter を view に同期
+  useEffect(() => {
+    view.timeFilter = timeFilter;
+  }, [view, timeFilter]);
+
+  useEffect(() => {
+    view.onChangeTimeFilter = (t: TimeFilter) => {
+      setTimeFilter(t);
+    };
+    return () => {
+      view.onChangeTimeFilter = undefined;
+    };
+  }, [view]);
+
   // ────────────────────────────────────────────────────────────
   // Initial scroll position
   // ────────────────────────────────────────────────────────────
@@ -240,6 +257,10 @@ export const ReactView = ({
   useEffect(() => {
     storage.set("asTask", asTask);
   }, [asTask, storage]);
+
+  useEffect(() => {
+    storage.set("timeFilter", timeFilter);
+  }, [timeFilter, storage]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -528,6 +549,12 @@ export const ReactView = ({
     </Flex>
   );
 
+  const filteredPosts = useMemo(() => {
+    if (timeFilter === "all" || asTask || granularity !== "day") return posts;
+    const now = window.moment();
+    return posts.filter((p) => now.diff(p.timestamp, "hours") < (timeFilter as number));
+  }, [posts, timeFilter, asTask, granularity]);
+
   const contents = useMemo(
     () =>
       asTask ? (
@@ -577,7 +604,7 @@ export const ReactView = ({
         </>
       ) : (
         <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-          {posts.map((x) => (
+          {filteredPosts.map((x) => (
             <CSSTransition
               key={x.timestamp.unix()}
               timeout={300}
@@ -623,11 +650,11 @@ export const ReactView = ({
           ))}
         </TransitionGroup>
       ),
-    [posts, tasks, asTask, editingPost]
+    [filteredPosts, tasks, asTask, editingPost]
   );
 
   // 投稿もタスクもない（ノートがない、またはノートはあるが空）かどうか
-  const isEmpty = !currentDailyNote || (asTask ? tasks.length === 0 : posts.length === 0);
+  const isEmpty = !currentDailyNote || (asTask ? tasks.length === 0 : filteredPosts.length === 0);
 
   // ────────────────────────────────────────────────────────────
   // JSX helpers
@@ -770,7 +797,7 @@ export const ReactView = ({
           {date.format(granularityConfig[granularity].displayFormat)}
           {relativeText}
         </Box>
-        <Box>{asTask ? `${tasks.length} tasks` : `${posts.length} posts`}</Box>
+        <Box>{asTask ? `${tasks.length} tasks` : `${filteredPosts.length}${ (timeFilter !== "all" && granularity === "day") ? `/${posts.length}` : ""} posts`}</Box>
       </HStack>
     );
   })();
