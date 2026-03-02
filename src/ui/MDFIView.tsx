@@ -90,6 +90,7 @@ export class MFDIView extends ItemView {
     });
 
     // --- 表示期間 ---
+    const showTimeFilter = this.granularity === "day" && !this.asTask;
     menu.addSeparator();
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
@@ -97,10 +98,11 @@ export class MFDIView extends ItemView {
     const filters: TimeFilter[] = [1, 2, 3, 6, 12, "all"];
     for (const f of filters) {
       menu.addItem((item) => {
+        const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
         item
           .setTitle(f === "all" ? "すべて表示" : `直近${f}時間`)
-          .setChecked(this.timeFilter === f)
-          .setDisabled(this.granularity !== "day")
+          .setChecked(isChecked)
+          .setDisabled(!showTimeFilter)
           .onClick(() => {
             this.onChangeTimeFilter?.(f);
           });

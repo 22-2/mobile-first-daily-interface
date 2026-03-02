@@ -201,6 +201,9 @@ export const ReactView = ({
   useEffect(() => {
     view.onChangeGranularity = (g: Granularity) => {
       setGranularity(g);
+      if (g !== "day") {
+        setTimeFilter("all");
+      }
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
