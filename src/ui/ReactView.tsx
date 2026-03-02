@@ -242,7 +242,10 @@ export const ReactView = ({
   }, [asTask, storage]);
 
   useEffect(() => {
-    storage.set("input", input);
+    const timer = setTimeout(() => {
+      storage.set("input", input);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [input, storage]);
 
   // ────────────────────────────────────────────────────────────
