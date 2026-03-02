@@ -233,9 +233,9 @@ export const ReactView = ({
     storage.set("granularity", granularity);
   }, [granularity, storage]);
 
-  useEffect(() => {
-    storage.set("date", date.toISOString());
-  }, [date, storage]);
+  // useEffect(() => {
+  //   storage.set("date", date.toISOString());
+  // }, [date, storage]);
 
   useEffect(() => {
     storage.set("asTask", asTask);
