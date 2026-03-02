@@ -5,15 +5,14 @@ export function formatTaskText(input: string, time?: string): string {
   // single-line -> put content on same line after time
   if (!normalized.includes("\n")) {
     const content = normalized.trim();
-    return `\n- [ ] ${t}${content.length === 0 ? "" : " " + content}\n`;
+    return `- [ ] ${t}${content.length === 0 ? "" : " " + content}`;
   }
 
   // multi-line -> time on its own line, body indented
-  const trimmed = normalized.replace(/\n+$/g, "");
-  const body = trimmed
+  const body = normalized
     .split("\n")
     .map((x) => (x.length === 0 ? "" : `    ${x}`))
     .join("\n");
 
-  return `\n- [ ] ${t}\n${body}\n`;
+  return `- [ ] ${t}\n${body}`;
 }

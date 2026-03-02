@@ -11,7 +11,7 @@ export function toText(
   timestamp?: MomentLike
 ): string {
   if (asTask) {
-    return formatTaskText(input);
+    return formatTaskText(input) + "\n";
   }
 
   const now = timestamp ?? window.moment();
@@ -22,20 +22,19 @@ export function toText(
     const timeFormat = granularity === "day" ? TIME_FORMAT : DATE_TIME_FORMAT;
     const time = now.format(timeFormat);
     const body = input
-      .trimEnd()
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
       .split("\n")
       .map((x) => (x.length === 0 ? "" : `    ${x}`))
       .join("\n");
 
-    return body.length === 0 ? `- ${time}` : `- ${time}\n${body}`;
+    return (body.length === 0 ? `- ${time}` : `- ${time}\n${body}`) + "\n";
   }
 
   // codeblock と header は既に日付を含んでいる
   if (postFormat.type === "codeblock") {
-    return `\`\`\`\`fw ${ts}\n${input}\n\`\`\`\``;
+    return `\`\`\`\`fw ${ts}\n${input}\n\`\`\`\`\n`;
   }
 
-  return `${"#".repeat(postFormat.level)} ${ts}\n\n${input}`;
+  return `${"#".repeat(postFormat.level)} ${ts}\n\n${input}\n`;
 }

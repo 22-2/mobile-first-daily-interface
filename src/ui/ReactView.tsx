@@ -346,8 +346,7 @@ export const ReactView = ({
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
     const note = getNote(date, getAllNotes(granularity), granularity);
     if (note) {
-      // toText は末尾改行がつかないようになったので、\n で囲んで挿入する
-      await appHelper.insertTextAfter(note, `\n${text}\n`, settings.insertAfter);
+      await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
     }
     setInput("");
 
