@@ -37,11 +37,21 @@ export const ReactView = ({
 
   const storage = useMemo(() => new MFDIStorage(appHelper.getAppId()), [appHelper]);
 
-  const [granularity, setGranularity] = useState<Granularity>(
-    () => storage.get<Granularity>("granularity", "day")
-  );
+  const [granularity, setGranularity] = useState<Granularity>(() => {
+    const savedOffset = storage.get<number | null>("editingPostOffset", null);
+    if (savedOffset !== null) {
+      return storage.get<Granularity>("editingPostGranularity", "day");
+    }
+    return storage.get<Granularity>("granularity", "day");
+  });
   const [date, setDate] = useState(() => {
-    const saved = storage.get<string | null>("date", null);
+    const savedOffset = storage.get<number | null>("editingPostOffset", null);
+    let saved = null;
+    if (savedOffset !== null) {
+      saved = storage.get<string | null>("editingPostDate", null);
+    } else {
+      saved = storage.get<string | null>("date", null);
+    }
     // 保存された日付が有効でない場合は「今日」を返す
     const m = saved ? window.moment(saved) : window.moment();
     return m.isValid() ? m : window.moment();
@@ -55,6 +65,9 @@ export const ReactView = ({
     () => storage.get<boolean>("asTask", false)
   );
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [editingPostOffset, setEditingPostOffset] = useState<number | null>(
+    () => storage.get<number | null>("editingPostOffset", null)
+  );
   const [timeFilter, setTimeFilter] = useState<TimeFilter>(
     () => storage.get<TimeFilter>("timeFilter", "all")
   );
@@ -270,9 +283,9 @@ export const ReactView = ({
     storage.set("granularity", granularity);
   }, [granularity, storage]);
 
-  // useEffect(() => {
-  //   storage.set("date", date.toISOString());
-  // }, [date, storage]);
+  useEffect(() => {
+    storage.set("date", date.toISOString());
+  }, [date, storage]);
 
   useEffect(() => {
     storage.set("asTask", asTask);
@@ -288,6 +301,28 @@ export const ReactView = ({
     }, 500);
     return () => clearTimeout(timer);
   }, [input, storage]);
+
+  useEffect(() => {
+    storage.set("editingPostOffset", editingPostOffset);
+    if (editingPostOffset !== null) {
+      storage.set("editingPostDate", date.toISOString());
+      storage.set("editingPostGranularity", granularity);
+    }
+  }, [editingPostOffset, date, granularity, storage]);
+
+  useEffect(() => {
+    if (editingPostOffset !== null) {
+      const found = posts.find((p) => p.startOffset === editingPostOffset);
+      if (found) {
+        setEditingPost(found);
+      } else if (posts.length > 0) {
+        setEditingPost(null);
+        setEditingPostOffset(null);
+      }
+    } else {
+      setEditingPost(null);
+    }
+  }, [posts, editingPostOffset]);
 
   // ────────────────────────────────────────────────────────────
   // Handlers — input / submit
@@ -329,6 +364,9 @@ export const ReactView = ({
       );
 
       setEditingPost(null);
+      setEditingPostOffset(null);
+      storage.remove("editingPostDate");
+      storage.remove("editingPostGranularity");
       setInput("");
       await updatePosts(currentDailyNote);
       return;
@@ -366,12 +404,18 @@ export const ReactView = ({
   const startEdit = (post: Post) => {
     setAsTask(false);
     setEditingPost(post);
+    setEditingPostOffset(post.startOffset);
+    storage.set("editingPostDate", date.toISOString());
+    storage.set("editingPostGranularity", granularity);
     setInput(post.message);
     requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const cancelEdit = () => {
     setEditingPost(null);
+    setEditingPostOffset(null);
+    storage.remove("editingPostDate");
+    storage.remove("editingPostGranularity");
     setInput("");
   };
 
