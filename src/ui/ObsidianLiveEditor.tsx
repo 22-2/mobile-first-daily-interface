@@ -51,6 +51,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
              if (active) onChange(text);
           },
           initialContent: value,
+          placeholder: "なんでもかいていいのよ😊",
         });
         if (active && containerRef.current) {
           wrapperRef.current = editor;
