@@ -95,7 +95,7 @@ export class MFDIView extends ItemView {
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
     });
-    const filters: TimeFilter[] = [1, 2, 3, 6, 12, "all"];
+    const filters: TimeFilter[] = ["all", 1, 2, 3, 6, 12];
     for (const f of filters) {
       menu.addItem((item) => {
         const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
