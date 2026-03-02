@@ -38,6 +38,12 @@ If your plugin does not need CSS, delete this file.
   padding-bottom: 0!important;
 }
 
+[data-type="mfdi-view"] :is(.markdown-preview-view.is-readable-line-width .markdown-preview-sizer>div, .markdown-source-view.mod-cm6.is-readable-line-width .cm-contentContainer.cm-contentContainer>.cm-content>div, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.embedded-backlinks, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.inline-title, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.metadata-container) {
+  max-width: initial !important;
+  width: initial !important;
+  margin-inline: initial !important;
+}
+
 [data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
   margin: var(--size-4-2) var(--size-4-4) !important;
   padding: 0!important;
