@@ -47,5 +47,5 @@ If your plugin does not need CSS, delete this file.
 [data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
   margin: var(--size-4-2) var(--size-4-4) !important;
   padding: 0!important;
-  max-height: 80vh!important;
+  max-height: 50vh!important;
 }
