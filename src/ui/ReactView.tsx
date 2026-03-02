@@ -597,6 +597,7 @@ export const ReactView = ({
 
   const filteredPosts = useMemo(() => {
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;
+    if (timeFilter === "latest") return posts.length > 0 ? [posts[0]] : [];
     const now = window.moment();
     return posts.filter((p) => now.diff(p.timestamp, "hours") < (timeFilter as number));
   }, [posts, timeFilter, asTask, granularity]);

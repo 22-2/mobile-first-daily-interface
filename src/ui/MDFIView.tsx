@@ -95,12 +95,18 @@ export class MFDIView extends ItemView {
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
     });
-    const filters: TimeFilter[] = ["all", 1, 2, 3, 6, 12];
+    const filters: TimeFilter[] = ["all", "latest", 1, 2, 3, 6, 12];
     for (const f of filters) {
       menu.addItem((item) => {
         const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
         item
-          .setTitle(f === "all" ? "すべて表示" : `直近${f}時間`)
+          .setTitle(
+            f === "all"
+              ? "すべて表示"
+              : f === "latest"
+              ? "最新のみ表示"
+              : `直近${f}時間`
+          )
           .setChecked(isChecked)
           .setDisabled(!showTimeFilter)
           .onClick(() => {
