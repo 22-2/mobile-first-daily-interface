@@ -9,6 +9,7 @@ export interface Settings {
   insertAfter: string;
   enabledCardView: boolean;
   reverseOrder: boolean;
+  updateDateStrategy: "never" | "always" | "same_day";
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -18,6 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
   insertAfter: "",
   enabledCardView: true,
   reverseOrder: false,
+  updateDateStrategy: "never",
 };
 
 const leafOptions = ["left", "center", "right"];
@@ -133,6 +135,21 @@ export class MFDISettingTab extends PluginSettingTab {
           }
         );
       });
+
+    new Setting(containerEl)
+      .setName("更新時の日時更新ストラテジ")
+      .setDesc("編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）")
+      .addDropdown((tc) =>
+        tc
+          .addOption("never", "常に更新しない（デフォルト）")
+          .addOption("always", "常に更新する")
+          .addOption("same_day", "その日の間だけ更新する")
+          .setValue(this.plugin.settings.updateDateStrategy)
+          .onChange(async (value) => {
+            this.plugin.settings.updateDateStrategy = value as Settings["updateDateStrategy"];
+            await this.plugin.saveSettings();
+          })
+      );
 
   }
 }

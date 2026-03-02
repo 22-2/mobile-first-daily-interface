@@ -310,44 +310,23 @@ export const ReactView = ({
       }
 
       const path = currentDailyNote.path;
-      const origin = await appHelper.loadFile(path);
-      const normalizedInput = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-      if (editingPost.kind === "header") {
-        const replacement = `\n${normalizedInput.replace(/\n+$/g, "")}\n`;
-        await appHelper.replaceRange(
-          path,
-          editingPost.bodyStartOffset,
-          editingPost.endOffset,
-          replacement
-        );
-      } else if (editingPost.kind === "thino") {
-        const body = normalizedInput
-          .split("\n")
-          .map((x) => (x.length === 0 ? "" : `    ${x}`))
-          .join("\n");
-        const replacement = body.length === 0 ? "" : `${body}\n`;
-        await appHelper.replaceRange(
-          path,
-          editingPost.bodyStartOffset,
-          editingPost.endOffset,
-          replacement
-        );
-      } else {
-        // codeblock: keep fence/meta lines, replace only code part.
-        const block = origin.slice(editingPost.startOffset, editingPost.endOffset);
-        const lines = block.split("\n");
-        const firstLine = lines[0] ?? "";
-        const lastLine = lines.length >= 2 ? lines[lines.length - 1] : "";
-        const code = normalizedInput.replace(/\n+$/g, "");
-        const replacement = `${firstLine}\n${code}\n${lastLine}`;
-        await appHelper.replaceRange(
-          path,
-          editingPost.startOffset,
-          editingPost.endOffset,
-          replacement
-        );
+      let targetTs = editingPost.timestamp;
+      const now = window.moment();
+      if (settings.updateDateStrategy === "always") {
+        targetTs = now;
+      } else if (settings.updateDateStrategy === "same_day") {
+        if (editingPost.timestamp.isSame(now, "day")) {
+          targetTs = now;
+        }
       }
+
+      const text = toText(input, false, postFormat, granularity, targetTs);
+      await appHelper.replaceRange(
+        path,
+        editingPost.startOffset,
+        editingPost.endOffset,
+        text
+      );
 
       setEditingPost(null);
       setInput("");
@@ -367,7 +346,8 @@ export const ReactView = ({
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
     const note = getNote(date, getAllNotes(granularity), granularity);
     if (note) {
-      await appHelper.insertTextAfter(note, text, settings.insertAfter);
+      // toText は末尾改行がつかないようになったので、\n で囲んで挿入する
+      await appHelper.insertTextAfter(note, `\n${text}\n`, settings.insertAfter);
     }
     setInput("");
 
