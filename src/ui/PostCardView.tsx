@@ -8,8 +8,8 @@ import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
 import { Card } from "./Card";
 import {
-  DISPLAY_DATE_TIME_FORMAT,
-  DISPLAY_TIME_FORMAT,
+    DISPLAY_DATE_TIME_FORMAT,
+    DISPLAY_TIME_FORMAT
 } from "./date-formats";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";

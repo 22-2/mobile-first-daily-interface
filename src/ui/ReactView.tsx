@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { AppHelper } from "../app-helper";
 import { postFormatMap, Settings } from "../settings";
+import { MFDIStorage } from "../utils/storage";
 import { replaceDayToJa } from "../utils/strings";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import {
@@ -13,14 +14,13 @@ import {
 } from "./granularity-config";
 import { useNoteSync } from "./hooks/useNoteSync";
 import { usePostsAndTasks } from "./hooks/usePostsAndTasks";
+import { MFDIModal } from "./MFDIModal";
 import { ObsidianIcon } from "./ObsidianIcon";
 import { ObsidianLiveEditor } from "./ObsidianLiveEditor";
 import { toText } from "./post-utils";
 import { PostCardView } from "./PostCardView";
 import { TaskView } from "./TaskView";
 import { Granularity, Post, TimeFilter } from "./types";
-import { MFDIStorage } from "../utils/storage";
-import { MFDIModal } from "./MFDIModal";
 
 export type { Post };
 

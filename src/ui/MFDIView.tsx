@@ -4,7 +4,7 @@ import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { granularityConfig } from "./granularity-config";
 import { ReactView } from "./ReactView";
-import { TimeFilter, Granularity } from "./types";
+import { Granularity, TimeFilter } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
