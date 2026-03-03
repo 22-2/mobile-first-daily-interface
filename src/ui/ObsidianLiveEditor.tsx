@@ -23,11 +23,11 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
   ...props
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<MagicalEditor | null>(null);
+  const magicalEditorRef = useRef<MagicalEditor | null>(null);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
-      wrapperRef.current?.focus();
+      magicalEditorRef.current?.focus();
     },
   }));
 
@@ -36,7 +36,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
       return;
     }
     setTimeout(() => {
-      wrapperRef.current?.focus();
+      magicalEditorRef.current?.focus();
     });
   };
 
@@ -54,7 +54,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
           placeholder: "なんでもかいていいのよ😊",
         });
         if (active && containerRef.current) {
-          wrapperRef.current = editor;
+          magicalEditorRef.current = editor;
           containerRef.current.appendChild(editor.view.containerEl);
           delayedFocus();
           eventRef = app.workspace.on("active-leaf-change", delayedFocus);
@@ -69,15 +69,15 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     return () => {
       active = false;
       app.workspace.offref(eventRef);
-      wrapperRef.current?.destroy();
-      wrapperRef.current = null;
+      magicalEditorRef.current?.destroy();
+      magicalEditorRef.current = null;
     };
   }, []); 
 
   // Handle external value changes (e.g. clearing after submit or starting edit)
   useEffect(() => {
-    if (wrapperRef.current && wrapperRef.current.getContent() !== value) {
-      wrapperRef.current.setContent(value);
+    if (magicalEditorRef.current && magicalEditorRef.current.getContent() !== value) {
+      magicalEditorRef.current.setContent(value);
     }
   }, [value]);
 
