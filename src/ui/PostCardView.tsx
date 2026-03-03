@@ -38,10 +38,6 @@ export const PostCardView = ({
   const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
   const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);
 
-  
-
-
-
   useEffect(() => {
     if (!settings.enabledCardView) {
       setHtmlMetas([]);
