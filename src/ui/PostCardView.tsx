@@ -8,21 +8,21 @@ import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
 import { Card } from "./Card";
 import {
-    DISPLAY_DATE_TIME_FORMAT,
-    DISPLAY_TIME_FORMAT
+  DISPLAY_DATE_TIME_FORMAT,
+  DISPLAY_TIME_FORMAT,
 } from "./date-formats";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
-import { Granularity } from "./types";
-
-
+import { granularityConfig } from "./granularity-config";
+import { Granularity, MomentLike } from "./types";
 
 export const PostCardView = ({
   post,
   settings,
   granularity,
+  viewedDate,
   onClickTime,
   onContextMenu,
   onEdit,
@@ -30,6 +30,7 @@ export const PostCardView = ({
   post: Post;
   settings: Settings;
   granularity: Granularity;
+  viewedDate: MomentLike;
   onClickTime: (post: Post) => void;
   onContextMenu?: (post: Post, e: React.MouseEvent) => void;
   onEdit?: (post: Post) => void;
@@ -59,8 +60,17 @@ export const PostCardView = ({
     })();
   }, [post.message, settings.enabledCardView]);
 
+  const unit = granularityConfig[granularity].unit;
+  const isCurrent = post.timestamp.isSame(window.moment(), unit);
+  const isDimmed = !isCurrent;
+
   return (
-    <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
+    <Card
+      onContextMenu={(e) => onContextMenu?.(post, e)}
+      onDoubleClick={() => onEdit?.(post)}
+      opacity={isDimmed ? 0.45 : 1}
+      filter={isDimmed ? "grayscale(40%)" : "none"}
+    >
       <Flex direction="column" maxHeight={"50vh"} padding={"var(--size-4-2)"}>
         <Box
           padding={5}
@@ -79,14 +89,13 @@ export const PostCardView = ({
             "&:hover::-webkit-scrollbar-thumb": {
               backgroundColor: "var(--scrollbar-thumb-bg, rgba(0,0,0,0.1))",
             },
-            "scrollbarWidth": "none",
+            scrollbarWidth: "none",
             "&:hover": {
-              "scrollbarWidth": "thin",
+              scrollbarWidth: "thin",
             },
           }}
         >
           <VStack align="stretch" gap={3}>
-
             {/* Message Body */}
             <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
               <Markdown gfm breaks>
@@ -107,7 +116,6 @@ export const PostCardView = ({
                 ))}
               </Box>
             )}
-
           </VStack>
         </Box>
 
@@ -123,8 +131,6 @@ export const PostCardView = ({
         >
           <Spacer />
           <HStack gap={2}>
-
-
             <Tag size="sm" variant="subtle" colorScheme="gray">
               {post.timestamp.format(
                 granularity === "day"
@@ -132,7 +138,6 @@ export const PostCardView = ({
                   : DISPLAY_DATE_TIME_FORMAT
               )}
             </Tag>
-            
           </HStack>
         </HStack>
       </Flex>

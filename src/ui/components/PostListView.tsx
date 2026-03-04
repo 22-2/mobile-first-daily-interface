@@ -10,6 +10,7 @@ interface PostListViewProps {
   editingPostOffset: number | null;
   settings: any;
   granularity: any;
+  viewedDate: any;
   handleClickTime: (post: any) => void;
   startEdit: (post: any) => void;
   deletePost: (post: any) => Promise<void>;
@@ -21,6 +22,7 @@ export const PostListView: React.FC<PostListViewProps> = ({
   editingPostOffset,
   settings,
   granularity,
+  viewedDate,
   handleClickTime,
   startEdit,
   deletePost,
@@ -39,6 +41,7 @@ export const PostListView: React.FC<PostListViewProps> = ({
               post={x}
               settings={settings}
               granularity={granularity}
+              viewedDate={viewedDate}
               onClickTime={handleClickTime}
               onEdit={startEdit}
               onContextMenu={(post, e) => {

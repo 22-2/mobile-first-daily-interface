@@ -175,6 +175,7 @@ export const ReactView = ({
             editingPostOffset={editingPostOffset}
             settings={settings}
             granularity={granularity}
+            viewedDate={date}
             handleClickTime={handleClickTime}
             startEdit={startEdit}
             deletePost={deletePost}
