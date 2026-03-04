@@ -8,7 +8,7 @@
 - [ ] deleted:: E:\AppData\obsidian\vaults\suizen\etc\journals\2026-02-19.md
 - [x] scope
 - [x] mfdiビューからマークダウンビューに移る時、フォーカスが利かない
-- [ ] 今日/今週などを右クリックしたとき、メニューを開く
+- [x] 今日/今週などを右クリックしたとき、メニューを開く
 - [x] quick menu
 - [x] 無秩序な関数の引数をservice-containerやcontextで整理したいっす
 - [x] thinoのパーサ以外削除
