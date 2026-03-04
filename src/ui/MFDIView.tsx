@@ -136,11 +136,15 @@ export class MFDIView extends ItemView {
     this.renderNewView();
     // Ctrl+Shift+Alt+O でモーダルエディタを開く（thino-extension と同じショートカット）
     this.scope = new Scope(this.app.scope);
-    this.scope?.register(["Ctrl", "Shift", "Alt"], "o", () => {
+    this.scope.register(["Ctrl"], "Enter", () => {
+      return true;
+    });
+    this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
       this.onOpenModalEditor?.();
       return true;
     });
   }
+
 
   async onClose() {
     this.root.unmount();

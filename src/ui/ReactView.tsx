@@ -330,14 +330,8 @@ export const ReactView = ({
   // ────────────────────────────────────────────────────────────
   // Handlers — input / submit
   // ────────────────────────────────────────────────────────────
-  const handleKeyUp = (event: React.KeyboardEvent) => {
-    if (event.ctrlKey && event.key === "Enter") {
-      handleSubmit();
-      event.preventDefault();
-    }
-  };
-
-  const handleSubmit = async () => {
+  // 投稿処理
+  const handleSubmit = React.useCallback(async () => {
     if (!canSubmit) {
       return;
     }
@@ -399,7 +393,28 @@ export const ReactView = ({
     } else {
       scrollContainerRef.current?.scrollTo({ top: 0 });
     }
-  };
+  }, [
+    canSubmit,
+    editingPost,
+    currentDailyNote,
+    settings,
+    postFormat,
+    granularity,
+    appHelper,
+    input,
+    asTask,
+    date,
+    storage,
+    updatePosts,
+    createNoteWithInsertAfter,
+  ]);
+
+  useEffect(() => {
+    view.onSubmit = handleSubmit;
+    return () => {
+      view.onSubmit = undefined;
+    };
+  }, [view, handleSubmit]);
 
   // ────────────────────────────────────────────────────────────
   // Handlers — edit / delete post
@@ -784,7 +799,13 @@ export const ReactView = ({
         onChange={setInput}
         minHeight="var(--size-4-18)"
         marginX="var(--size-4-4)"
-        onKeyUp={handleKeyUp}
+        onKeyDownCapture={(e: React.KeyboardEvent) => {
+          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSubmit();
+          }
+        }}
       />
 
       <HStack justify="flex-end" alignItems="center" paddingY={"0.5em"} paddingBottom={"1em"} marginRight={"2.4em"}>
