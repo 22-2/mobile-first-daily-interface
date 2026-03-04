@@ -7,7 +7,7 @@ import {
     useRef,
     useState
 } from "react";
-import { AppHelper } from "../../app-helper";
+import { AppHelper, Task } from "../../app-helper";
 import { postFormatMap, Settings } from "../../settings";
 import { MFDIStorage } from "../../utils/storage";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
@@ -15,13 +15,15 @@ import { granularityConfig } from "../granularity-config";
 import { toText } from "../post-utils";
 import { createTopicNote, getTopicNote } from "../topic-note";
 import { Granularity, Post, TimeFilter } from "../types";
+import { MFDIView } from "../MFDIView";
+import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
 
 interface UseMFDIAppOptions {
   app: App;
   settings: Settings;
-  view: any;
+  view: MFDIView;
 }
 
 export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
@@ -68,7 +70,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     () => storage.get<TimeFilter>("timeFilter", "all")
   );
 
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<ObsidianLiveEditorRef>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const postFormat = postFormatMap[settings.postFormatOption];
@@ -84,11 +86,11 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     usePostsAndTasks({ appHelper, postFormat, date, granularity });
 
   const updateCurrentDailyNote = useCallback(() => {
-    const n = getTopicNote(date, granularity, activeTopic);
+    const n = getTopicNote(app, date, granularity, activeTopic);
     if (n?.path !== currentDailyNote?.path) {
       setCurrentDailyNote(n);
     }
-  }, [date, granularity, activeTopic, currentDailyNote]);
+  }, [app, date, granularity, activeTopic, currentDailyNote]);
 
   const handleChangeTopic = useCallback(
     (topicId: string) => {
@@ -143,7 +145,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   };
 
   const createNoteWithInsertAfter = async () => {
-    const created = await createTopicNote(date, granularity, activeTopic);
+    const created = await createTopicNote(app, date, granularity, activeTopic);
     if (created && settings.insertAfter) {
       const content = await app.vault.read(created);
       if (!content.includes(settings.insertAfter)) {
@@ -161,7 +163,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
       await createNoteWithInsertAfter();
       setDate(date.clone());
     }
-    const note = getTopicNote(date, granularity, activeTopic);
+    const note = getTopicNote(app, date, granularity, activeTopic);
     if (note) {
       await app.workspace.getLeaf(true).openFile(note);
     }
@@ -204,7 +206,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
       await createNoteWithInsertAfter();
       setDate(date.clone());
     }
-    const note = getTopicNote(date, granularity, activeTopic);
+    const note = getTopicNote(app, date, granularity, activeTopic);
     if (note) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
     }
@@ -289,14 +291,14 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     })();
   };
 
-  const updateTaskChecked = async (task: any, checked: boolean) => {
+  const updateTaskChecked = async (task: Task, checked: boolean) => {
     if (!currentDailyNote) return;
     const mark = checked ? "x" : " ";
     setTasks(tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)));
     await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
   };
 
-  const openTaskInEditor = (task: any) => {
+  const openTaskInEditor = (task: Task) => {
     (async () => {
       if (!currentDailyNote) return;
       const leaf = app.workspace.getLeaf(true);
@@ -311,7 +313,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     })();
   };
 
-  const deleteTask = async (task: any) => {
+  const deleteTask = async (task: Task) => {
     if (!currentDailyNote) return;
     const path = currentDailyNote.path;
     const origin = await appHelper.loadFile(path);
@@ -326,7 +328,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     setTasks((await appHelper.getTasks(currentDailyNote)) ?? []);
   };
 
-  const taskContextMenu = (task: any, e: React.MouseEvent) => {
+  const taskContextMenu = (task: Task, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const menu = new Menu();

@@ -23,6 +23,7 @@ export class MFDIView extends ItemView {
   public onChangeTimeFilter?: (f: TimeFilter) => void;
   public onOpenModalEditor?: () => void;
   public navigation: boolean = false;
+  public onSubmit?: () => Promise<void>;
   public onChangeTopic?: (topicId: string) => void;
   public onTopicSaveRequested?: (topicId: string) => Promise<void>;
   public onOpenTopicManager?: () => void;

@@ -6,19 +6,21 @@ import { replaceDayToJa } from "../../utils/strings";
 import { granularityConfig } from "../granularity-config";
 import { ObsidianIcon } from "../ObsidianIcon";
 import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
-import { Granularity, MomentLike } from "../types";
+import { Granularity, MomentLike, Post } from "../types";
+import { MFDIView } from "../MFDIView";
+import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
 
 interface InputAreaProps {
   app: App;
-  view: any;
+  view: MFDIView;
   date: MomentLike;
   granularity: Granularity;
   input: string;
   setInput: (v: string) => void;
   asTask: boolean;
-  editingPost: any;
+  editingPost: Post | null;
   canSubmit: boolean;
-  inputRef: React.RefObject<any>;
+  inputRef: React.RefObject<ObsidianLiveEditorRef>;
   handlers: {
     handleClickMovePrevious: () => void;
     handleClickMoveNext: () => void;

@@ -17,7 +17,7 @@ export function parseMarkdownList(text: string): {
 } {
   const { groups } = Array.from(
     text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/g)
-  ).at(0) as any;
+  ).at(0) as unknown as { groups: { prefix: string; content: string } };
 
   return { prefix: groups.prefix, content: groups.content };
 }

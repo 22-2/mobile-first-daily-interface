@@ -4,16 +4,19 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { PostCardView } from "../PostCardView";
 
+import { Granularity, MomentLike, Post } from "../types";
+import { Settings } from "../../settings";
+
 interface PostListViewProps {
   app: App;
-  filteredPosts: any[];
+  filteredPosts: Post[];
   editingPostOffset: number | null;
-  settings: any;
-  granularity: any;
-  viewedDate: any;
-  handleClickTime: (post: any) => void;
-  startEdit: (post: any) => void;
-  deletePost: (post: any) => Promise<void>;
+  settings: Settings;
+  granularity: Granularity;
+  viewedDate: MomentLike;
+  handleClickTime: (post: Post) => void;
+  startEdit: (post: Post) => void;
+  deletePost: (post: Post) => Promise<void>;
 }
 
 export const PostListView: React.FC<PostListViewProps> = ({

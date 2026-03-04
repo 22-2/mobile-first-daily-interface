@@ -3,11 +3,14 @@ import * as React from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "../TaskView";
 
+import { Task } from "../../app-helper";
+import { MomentLike } from "../types";
+
 interface TaskListViewProps {
-  date: any;
-  tasks: any[];
-  updateTaskChecked: (task: any, checked: boolean) => void;
-  taskContextMenu: (task: any, e: React.MouseEvent) => void;
+  date: MomentLike;
+  tasks: Task[];
+  updateTaskChecked: (task: Task, checked: boolean) => void;
+  taskContextMenu: (task: Task, e: React.MouseEvent) => void;
 }
 
 export const TaskListView: React.FC<TaskListViewProps> = ({

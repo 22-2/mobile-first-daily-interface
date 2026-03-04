@@ -11,6 +11,7 @@ import { TaskListView } from "./components/TaskListView";
 import { useMFDIApp } from "./hooks/useMFDIApp";
 import { useViewSync } from "./hooks/useViewSync";
 import { Post } from "./types";
+import { MFDIView } from "./MFDIView";
 
 export type { Post };
 
@@ -21,7 +22,7 @@ export const ReactView = ({
 }: {
   app: App;
   settings: Settings;
-  view: any;
+  view: MFDIView;
 }) => {
   const {
     activeTopic,

@@ -16,8 +16,8 @@ export function sorter<T, U extends number | string>(
       : 0;
 }
 
-export function forceLowerCaseKeys(obj: { [key: string]: any }): {
-  [key: string]: any;
+export function forceLowerCaseKeys<T>(obj: { [key: string]: T }): {
+  [key: string]: T;
 } {
   return Object.fromEntries(
     Object.entries(obj).map(([key, value]) => [key.toLowerCase(), value])

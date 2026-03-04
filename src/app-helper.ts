@@ -1,5 +1,6 @@
-import { App, Editor, MarkdownView, TFile } from "obsidian";
+import { App, Command, Editor, MarkdownView, TFile } from "obsidian";
 import { pickTaskName } from "./utils/strings";
+import { Commands } from "obsidian-typings";
 
 export interface CodeBlock {
   lang: string;
@@ -26,10 +27,7 @@ export interface Task {
 
 interface UnsafeAppInterface {
   appId: string;
-  commands: {
-    commands: { [commandId: string]: any };
-    executeCommandById(commandId: string): boolean;
-  };
+  commands: Commands;
 }
 
 export class AppHelper {

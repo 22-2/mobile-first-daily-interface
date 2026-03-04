@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Task } from "../../app-helper";
 import { MFDIModal } from "../MFDIModal";
 import { Granularity, Post, TimeFilter } from "../types";
+import { MFDIView } from "../MFDIView";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */
@@ -32,8 +33,7 @@ export interface ViewSyncHandlers {
  * `view.onXxx` / `view.xxx` に最新の関数・値を設定する。
  */
 export function useViewSync(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  view: any,
+  view: MFDIView,
   granularity: Granularity,
   activeTopic: string,
   asTask: boolean,
