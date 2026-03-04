@@ -4,7 +4,6 @@ import esbuild from "esbuild";
 import path from "path";
 import process from "process";
 
-
 const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
 const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
 
@@ -49,15 +48,12 @@ const context = await esbuild.context({
   minify: prod,
   plugins: [
     obsidianCopyPlugin({
-      pluginsDir: PLUGINS_DIR,
-      force: true,
-    }),
-    obsidianCopyPlugin({
-      pluginsDir: "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
-      force: true,
-    }),
-    obsidianCopyPlugin({
-      pluginsDir: "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+      pluginsDir: [
+        PLUGINS_DIR,
+        "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+        "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
+        "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
+      ],
       force: true,
     }),
   ],

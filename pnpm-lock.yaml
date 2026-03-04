@@ -46,8 +46,8 @@ importers:
         version: 4.4.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
     devDependencies:
       '@22-2/esbuild-plugin-obsidian-copy':
-        specifier: file:./packages/esbuild-plugin-obsidian-copy
-        version: file:packages/esbuild-plugin-obsidian-copy
+        specifier: git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git
+        version: git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916
       '@types/bun':
         specifier: ^1.1.3
         version: 1.3.8
@@ -99,8 +99,9 @@ importers:
 
 packages:
 
-  '@22-2/esbuild-plugin-obsidian-copy@file:packages/esbuild-plugin-obsidian-copy':
-    resolution: {directory: packages/esbuild-plugin-obsidian-copy, type: directory}
+  '@22-2/esbuild-plugin-obsidian-copy@git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916':
+    resolution: {commit: 3677bb62f4af684968629eb8fc508260240fb916, repo: https://github.com/22-2/esbuild-plugin-obsidian-copy.git, type: git}
+    version: 0.1.0
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
@@ -2713,7 +2714,7 @@ packages:
 
 snapshots:
 
-  '@22-2/esbuild-plugin-obsidian-copy@file:packages/esbuild-plugin-obsidian-copy': {}
+  '@22-2/esbuild-plugin-obsidian-copy@git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916': {}
 
   '@antfu/install-pkg@1.1.0':
     dependencies:
