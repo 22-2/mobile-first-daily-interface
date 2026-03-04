@@ -1,7 +1,7 @@
 import { App, TFile } from "obsidian";
 import { useEffect } from "react";
 import { Task } from "../../app-helper";
-import { getPeriodicSettings } from "../granularity-config";
+import { getPeriodicSettings } from "../periodic-note-settings";
 import { Granularity, MomentLike, Post } from "../types";
 
 interface UseNoteSyncOptions {
