@@ -9,6 +9,7 @@ vi.mock("obsidian", () => ({
     extension: string = "";
     path: string = "";
   },
+  TFolder: class {},
   Vault: {
     recurseChildren: vi.fn(),
   },
@@ -143,25 +144,25 @@ describe("getAllTopicNotes", () => {
   });
 
   it("デフォルトトピック（空ID）は他トピックのファイルを拾わない", () => {
-    const result = getAllTopicNotes("day", "");
+    const result = getAllTopicNotes((window as any).app, "day", "");
     expect(Object.keys(result)).toHaveLength(1);
     expect(Object.values(result)[0].basename).toBe("2026-03-01");
   });
 
   it("novel トピックは novel- プレフィックスのファイルだけを返す", () => {
-    const result = getAllTopicNotes("day", "novel");
+    const result = getAllTopicNotes((window as any).app, "day", "novel");
     expect(Object.keys(result)).toHaveLength(1);
     expect(Object.values(result)[0].basename).toBe("novel-2026-03-02");
   });
 
   it("prog トピックは prog- プレフィックスのファイルだけを返す", () => {
-    const result = getAllTopicNotes("day", "prog");
+    const result = getAllTopicNotes((window as any).app, "day", "prog");
     expect(Object.keys(result)).toHaveLength(1);
     expect(Object.values(result)[0].basename).toBe("prog-2026-03-03");
   });
 
   it("無効ファイルや .md でないファイルは除外される", () => {
-    const result = getAllTopicNotes("day", "");
+    const result = getAllTopicNotes((window as any).app, "day", "");
     const basenames = Object.values(result).map((f) => f.basename);
     expect(basenames).not.toContain("invalid-file");
     expect(basenames).not.toContain("2026-03-04"); // txt
@@ -181,14 +182,14 @@ describe("getTopicNote", () => {
       (_folder: any, callback: (f: any) => void) => callback(f)
     );
 
-    const result = getTopicNote(createMockMoment("2026-03-01"), "day", "");
+    const result = getTopicNote((window as any).app, createMockMoment("2026-03-01"), "day", "");
     expect(result?.basename).toBe("2026-03-01");
   });
 
   it("該当ノートが存在しない場合は null を返す", () => {
     (Vault as any).recurseChildren.mockImplementation(() => {});
 
-    const result = getTopicNote(createMockMoment("2099-12-31"), "day", "");
+    const result = getTopicNote((window as any).app, createMockMoment("2099-12-31"), "day", "");
     expect(result).toBeNull();
   });
 });
