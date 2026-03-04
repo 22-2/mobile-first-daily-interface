@@ -11,5 +11,5 @@ export interface Post {
   startOffset: number;
   endOffset: number;
   bodyStartOffset: number;
-  kind: "codeblock" | "header" | "thino";
+  kind: "thino";
 }

@@ -18,7 +18,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   leaf: "left",
   autoStartOnLaunch: false,
-  postFormatOption: "コードブロック",
+  postFormatOption: "Thino",
   insertAfter: "",
   enabledCardView: true,
   reverseOrder: false,
@@ -30,14 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
 const leafOptions = ["left", "center", "right"];
 
 export const postFormatMap = {
-  コードブロック: { type: "codeblock" },
   Thino: { type: "thino" },
-  見出し1: { type: "header", level: 1 },
-  見出し2: { type: "header", level: 2 },
-  見出し3: { type: "header", level: 3 },
-  見出し4: { type: "header", level: 4 },
-  見出し5: { type: "header", level: 5 },
-  見出し6: { type: "header", level: 6 },
 } as const;
 export type PostFormatOption = keyof typeof postFormatMap;
 export type PostFormat = (typeof postFormatMap)[PostFormatOption];
@@ -57,19 +50,6 @@ export class MFDISettingTab extends PluginSettingTab {
 
     containerEl.createEl("h3", { text: "🌍 全体" });
 
-    new Setting(containerEl)
-      .setName("投稿形式")
-      .setDesc("MFDIの投稿形式を指定します。")
-      .addDropdown((tc) =>
-        tc
-          .addOptions(mirrorMap(Object.keys(postFormatMap), (x) => x))
-          .setValue(this.plugin.settings.postFormatOption)
-          .onChange(async (value) => {
-            this.plugin.settings.postFormatOption = value as PostFormatOption;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          })
-      );
 
     new Setting(containerEl)
       .setName("挿入位置 (文字列の後ろ)")

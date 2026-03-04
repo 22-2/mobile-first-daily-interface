@@ -63,10 +63,10 @@ export class MFDIView extends ItemView {
           this.onOpenTopicManager?.();
         });
     });
-    // --- 年月日の表示形式 ---
+    // --- 表示単位 ---
     menu.addSeparator();
     menu.addItem((item) => {
-      item.setTitle("年月日の表示形式").setIcon("calendar").setDisabled(true);
+      item.setTitle("表示単位").setIcon("calendar").setDisabled(true);
     });
     const granularities: Granularity[] = ["day", "week", "month", "year"];
     for (const g of granularities) {

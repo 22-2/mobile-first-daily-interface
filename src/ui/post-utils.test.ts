@@ -17,22 +17,10 @@ const mockMoment = (ts?: string) => {
 
 describe("toText", () => {
   const postFormatThino = { type: "thino" } as any;
-  const postFormatHeader = { type: "header", level: 3 } as any;
-  const postFormatCodeblock = { type: "codeblock" } as any;
 
-  test("thino format without body", () => {
+  test("thino format", () => {
     const result = toText("test", false, postFormatThino, "day");
     expect(result).toMatch(/^- \d{2}:\d{2}:\d{2}\n    test\n$/);
-  });
-
-  test("header format", () => {
-    const result = toText("test", false, postFormatHeader, "day");
-    expect(result).toMatch(/^### .*\n\ntest\n$/);
-  });
-
-  test("codeblock format", () => {
-    const result = toText("test", false, postFormatCodeblock, "day");
-    expect(result).toMatch(/^````fw .*\ntest\n````\n$/);
   });
 
   test("simulated update: should not merge with next post", () => {

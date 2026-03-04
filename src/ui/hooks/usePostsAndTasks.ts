@@ -38,48 +38,25 @@ export function usePostsAndTasks({
 
   const updatePosts = useCallback(
     async (note: TFile) => {
-      const _posts: Post[] =
-        postFormat.type === "thino"
-          ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => {
-              const hasDate = x.time.includes("-");
-              return {
-                timestamp: hasDate
-                  ? window.moment(x.time, DATE_TIME_FORMAT)
-                  : window.moment(
-                      `${date.format(DATE_FORMAT)} ${x.time}`,
-                      DATE_TIME_FORMAT
-                    ),
-                message: x.message,
-                offset: x.offset,
-                startOffset: x.startOffset,
-                endOffset: x.endOffset,
-                bodyStartOffset: x.bodyStartOffset,
-                kind: "thino" as const,
-              };
-            })
-          : postFormat.type === "codeblock"
-            ? ((await appHelper.getCodeBlocks(note)) ?? [])
-                ?.filter((x) => x.lang === "fw")
-                .map((x) => ({
-                  timestamp: window.moment(x.meta),
-                  message: x.code,
-                  offset: x.offset,
-                  startOffset: x.offset,
-                  endOffset: x.endOffset,
-                  bodyStartOffset: x.codeStartOffset,
-                  kind: "codeblock" as const,
-                }))
-            : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
-                .filter((x) => window.moment(x.title).isValid())
-                .map((x) => ({
-                  timestamp: window.moment(x.title),
-                  message: x.body.replace(/^\n+/g, "").replace(/\n+$/g, ""),
-                  offset: x.titleOffset,
-                  startOffset: x.titleOffset,
-                  endOffset: x.endOffset,
-                  bodyStartOffset: x.bodyStartOffset,
-                  kind: "header" as const,
-                }));
+      const _posts: Post[] = parseThinoEntries(
+        await appHelper.loadFile(note.path)
+      ).map((x) => {
+        const hasDate = x.time.includes("-");
+        return {
+          timestamp: hasDate
+            ? window.moment(x.time, DATE_TIME_FORMAT)
+            : window.moment(
+                `${date.format(DATE_FORMAT)} ${x.time}`,
+                DATE_TIME_FORMAT
+              ),
+          message: x.message,
+          offset: x.offset,
+          startOffset: x.startOffset,
+          endOffset: x.endOffset,
+          bodyStartOffset: x.bodyStartOffset,
+          kind: "thino" as const,
+        };
+      });
 
       setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
     },
