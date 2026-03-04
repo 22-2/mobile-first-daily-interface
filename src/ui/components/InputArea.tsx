@@ -1,5 +1,5 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import { App } from "obsidian";
+import { App, Menu } from "obsidian";
 import * as React from "react";
 import { ChangeEvent } from "react";
 import { replaceDayToJa } from "../../utils/strings";
@@ -9,6 +9,7 @@ import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
 import { Granularity, MomentLike, Post } from "../types";
 import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
 import { useAppContext } from "../context/AppContext";
+import { addGranularityMenuItems } from "../menus/granularityMenu";
 
 interface InputAreaProps {
   date: MomentLike;
@@ -70,6 +71,13 @@ export const InputArea: React.FC<InputAreaProps> = ({
             height="2em"
             cursor="pointer"
             onClick={handlers.handleClickToday}
+            onContextMenu={(e) => {
+              const menu = new Menu();
+              addGranularityMenuItems(menu, view.granularity, (g) => {
+                view.onChangeGranularity?.(g);
+              });
+              menu.showAtMouseEvent(e.nativeEvent);
+            }}
             bg={
               !isToday
                 ? "var(--color-accent)!important;"

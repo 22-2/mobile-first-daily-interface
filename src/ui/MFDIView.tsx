@@ -3,6 +3,7 @@ import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { granularityConfig } from "./granularity-config";
+import { addGranularityMenuItems } from "./menus/granularityMenu";
 import { ReactView } from "./ReactView";
 import { Granularity, TimeFilter } from "./types";
 
@@ -63,22 +64,9 @@ export class MFDIView extends ItemView {
           this.onOpenTopicManager?.();
         });
     });
-    // --- 表示単位 ---
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("表示単位").setIcon("calendar").setDisabled(true);
+    addGranularityMenuItems(menu, this.granularity, (g) => {
+      this.onChangeGranularity?.(g);
     });
-    const granularities: Granularity[] = ["day", "week", "month", "year"];
-    for (const g of granularities) {
-      menu.addItem((item) => {
-        item
-          .setTitle(granularityConfig[g].menuLabel)
-          .setChecked(this.granularity === g)
-          .onClick(() => {
-            this.onChangeGranularity?.(g);
-          });
-      });
-    }
 
     // --- 投稿モード ---
     menu.addSeparator();
