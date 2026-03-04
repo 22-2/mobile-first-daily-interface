@@ -1,13 +1,14 @@
 import { App, TFile } from "obsidian";
 import { useEffect } from "react";
 import { Task } from "../../app-helper";
-import { getNoteSettings } from "../granularity-config";
+import { getPeriodicSettings } from "../granularity-config";
 import { Granularity, MomentLike, Post } from "../types";
 
 interface UseNoteSyncOptions {
   app: App;
   date: MomentLike;
   granularity: Granularity;
+  topicId: string;
   currentDailyNote: TFile | null;
   setDate: (d: MomentLike) => void;
   setTasks: (t: Task[]) => void;
@@ -21,6 +22,7 @@ export function useNoteSync({
   app,
   date,
   granularity,
+  topicId,
   currentDailyNote,
   setDate,
   setTasks,
@@ -39,11 +41,12 @@ export function useNoteSync({
         }
 
         if (currentDailyNote == null) {
-          const ds = getNoteSettings(granularity);
+          const ds = getPeriodicSettings(granularity);
           const dir = ds.folder ? `${ds.folder}/` : "";
+          const prefix = topicId ? `${topicId}-` : "";
           const entry = date.format(ds.format ?? "YYYY-MM-DD");
           // 更新されたファイルがcurrentNoteになるべきファイルではなければ処理は不要
-          if (file.path !== `${dir}${entry}.md`) {
+          if (file.path !== `${dir}${prefix}${entry}.md`) {
             return;
           }
         }
@@ -70,5 +73,5 @@ export function useNoteSync({
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [date, currentDailyNote, granularity]);
+  }, [date, currentDailyNote, granularity, topicId]);
 }

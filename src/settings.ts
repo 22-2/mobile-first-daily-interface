@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import MFDIPlugin from "./main";
+import { DEFAULT_TOPIC, Topic } from "./topic";
 import { mirrorMap } from "./utils/collections";
 
 export interface Settings {
@@ -10,6 +11,8 @@ export interface Settings {
   enabledCardView: boolean;
   reverseOrder: boolean;
   updateDateStrategy: "never" | "always" | "same_day";
+  topics: Topic[];
+  activeTopic: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +23,8 @@ export const DEFAULT_SETTINGS: Settings = {
   enabledCardView: true,
   reverseOrder: false,
   updateDateStrategy: "never",
+  topics: [DEFAULT_TOPIC],
+  activeTopic: "",
 };
 
 const leafOptions = ["left", "center", "right"];

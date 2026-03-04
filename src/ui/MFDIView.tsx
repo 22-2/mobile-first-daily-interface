@@ -23,6 +23,9 @@ export class MFDIView extends ItemView {
   public onChangeTimeFilter?: (f: TimeFilter) => void;
   public onOpenModalEditor?: () => void;
   public navigation: boolean = false;
+  public activeTopic: string = "";
+  public onChangeTopic?: (topicId: string) => void;
+  public onOpenTopicManager?: () => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -49,6 +52,16 @@ export class MFDIView extends ItemView {
         });
     });
 
+    // --- トピック ---
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item
+        .setTitle("トピックを管理...")
+        .setIcon("folder-open")
+        .onClick(() => {
+          this.onOpenTopicManager?.();
+        });
+    });
     // --- 年月日の表示形式 ---
     menu.addSeparator();
     menu.addItem((item) => {

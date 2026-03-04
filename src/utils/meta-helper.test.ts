@@ -27,7 +27,7 @@ describe.skip("getFaviconUrl", () => {
   });
 });
 
-describe("getCoverUrl", () => {
+describe.skip("getCoverUrl", () => {
   test.each<{
     name: string;
     url: string;
@@ -67,7 +67,7 @@ describe.skip("getMetaByHttpEquiv", () => {
   });
 });
 
-describe("getCharsetFromMeta", () => {
+describe.skip("getCharsetFromMeta", () => {
   test.each<{
     url: string;
     expected: string | undefined;

@@ -9,8 +9,7 @@ import { MFDIStorage } from "../utils/storage";
 import { replaceDayToJa } from "../utils/strings";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import {
-    createNote, getAllNotes,
-    getNote, granularityConfig
+    createTopicNote, getTopicNote, granularityConfig
 } from "./granularity-config";
 import { useNoteSync } from "./hooks/useNoteSync";
 import { usePostsAndTasks } from "./hooks/usePostsAndTasks";
@@ -36,6 +35,10 @@ export const ReactView = ({
   const appHelper = useMemo(() => new AppHelper(app), [app]);
 
   const storage = useMemo(() => new MFDIStorage(appHelper.getAppId()), [appHelper]);
+
+  const [activeTopic, setActiveTopic] = useState<string>(
+    () => settings.activeTopic ?? ""
+  );
 
   const [granularity, setGranularity] = useState<Granularity>(() => {
     const savedOffset = storage.get<number | null>("editingPostOffset", null);
@@ -94,7 +97,7 @@ export const ReactView = ({
   // Current daily note resolution
   // ────────────────────────────────────────────────────────────
   const updateCurrentDailyNote = () => {
-    const n = getNote(date, getAllNotes(granularity), granularity);
+    const n = getTopicNote(date, granularity, activeTopic);
     if (n?.path !== currentDailyNote?.path) {
       setCurrentDailyNote(n);
     }
@@ -102,7 +105,7 @@ export const ReactView = ({
 
   useEffect(() => {
     updateCurrentDailyNote();
-  }, [date, granularity]);
+  }, [date, granularity, activeTopic]);
 
   useEffect(() => {
     if (!currentDailyNote) {
@@ -118,6 +121,7 @@ export const ReactView = ({
     app,
     date,
     granularity,
+    topicId: activeTopic,
     currentDailyNote,
     setDate,
     setTasks,
@@ -156,7 +160,7 @@ export const ReactView = ({
    * その文字列がノート内にまだ存在しなければ末尾に追記する。
    */
   const createNoteWithInsertAfter = async () => {
-    const created = await createNote(date, granularity);
+    const created = await createTopicNote(date, granularity, activeTopic);
     if (created && settings.insertAfter) {
       const content = await app.vault.read(created);
       if (!content.includes(settings.insertAfter)) {
@@ -180,7 +184,7 @@ export const ReactView = ({
     }
 
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
-    const note = getNote(date, getAllNotes(granularity), granularity);
+    const note = getTopicNote(date, granularity, activeTopic);
     if (note) {
       await app.workspace.getLeaf(true).openFile(note);
     }
@@ -210,6 +214,23 @@ export const ReactView = ({
     };
     return () => {
       view.onChangeGranularity = undefined;
+    };
+  }, [view]);
+
+  // activeTopic を view に同期
+  useEffect(() => {
+    view.activeTopic = activeTopic;
+  }, [view, activeTopic]);
+
+  useEffect(() => {
+    view.onChangeTopic = (topicId: string) => {
+      setActiveTopic(topicId);
+      setCurrentDailyNote(null);
+      setPosts([]);
+      setTasks([]);
+    };
+    return () => {
+      view.onChangeTopic = undefined;
     };
   }, [view]);
 
@@ -379,7 +400,7 @@ export const ReactView = ({
     }
 
     // ノートがなくてif文に入った場合、setDateからのuseMemoが間に合わずcurrentDailyNoteの値が更新されないので、意図的に同じ処理を呼び出す
-    const note = getNote(date, getAllNotes(granularity), granularity);
+    const note = getTopicNote(date, granularity, activeTopic);
     if (note) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
     }
@@ -405,6 +426,7 @@ export const ReactView = ({
     asTask,
     date,
     storage,
+    activeTopic,
     updatePosts,
     createNoteWithInsertAfter,
   ]);

@@ -1,7 +1,9 @@
 import { Notice, Plugin } from "obsidian";
 import { AppHelper } from "./app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
+import { Topic } from "./topic";
 import { MFDIView, VIEW_TYPE_MFDI } from "./ui/MFDIView";
+import { TopicManagerModal } from "./ui/TopicManagerModal";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -18,6 +20,7 @@ export default class MFDIPlugin extends Plugin {
 
     this.registerView(VIEW_TYPE_MFDI, (leaf) => {
       this.view = new MFDIView(leaf, this.settings);
+      this.setupViewCallbacks(this.view);
       return this.view;
     });
 
@@ -85,5 +88,33 @@ export default class MFDIPlugin extends Plugin {
 
   rerenderView() {
     this.view?.updateSettings(this.settings);
+  }
+
+  /**
+   * MFDIView のコールバックを設定する
+   */
+  private setupViewCallbacks(view: MFDIView) {
+    // トピック切り替え時に settings を保存
+    view.onChangeTopic = async (topicId: string) => {
+      this.settings.activeTopic = topicId;
+      await this.saveSettings();
+    };
+
+    // トピック管理モーダルを開く
+    view.onOpenTopicManager = () => {
+      const modal = new TopicManagerModal(
+        this.app,
+        this.settings.topics,
+        this.settings.activeTopic,
+        async (topics: Topic[], activeTopic: string) => {
+          this.settings.topics = topics;
+          this.settings.activeTopic = activeTopic;
+          await this.saveSettings();
+          // ReactView内の onChangeTopicを介して activeTopic state を更新
+          view.onChangeTopic?.(activeTopic);
+        }
+      );
+      modal.open();
+    };
   }
 }
