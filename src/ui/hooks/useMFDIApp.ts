@@ -1,24 +1,23 @@
 import { App, Menu, Notice, TFile } from "obsidian";
 import {
-    ChangeEvent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { AppHelper, Task } from "../../app-helper";
 import { postFormatMap, Settings } from "../../settings";
 import { MFDIStorage } from "../../utils/storage";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
-import { granularityConfig } from "../granularity-config";
 import { toText } from "../post-utils";
 import { createTopicNote, getTopicNote } from "../topic-note";
-import { Granularity, Post, TimeFilter } from "../types";
+import { Post } from "../types";
 import { MFDIView } from "../MFDIView";
-import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
+import { useMFDISettings } from "./internal/useMFDISettings";
+import { useMFDIEditor } from "./internal/useMFDIEditor";
 
 interface UseMFDIAppOptions {
   app: App;
@@ -26,6 +25,10 @@ interface UseMFDIAppOptions {
   view: MFDIView;
 }
 
+/**
+ * Mobile First Daily Interface アプリ全体のロジックを統合管理するメインHook。
+ * データの取得、更新、設定、編集状態のオーケストレーションを行います。
+ */
 export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   const appHelper = useMemo(() => new AppHelper(app), [app]);
   const storage = useMemo(
@@ -33,57 +36,43 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     [appHelper]
   );
 
-  const [activeTopic, setActiveTopic] = useState<string>(
-    () => settings.activeTopic ?? ""
-  );
-
-  const [granularity, setGranularity] = useState<Granularity>(() => {
-    const savedOffset = storage.get<number | null>("editingPostOffset", null);
-    if (savedOffset !== null) {
-      return storage.get<Granularity>("editingPostGranularity", "day");
-    }
-    return storage.get<Granularity>("granularity", "day");
-  });
-
-  const [date, setDate] = useState(() => {
-    const savedOffset = storage.get<number | null>("editingPostOffset", null);
-    let saved = null;
-    if (savedOffset !== null) {
-      saved = storage.get<string | null>("editingPostDate", null);
-    } else {
-      saved = storage.get<string | null>("date", null);
-    }
-    const m = saved ? window.moment(saved) : window.moment();
-    return m.isValid() ? m : window.moment();
-  });
+  const {
+    activeTopic,
+    setActiveTopic,
+    granularity,
+    setGranularity,
+    date,
+    setDate,
+    timeFilter,
+    setTimeFilter,
+    handleChangeCalendarDate,
+    handleClickMovePrevious,
+    handleClickMoveNext,
+    handleClickToday,
+  } = useMFDISettings({ app, settings, storage, view });
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
-  const [input, setInput] = useState(() => storage.get<string>("input", ""));
-  const [asTask, setAsTask] = useState<boolean>(
-    () => storage.get<boolean>("asTask", false)
-  );
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [editingPostOffset, setEditingPostOffset] = useState<number | null>(
-    () => storage.get<number | null>("editingPostOffset", null)
-  );
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>(
-    () => storage.get<TimeFilter>("timeFilter", "all")
-  );
-
-  const inputRef = useRef<ObsidianLiveEditorRef>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const postFormat = postFormatMap[settings.postFormatOption];
 
-  const canSubmit = useMemo(() => {
-    if (!editingPost) {
-      return input.trim().length > 0;
-    }
-    return input !== editingPost.message;
-  }, [input, editingPost]);
-
   const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks } =
     usePostsAndTasks({ appHelper, postFormat, date, granularity });
+
+  const {
+    input,
+    setInput,
+    asTask,
+    setAsTask,
+    editingPost,
+    setEditingPost,
+    editingPostOffset,
+    setEditingPostOffset,
+    inputRef,
+    canSubmit,
+    startEdit,
+    cancelEdit,
+  } = useMFDIEditor({ storage, posts, date, granularity });
 
   const updateCurrentDailyNote = useCallback(() => {
     const n = getTopicNote(app, date, granularity, activeTopic);
@@ -99,10 +88,8 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
-      // プラグイン側に保存を要求
-      view.onTopicSaveRequested?.(topicId);
     },
-    [activeTopic, view]
+    [activeTopic, setActiveTopic, setPosts, setTasks]
   );
 
   useEffect(() => {
@@ -112,7 +99,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   useEffect(() => {
     if (!currentDailyNote) return;
     Promise.all([updatePosts(currentDailyNote), updateTasks(currentDailyNote)]);
-  }, [currentDailyNote]);
+  }, [currentDailyNote, updatePosts, updateTasks]);
 
   useNoteSync({
     app,
@@ -127,22 +114,6 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     updatePosts,
     updateTasks,
   });
-
-  const handleChangeCalendarDate = (event: ChangeEvent<HTMLInputElement>) => {
-    setDate(granularityConfig[granularity].parseInput(event.target.value));
-  };
-
-  const handleClickMovePrevious = () => {
-    setDate(date.clone().subtract(1, granularityConfig[granularity].unit));
-  };
-
-  const handleClickMoveNext = () => {
-    setDate(date.clone().add(1, granularityConfig[granularity].unit));
-  };
-
-  const handleClickToday = () => {
-    setDate(window.moment());
-  };
 
   const createNoteWithInsertAfter = async () => {
     const created = await createTopicNote(app, date, granularity, activeTopic);
@@ -191,11 +162,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
         editingPost.endOffset,
         text
       );
-      setEditingPost(null);
-      setEditingPostOffset(null);
-      storage.remove("editingPostDate");
-      storage.remove("editingPostGranularity");
-      setInput("");
+      cancelEdit();
       await updatePosts(currentDailyNote);
       return;
     }
@@ -229,29 +196,13 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     input,
     asTask,
     date,
-    storage,
     activeTopic,
     updatePosts,
     createNoteWithInsertAfter,
+    cancelEdit,
+    setInput,
+    setDate,
   ]);
-
-  const startEdit = (post: Post) => {
-    setAsTask(false);
-    setEditingPost(post);
-    setEditingPostOffset(post.startOffset);
-    storage.set("editingPostDate", date.toISOString());
-    storage.set("editingPostGranularity", granularity);
-    setInput(post.message);
-    requestAnimationFrame(() => inputRef.current?.focus());
-  };
-
-  const cancelEdit = () => {
-    setEditingPost(null);
-    setEditingPostOffset(null);
-    storage.remove("editingPostDate");
-    storage.remove("editingPostGranularity");
-    setInput("");
-  };
 
   const deletePost = async (post: Post) => {
     if (!currentDailyNote) return;
@@ -345,54 +296,6 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     );
     menu.showAtMouseEvent(e as unknown as MouseEvent);
   };
-
-  // ────────────────────────────────────────────────────────────
-  // Storage Persistence
-  // ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    storage.set("granularity", granularity);
-  }, [granularity, storage]);
-
-  useEffect(() => {
-    storage.set("date", date.toISOString());
-  }, [date, storage]);
-
-  useEffect(() => {
-    storage.set("asTask", asTask);
-  }, [asTask, storage]);
-
-  useEffect(() => {
-    storage.set("timeFilter", timeFilter);
-  }, [timeFilter, storage]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      storage.set("input", input);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [input, storage]);
-
-  useEffect(() => {
-    storage.set("editingPostOffset", editingPostOffset);
-    if (editingPostOffset !== null) {
-      storage.set("editingPostDate", date.toISOString());
-      storage.set("editingPostGranularity", granularity);
-    }
-  }, [editingPostOffset, date, granularity, storage]);
-
-  useEffect(() => {
-    if (editingPostOffset !== null) {
-      const found = posts.find((p) => p.startOffset === editingPostOffset);
-      if (found) {
-        setEditingPost(found);
-      } else if (posts.length > 0) {
-        setEditingPost(null);
-        setEditingPostOffset(null);
-      }
-    } else {
-      setEditingPost(null);
-    }
-  }, [posts, editingPostOffset]);
 
   const filteredPosts = useMemo(() => {
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;

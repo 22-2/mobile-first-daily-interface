@@ -23,6 +23,9 @@ interface UsePostsAndTasksReturn {
   updateTasks: (note: TFile) => Promise<void>;
 }
 
+/**
+ * 指定されたファイルから投稿（Post）とタスク（Task）を抽出し、パースするHook。
+ */
 export function usePostsAndTasks({
   appHelper,
   postFormat,

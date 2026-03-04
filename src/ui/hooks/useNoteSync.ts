@@ -18,6 +18,9 @@ interface UseNoteSyncOptions {
   updateTasks: (note: TFile) => Promise<void>;
 }
 
+/**
+ * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
+ */
 export function useNoteSync({
   app,
   date,
