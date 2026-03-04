@@ -90,6 +90,19 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     }
   }, [date, granularity, activeTopic, currentDailyNote]);
 
+  const handleChangeTopic = useCallback(
+    (topicId: string) => {
+      if (activeTopic === topicId) return;
+      setActiveTopic(topicId);
+      setCurrentDailyNote(null);
+      setPosts([]);
+      setTasks([]);
+      // プラグイン側に保存を要求
+      view.onTopicSaveRequested?.(topicId);
+    },
+    [activeTopic, view]
+  );
+
   useEffect(() => {
     updateCurrentDailyNote();
   }, [date, granularity, activeTopic, updateCurrentDailyNote]);
@@ -391,7 +404,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   return {
     // States
     activeTopic,
-    setActiveTopic,
+    setActiveTopic: handleChangeTopic,
     granularity,
     setGranularity,
     date,

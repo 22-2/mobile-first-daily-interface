@@ -59,10 +59,6 @@ export function useViewSync(
   }, [view, granularity]);
 
   useEffect(() => {
-    view.activeTopic = activeTopic;
-  }, [view, activeTopic]);
-
-  useEffect(() => {
     view.asTask = asTask;
   }, [view, asTask]);
 
@@ -93,14 +89,10 @@ export function useViewSync(
   }, [view]);
 
   useEffect(() => {
-    view.onChangeTopic = (topicId: string) => {
-      setActiveTopic(topicId);
-      setCurrentDailyNote(null);
-      setPosts([]);
-      setTasks([]);
-    };
+    // setActiveTopic is actually handleChangeTopic
+    view.onChangeTopic = setActiveTopic;
     return () => { view.onChangeTopic = undefined; };
-  }, [view]);
+  }, [view, setActiveTopic]);
 
   useEffect(() => {
     view.onChangeAsTask = (t: boolean) => { setAsTask(t); };

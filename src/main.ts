@@ -94,8 +94,8 @@ export default class MFDIPlugin extends Plugin {
    * MFDIView のコールバックを設定する
    */
   private setupViewCallbacks(view: MFDIView) {
-    // トピック切り替え時に settings を保存
-    view.onChangeTopic = async (topicId: string) => {
+    // トピック切り替え時に settings を保存 (React側からの変更も含む)
+    view.onTopicSaveRequested = async (topicId: string) => {
       this.settings.activeTopic = topicId;
       await this.saveSettings();
     };
@@ -110,7 +110,7 @@ export default class MFDIPlugin extends Plugin {
           this.settings.topics = topics;
           this.settings.activeTopic = activeTopic;
           await this.saveSettings();
-          // ReactView内の onChangeTopicを介して activeTopic state を更新
+          // ReactView内の state を更新
           view.onChangeTopic?.(activeTopic);
         }
       );
