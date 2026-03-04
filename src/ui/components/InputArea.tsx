@@ -55,63 +55,88 @@ export const InputArea: React.FC<InputAreaProps> = ({
       backgroundColor="var(--background-secondary)"
       border="1px solid var(--table-border-color)"
     >
-      <HStack justify="center">
-        <ObsidianIcon
-          name="chevron-left"
-          boxSize="1.5em"
-          cursor="pointer"
-          onClick={handlers.handleClickMovePrevious}
-        />
+      <Flex align="center" paddingX="1em">
+        {/* Left Spacer */}
+        <Box flex="1" />
 
-        <Box textAlign={"center"} marginY={"1em"}>
-          <Button
-            marginRight={"0.3em"}
-            fontSize={"80%"}
-            width="3em"
-            height="2em"
+        {/* Center Navigation */}
+        <HStack justify="center" flex="0 0 auto">
+          <ObsidianIcon
+            name="chevron-left"
+            boxSize="1.5em"
             cursor="pointer"
-            onClick={handlers.handleClickToday}
-            onContextMenu={(e) => {
-              const menu = new Menu();
-              addGranularityMenuItems(menu, view.granularity, (g) => {
-                view.onChangeGranularity?.(g);
-              });
-              menu.showAtMouseEvent(e.nativeEvent);
-            }}
-            bg={
-              !isToday
-                ? "var(--color-accent)!important;"
-                : "var(--background-modifier-border)"
-            }
-            color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
-            _hover={{
-              bg: !isToday
-                ? "var(--color-accent-2)"
-                : "var(--background-modifier-border)",
-            }}
-          >
-            {granularityConfig[granularity].todayLabel}
-          </Button>
-          <Input
-            size="md"
-            type={granularityConfig[granularity].inputType}
-            value={date.format(granularityConfig[granularity].inputFormat)}
-            onChange={handlers.handleChangeCalendarDate}
-            width={granularity === "year" ? "5.5em" : "9em"}
+            onClick={handlers.handleClickMovePrevious}
           />
-          {granularityConfig[granularity].showWeekday && (
-            <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
-              {replaceDayToJa(date.format("(ddd)"))}
-            </Box>
-          )}
+
+          <Box textAlign={"center"} marginY={"1em"}>
+            <Button
+              marginRight={"0.3em"}
+              fontSize={"80%"}
+              width="3em"
+              height="2em"
+              cursor="pointer"
+              onClick={handlers.handleClickToday}
+              onContextMenu={(e) => {
+                const menu = new Menu();
+                addGranularityMenuItems(menu, view.granularity, (g) => {
+                  view.onChangeGranularity?.(g);
+                });
+                menu.showAtMouseEvent(e.nativeEvent);
+              }}
+              bg={
+                !isToday
+                  ? "var(--color-accent)!important;"
+                  : "var(--background-modifier-border)"
+              }
+              color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
+              _hover={{
+                bg: !isToday
+                  ? "var(--color-accent-2)"
+                  : "var(--background-modifier-border)",
+              }}
+            >
+              {granularityConfig[granularity].todayLabel}
+            </Button>
+            <Input
+              size="md"
+              type={granularityConfig[granularity].inputType}
+              value={date.format(granularityConfig[granularity].inputFormat)}
+              onChange={handlers.handleChangeCalendarDate}
+              width={granularity === "year" ? "5.5em" : "9em"}
+            />
+            {granularityConfig[granularity].showWeekday && (
+              <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
+                {replaceDayToJa(date.format("(ddd)"))}
+              </Box>
+            )}
+          </Box>
+          <ObsidianIcon
+            name="chevron-right"
+            boxSize="1.5em"
+            cursor="pointer"
+            onClick={handlers.handleClickMoveNext}
+          />
+        </HStack>
+
+        {/* Right Action */}
+        <Box flex="1" display="flex" justifyContent="flex-end">
+          <ObsidianIcon
+            name="maximize"
+            size="1.1em"
+            cursor="pointer"
+            color="var(--text-muted)"
+            padding="4px"
+            borderRadius="4px"
+            _hover={{
+              color: "var(--text-normal)",
+              bg: "var(--background-modifier-hover)",
+            }}
+            onClick={() => {
+              view.onOpenModalEditor?.();
+            }}
+          />
         </Box>
-        <ObsidianIcon
-          name="chevron-right"
-          boxSize="1.5em"
-          cursor="pointer"
-          onClick={handlers.handleClickMoveNext}
-        />
-      </HStack>
+      </Flex>
 
       <ObsidianLiveEditor
         ref={inputRef}
