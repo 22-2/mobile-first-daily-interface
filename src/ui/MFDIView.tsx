@@ -11,7 +11,6 @@ export const VIEW_TYPE_MFDI = "mfdi-view";
 // Why private?
 type IconName = string;
 
-
 export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
@@ -97,7 +96,11 @@ export class MFDIView extends ItemView {
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
     });
-    const filters: TimeFilter[] = ["all", "latest", 1, 2, 3, 6, 12];
+    const filters: TimeFilter[] = [
+      "all",
+      "latest",
+      //  1, 2, 3, 6, 12
+    ];
     for (const f of filters) {
       menu.addItem((item) => {
         const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
@@ -144,7 +147,6 @@ export class MFDIView extends ItemView {
       return true;
     });
   }
-
 
   async onClose() {
     this.root.unmount();
