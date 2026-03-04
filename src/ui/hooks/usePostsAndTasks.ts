@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { AppHelper, Task } from "../../app-helper";
 import { PostFormat } from "../../settings";
 import { sorter } from "../../utils/collections";
@@ -7,8 +7,9 @@ import { parseThinoEntries } from "../../utils/thino";
 import { DATE_FORMAT, DATE_TIME_FORMAT } from "../date-formats";
 import { Granularity, MomentLike, Post } from "../types";
 
+import { useAppContext } from "../context/AppContext";
+
 interface UsePostsAndTasksOptions {
-  appHelper: AppHelper;
   postFormat: PostFormat;
   date: MomentLike;
   granularity: Granularity;
@@ -27,64 +28,70 @@ interface UsePostsAndTasksReturn {
  * 指定されたファイルから投稿（Post）とタスク（Task）を抽出し、パースするHook。
  */
 export function usePostsAndTasks({
-  appHelper,
   postFormat,
   date,
   granularity,
 }: UsePostsAndTasksOptions): UsePostsAndTasksReturn {
+  const { appHelper } = useAppContext();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const updatePosts = async (note: TFile) => {
-    const _posts: Post[] =
-      postFormat.type === "thino"
-        ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => {
-            const hasDate = x.time.includes("-");
-            return {
-              timestamp: hasDate
-                ? window.moment(x.time, DATE_TIME_FORMAT)
-                : window.moment(
-                    `${date.format(DATE_FORMAT)} ${x.time}`,
-                    DATE_TIME_FORMAT
-                  ),
-              message: x.message,
-              offset: x.offset,
-              startOffset: x.startOffset,
-              endOffset: x.endOffset,
-              bodyStartOffset: x.bodyStartOffset,
-              kind: "thino" as const,
-            };
-          })
-        : postFormat.type === "codeblock"
-          ? ((await appHelper.getCodeBlocks(note)) ?? [])
-              ?.filter((x) => x.lang === "fw")
-              .map((x) => ({
-                timestamp: window.moment(x.meta),
-                message: x.code,
+  const updatePosts = useCallback(
+    async (note: TFile) => {
+      const _posts: Post[] =
+        postFormat.type === "thino"
+          ? parseThinoEntries(await appHelper.loadFile(note.path)).map((x) => {
+              const hasDate = x.time.includes("-");
+              return {
+                timestamp: hasDate
+                  ? window.moment(x.time, DATE_TIME_FORMAT)
+                  : window.moment(
+                      `${date.format(DATE_FORMAT)} ${x.time}`,
+                      DATE_TIME_FORMAT
+                    ),
+                message: x.message,
                 offset: x.offset,
-                startOffset: x.offset,
-                endOffset: x.endOffset,
-                bodyStartOffset: x.codeStartOffset,
-                kind: "codeblock" as const,
-              }))
-          : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
-              .filter((x) => window.moment(x.title).isValid())
-              .map((x) => ({
-                timestamp: window.moment(x.title),
-                message: x.body.replace(/^\n+/g, "").replace(/\n+$/g, ""),
-                offset: x.titleOffset,
-                startOffset: x.titleOffset,
+                startOffset: x.startOffset,
                 endOffset: x.endOffset,
                 bodyStartOffset: x.bodyStartOffset,
-                kind: "header" as const,
-              }));
+                kind: "thino" as const,
+              };
+            })
+          : postFormat.type === "codeblock"
+            ? ((await appHelper.getCodeBlocks(note)) ?? [])
+                ?.filter((x) => x.lang === "fw")
+                .map((x) => ({
+                  timestamp: window.moment(x.meta),
+                  message: x.code,
+                  offset: x.offset,
+                  startOffset: x.offset,
+                  endOffset: x.endOffset,
+                  bodyStartOffset: x.codeStartOffset,
+                  kind: "codeblock" as const,
+                }))
+            : ((await appHelper.getHeaders(note, postFormat.level)) ?? [])
+                .filter((x) => window.moment(x.title).isValid())
+                .map((x) => ({
+                  timestamp: window.moment(x.title),
+                  message: x.body.replace(/^\n+/g, "").replace(/\n+$/g, ""),
+                  offset: x.titleOffset,
+                  startOffset: x.titleOffset,
+                  endOffset: x.endOffset,
+                  bodyStartOffset: x.bodyStartOffset,
+                  kind: "header" as const,
+                }));
 
-    setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
-  };
+      setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
+    },
+    [appHelper, postFormat, date]
+  );
 
-  const updateTasks = async (note: TFile) => {
-    setTasks((await appHelper.getTasks(note)) ?? []);
-  };
+  const updateTasks = useCallback(
+    async (note: TFile) => {
+      setTasks((await appHelper.getTasks(note)) ?? []);
+    },
+    [appHelper]
+  );
 
   return { posts, tasks, setPosts, setTasks, updatePosts, updateTasks };
 }

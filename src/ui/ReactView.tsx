@@ -12,6 +12,7 @@ import { useMFDIApp } from "./hooks/useMFDIApp";
 import { useViewSync } from "./hooks/useViewSync";
 import { Post } from "./types";
 import { MFDIView } from "./MFDIView";
+import { AppContextProvider, useAppContext } from "./context/AppContext";
 
 export type { Post };
 
@@ -24,6 +25,15 @@ export const ReactView = ({
   settings: Settings;
   view: MFDIView;
 }) => {
+  return (
+    <AppContextProvider app={app} settings={settings} view={view}>
+      <ReactViewContent />
+    </AppContextProvider>
+  );
+};
+
+const ReactViewContent = () => {
+  const { app, settings, view } = useAppContext();
   const {
     activeTopic,
     setActiveTopic,
@@ -63,7 +73,7 @@ export const ReactView = ({
     openTaskInEditor,
     deleteTask,
     taskContextMenu,
-  } = useMFDIApp({ app, settings, view });
+  } = useMFDIApp();
 
   useViewSync(view, granularity, activeTopic, asTask, timeFilter, {
     handleSubmit,
@@ -75,7 +85,6 @@ export const ReactView = ({
     setTasks,
     setActiveTopic,
     setAsTask,
-    app,
     input,
     setInput,
   });
@@ -101,8 +110,6 @@ export const ReactView = ({
 
   const renderInputArea = (
     <InputArea
-      app={app}
-      view={view}
       date={date}
       granularity={granularity}
       input={input}
@@ -134,7 +141,6 @@ export const ReactView = ({
       allPostsCount={posts.length}
       timeFilter={timeFilter}
       activeTopicName={activeTopicName}
-      topics={settings.topics}
       onTopicChange={setActiveTopic}
     />
   );
@@ -171,10 +177,8 @@ export const ReactView = ({
           />
         ) : (
           <PostListView
-            app={app}
             filteredPosts={filteredPosts}
             editingPostOffset={editingPostOffset}
-            settings={settings}
             granularity={granularity}
             viewedDate={date}
             handleClickTime={handleClickTime}

@@ -7,11 +7,11 @@ import { PostCardView } from "../PostCardView";
 import { Granularity, MomentLike, Post } from "../types";
 import { Settings } from "../../settings";
 
+import { useAppContext } from "../context/AppContext";
+
 interface PostListViewProps {
-  app: App;
   filteredPosts: Post[];
   editingPostOffset: number | null;
-  settings: Settings;
   granularity: Granularity;
   viewedDate: MomentLike;
   handleClickTime: (post: Post) => void;
@@ -20,16 +20,15 @@ interface PostListViewProps {
 }
 
 export const PostListView: React.FC<PostListViewProps> = ({
-  app,
   filteredPosts,
   editingPostOffset,
-  settings,
   granularity,
   viewedDate,
   handleClickTime,
   startEdit,
   deletePost,
 }) => {
+  const { app, settings } = useAppContext();
   return (
     <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
       {filteredPosts
@@ -42,7 +41,6 @@ export const PostListView: React.FC<PostListViewProps> = ({
           >
             <PostCardView
               post={x}
-              settings={settings}
               granularity={granularity}
               viewedDate={viewedDate}
               onClickTime={handleClickTime}

@@ -7,12 +7,10 @@ import { granularityConfig } from "../granularity-config";
 import { ObsidianIcon } from "../ObsidianIcon";
 import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
 import { Granularity, MomentLike, Post } from "../types";
-import { MFDIView } from "../MFDIView";
 import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
+import { useAppContext } from "../context/AppContext";
 
 interface InputAreaProps {
-  app: App;
-  view: MFDIView;
   date: MomentLike;
   granularity: Granularity;
   input: string;
@@ -32,8 +30,6 @@ interface InputAreaProps {
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
-  app,
-  view,
   date,
   granularity,
   input,
@@ -44,6 +40,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   inputRef,
   handlers,
 }) => {
+  const { app, view } = useAppContext();
   const isToday = date.isSame(window.moment(), granularityConfig[granularity].unit);
 
   return (

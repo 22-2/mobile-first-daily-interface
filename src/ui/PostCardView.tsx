@@ -17,10 +17,10 @@ import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
 import { granularityConfig } from "./granularity-config";
 import { Granularity, MomentLike } from "./types";
+import { useAppContext } from "./context/AppContext";
 
 export const PostCardView = ({
   post,
-  settings,
   granularity,
   viewedDate,
   onClickTime,
@@ -28,13 +28,13 @@ export const PostCardView = ({
   onEdit,
 }: {
   post: Post;
-  settings: Settings;
   granularity: Granularity;
   viewedDate: MomentLike;
   onClickTime: (post: Post) => void;
   onContextMenu?: (post: Post, e: React.MouseEvent) => void;
   onEdit?: (post: Post) => void;
 }) => {
+  const { settings } = useAppContext();
   const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
   const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
   const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);

@@ -14,27 +14,20 @@ import { toText } from "../post-utils";
 import { createTopicNote, getTopicNote } from "../topic-note";
 import { Post } from "../types";
 import { MFDIView } from "../MFDIView";
+import { useAppContext } from "../context/AppContext";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
 import { useMFDISettings } from "./internal/useMFDISettings";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
 
-interface UseMFDIAppOptions {
-  app: App;
-  settings: Settings;
-  view: MFDIView;
-}
+interface UseMFDIAppOptions {}
 
 /**
  * Mobile First Daily Interface アプリ全体のロジックを統合管理するメインHook。
  * データの取得、更新、設定、編集状態のオーケストレーションを行います。
  */
-export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
-  const appHelper = useMemo(() => new AppHelper(app), [app]);
-  const storage = useMemo(
-    () => new MFDIStorage(appHelper.getAppId()),
-    [appHelper]
-  );
+export function useMFDIApp(_options?: UseMFDIAppOptions) {
+  const { app, appHelper, storage, settings } = useAppContext();
 
   const {
     activeTopic,
@@ -49,7 +42,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
-  } = useMFDISettings({ app, settings, storage, view });
+  } = useMFDISettings();
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +50,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   const postFormat = postFormatMap[settings.postFormatOption];
 
   const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks } =
-    usePostsAndTasks({ appHelper, postFormat, date, granularity });
+    usePostsAndTasks({ postFormat, date, granularity });
 
   const {
     input,
@@ -72,7 +65,7 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
     canSubmit,
     startEdit,
     cancelEdit,
-  } = useMFDIEditor({ storage, posts, date, granularity });
+  } = useMFDIEditor({ posts, date, granularity });
 
   const updateCurrentDailyNote = useCallback(() => {
     const n = getTopicNote(app, date, granularity, activeTopic);
@@ -102,7 +95,6 @@ export function useMFDIApp({ app, settings, view }: UseMFDIAppOptions) {
   }, [currentDailyNote, updatePosts, updateTasks]);
 
   useNoteSync({
-    app,
     date,
     granularity,
     topicId: activeTopic,

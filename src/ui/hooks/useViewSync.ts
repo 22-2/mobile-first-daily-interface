@@ -4,6 +4,7 @@ import { Task } from "../../app-helper";
 import { MFDIModal } from "../MFDIModal";
 import { Granularity, Post, TimeFilter } from "../types";
 import { MFDIView } from "../MFDIView";
+import { useAppContext } from "../context/AppContext";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */
@@ -21,7 +22,6 @@ export interface ViewSyncHandlers {
   /** asTask 変更 */
   setAsTask: (t: boolean) => void;
   /** modal editor */
-  app: App;
   input: string;
   setInput: (s: string) => void;
 }
@@ -48,11 +48,11 @@ export function useViewSync(
     setTasks,
     setActiveTopic,
     setAsTask,
-    app,
     input,
     setInput,
   }: ViewSyncHandlers
 ) {
+  const { app } = useAppContext();
   // ── 値の同期（read-only な参照） ──────────────────────────────
   useEffect(() => {
     view.granularity = granularity;

@@ -1,28 +1,19 @@
 import { App } from "obsidian";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Settings } from "../../../settings";
 import { MFDIStorage } from "../../../utils/storage";
 import { Granularity, MomentLike, TimeFilter } from "../../types";
 import { granularityConfig } from "../../granularity-config";
 import { MFDIView } from "../../MFDIView";
 
-interface UseMFDISettingsOptions {
-  app: App;
-  settings: Settings;
-  storage: MFDIStorage;
-  view: MFDIView;
-}
+import { useAppContext } from "../../context/AppContext";
 
 /**
  * 閲覧設定（トピック、期間、日付、フィルター）を管理するHook。
  * 値の永続化とカレンダー操作のハンドラを提供します。
  */
-export function useMFDISettings({
-  app,
-  settings,
-  storage,
-  view,
-}: UseMFDISettingsOptions) {
+export function useMFDISettings() {
+  const { settings, view, storage } = useAppContext();
   const [activeTopic, setActiveTopic] = useState<string>(
     () => settings.activeTopic ?? ""
   );

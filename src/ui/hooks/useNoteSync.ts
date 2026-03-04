@@ -4,8 +4,9 @@ import { Task } from "../../app-helper";
 import { getPeriodicSettings } from "../periodic-note-settings";
 import { Granularity, MomentLike, Post } from "../types";
 
+import { useAppContext } from "../context/AppContext";
+
 interface UseNoteSyncOptions {
-  app: App;
   date: MomentLike;
   granularity: Granularity;
   topicId: string;
@@ -22,7 +23,6 @@ interface UseNoteSyncOptions {
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
  */
 export function useNoteSync({
-  app,
   date,
   granularity,
   topicId,
@@ -34,6 +34,7 @@ export function useNoteSync({
   updatePosts,
   updateTasks,
 }: UseNoteSyncOptions) {
+  const { app } = useAppContext();
   useEffect(() => {
     const eventRef = app.metadataCache.on(
       "changed",

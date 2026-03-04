@@ -163,11 +163,13 @@ export class MFDIView extends ItemView {
   }
 
   async onClose() {
-    this.root.unmount();
+    this.root?.unmount();
   }
 
   renderNewView() {
-    this.root = createRoot(this.containerEl.children[1]);
+    if (!this.root) {
+      this.root = createRoot(this.containerEl.children[1]);
+    }
     this.root.render(
       <ReactView app={this.app} settings={this.settings} view={this} />
     );
@@ -175,7 +177,6 @@ export class MFDIView extends ItemView {
 
   updateSettings(settings: Settings) {
     this.settings = settings;
-    this.root.unmount();
     this.renderNewView();
   }
 }

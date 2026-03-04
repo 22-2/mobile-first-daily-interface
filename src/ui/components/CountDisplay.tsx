@@ -5,6 +5,8 @@ import { Topic } from "../../topic";
 import { granularityConfig } from "../granularity-config";
 import { Granularity, MomentLike } from "../types";
 
+import { useAppContext } from "../context/AppContext";
+
 interface CountDisplayProps {
   date: MomentLike;
   granularity: Granularity;
@@ -14,7 +16,6 @@ interface CountDisplayProps {
   allPostsCount: number;
   timeFilter: string | number;
   activeTopicName?: string;
-  topics?: Topic[];
   onTopicChange?: (topicId: string) => void;
 }
 
@@ -27,9 +28,10 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
   allPostsCount,
   timeFilter,
   activeTopicName,
-  topics,
   onTopicChange,
 }) => {
+  const { settings } = useAppContext();
+  const topics = settings.topics;
   const unitMap: Record<Granularity, string> = {
     day: "日",
     week: "週間",

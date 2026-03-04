@@ -3,8 +3,9 @@ import { MFDIStorage } from "../../../utils/storage";
 import { Granularity, MomentLike, Post } from "../../types";
 import { ObsidianLiveEditorRef } from "../../ObsidianLiveEditor";
 
+import { useAppContext } from "../../context/AppContext";
+
 interface UseMFDIEditorOptions {
-  storage: MFDIStorage;
   posts: Post[];
   date: MomentLike;
   granularity: Granularity;
@@ -15,11 +16,11 @@ interface UseMFDIEditorOptions {
  * 下書きの保存、編集モードの切り替え、入力フォーカスの制御を担当します。
  */
 export function useMFDIEditor({
-  storage,
   posts,
   date,
   granularity,
 }: UseMFDIEditorOptions) {
+  const { storage } = useAppContext();
   const [input, setInput] = useState(() => storage.get<string>("input", ""));
   const [asTask, setAsTask] = useState<boolean>(
     () => storage.get<boolean>("asTask", false)
