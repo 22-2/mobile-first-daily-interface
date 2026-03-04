@@ -1,5 +1,7 @@
 import { Box, HStack } from "@chakra-ui/react";
+import { Menu } from "obsidian";
 import * as React from "react";
+import { Topic } from "../../topic";
 import { granularityConfig } from "../granularity-config";
 import { Granularity, MomentLike } from "../types";
 
@@ -12,6 +14,8 @@ interface CountDisplayProps {
   allPostsCount: number;
   timeFilter: string | number;
   activeTopicName?: string;
+  topics?: Topic[];
+  onTopicChange?: (topicId: string) => void;
 }
 
 export const CountDisplay: React.FC<CountDisplayProps> = ({
@@ -23,6 +27,8 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
   allPostsCount,
   timeFilter,
   activeTopicName,
+  topics,
+  onTopicChange,
 }) => {
   const unitMap: Record<Granularity, string> = {
     day: "日",
@@ -54,13 +60,43 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
         {relativeText}
       </Box>
       <Box>
-        {asTask
-          ? `${tasksCount} tasks`
-          : `${filteredPostsCount}${
-              timeFilter !== "all" && granularity === "day"
-                ? `/${allPostsCount}`
-                : ""
-            } posts${activeTopicName ? ` in ${activeTopicName}` : ""}`}
+        {asTask ? (
+          `${tasksCount} tasks`
+        ) : (
+          <>
+            {filteredPostsCount}
+            {timeFilter !== "all" && granularity === "day"
+              ? `/${allPostsCount}`
+              : ""}{" "}
+            posts
+            {activeTopicName && (
+              <>
+                {" in "}
+                <Box
+                  as="span"
+                  cursor="pointer"
+                  _hover={{ textDecoration: "underline" }}
+                  onContextMenu={(e: React.MouseEvent) => {
+                    if (!topics || !onTopicChange) return;
+                    e.preventDefault();
+                    const menu = new Menu();
+                    topics.forEach((topic) => {
+                      menu.addItem((item) =>
+                        item
+                          .setTitle(topic.title)
+                          .setChecked(topic.title === activeTopicName)
+                          .onClick(() => onTopicChange(topic.id))
+                      );
+                    });
+                    menu.showAtMouseEvent(e as unknown as MouseEvent);
+                  }}
+                >
+                  {activeTopicName}
+                </Box>
+              </>
+            )}
+          </>
+        )}
       </Box>
     </HStack>
   );

@@ -121,10 +121,7 @@ export const ReactView = ({
     />
   );
 
-  const activeTopicName =
-    activeTopic !== ""
-      ? settings.topics.find((t) => t.id === activeTopic)?.title
-      : undefined;
+  const activeTopicName = settings.topics.find((t) => t.id === activeTopic)?.title;
 
   const renderCountDisplay = (
     <CountDisplay
@@ -136,6 +133,8 @@ export const ReactView = ({
       allPostsCount={posts.length}
       timeFilter={timeFilter}
       activeTopicName={activeTopicName}
+      topics={settings.topics}
+      onTopicChange={setActiveTopic}
     />
   );
 
