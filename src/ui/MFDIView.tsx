@@ -43,14 +43,14 @@ export class MFDIView extends ItemView {
           this.onOpenDailyNoteAction?.();
         });
     });
-    menu.addItem((item) => {
-      item
-        .setTitle("モーダルエディタで開く")
-        .setIcon("maximize")
-        .onClick(() => {
-          this.onOpenModalEditor?.();
-        });
-    });
+    // menu.addItem((item) => {
+    //   item
+    //     .setTitle("モーダルエディタで開く")
+    //     .setIcon("maximize")
+    //     .onClick(() => {
+    //       this.onOpenModalEditor?.();
+    //     });
+    // });
 
     // --- トピック ---
     menu.addSeparator();
@@ -104,34 +104,34 @@ export class MFDIView extends ItemView {
     });
 
     // --- 表示期間 ---
-    const showTimeFilter = this.granularity === "day" && !this.asTask;
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("表示期間").setIcon("clock").setDisabled(true);
-    });
-    const filters: TimeFilter[] = [
-      "all",
-      "latest",
-      //  1, 2, 3, 6, 12
-    ];
-    for (const f of filters) {
-      menu.addItem((item) => {
-        const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
-        item
-          .setTitle(
-            f === "all"
-              ? "すべて表示"
-              : f === "latest"
-              ? "最新のみ表示"
-              : `直近${f}時間`
-          )
-          .setChecked(isChecked)
-          .setDisabled(!showTimeFilter)
-          .onClick(() => {
-            this.onChangeTimeFilter?.(f);
-          });
-      });
-    }
+    // const showTimeFilter = this.granularity === "day" && !this.asTask;
+    // menu.addSeparator();
+    // menu.addItem((item) => {
+    //   item.setTitle("表示期間").setIcon("clock").setDisabled(true);
+    // });
+    // const filters: TimeFilter[] = [
+    //   "all",
+    //   "latest",
+    //   //  1, 2, 3, 6, 12
+    // ];
+    // for (const f of filters) {
+    //   menu.addItem((item) => {
+    //     const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
+    //     item
+    //       .setTitle(
+    //         f === "all"
+    //           ? "すべて表示"
+    //           : f === "latest"
+    //           ? "最新のみ表示"
+    //           : `直近${f}時間`
+    //       )
+    //       .setChecked(isChecked)
+    //       .setDisabled(!showTimeFilter)
+    //       .onClick(() => {
+    //         this.onChangeTimeFilter?.(f);
+    //       });
+    //   });
+    // }
 
     super.onPaneMenu(menu, prev);
   }
