@@ -153,14 +153,14 @@ export const TopicManagerView = ({
       paddingBottom="var(--size-4-4)"
     >
       {/* トピック一覧 */}
-      <VStack align="stretch" spacing={0}>
+      <VStack align="stretch" spacing={3}>
         {topics.map((topic, idx) => {
           const isActive = topic.id === activeTopic;
           const isEditing = editingId === topic.id;
 
           return (
             <React.Fragment key={topic.id}>
-              {idx > 0 && <Divider borderColor="var(--background-modifier-border)" />}
+              {/* {idx > 0 && <Divider borderColor="var(--background-modifier-border)" />} */}
               <Flex
                 align="center"
                 paddingX="var(--size-4-3)"
@@ -170,7 +170,7 @@ export const TopicManagerView = ({
                 backgroundColor={
                   isActive
                     ? "var(--background-modifier-active-hover)"
-                    : "transparent"
+                    : "var(--background-secondary)"
                 }
                 _hover={{ backgroundColor: "var(--background-modifier-hover)" }}
                 onDoubleClick={() => handleSwitch(topic.id)}
@@ -182,7 +182,7 @@ export const TopicManagerView = ({
                   height="2.5em"
                   borderRadius="2px"
                   backgroundColor={
-                    isActive ? "var(--color-accent)" : "transparent"
+                    isActive ? "var(--color-accent)" : "var(--background-secondary)"
                   }
                   marginRight="var(--size-4-3)"
                   flexShrink={0}
@@ -246,16 +246,20 @@ export const TopicManagerView = ({
                 </Box>
 
                 {/* ••• メニューボタン */}
-                <IconButton
+                <Flex
                   aria-label="メニュー"
-                  icon={<ObsidianIcon name="more-horizontal" boxSize="1.1em" />}
-                  size="sm"
-                  variant="ghost"
+                  height="24px"
+                  width="24px"
+                  justifyContent="center"
+                  alignItems="center"
                   flexShrink={0}
                   color="var(--text-muted)"
-                  _hover={{ color: "var(--text-normal)", backgroundColor: "var(--background-modifier-border)" }}
+                  _hover={{ color: "var(--text-normal)" }}
                   onClick={(e) => handleOpenMenu(topic, e)}
-                />
+                >
+                  <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
+                </Flex>
+
               </Flex>
             </React.Fragment>
           );
