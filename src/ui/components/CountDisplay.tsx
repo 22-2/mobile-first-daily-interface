@@ -11,6 +11,7 @@ interface CountDisplayProps {
   filteredPostsCount: number;
   allPostsCount: number;
   timeFilter: string | number;
+  activeTopicName?: string;
 }
 
 export const CountDisplay: React.FC<CountDisplayProps> = ({
@@ -21,6 +22,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
   filteredPostsCount,
   allPostsCount,
   timeFilter,
+  activeTopicName,
 }) => {
   const unitMap: Record<Granularity, string> = {
     day: "日",
@@ -58,7 +60,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
               timeFilter !== "all" && granularity === "day"
                 ? `/${allPostsCount}`
                 : ""
-            } posts`}
+            } posts${activeTopicName ? ` in ${activeTopicName}` : ""}`}
       </Box>
     </HStack>
   );
