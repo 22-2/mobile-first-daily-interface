@@ -24,11 +24,6 @@ export default class MFDIPlugin extends Plugin {
       return this.view;
     });
 
-    this.app.workspace.onLayoutReady(async () => {
-      if (this.settings.autoStartOnLaunch) {
-        await this.attachMFDIView();
-      }
-    });
     this.addRibbonIcon("pencil", "Mobile First Daily Interface", async () => {
       await this.attachMFDIView();
     });
@@ -43,10 +38,6 @@ export default class MFDIPlugin extends Plugin {
     });
   }
 
-  // async onunload() {
-  //   this.app.workspace.detachLeavesOfType(VIEW_TYPE_MFDI);
-  // }
-
   /**
    * MFDIのViewをアタッチします
    */
@@ -57,18 +48,7 @@ export default class MFDIPlugin extends Plugin {
       return existed;
     }
 
-    const targetLeaf =
-      this.settings.leaf === "left"
-        ? this.app.workspace.getLeftLeaf(false)
-        : this.settings.leaf === "center"
-        ? this.app.workspace.getLeaf(true)
-        : this.settings.leaf === "right"
-        ? this.app.workspace.getRightLeaf(false)
-        : undefined;
-    if (!targetLeaf) {
-      new Notice(`表示リーフの設定が不正です: ${this.settings.leaf}`);
-      return;
-    }
+    const targetLeaf = this.app.workspace.getLeaf(true)
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,

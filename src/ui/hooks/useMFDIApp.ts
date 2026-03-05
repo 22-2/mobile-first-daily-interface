@@ -170,13 +170,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
     }
     setInput("");
-    if (settings.reverseOrder) {
-      scrollContainerRef.current?.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-      });
-    } else {
-      scrollContainerRef.current?.scrollTo({ top: 0 });
-    }
+    scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [
     canSubmit,
     editingPost,

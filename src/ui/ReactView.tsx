@@ -93,16 +93,10 @@ const ReactViewContent = () => {
   useEffect(() => {
     if (!currentDailyNote || !scrollContainerRef.current) return;
     const timer = setTimeout(() => {
-      if (settings.reverseOrder) {
-        scrollContainerRef.current?.scrollTo({
-          top: scrollContainerRef.current.scrollHeight,
-        });
-      } else {
-        scrollContainerRef.current?.scrollTo({ top: 0 });
-      }
+      scrollContainerRef.current?.scrollTo({ top: 0 });
     }, 0);
     return () => clearTimeout(timer);
-  }, [currentDailyNote, settings.reverseOrder]);
+  }, [currentDailyNote]);
 
   const isEmpty =
     !currentDailyNote ||
@@ -155,8 +149,8 @@ const ReactViewContent = () => {
       backgroundColor="transparent"
       marginX="var(--size-4-2)"
     >
-      {!settings.reverseOrder && renderInputArea}
-      {!settings.reverseOrder && renderCountDisplay}
+      {renderInputArea}
+      {renderCountDisplay}
 
       <Box
         className="mfdi-scroll-container"
@@ -164,7 +158,7 @@ const ReactViewContent = () => {
         overflowY="scroll"
         overflowX="hidden"
         display="flex"
-        flexDirection={settings.reverseOrder ? "column-reverse" : "column"}
+        flexDirection={"column"}
         ref={scrollContainerRef}
       >
         {isEmpty ? (
@@ -188,9 +182,6 @@ const ReactViewContent = () => {
           />
         )}
       </Box>
-
-      {settings.reverseOrder && renderCountDisplay}
-      {settings.reverseOrder && renderInputArea}
     </Flex>
   );
 };
