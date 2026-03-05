@@ -1,22 +1,16 @@
-import { Granularity } from "./types";
+import { Granularity } from "../../ui/types";
 
-// ─────────────────────────────────────────────────────────────────
-// Constants (mirrored from obsidian-daily-notes-interface)
-// ─────────────────────────────────────────────────────────────────
-const DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
-const DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
-const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
-const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
-
-// ─────────────────────────────────────────────────────────────────
-// Periodic note settings (自前実装)
-// obsidian-daily-notes-interface の getXxxNoteSettings をTSに移植
-// ─────────────────────────────────────────────────────────────────
 export interface PeriodicNoteSettings {
   format: string;
   folder: string;
   template: string;
 }
+
+const DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
+const DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
+const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
+const DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
+const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
 
 function shouldUsePeriodicNotesSettings(periodicity: string): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,12 +104,15 @@ export function getYearlyNoteSettings(): PeriodicNoteSettings {
   }
 }
 
-/** 粒度に応じた設定を返す */
 export function getPeriodicSettings(g: Granularity): PeriodicNoteSettings {
   switch (g) {
-    case "week":  return getWeeklyNoteSettings();
-    case "month": return getMonthlyNoteSettings();
-    case "year":  return getYearlyNoteSettings();
-    default:      return getDailyNoteSettings();
+    case "week":
+      return getWeeklyNoteSettings();
+    case "month":
+      return getMonthlyNoteSettings();
+    case "year":
+      return getYearlyNoteSettings();
+    default:
+      return getDailyNoteSettings();
   }
 }

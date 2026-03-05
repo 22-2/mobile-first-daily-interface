@@ -11,7 +11,7 @@ import { postFormatMap, Settings } from "../../settings";
 import { MFDIStorage } from "../../utils/storage";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { toText } from "../post-utils";
-import { createTopicNote, getTopicNote } from "../topic-note";
+import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
 import { Post } from "../types";
 import { MFDIView } from "../MFDIView";
 import { useAppContext } from "../context/AppContext";
