@@ -6,6 +6,8 @@ import { granularityConfig } from "../granularity-config";
 import { Granularity, MomentLike } from "../types";
 
 import { useAppContext } from "../context/AppContext";
+import { UnderlinedClickable } from "./UnderlinedClickable";
+import { addGranularityMenuItems } from "../menus/granularityMenu";
 
 interface CountDisplayProps {
   date: MomentLike;
@@ -17,6 +19,7 @@ interface CountDisplayProps {
   timeFilter: string | number;
   activeTopicName?: string;
   onTopicChange?: (topicId: string) => void;
+  onGranularityChange?: (granularity: Granularity) => void;
 }
 
 export const CountDisplay: React.FC<CountDisplayProps> = ({
@@ -29,6 +32,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
   timeFilter,
   activeTopicName,
   onTopicChange,
+  onGranularityChange,
 }) => {
   const { settings } = useAppContext();
   const topics = settings.topics;
@@ -58,7 +62,16 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
       justifyContent="space-between"
     >
       <Box>
-        {date.format(granularityConfig[granularity].displayFormat)}
+        <UnderlinedClickable
+          onContextMenu={(e: React.MouseEvent) => {
+            e.preventDefault();
+            const menu = new Menu();
+            addGranularityMenuItems(menu, granularity, onGranularityChange);
+            menu.showAtMouseEvent(e as unknown as MouseEvent);
+          }}
+        >
+          {date.format(granularityConfig[granularity].displayFormat)}
+        </UnderlinedClickable>
         {relativeText}
       </Box>
       <Box>
@@ -74,10 +87,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
             {activeTopicName && (
               <>
                 {" in "}
-                <Box
-                  as="span"
-                  cursor="pointer"
-                  _hover={{ textDecoration: "underline" }}
+                <UnderlinedClickable
                   onContextMenu={(e: React.MouseEvent) => {
                     if (!topics || !onTopicChange) return;
                     e.preventDefault();
@@ -94,7 +104,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
                   }}
                 >
                   {activeTopicName}
-                </Box>
+                </UnderlinedClickable>
               </>
             )}
           </>

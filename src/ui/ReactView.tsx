@@ -142,6 +142,7 @@ const ReactViewContent = () => {
       timeFilter={timeFilter}
       activeTopicName={activeTopicName}
       onTopicChange={setActiveTopic}
+      onGranularityChange={setGranularity}
     />
   );
 
