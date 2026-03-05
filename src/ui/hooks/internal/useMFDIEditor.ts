@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MFDIStorage } from "../../../utils/storage";
 import { Granularity, MomentLike, Post } from "../../types";
 import { ObsidianLiveEditorRef } from "../../ObsidianLiveEditor";
@@ -39,23 +39,27 @@ export function useMFDIEditor({
     return input !== editingPost.message;
   }, [input, editingPost]);
 
-  const startEdit = (post: Post) => {
-    setAsTask(false);
-    setEditingPost(post);
-    setEditingPostOffset(post.startOffset);
-    storage.set("editingPostDate", date.toISOString());
-    storage.set("editingPostGranularity", granularity);
-    setInput(post.message);
-    requestAnimationFrame(() => inputRef.current?.focus());
-  };
+  const startEdit = useCallback(
+    (post: Post) => {
+      setAsTask(false);
+      setEditingPost(post);
+      setEditingPostOffset(post.startOffset);
+      storage.set("editingPostDate", date.toISOString());
+      storage.set("editingPostGranularity", granularity);
+      setInput(post.message);
+      requestAnimationFrame(() => inputRef.current?.focus());
+    },
+    [date, granularity, storage]
+  );
 
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setEditingPost(null);
     setEditingPostOffset(null);
     storage.remove("editingPostDate");
     storage.remove("editingPostGranularity");
     setInput("");
-  };
+  }, [storage]);
+
 
   // ────────────────────────────────────────────────────────────
   // Storage Persistence

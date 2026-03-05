@@ -196,50 +196,71 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setDate,
   ]);
 
-  const deletePost = async (post: Post) => {
-    if (!currentDailyNote) return;
-    const path = currentDailyNote.path;
-    const origin = await appHelper.loadFile(path);
-    let start = post.startOffset;
-    let end = post.endOffset;
-    if (origin.slice(end, end + 1) === "\n") end += 1;
-    if (post.kind === "header" && origin.slice(start - 1, start) === "\n")
-      start -= 1;
-    await appHelper.replaceRange(path, start, end, "");
-    let newContent = await appHelper.loadFile(path);
-    newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-    await app.vault.adapter.write(path, newContent);
-    if (editingPost?.startOffset === post.startOffset) cancelEdit();
-    await updatePosts(currentDailyNote);
-  };
-
-  const handleClickTime = (post: Post) => {
-    (async () => {
+  const deletePost = useCallback(
+    async (post: Post) => {
       if (!currentDailyNote) return;
-      const leaf = app.workspace.getLeaf(true);
-      await app.workspace.revealLeaf(leaf);
-      await leaf.openFile(currentDailyNote, { active: true });
-      await app.workspace.revealLeaf(leaf);
-      const editor = app.workspace.activeEditor!;
-      const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
-      const endPos = editor.editor!.offsetToPos(
-        post.bodyStartOffset + post.message.length
-      );
-      const from = { line: startPos.line, ch: startPos.ch };
-      const to = { line: endPos.line, ch: endPos.ch };
-      queueMicrotask(() => {
-        // @ts-expect-error
-        editor.editMode!.highlightSearchMatches([{ from, to }]);
-      });
-    })();
-  };
+      const path = currentDailyNote.path;
+      const origin = await appHelper.loadFile(path);
+      let start = post.startOffset;
+      let end = post.endOffset;
+      if (origin.slice(end, end + 1) === "\n") end += 1;
+      await appHelper.replaceRange(path, start, end, "");
+      let newContent = await appHelper.loadFile(path);
+      newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
+      await app.vault.adapter.write(path, newContent);
+      if (editingPost?.startOffset === post.startOffset) cancelEdit();
+      await updatePosts(currentDailyNote);
+    },
 
-  const updateTaskChecked = async (task: Task, checked: boolean) => {
-    if (!currentDailyNote) return;
-    const mark = checked ? "x" : " ";
-    setTasks(tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)));
-    await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
-  };
+
+    [
+      currentDailyNote,
+      appHelper,
+      app.vault.adapter,
+      editingPost?.startOffset,
+      cancelEdit,
+      updatePosts,
+    ]
+  );
+
+
+  const handleClickTime = useCallback(
+    (post: Post) => {
+      (async () => {
+        if (!currentDailyNote) return;
+        const leaf = app.workspace.getLeaf(true);
+        await app.workspace.revealLeaf(leaf);
+        await leaf.openFile(currentDailyNote, { active: true });
+        await app.workspace.revealLeaf(leaf);
+        const editor = app.workspace.activeEditor!;
+        const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
+        const endPos = editor.editor!.offsetToPos(
+          post.bodyStartOffset + post.message.length
+        );
+        const from = { line: startPos.line, ch: startPos.ch };
+        const to = { line: endPos.line, ch: endPos.ch };
+        queueMicrotask(() => {
+          // @ts-expect-error
+          editor.editMode!.highlightSearchMatches([{ from, to }]);
+        });
+      })();
+    },
+    [currentDailyNote, app.workspace]
+  );
+
+
+  const updateTaskChecked = useCallback(
+    async (task: Task, checked: boolean) => {
+      if (!currentDailyNote) return;
+      const mark = checked ? "x" : " ";
+      setTasks(
+        tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x))
+      );
+      await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
+    },
+    [currentDailyNote, tasks, setTasks, appHelper]
+  );
+
 
   const openTaskInEditor = (task: Task) => {
     (async () => {
@@ -271,23 +292,27 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setTasks((await appHelper.getTasks(currentDailyNote)) ?? []);
   };
 
-  const taskContextMenu = (task: Task, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const menu = new Menu();
-    menu.addItem((item) =>
-      item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task))
-    );
-    menu.addItem((item) =>
-      item.setTitle("編集").onClick(() => openTaskInEditor(task))
-    );
-    menu.addItem((item) =>
-      item.setTitle("削除").onClick(() => {
-        new DeleteConfirmModal(app, () => deleteTask(task)).open();
-      })
-    );
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
-  };
+  const taskContextMenu = useCallback(
+    (task: Task, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = new Menu();
+      menu.addItem((item) =>
+        item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task))
+      );
+      menu.addItem((item) =>
+        item.setTitle("編集").onClick(() => openTaskInEditor(task))
+      );
+      menu.addItem((item) =>
+        item.setTitle("削除").onClick(() => {
+          new DeleteConfirmModal(app, () => deleteTask(task)).open();
+        })
+      );
+      menu.showAtMouseEvent(e as unknown as MouseEvent);
+    },
+    [app, openTaskInEditor, deleteTask]
+  );
+
 
   const filteredPosts = useMemo(() => {
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;

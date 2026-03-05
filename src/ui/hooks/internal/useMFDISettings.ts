@@ -52,21 +52,25 @@ export function useMFDISettings() {
     [activeTopic, view]
   );
 
-  const handleChangeCalendarDate = (event: ChangeEvent<HTMLInputElement>) => {
-    setDate(granularityConfig[granularity].parseInput(event.target.value));
-  };
+  const handleChangeCalendarDate = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setDate(granularityConfig[granularity].parseInput(event.target.value));
+    },
+    [granularity]
+  );
 
-  const handleClickMovePrevious = () => {
+  const handleClickMovePrevious = useCallback(() => {
     setDate(date.clone().subtract(1, granularityConfig[granularity].unit));
-  };
+  }, [date, granularity]);
 
-  const handleClickMoveNext = () => {
+  const handleClickMoveNext = useCallback(() => {
     setDate(date.clone().add(1, granularityConfig[granularity].unit));
-  };
+  }, [date, granularity]);
 
-  const handleClickToday = () => {
+  const handleClickToday = useCallback(() => {
     setDate(window.moment());
-  };
+  }, []);
+
 
   // ────────────────────────────────────────────────────────────
   // Storage Persistence

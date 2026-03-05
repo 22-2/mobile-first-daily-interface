@@ -1,5 +1,6 @@
 import { App, Menu, Notice } from "obsidian";
 import * as React from "react";
+import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { PostCardView } from "../PostCardView";
@@ -19,21 +20,24 @@ interface PostListViewProps {
   deletePost: (post: Post) => Promise<void>;
 }
 
-export const PostListView: React.FC<PostListViewProps> = ({
-  filteredPosts,
-  editingPostOffset,
-  granularity,
-  viewedDate,
-  handleClickTime,
-  startEdit,
-  deletePost,
-}) => {
-  const { app, settings } = useAppContext();
-  return (
-    <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-      {filteredPosts
-        .filter((x) => x.startOffset !== editingPostOffset)
-        .map((x) => (
+export const PostListView: React.FC<PostListViewProps> = React.memo(
+  ({
+    filteredPosts,
+    editingPostOffset,
+    granularity,
+    viewedDate,
+    handleClickTime,
+    startEdit,
+    deletePost,
+  }) => {
+    const { app, settings } = useAppContext();
+    const displayedPosts = useMemo(
+      () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
+      [filteredPosts, editingPostOffset]
+    );
+    return (
+      <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
+        {displayedPosts.map((x) => (
           <CSSTransition
             key={x.timestamp.unix()}
             timeout={300}
@@ -77,6 +81,7 @@ export const PostListView: React.FC<PostListViewProps> = ({
             />
           </CSSTransition>
         ))}
-    </TransitionGroup>
-  );
-};
+      </TransitionGroup>
+    );
+  }
+);
