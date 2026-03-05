@@ -31,7 +31,11 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     },
   }));
 
-  const delayedFocus = () => {
+  const delayedFocus = (activeLeaf?: WorkspaceLeaf | null) => {
+    const targetLeaf = activeLeaf;
+    if (targetLeaf !== leaf) {
+      return;
+    }
     if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
       return;
     }
