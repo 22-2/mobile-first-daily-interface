@@ -15,80 +15,84 @@ export interface ObsidianLiveEditorRef {
   focus: () => void;
 }
 
-export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(({
-  leaf,
-  app,
-  value,
-  onChange,
-  ...props
-}, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const magicalEditorRef = useRef<MagicalEditor | null>(null);
+export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(
+  ({ leaf, app, value, onChange, ...props }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const magicalEditorRef = useRef<MagicalEditor | null>(null);
+    // エディタ自身が発生させた最新値を記録するref。
+    // これと value が一致する場合は「自分の入力による更新」なので setContent をスキップする。
+    const internalValueRef = useRef<string>(value);
 
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      magicalEditorRef.current?.focus();
-    },
-  }));
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        magicalEditorRef.current?.focus();
+      },
+    }));
 
-  const delayedFocus = (activeLeaf?: WorkspaceLeaf | null) => {
-    const targetLeaf = activeLeaf;
-    if (targetLeaf !== leaf) {
-      return;
-    }
-    if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
-      return;
-    }
-    setTimeout(() => {
-      magicalEditorRef.current?.focus();
-    });
-  };
-
-  useEffect(() => {
-    let active = true;
-    let eventRef: EventRef;
-    const init = async () => {
-      if (containerRef.current) {
-        containerRef.current.empty();
-        const editor = await MagicalEditor.create(app, leaf, {
-          onChange: (text) => {
-             if (active) onChange(text);
-          },
-          initialContent: value,
-          placeholder: "なんでもかいていいのよ😊",
-        });
-        if (active && containerRef.current) {
-          magicalEditorRef.current = editor;
-          containerRef.current.appendChild(editor.view.containerEl);
-          delayedFocus();
-          eventRef = app.workspace.on("active-leaf-change", delayedFocus);
-        } else {
-          editor.destroy();
-        }
+    const delayedFocus = (activeLeaf?: WorkspaceLeaf | null) => {
+      const targetLeaf = activeLeaf;
+      if (targetLeaf !== leaf) {
+        return;
       }
+      if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
+        return;
+      }
+      setTimeout(() => {
+        magicalEditorRef.current?.focus();
+      });
     };
 
-    init();
+    useEffect(() => {
+      let active = true;
+      let eventRef: EventRef;
+      const init = async () => {
+        if (containerRef.current) {
+          containerRef.current.empty();
+          const editor = await MagicalEditor.create(app, leaf, {
+            onChange: (text) => {
+              if (!active) return;
+              // エディタが自分で生成した値を記録しておく
+              internalValueRef.current = text;
+              onChange(text);
+            },
+            initialContent: value,
+            placeholder: "なんでもかいていいのよ😊",
+          });
+          if (active && containerRef.current) {
+            magicalEditorRef.current = editor;
+            containerRef.current.appendChild(editor.view.containerEl);
+            delayedFocus();
+            eventRef = app.workspace.on("active-leaf-change", delayedFocus);
+          } else {
+            editor.destroy();
+          }
+        }
+      };
 
-    return () => {
-      active = false;
-      app.workspace.offref(eventRef);
-      magicalEditorRef.current?.destroy();
-      magicalEditorRef.current = null;
-    };
-  }, []); 
+      init();
 
-  // Handle external value changes (e.g. clearing after submit or starting edit)
-  useEffect(() => {
-    if (magicalEditorRef.current && magicalEditorRef.current.getContent() !== value) {
-      magicalEditorRef.current.setContent(value);
-    }
-  }, [value]);
+      return () => {
+        active = false;
+        app.workspace.offref(eventRef);
+        magicalEditorRef.current?.destroy();
+        magicalEditorRef.current = null;
+      };
+    }, []);
 
-  return (
-    <Box
-      ref={containerRef}
-      {...props}
-    />
-  );
-});
+    // Handle external value changes (e.g. clearing after submit or starting edit)
+    // 「エディタ自身が発生させた変更の伝播」は無視し、送信後クリアや編集開始などの
+    // 外部からの書き換えのみを反映する。これでIME変換中に setContent が走らなくなる。
+    useEffect(() => {
+      if (value === internalValueRef.current) return;
+      internalValueRef.current = value;
+      magicalEditorRef.current?.setContent(value);
+    }, [value]);
+
+    return (
+      <Box
+        ref={containerRef}
+        {...props}
+      />
+    );
+  }
+);
