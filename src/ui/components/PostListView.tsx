@@ -39,8 +39,8 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
       <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
         {displayedPosts.map((x) => (
           <CSSTransition
-            key={x.timestamp.unix()}
-            timeout={100}
+            key={x.timestamp.valueOf()}
+            timeout={300}
             classNames="item"
           >
             <div>

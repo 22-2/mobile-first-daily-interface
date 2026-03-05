@@ -7,13 +7,19 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+:root {
+  --mfdi-app-transition-ms: 150ms;
+}
+
 .item-enter {
   opacity: 0 !important;
+  transform: translateY(-20px);
 }
 
 .item-enter-active {
   opacity: 1 !important;
-  transition: opacity 50ms ease-in;
+  transform: translateY(0);
+  transition: opacity var(--mfdi-app-transition-ms) ease-out, transform var(--mfdi-app-transition-ms) ease-out;
 }
 
 .item-exit {
@@ -22,7 +28,8 @@ If your plugin does not need CSS, delete this file.
 
 .item-exit-active {
   opacity: 0 !important;
-  transition: opacity 50ms ease-in;
+  transform: scale(0.95);
+  transition: opacity var(--mfdi-app-transition-ms) ease-in, transform var(--mfdi-app-transition-ms) ease-in;
 }
 
 
