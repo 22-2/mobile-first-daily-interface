@@ -3,6 +3,7 @@ import builtins from "builtin-modules";
 import esbuild from "esbuild";
 import path from "path";
 import process from "process";
+import fs from "fs";
 
 const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
 const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
@@ -42,7 +43,7 @@ const context = await esbuild.context({
   alias: {
     "react": "preact/compat",
     "react-dom": "preact/compat",
-    "react-dom/client": "preact/compat",
+    "react-dom/client": "preact/compat/client",
     "react-dom/test-utils": "preact/test-utils",
     "react/jsx-runtime": "preact/jsx-runtime",
   },
@@ -53,6 +54,7 @@ const context = await esbuild.context({
   treeShaking: true,
   outfile: "main.js",
   minify: prod,
+  metafile: true,
   plugins: [
     obsidianCopyPlugin({
       pluginsDir: [
@@ -67,7 +69,8 @@ const context = await esbuild.context({
 });
 
 if (prod) {
-  await context.rebuild();
+  const result = await context.rebuild();
+  fs.writeFileSync("metafile.json", JSON.stringify(result.metafile));
   process.exit(0);
 } else {
   await context.watch();
