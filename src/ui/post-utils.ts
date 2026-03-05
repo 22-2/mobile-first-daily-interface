@@ -1,6 +1,6 @@
 import { PostFormat } from "../settings";
 import { formatTaskText } from "../utils/task-text";
-import { DATE_TIME_FORMAT, TIME_FORMAT } from "./date-formats";
+import { DATE_TIME_FORMAT } from "./date-formats";
 import { Granularity, MomentLike } from "./types";
 
 export function toText(
@@ -16,9 +16,8 @@ export function toText(
 
   const now = timestamp ?? window.moment();
 
-  // 日ごと以外は年月日を追加。
-  const timeFormat = granularity === "day" ? TIME_FORMAT : DATE_TIME_FORMAT;
-  const time = now.format(timeFormat);
+  // 常に年月日を記録する。
+  const time = now.format(DATE_TIME_FORMAT);
   const body = input
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")

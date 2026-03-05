@@ -25,6 +25,18 @@ interface UsePostsAndTasksReturn {
 }
 
 /**
+ * エントリの時刻文字列と日付ファイルの日付から timestamp を解決する。
+ * 時刻のみ（"HH:mm:ss" 形式）の旧エントリは後方互換のため date の日付を補完する。
+ * 日付あり（"YYYY-MM-DD HH:mm:ss" 形式）の新エントリはそのままパースする。
+ */
+export function resolveTimestamp(time: string, date: MomentLike): MomentLike {
+  const hasDate = time.includes("-");
+  return hasDate
+    ? window.moment(time, DATE_TIME_FORMAT)
+    : window.moment(`${date.format(DATE_FORMAT)} ${time}`, DATE_TIME_FORMAT);
+}
+
+/**
  * 指定されたファイルから投稿（Post）とタスク（Task）を抽出し、パースするHook。
  */
 export function usePostsAndTasks({
@@ -41,14 +53,8 @@ export function usePostsAndTasks({
       const _posts: Post[] = parseThinoEntries(
         await appHelper.loadFile(note.path)
       ).map((x) => {
-        const hasDate = x.time.includes("-");
         return {
-          timestamp: hasDate
-            ? window.moment(x.time, DATE_TIME_FORMAT)
-            : window.moment(
-                `${date.format(DATE_FORMAT)} ${x.time}`,
-                DATE_TIME_FORMAT
-              ),
+          timestamp: resolveTimestamp(x.time, date),
           message: x.message,
           offset: x.offset,
           startOffset: x.startOffset,
