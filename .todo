@@ -14,3 +14,4 @@
 - [x] thinoのパーサ以外削除
 - [ ] obsidian-daily-notes-interfaceからの流用を再統合して単一モジュール化
 - [ ] MFDIViewのscopeが利かない
+- [ ] get/setstateに保存

@@ -66,6 +66,10 @@ export function useViewSync(
     view.timeFilter = timeFilter;
   }, [view, timeFilter]);
 
+  useEffect(() => {
+    view.activeTopic = activeTopic;
+  }, [view, activeTopic]);
+
   // ── ハンドラの同期 ─────────────────────────────────────────────
   useEffect(() => {
     view.onSubmit = handleSubmit;

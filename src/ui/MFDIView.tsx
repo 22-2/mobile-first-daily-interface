@@ -25,6 +25,7 @@ export class MFDIView extends ItemView {
   public onOpenModalEditor?: () => void;
   public navigation: boolean = false;
   public onSubmit?: () => Promise<void>;
+  public activeTopic: string = "";
   public onChangeTopic?: (topicId: string) => void;
   public onTopicSaveRequested?: (topicId: string) => Promise<void>;
   public onOpenTopicManager?: () => void;
@@ -167,4 +168,31 @@ export class MFDIView extends ItemView {
     this.settings = settings;
     this.renderNewView();
   }
+
+  getState(): MFDIViewState {
+    return {
+      granularity: this.granularity,
+      asTask: this.asTask,
+      timeFilter: this.timeFilter,
+      activeTopic: this.activeTopic,
+    };
+  }
+
+  async setState(state: MFDIViewState) {
+    this.granularity = (state.granularity as Granularity) ?? this.granularity;
+    this.asTask = (state.asTask as boolean) ?? this.asTask;
+    this.timeFilter = (state.timeFilter as TimeFilter) ?? this.timeFilter;
+    if (state.activeTopic !== undefined) {
+      this.activeTopic = state.activeTopic as string;
+      this.onChangeTopic?.(this.activeTopic);
+    }
+    this.renderNewView();
+  }
+}
+
+interface MFDIViewState extends Record<string, unknown> {
+  granularity: Granularity;
+  asTask: boolean;
+  timeFilter: TimeFilter;
+  activeTopic: string;
 }
