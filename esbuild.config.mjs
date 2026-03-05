@@ -4,6 +4,7 @@ import esbuild from "esbuild";
 import path from "path";
 import process from "process";
 import fs from "fs";
+import babel from "esbuild-plugin-babel";
 
 const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
 const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
@@ -56,6 +57,18 @@ const context = await esbuild.context({
   minify: prod,
   metafile: true,
   plugins: [
+    babel({
+      filter: /\.[jt]sx?$/,
+      config: {
+        presets: [
+          ["@babel/preset-react", { runtime: "automatic" }],
+          "@babel/preset-typescript",
+        ],
+        plugins: [
+          ["babel-plugin-react-compiler", { target: "18" }],
+        ],
+      },
+    }),
     obsidianCopyPlugin({
       pluginsDir: [
         PLUGINS_DIR,
@@ -67,6 +80,7 @@ const context = await esbuild.context({
     }),
   ],
 });
+
 
 if (prod) {
   const result = await context.rebuild();
