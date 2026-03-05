@@ -40,45 +40,47 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
         {displayedPosts.map((x) => (
           <CSSTransition
             key={x.timestamp.unix()}
-            timeout={300}
+            timeout={100}
             classNames="item"
           >
-            <PostCardView
-              post={x}
-              granularity={granularity}
-              viewedDate={viewedDate}
-              onClickTime={handleClickTime}
-              onEdit={startEdit}
-              onContextMenu={(post, e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const menu = new Menu();
-                menu.addItem((item) =>
-                  item.setTitle("投稿にジャンプ").onClick(() => {
-                    handleClickTime(post);
-                  })
-                );
-                menu.addItem((item) =>
-                  item.setTitle("編集").onClick(() => {
-                    startEdit(post);
-                  })
-                );
-                menu.addItem((item) =>
-                  item.setTitle("コピー").onClick(async () => {
-                    await navigator.clipboard.writeText(post.message);
-                    new Notice("copied");
-                  })
-                );
-                menu.addItem((item) =>
-                  item
-                    .setTitle("削除")
-                    .onClick(() => {
-                      new DeleteConfirmModal(app, () => deletePost(post)).open();
+            <div>
+              <PostCardView
+                post={x}
+                granularity={granularity}
+                viewedDate={viewedDate}
+                onClickTime={handleClickTime}
+                onEdit={startEdit}
+                onContextMenu={(post, e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const menu = new Menu();
+                  menu.addItem((item) =>
+                    item.setTitle("投稿にジャンプ").onClick(() => {
+                      handleClickTime(post);
                     })
-                );
-                menu.showAtMouseEvent(e as unknown as MouseEvent);
-              }}
-            />
+                  );
+                  menu.addItem((item) =>
+                    item.setTitle("編集").onClick(() => {
+                      startEdit(post);
+                    })
+                  );
+                  menu.addItem((item) =>
+                    item.setTitle("コピー").onClick(async () => {
+                      await navigator.clipboard.writeText(post.message);
+                      new Notice("copied");
+                    })
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("削除")
+                      .onClick(() => {
+                        new DeleteConfirmModal(app, () => deletePost(post)).open();
+                      })
+                  );
+                  menu.showAtMouseEvent(e as unknown as MouseEvent);
+                }}
+              />
+            </div>
           </CSSTransition>
         ))}
       </TransitionGroup>

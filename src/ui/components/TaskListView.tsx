@@ -35,7 +35,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
             {incompleteTasks.map((x) => (
               <CSSTransition
                 key={date.format() + String(x.offset)}
-                timeout={300}
+                timeout={100}
                 classNames="item"
               >
                 <Box m={10}>
@@ -57,7 +57,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
             {completedTasks.map((x) => (
               <CSSTransition
                 key={date.format() + String(x.offset)}
-                timeout={300}
+                timeout={100}
                 classNames="item"
               >
                 <Box m={10}>

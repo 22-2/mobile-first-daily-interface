@@ -27,6 +27,8 @@ export const PostCardView = React.memo(
     onClickTime,
     onContextMenu,
     onEdit,
+    className,
+    style,
   }: {
     post: Post;
     granularity: Granularity;
@@ -34,6 +36,8 @@ export const PostCardView = React.memo(
     onClickTime: (post: Post) => void;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
+    className?: string;
+    style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
     const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
@@ -69,11 +73,14 @@ export const PostCardView = React.memo(
 
     return (
       <Card
+        className={className}
+        style={style}
         onContextMenu={(e) => onContextMenu?.(post, e)}
         onDoubleClick={() => onEdit?.(post)}
         opacity={isDimmed ? 0.45 : 1}
         filter={isDimmed ? "grayscale(40%)" : "none"}
       >
+
         <Flex direction="column" maxHeight={"50vh"} padding={"var(--size-4-2)"}>
           <Box
             padding={5}

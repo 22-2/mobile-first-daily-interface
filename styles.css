@@ -8,22 +8,24 @@ If your plugin does not need CSS, delete this file.
 */
 
 .item-enter {
-  opacity: 0;
+  opacity: 0 !important;
 }
 
 .item-enter-active {
-  opacity: 1;
-  transition: opacity 500ms ease-in;
+  opacity: 1 !important;
+  transition: opacity 50ms ease-in;
 }
 
 .item-exit {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .item-exit-active {
-  opacity: 0;
-  transition: opacity 500ms ease-in;
+  opacity: 0 !important;
+  transition: opacity 50ms ease-in;
 }
+
+
 
 [data-type="mfdi-view"] .view-content {
   padding-bottom: 0;
