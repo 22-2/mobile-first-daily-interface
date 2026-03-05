@@ -139,8 +139,7 @@ export class MFDIView extends ItemView {
   }
 
   async onOpen() {
-    this.renderNewView();
-    // Ctrl+Shift+Alt+O でモーダルエディタを開く（thino-extension と同じショートカット）
+    // scope は renderNewView より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
     this.scope = new Scope(this.app.scope);
     this.scope.register(["Ctrl"], "Enter", () => {
       return true;
@@ -149,6 +148,8 @@ export class MFDIView extends ItemView {
       this.onOpenModalEditor?.();
       return true;
     });
+
+    this.renderNewView();
   }
 
   async onClose() {
