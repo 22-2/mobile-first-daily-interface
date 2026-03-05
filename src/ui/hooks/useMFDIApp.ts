@@ -94,8 +94,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   useEffect(() => {
     if (!currentDailyNote) return;
-    Promise.all([updatePosts(currentDailyNote), updateTasks(currentDailyNote)]);
-  }, [currentDailyNote, updatePosts, updateTasks]);
+    const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
+    if (timeFilter !== "this_week") {
+      promises.push(updatePosts(currentDailyNote));
+    }
+    Promise.all(promises);
+  }, [currentDailyNote, updatePosts, updateTasks, timeFilter]);
 
   useNoteSync({
     date,
