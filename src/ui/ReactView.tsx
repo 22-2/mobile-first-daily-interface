@@ -176,6 +176,7 @@ const ReactViewContent = () => {
             editingPostOffset={editingPostOffset}
             granularity={granularity}
             viewedDate={date}
+            timeFilter={timeFilter}
             handleClickTime={handleClickTime}
             startEdit={startEdit}
             deletePost={deletePost}

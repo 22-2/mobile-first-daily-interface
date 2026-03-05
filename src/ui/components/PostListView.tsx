@@ -5,7 +5,7 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { PostCardView } from "../PostCardView";
 
-import { Granularity, MomentLike, Post } from "../types";
+import { Granularity, MomentLike, Post, TimeFilter } from "../types";
 import { Settings } from "../../settings";
 
 import { useAppContext } from "../context/AppContext";
@@ -15,6 +15,7 @@ interface PostListViewProps {
   editingPostOffset: number | null;
   granularity: Granularity;
   viewedDate: MomentLike;
+  timeFilter: TimeFilter;
   handleClickTime: (post: Post) => void;
   startEdit: (post: Post) => void;
   deletePost: (post: Post) => Promise<void>;
@@ -26,6 +27,7 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
     editingPostOffset,
     granularity,
     viewedDate,
+    timeFilter,
     handleClickTime,
     startEdit,
     deletePost,
@@ -48,6 +50,7 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
                 post={x}
                 granularity={granularity}
                 viewedDate={viewedDate}
+                timeFilter={timeFilter}
                 onClickTime={handleClickTime}
                 onEdit={startEdit}
                 onContextMenu={(post, e) => {

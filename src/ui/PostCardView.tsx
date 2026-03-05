@@ -16,7 +16,7 @@ import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
 import { granularityConfig } from "./granularity-config";
-import { Granularity, MomentLike } from "./types";
+import { Granularity, MomentLike, TimeFilter } from "./types";
 import { useAppContext } from "./context/AppContext";
 
 export const PostCardView = React.memo(
@@ -24,6 +24,7 @@ export const PostCardView = React.memo(
     post,
     granularity,
     viewedDate,
+    timeFilter,
     onClickTime,
     onContextMenu,
     onEdit,
@@ -33,6 +34,7 @@ export const PostCardView = React.memo(
     post: Post;
     granularity: Granularity;
     viewedDate: MomentLike;
+    timeFilter?: TimeFilter;
     onClickTime: (post: Post) => void;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
@@ -143,7 +145,7 @@ export const PostCardView = React.memo(
             <HStack gap={2}>
               <Tag size="sm" variant="subtle" colorScheme="gray">
                 {post.timestamp.format(
-                  granularity === "day"
+                  granularity === "day" && timeFilter !== "this_week"
                     ? DISPLAY_TIME_FORMAT
                     : DISPLAY_DATE_TIME_FORMAT
                 )}
