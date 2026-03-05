@@ -13,5 +13,5 @@
 - [x] 無秩序な関数の引数をservice-containerやcontextで整理したいっす
 - [x] thinoのパーサ以外削除
 - [x] obsidian-daily-notes-interfaceからの流用を再統合して単一モジュール化
-- [ ] MFDIViewのscopeが利かない
+- [x] MFDIViewのscopeが利かない
 - [x] get/setstateに保存
