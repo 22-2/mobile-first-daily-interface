@@ -28,6 +28,10 @@ export class AppHelper {
     return this.unsafeApp.vault.adapter.read(path);
   }
 
+  async cachedReadFile(file: TFile): Promise<string> {
+    return this.unsafeApp.vault.cachedRead(file);
+  }
+
   async replaceRange(
     path: string,
     startOffset: number,

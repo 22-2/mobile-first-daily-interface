@@ -80,9 +80,10 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
         ) : (
           <>
             {filteredPostsCount}
-            {timeFilter !== "all" && granularity === "day"
+            {(timeFilter !== "all" && timeFilter !== "this_week") && granularity === "day"
               ? `/${allPostsCount}`
-              : ""}{" "}
+              : ""}
+            {timeFilter === "this_week" ? " (今週)" : ""}{" "}
             posts
             {activeTopicName && (
               <>

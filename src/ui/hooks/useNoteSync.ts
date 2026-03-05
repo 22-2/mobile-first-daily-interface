@@ -11,12 +11,16 @@ interface UseNoteSyncOptions {
   granularity: Granularity;
   topicId: string;
   currentDailyNote: TFile | null;
+  /** "this_week" モード中に監視する今週のファイルパス集合。undefined のときは通常モード。 */
+  weekNotePaths?: Set<string>;
   setDate: (d: MomentLike) => void;
   setTasks: (t: Task[]) => void;
   setPosts: (p: Post[]) => void;
   updateCurrentDailyNote: () => void;
   updatePosts: (note: TFile) => Promise<void>;
   updateTasks: (note: TFile) => Promise<void>;
+  /** "this_week" モード中に今週のいずれかのファイルが変更されたときに呼び出すコールバック。 */
+  onWeekNoteChanged?: () => void;
 }
 
 /**
@@ -27,19 +31,29 @@ export function useNoteSync({
   granularity,
   topicId,
   currentDailyNote,
+  weekNotePaths,
   setDate,
   setTasks,
   setPosts,
   updateCurrentDailyNote,
   updatePosts,
   updateTasks,
+  onWeekNoteChanged,
 }: UseNoteSyncOptions) {
   const { app } = useAppContext();
   useEffect(() => {
     const eventRef = app.metadataCache.on(
       "changed",
       async (file, _data, _cache) => {
-        // currentDailyNoteが存在してパスが異なるなら、違う日なので更新は不要
+        // "this_week" モード: 今週のいずれかのファイルが変わったら週全体を再読み込み
+        if (weekNotePaths && weekNotePaths.size > 0) {
+          if (weekNotePaths.has(file.path)) {
+            onWeekNoteChanged?.();
+          }
+          return;
+        }
+
+        // 通常モード: currentDailyNoteが存在してパスが異なるなら、違う日なので更新は不要
         if (currentDailyNote != null && file.path !== currentDailyNote.path) {
           return;
         }
@@ -77,5 +91,5 @@ export function useNoteSync({
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [date, currentDailyNote, granularity, topicId]);
+  }, [date, currentDailyNote, granularity, topicId, weekNotePaths, onWeekNoteChanged]);
 }

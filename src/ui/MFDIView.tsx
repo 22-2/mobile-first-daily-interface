@@ -103,7 +103,8 @@ export class MFDIView extends ItemView {
     const filters: TimeFilter[] = [
       "all",
       "latest",
-       1, 2, 3, 6, 12
+      1, 2, 3, 6, 12,
+      "this_week",
     ];
     for (const f of filters) {
       menu
@@ -115,6 +116,8 @@ export class MFDIView extends ItemView {
               ? "すべて表示"
               : f === "latest"
               ? "最新のみ表示"
+              : f === "this_week"
+              ? "今週"
               : `直近${f}時間`
           )
           .setChecked(isChecked)

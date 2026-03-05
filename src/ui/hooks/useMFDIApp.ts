@@ -49,8 +49,11 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const postFormat = postFormatMap[settings.postFormatOption];
 
-  const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks } =
+  const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks, updatePostsForWeek } =
     usePostsAndTasks({ postFormat, date, granularity });
+
+  // "this_week" モード中に監視する今週のファイルパス集合
+  const weekNotePathsRef = useRef<Set<string>>(new Set());
 
   const {
     input,
@@ -99,13 +102,25 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     granularity,
     topicId: activeTopic,
     currentDailyNote,
+    weekNotePaths: timeFilter === "this_week" ? weekNotePathsRef.current : undefined,
     setDate,
     setTasks,
     setPosts,
     updateCurrentDailyNote,
     updatePosts,
     updateTasks,
+    onWeekNoteChanged: timeFilter === "this_week"
+      ? () => { updatePostsForWeek(activeTopic).then((paths) => { weekNotePathsRef.current = paths; }); }
+      : undefined,
   });
+
+  // "this_week" に切り替わったら今週のノートをロード
+  useEffect(() => {
+    if (timeFilter !== "this_week" || granularity !== "day" || asTask) return;
+    updatePostsForWeek(activeTopic).then((paths) => {
+      weekNotePathsRef.current = paths;
+    });
+  }, [timeFilter, granularity, asTask, activeTopic, updatePostsForWeek]);
 
   const createNoteWithInsertAfter = async () => {
     const created = await createTopicNote(app, date, granularity, activeTopic);
@@ -309,6 +324,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
 
   const filteredPosts = useMemo(() => {
+    // this_week モードでは既に updatePostsForWeek で今週全件が posts に入っているのでそのまま返す
+    if (timeFilter === "this_week") return posts;
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;
     if (timeFilter === "latest") return posts.length > 0 ? [posts[0]] : [];
     const now = window.moment();
