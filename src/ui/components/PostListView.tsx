@@ -55,24 +55,35 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
                   e.stopPropagation();
                   const menu = new Menu();
                   menu.addItem((item) =>
-                    item.setTitle("投稿にジャンプ").onClick(() => {
-                      handleClickTime(post);
-                    })
+                    item
+                      .setTitle("投稿にジャンプ")
+                      .setIcon("clock")
+                      .onClick(() => {
+                        handleClickTime(post);
+                      })
                   );
                   menu.addItem((item) =>
-                    item.setTitle("編集").onClick(() => {
-                      startEdit(post);
-                    })
+                    item
+                      .setTitle("編集")
+                      .setIcon("pencil")
+                      .onClick(() => {
+                        startEdit(post);
+                      })
                   );
                   menu.addItem((item) =>
-                    item.setTitle("コピー").onClick(async () => {
-                      await navigator.clipboard.writeText(post.message);
-                      new Notice("copied");
-                    })
+                    item
+                      .setTitle("コピー")
+                      .setIcon("copy")
+                      .onClick(async () => {
+                        await navigator.clipboard.writeText(post.message);
+                        new Notice("copied");
+                      })
                   );
                   menu.addItem((item) =>
                     item
                       .setTitle("削除")
+                      .setIcon("trash")
+                      .setWarning(true)
                       .onClick(() => {
                         new DeleteConfirmModal(app, () => deletePost(post)).open();
                       })
