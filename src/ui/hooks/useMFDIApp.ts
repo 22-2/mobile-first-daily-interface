@@ -184,6 +184,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
+      if (timeFilter === "this_week") {
+        const paths = await updatePostsForWeek(activeTopic);
+        weekNotePathsRef.current = paths;
+      }
       setDate(date.clone());
     }
     const note = getTopicNote(app, date, granularity, activeTopic);
@@ -205,10 +209,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     date,
     activeTopic,
     updatePosts,
+    updatePostsForWeek,
     createNoteWithInsertAfter,
     cancelEdit,
     setInput,
     setDate,
+    timeFilter,
   ]);
 
   const deletePost = useCallback(
