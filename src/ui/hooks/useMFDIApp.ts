@@ -19,6 +19,7 @@ import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
 import { useMFDISettings } from "./internal/useMFDISettings";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
+import { handleThisWeekSyncOnSubmit } from "./internal/useMFDISyncLogic";
 
 interface UseMFDIAppOptions {}
 
@@ -184,10 +185,15 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
-      if (timeFilter === "this_week") {
-        const paths = await updatePostsForWeek(activeTopic);
-        weekNotePathsRef.current = paths;
-      }
+      handleThisWeekSyncOnSubmit({
+        timeFilter,
+        currentDailyNote,
+        activeTopic,
+        updatePostsForWeek,
+        setWeekNotePaths: (paths) => {
+          weekNotePathsRef.current = paths;
+        },
+      });
       setDate(date.clone());
     }
     const note = getTopicNote(app, date, granularity, activeTopic);
