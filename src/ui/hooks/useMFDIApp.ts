@@ -153,6 +153,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
+    // 最新の入力をエディタから直接取得（debounceによる遅延対策）
+    const currentInput = inputRef.current?.getValue() ?? input;
 
     if (editingPost) {
       if (!currentDailyNote) return;
@@ -166,7 +168,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
           targetTs = now;
         }
       }
-      const text = toText(input, false, postFormat, granularity, targetTs);
+      const text = toText(currentInput, false, postFormat, granularity, targetTs);
       await appHelper.replaceRange(
         path,
         editingPost.startOffset,
@@ -178,7 +180,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       return;
     }
 
-    const text = toText(input, asTask, postFormat, granularity);
+    const text = toText(currentInput, asTask, postFormat, granularity);
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
