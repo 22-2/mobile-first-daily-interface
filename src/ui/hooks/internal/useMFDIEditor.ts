@@ -46,7 +46,10 @@ export function useMFDIEditor({
       storage.set("editingPostDate", date.toISOString());
       storage.set("editingPostGranularity", granularity);
       setInput(post.message);
-      requestAnimationFrame(() => inputRef.current?.focus());
+      setTimeout(() => {
+        inputRef.current?.setContent(post.message);
+        inputRef.current?.focus();
+      });
     },
     [date, granularity, storage]
   );
@@ -57,6 +60,7 @@ export function useMFDIEditor({
     storage.remove("editingPostDate");
     storage.remove("editingPostGranularity");
     setInput("");
+    inputRef.current?.setContent("");
   }, [storage]);
 
 

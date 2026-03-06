@@ -199,6 +199,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
     }
     setInput("");
+    inputRef.current?.setContent("");
     scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [
     canSubmit,

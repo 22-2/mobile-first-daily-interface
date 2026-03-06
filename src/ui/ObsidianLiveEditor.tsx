@@ -15,6 +15,7 @@ interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange" | "onSubmit"
 export interface ObsidianLiveEditorRef {
   focus: () => void;
   getValue: () => string;
+  setContent: (text: string) => void;
 }
 
 export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(
@@ -26,7 +27,18 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
     useImperativeHandle(ref, () => ({
       focus: () => magicalEditorRef.current?.focus(),
       getValue: () => magicalEditorRef.current?.getContent() ?? "",
+      setContent: (text: string) => {
+        const editor = magicalEditorRef.current;
+        if (editor && editor.getContent() !== text) {
+          editor.setContent(text);
+        }
+      }
     }));
+
+    const onSubmitRef = useRef(onSubmit);
+    useEffect(() => {
+      onSubmitRef.current = onSubmit;
+    }, [onSubmit]);
 
     useEffect(() => {
       let active = true;
@@ -37,7 +49,6 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
         const editor = await MagicalEditor.create(app, leaf, {
           onChange: (text) => {
             if (!active) return;
-            lastNotifiedValue.current = text;
             onChange(text);
           },
           initialContent: value ?? "",
@@ -54,7 +65,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 e.stopPropagation();
-                onSubmit?.();
+                onSubmitRef.current?.();
               }
             });
           }
@@ -68,20 +79,18 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
         active = false;
         magicalEditorRef.current?.destroy();
       };
-    }, [onSubmit]); // Add onSubmit to deps to ensure listener uses latest handler (though handleSubmit is usually stable)
+    }, []); // Empty dependency array! Do not re-run on props change.
 
+    // React value is ONLY used for initial renders and placeholder checking. 
+    // Explicit content changes are pushed via ref.setContent() to prevent infinite render loops.
+    
+    // Track value simply for the placeholder rendering
+    const [empty, setEmpty] = React.useState(!value);
     useEffect(() => {
-      const editor = magicalEditorRef.current;
-      if (!editor) return;
-
-      const currentContent = editor.getContent();
-      if (value !== currentContent && value !== lastNotifiedValue.current) {
-        lastNotifiedValue.current = value;
-        editor.setContent(value);
-      }
+       setEmpty(!value && !(magicalEditorRef.current?.getContent()));
     }, [value]);
 
-    const showPlaceholder = !value;
+    const showPlaceholder = empty;
 
     return (
       <Box position="relative" {...props}>
