@@ -113,7 +113,7 @@ export class MFDIView extends ItemView {
         item
           .setTitle(
             f === "all"
-              ? "すべて表示"
+              ? "今日"
               : f === "latest"
               ? "最新のみ表示"
               : f === "this_week"
