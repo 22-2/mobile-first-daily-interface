@@ -1,10 +1,9 @@
-import { App } from "obsidian";
 import { useEffect } from "react";
 import { Task } from "../../app-helper";
-import { MFDIModal } from "../MFDIModal";
-import { Granularity, Post, TimeFilter } from "../types";
-import { MFDIView } from "../MFDIView";
 import { useAppContext } from "../context/AppContext";
+import { MFDIModal } from "../MFDIModal";
+import { MFDIView } from "../MFDIView";
+import { Granularity, Post, TimeFilter } from "../types";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */

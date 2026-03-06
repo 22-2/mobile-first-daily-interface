@@ -1,13 +1,12 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { Topic } from "../../topic";
 import { granularityConfig } from "../granularity-config";
 import { Granularity, MomentLike } from "../types";
 
 import { useAppContext } from "../context/AppContext";
-import { UnderlinedClickable } from "./UnderlinedClickable";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
+import { UnderlinedClickable } from "./UnderlinedClickable";
 
 interface CountDisplayProps {
   date: MomentLike;

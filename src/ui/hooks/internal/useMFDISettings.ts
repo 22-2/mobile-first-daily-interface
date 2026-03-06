@@ -1,10 +1,6 @@
-import { App } from "obsidian";
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { Settings } from "../../../settings";
-import { MFDIStorage } from "../../../utils/storage";
-import { Granularity, MomentLike, TimeFilter } from "../../types";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { granularityConfig } from "../../granularity-config";
-import { MFDIView } from "../../MFDIView";
+import { Granularity, MomentLike, TimeFilter } from "../../types";
 
 import { useAppContext } from "../../context/AppContext";
 

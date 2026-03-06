@@ -1,6 +1,6 @@
+import { App } from "obsidian";
 import * as React from "react";
 import { createContext, ReactNode, useContext, useMemo } from "react";
-import { App } from "obsidian";
 import { AppHelper } from "../../app-helper";
 import { Settings } from "../../settings";
 import { MFDIStorage } from "../../utils/storage";

@@ -2,22 +2,21 @@ import { Box, Flex, HStack, Spacer, Tag, VStack } from "@chakra-ui/react";
 import Markdown from "marked-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Settings } from "../settings";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
 import { Card } from "./Card";
+import { useAppContext } from "./context/AppContext";
 import {
-  DISPLAY_DATE_TIME_FORMAT,
-  DISPLAY_TIME_FORMAT,
+    DISPLAY_DATE_TIME_FORMAT,
+    DISPLAY_TIME_FORMAT
 } from "./date-formats";
+import { granularityConfig } from "./granularity-config";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
-import { granularityConfig } from "./granularity-config";
 import { Granularity, MomentLike, TimeFilter } from "./types";
-import { useAppContext } from "./context/AppContext";
 
 export const PostCardView = React.memo(
   ({

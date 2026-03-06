@@ -1,4 +1,4 @@
-import { App, Menu, Notice } from "obsidian";
+import { Menu, Notice } from "obsidian";
 import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
@@ -6,7 +6,6 @@ import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { PostCardView } from "../PostCardView";
 
 import { Granularity, MomentLike, Post, TimeFilter } from "../types";
-import { Settings } from "../../settings";
 
 import { useAppContext } from "../context/AppContext";
 

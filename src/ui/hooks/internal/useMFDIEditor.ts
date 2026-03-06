@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MFDIStorage } from "../../../utils/storage";
-import { Granularity, MomentLike, Post } from "../../types";
 import { ObsidianLiveEditorRef } from "../../ObsidianLiveEditor";
+import { Granularity, MomentLike, Post } from "../../types";
 
 import { useAppContext } from "../../context/AppContext";
 

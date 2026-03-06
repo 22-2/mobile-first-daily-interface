@@ -1,11 +1,8 @@
 import { TFile, Vault } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getAllTopicNotes,
-  getDateUID,
-  getDailyNoteSettings,
-  getTopicNote,
-  resolveTopicNotePath,
+    getAllTopicNotes, getDailyNoteSettings, getDateUID, getTopicNote,
+    resolveTopicNotePath
 } from "./index";
 
 // Mock Obsidian module before importing anything

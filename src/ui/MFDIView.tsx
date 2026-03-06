@@ -2,8 +2,6 @@ import { Editor, ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
-import { granularityConfig } from "./granularity-config";
-import { addGranularityMenuItems } from "./menus/granularityMenu";
 import { ReactView } from "./ReactView";
 import { Granularity, TimeFilter } from "./types";
 

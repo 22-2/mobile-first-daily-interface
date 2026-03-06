@@ -1,25 +1,23 @@
-import { App, Menu, Notice, TFile } from "obsidian";
+import { Menu, Notice, TFile } from "obsidian";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
 } from "react";
-import { AppHelper, Task } from "../../app-helper";
-import { postFormatMap, Settings } from "../../settings";
-import { MFDIStorage } from "../../utils/storage";
+import { Task } from "../../app-helper";
+import { postFormatMap } from "../../settings";
+import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
+import { useAppContext } from "../context/AppContext";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { toText } from "../post-utils";
-import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
 import { Post } from "../types";
-import { MFDIView } from "../MFDIView";
-import { useAppContext } from "../context/AppContext";
+import { useMFDIEditor } from "./internal/useMFDIEditor";
+import { useMFDISettings } from "./internal/useMFDISettings";
+import { handleThisWeekSyncOnSubmit } from "./internal/useMFDISyncLogic";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
-import { useMFDISettings } from "./internal/useMFDISettings";
-import { useMFDIEditor } from "./internal/useMFDIEditor";
-import { handleThisWeekSyncOnSubmit } from "./internal/useMFDISyncLogic";
 
 interface UseMFDIAppOptions {}
 

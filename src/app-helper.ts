@@ -1,6 +1,6 @@
-import { App, Command, Editor, MarkdownView, TFile } from "obsidian";
-import { pickTaskName } from "./utils/strings";
+import { App, Editor, MarkdownView, TFile } from "obsidian";
 import { Commands } from "obsidian-typings";
+import { pickTaskName } from "./utils/strings";
 
 export interface Task {
   mark: " " | string;

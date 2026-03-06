@@ -1,7 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import MFDIPlugin from "./main";
 import { DEFAULT_TOPIC, Topic } from "./topic";
-import { mirrorMap } from "./utils/collections";
 
 export interface Settings {
   postFormatOption: PostFormatOption;

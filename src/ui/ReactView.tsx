@@ -8,11 +8,11 @@ import { EmptyState } from "./components/EmptyState";
 import { InputArea } from "./components/InputArea";
 import { PostListView } from "./components/PostListView";
 import { TaskListView } from "./components/TaskListView";
+import { AppContextProvider, useAppContext } from "./context/AppContext";
 import { useMFDIApp } from "./hooks/useMFDIApp";
 import { useViewSync } from "./hooks/useViewSync";
-import { Post } from "./types";
 import { MFDIView } from "./MFDIView";
-import { AppContextProvider, useAppContext } from "./context/AppContext";
+import { Post } from "./types";
 
 export type { Post };
 

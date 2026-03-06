@@ -1,15 +1,14 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import { App, Menu } from "obsidian";
+import { Menu } from "obsidian";
 import * as React from "react";
 import { ChangeEvent } from "react";
 import { replaceDayToJa } from "../../utils/strings";
-import { granularityConfig } from "../granularity-config";
-import { ObsidianIcon } from "../ObsidianIcon";
-import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
-import { Granularity, MomentLike, Post } from "../types";
-import { ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
 import { useAppContext } from "../context/AppContext";
+import { granularityConfig } from "../granularity-config";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
+import { ObsidianIcon } from "../ObsidianIcon";
+import { ObsidianLiveEditor, ObsidianLiveEditorRef } from "../ObsidianLiveEditor";
+import { Granularity, MomentLike, Post } from "../types";
 
 interface InputAreaProps {
   date: MomentLike;

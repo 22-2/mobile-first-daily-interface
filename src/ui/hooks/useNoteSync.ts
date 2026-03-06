@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { useEffect } from "react";
 import { Task } from "../../app-helper";
 import { getPeriodicSettings } from "../../utils/daily-notes";

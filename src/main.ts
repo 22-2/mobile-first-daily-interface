@@ -1,4 +1,4 @@
-import { Notice, Plugin } from "obsidian";
+import { Plugin } from "obsidian";
 import { AppHelper } from "./app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
 import { Topic } from "./topic";
