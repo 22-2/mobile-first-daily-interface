@@ -147,15 +147,9 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
           app={app}
           value={input}
           onChange={setInput}
+          onSubmit={handlers.handleSubmit}
           minHeight="var(--size-4-18)"
           marginX="var(--size-4-4)"
-          onKeyDownCapture={(e: React.KeyboardEvent) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              e.stopPropagation();
-              handlers.handleSubmit();
-            }
-          }}
         />
 
         <HStack

@@ -29,8 +29,8 @@
     "@types/encoding-japanese": "^2.0.1",
     "@types/jsdom": "^21.1.6",
     "@types/node": "^18.16.19",
-    "@types/react": "~18.2.14",
-    "@types/react-dom": "~18.2.6",
+    "@types/react": "~19.2.14",
+    "@types/react-dom": "~19.2.3",
     "@types/react-transition-group": "^4.4.6",
     "babel-plugin-react-compiler": "^1.0.0",
     "builtin-modules": "3.3.0",
@@ -55,9 +55,9 @@
     "obsidian-daily-notes-interface": "^0.9.4",
     "obsidian-magical-editor": "file:..\\..\\my-projects-02\\obsidian-magical-editor",
     "preact": "^10.28.4",
-    "react": "~18.2.0",
+    "react": "~19.2.4",
     "react-compiler-runtime": "^1.0.0",
-    "react-dom": "~18.2.0",
+    "react-dom": "~19.2.4",
     "react-transition-group": "^4.4.5"
   }
 }

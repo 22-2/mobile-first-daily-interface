@@ -1,14 +1,15 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { App, EventRef, WorkspaceLeaf } from "obsidian";
+import { App, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { MagicalEditor } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
-interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange"> {
+interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange" | "onSubmit"> {
   leaf: WorkspaceLeaf;
   app: App;
   value: string;
   onChange: (text: string) => void;
+  onSubmit?: () => void;
 }
 
 export interface ObsidianLiveEditorRef {
@@ -17,125 +18,100 @@ export interface ObsidianLiveEditorRef {
 }
 
 export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(
-  ({ leaf, app, value, onChange, ...props }, ref) => {
+  ({ leaf, app, value, onChange, onSubmit, ...props }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const magicalEditorRef = useRef<MagicalEditor | null>(null);
-    // エディタ自身が発生させた最新値を記録するref。
-    // これと value が一致する場合は「自分の入力による更新」なので setContent をスキップする。
-    const internalValueRef = useRef<string>(value);
-    // 直近で親コンポーネントに送った値を記録するref。親からのこだま（エコー）による上書きを防ぐ。
-    const lastSentValueRef = useRef<string>(value);
-    const timeoutRef = useRef<number | null>(null);
+    const lastNotifiedValue = useRef<string>(value);
 
     useImperativeHandle(ref, () => ({
-      focus: () => {
-        magicalEditorRef.current?.focus();
-      },
-      getValue: () => {
-        return magicalEditorRef.current?.getContent() ?? internalValueRef.current;
-      }
+      focus: () => magicalEditorRef.current?.focus(),
+      getValue: () => magicalEditorRef.current?.getContent() ?? "",
     }));
-
-    const delayedFocus = (activeLeaf?: WorkspaceLeaf | null) => {
-      const targetLeaf = activeLeaf;
-      if (targetLeaf !== leaf) {
-        return;
-      }
-      if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
-        return;
-      }
-      
-      // すでにエディタ本体にフォーカスがある場合は、奪い合わないようにスキップする
-      // これをしないと、裏でファイルの変更検知などで再レンダリングが走った際に、
-      // IMEの変換中や選択中のフォーカスがリセットされる原因になる
-      const activeCM = (magicalEditorRef.current?.view as any)?.activeCM;
-      if (activeCM?.dom?.contains(document.activeElement)) {
-        return;
-      }
-
-      setTimeout(() => {
-        magicalEditorRef.current?.focus();
-      });
-    };
 
     useEffect(() => {
       let active = true;
-      let eventRef: EventRef;
       const init = async () => {
-        if (containerRef.current) {
-          containerRef.current.empty();
-          const editor = await MagicalEditor.create(app, leaf, {
-            onChange: (text) => {
-              if (!active) return;
-              // エディタが自分で生成した値を記録しておく
-              internalValueRef.current = text;
+        if (!containerRef.current) return;
+        containerRef.current.empty();
+        
+        const editor = await MagicalEditor.create(app, leaf, {
+          onChange: (text) => {
+            if (!active) return;
+            lastNotifiedValue.current = text;
+            onChange(text);
+          },
+          initialContent: value ?? "",
+        });
 
-              if (timeoutRef.current !== null) {
-                window.clearTimeout(timeoutRef.current);
+        if (active && containerRef.current) {
+          magicalEditorRef.current = editor;
+          magicalEditorRef.current.loadToDom(containerRef.current);
+
+          // Add keyboard listener for submission
+          const cm = (editor.view as any).editor?.cm;
+          if (cm) {
+            cm.dom.addEventListener("keydown", (e: KeyboardEvent) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                onSubmit?.();
               }
-              
-              // Reactへの状態反映を少し遅らせることで、
-              // IME変換中などの短期間での連続した重いレンダリングを回避し、メインスレッドのフリーズを防ぐ
-              timeoutRef.current = window.setTimeout(() => {
-                lastSentValueRef.current = text;
-                onChange(text);
-                timeoutRef.current = null;
-              }, 50);
-            },
-            initialContent: value,
-            placeholder: "なんでもかいていいのよ😊",
-          });
-          if (active && containerRef.current) {
-            magicalEditorRef.current = editor;
-            containerRef.current.appendChild(editor.view.containerEl);
-            // delayedFocus();
-            // eventRef = app.workspace.on("active-leaf-change", delayedFocus);
-          } else {
-            editor.destroy();
+            });
           }
+        } else {
+          editor.destroy();
         }
       };
 
       init();
-
       return () => {
         active = false;
-        if (timeoutRef.current !== null) {
-          window.clearTimeout(timeoutRef.current);
-        }
-        // app.workspace.offref(eventRef);
         magicalEditorRef.current?.destroy();
-        magicalEditorRef.current = null;
       };
-    }, []);
+    }, [onSubmit]); // Add onSubmit to deps to ensure listener uses latest handler (though handleSubmit is usually stable)
 
-    // Handle external value changes (e.g. clearing after submit or starting edit)
-    // 「エディタ自身が発生させた変更の伝播」は無視し、送信後クリアや編集開始などの
-    // 外部からの書き換えのみを反映する。これでIME変換中に setContent が走らなくなる。
     useEffect(() => {
-      if (value === internalValueRef.current) return;
+      const editor = magicalEditorRef.current;
+      if (!editor) return;
 
-      // 親から降ってきた value が、自分が直近に onChange で送った値と同じであれば、
-      // それは単なるこだま（エコー）であり、現在ユーザーがさらに先を入力中の可能性が高いので無視する
-      if (value !== "" && value === lastSentValueRef.current) return;
-      
-      // 外部から明示的に値が書き換えられた（送信後のクリアなど）場合は、
-      // 保留中のローカルの onChange の反映をキャンセルする
-      if (timeoutRef.current !== null) {
-        window.clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      const currentContent = editor.getContent();
+      if (value !== currentContent && value !== lastNotifiedValue.current) {
+        lastNotifiedValue.current = value;
+        editor.setContent(value);
       }
-      
-      internalValueRef.current = value;
-      lastSentValueRef.current = value;
-      magicalEditorRef.current?.setContent(value);
     }, [value]);
 
+    const showPlaceholder = !value;
+
     return (
-      <Box
-        ref={containerRef}
-        {...props}
-      />
+      <Box position="relative" {...props}>
+          <Box ref={containerRef} height="100%" width="100%" />
+          {showPlaceholder && (
+            <Box
+              position="absolute"
+              top="var(--size-2-1)"
+              left="var(--size-2-1)"
+              pointerEvents="none"
+              color="var(--text-muted)"
+              opacity={0.6}
+              userSelect="none"
+              fontSize="var(--font-text-size)"
+              zIndex={1}
+            >
+              なんでもかいていいのよ😊
+            </Box>
+          )}
+          {/* Transparent overlay to catch initial click when empty */}
+          {showPlaceholder && (
+            <Box
+              position="absolute"
+              inset="0"
+              cursor="text"
+              zIndex={2}
+              onClick={() => magicalEditorRef.current?.focus()}
+            />
+          )}
+      </Box>
     );
   }
 );
