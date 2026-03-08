@@ -4,105 +4,90 @@ import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
 import { PostCardView } from "../PostCardView";
-
-import { Granularity, MomentLike, Post, TimeFilter } from "../types";
-
 import { useAppContext } from "../context/AppContext";
+import { useMFDIContext } from "../context/MFDIAppContext";
 
-interface PostListViewProps {
-  filteredPosts: Post[];
-  editingPostOffset: number | null;
-  granularity: Granularity;
-  viewedDate: MomentLike;
-  timeFilter: TimeFilter;
-  handleClickTime: (post: Post) => void;
-  startEdit: (post: Post) => void;
-  deletePost: (post: Post) => Promise<void>;
-  isToday: boolean;
-  isReadOnly: boolean;
-}
-
-export const PostListView: React.FC<PostListViewProps> = React.memo(
-  ({
+export const PostListView: React.FC = React.memo(() => {
+  const { app } = useAppContext();
+  const {
     filteredPosts,
     editingPostOffset,
     granularity,
-    viewedDate,
+    date: viewedDate,
     timeFilter,
     handleClickTime,
     startEdit,
     deletePost,
-    isToday,
     isReadOnly,
-  }) => {
-    const { app, settings } = useAppContext();
-    const displayedPosts = useMemo(
-      () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
-      [filteredPosts, editingPostOffset]
-    );
-    return (
-      <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-        {displayedPosts.map((x) => (
-          <CSSTransition
-            key={x.timestamp.valueOf()}
-            timeout={300}
-            classNames="item"
-          >
-            <div>
-              <PostCardView
-                post={x}
-                granularity={granularity}
-                viewedDate={viewedDate}
-                timeFilter={timeFilter}
-                onClickTime={handleClickTime}
-                onEdit={startEdit}
-                onContextMenu={(post, e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const menu = new Menu();
-                  menu.addItem((item) =>
-                    item
-                      .setTitle("投稿にジャンプ")
-                      .setIcon("clock")
-                      .onClick(() => {
-                        handleClickTime(post);
-                      })
-                  );
-                  menu.addItem((item) =>
-                    item
-                      .setTitle("編集")
-                      .setIcon("pencil")
-                      .setDisabled(isReadOnly)
-                      .onClick(() => {
-                        startEdit(post);
-                      })
-                  );
-                  menu.addItem((item) =>
-                    item
-                      .setTitle("コピー")
-                      .setIcon("copy")
-                      .onClick(async () => {
-                        await navigator.clipboard.writeText(post.message);
-                        new Notice("copied");
-                      })
-                  );
-                  menu.addItem((item) =>
-                    item
-                      .setTitle("削除")
-                      .setIcon("trash")
-                      .setWarning(true)
-                      .setDisabled(isReadOnly)
-                      .onClick(() => {
-                        new DeleteConfirmModal(app, () => deletePost(post)).open();
-                      })
-                  );
-                  menu.showAtMouseEvent(e as unknown as MouseEvent);
-                }}
-              />
-            </div>
-          </CSSTransition>
-        ))}
-      </TransitionGroup>
-    );
-  }
-);
+  } = useMFDIContext();
+
+  const displayedPosts = useMemo(
+    () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
+    [filteredPosts, editingPostOffset]
+  );
+  return (
+    <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
+      {displayedPosts.map((x) => (
+        <CSSTransition
+          key={x.timestamp.valueOf()}
+          timeout={300}
+          classNames="item"
+        >
+          <div>
+            <PostCardView
+              post={x}
+              granularity={granularity}
+              viewedDate={viewedDate}
+              timeFilter={timeFilter}
+              onClickTime={handleClickTime}
+              onEdit={startEdit}
+              onContextMenu={(post, e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const menu = new Menu();
+                menu.addItem((item) =>
+                  item
+                    .setTitle("投稿にジャンプ")
+                    .setIcon("clock")
+                    .onClick(() => {
+                      handleClickTime(post);
+                    })
+                );
+                menu.addItem((item) =>
+                  item
+                    .setTitle("編集")
+                    .setIcon("pencil")
+                    .setDisabled(isReadOnly)
+                    .onClick(() => {
+                      startEdit(post);
+                    })
+                );
+                menu.addItem((item) =>
+                  item
+                    .setTitle("コピー")
+                    .setIcon("copy")
+                    .onClick(async () => {
+                      await navigator.clipboard.writeText(post.message);
+                      new Notice("copied");
+                    })
+                );
+                menu.addItem((item) =>
+                  item
+                    .setTitle("削除")
+                    .setIcon("trash")
+                    .setWarning(true)
+                    .setDisabled(isReadOnly)
+                    .onClick(() => {
+                      new DeleteConfirmModal(app, () => deletePost(post)).open();
+                    })
+                );
+                menu.showAtMouseEvent(e as unknown as MouseEvent);
+              }}
+            />
+          </div>
+        </CSSTransition>
+      ))}
+    </TransitionGroup>
+  );
+});
+

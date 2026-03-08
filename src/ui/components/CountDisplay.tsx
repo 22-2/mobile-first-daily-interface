@@ -2,41 +2,35 @@ import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import { granularityConfig } from "../granularity-config";
-import { Granularity, MomentLike } from "../types";
+import { Granularity } from "../types";
 
 import { useAppContext } from "../context/AppContext";
+import { useMFDIContext } from "../context/MFDIAppContext";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
-interface CountDisplayProps {
-  date: MomentLike;
-  granularity: Granularity;
-  asTask: boolean;
-  tasksCount: number;
-  filteredPostsCount: number;
-  allPostsCount: number;
-  timeFilter: string | number;
-  activeTopicName?: string;
-  onTopicChange?: (topicId: string) => void;
-  onGranularityChange?: (granularity: Granularity) => void;
-  onAsTaskChange?: (asTask: boolean) => void;
-}
-
-export const CountDisplay: React.FC<CountDisplayProps> = ({
-  date,
-  granularity,
-  asTask,
-  tasksCount,
-  filteredPostsCount,
-  allPostsCount,
-  timeFilter,
-  activeTopicName,
-  onTopicChange,
-  onGranularityChange,
-  onAsTaskChange,
-}) => {
+export const CountDisplay: React.FC = () => {
   const { settings } = useAppContext();
+  const {
+    date,
+    granularity,
+    asTask,
+    tasks,
+    filteredPosts,
+    posts,
+    timeFilter,
+    activeTopic,
+    setActiveTopic: onTopicChange,
+    setGranularity: onGranularityChange,
+    setAsTask: onAsTaskChange,
+  } = useMFDIContext();
+
+  const activeTopicName = settings.topics.find((t) => t.id === activeTopic)?.title;
+  const tasksCount = tasks.length;
+  const filteredPostsCount = filteredPosts.length;
+  const allPostsCount = posts.length;
+
   const topics = settings.topics;
   const unitMap: Record<Granularity, string> = {
     day: "日",
@@ -126,3 +120,4 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
     </HStack>
   );
 };
+
