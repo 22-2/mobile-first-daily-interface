@@ -20,26 +20,6 @@ export function addPeriodMenuItems(
 ) {
   const showFilter = state.granularity === "day" && !state.asTask;
 
-  // --- 表示期間（時間） ---
-  menu.addSeparator();
-  menu.addItem((item) => {
-    item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
-  });
-  for (const f of TIME_FILTER_OPTIONS) {
-    menu.addItem((item) => {
-      const isChecked = showFilter
-        ? state.timeFilter === f.id
-        : f.id === "all";
-      item
-        .setTitle(f.label)
-        .setChecked(isChecked)
-        .setDisabled(!showFilter)
-        .onClick(() => {
-          callbacks.onChangeTimeFilter?.(f.id);
-        });
-    });
-  }
-
   // --- 表示期間（日） ---
   menu.addSeparator();
   menu.addItem((item) => {
@@ -56,6 +36,24 @@ export function addPeriodMenuItems(
         .setDisabled(!showFilter)
         .onClick(() => {
           callbacks.onChangeDateFilter?.(f.id);
+        });
+    });
+  }
+
+  // --- 表示期間（時間） ---
+  menu.addSeparator();
+  menu.addItem((item) => {
+    item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
+  });
+  for (const f of TIME_FILTER_OPTIONS) {
+    menu.addItem((item) => {
+      const isChecked = showFilter ? state.timeFilter === f.id : f.id === "all";
+      item
+        .setTitle(f.label)
+        .setChecked(isChecked)
+        .setDisabled(!showFilter)
+        .onClick(() => {
+          callbacks.onChangeTimeFilter?.(f.id);
         });
     });
   }
