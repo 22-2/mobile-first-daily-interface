@@ -6,6 +6,7 @@ import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
+import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { ObsidianIcon } from "./common/ObsidianIcon";
 import { ObsidianLiveEditor } from "./common/ObsidianLiveEditor";
 
@@ -109,6 +110,7 @@ const InputAreaFooter: React.FC = React.memo(() => {
     isReadOnly,
     handleSubmit,
     cancelEdit,
+    setAsTask,
   } = useMFDIContext();
 
   return (
@@ -146,6 +148,13 @@ const InputAreaFooter: React.FC = React.memo(() => {
         maxHeight={"2.4em"}
         cursor={canSubmit ? "pointer" : ""}
         onClick={handleSubmit}
+        onContextMenu={(e) => {
+          if (!setAsTask) return;
+          e.preventDefault();
+          const menu = new Menu();
+          addPostModeMenuItems(menu, asTask, setAsTask);
+          menu.showAtMouseEvent(e.nativeEvent);
+        }}
       >
         {isReadOnly
           ? "閲覧モード"

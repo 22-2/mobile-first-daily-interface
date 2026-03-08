@@ -11,7 +11,7 @@ import { Granularity } from "../types";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
+import { addPeriodMenuItems } from "../menus/periodMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
 const DateSection: React.FC = () => {
@@ -51,49 +51,16 @@ const DateSection: React.FC = () => {
 };
 
 const useFilterMenu = () => {
-  const {
-    granularity,
-    asTask,
-    timeFilter,
-    dateFilter,
-    setTimeFilter: onTimeFilterChange,
-    setDateFilter: onDateFilterChange,
-    setAsTask: onAsTaskChange,
-  } = useMFDIContext();
+  const state = useMFDIContext();
+  const { setTimeFilter, setDateFilter } = state;
 
   return (e: React.MouseEvent) => {
-    if (!onAsTaskChange) return;
     e.preventDefault();
     const menu = new Menu();
-
-    // モード切替
-    addPostModeMenuItems(menu, asTask, onAsTaskChange);
-
-    if (!asTask && granularity === "day") {
-      // 期間（日）
-      menu.addSeparator();
-      DATE_FILTER_OPTIONS.forEach((f) => {
-        menu.addItem((item) =>
-          item
-            .setTitle(f.label)
-            .setChecked(dateFilter === f.id)
-            .onClick(() => onDateFilterChange?.(f.id)),
-        );
-      });
-
-      // 期間（時間）
-      menu.addSeparator();
-      TIME_FILTER_OPTIONS.forEach((f) => {
-        menu.addItem((item) =>
-          item
-            .setTitle(f.label)
-            .setChecked(timeFilter === f.id && dateFilter === "today")
-            .setDisabled(dateFilter !== "today")
-            .onClick(() => onTimeFilterChange?.(f.id)),
-        );
-      });
-    }
-
+    addPeriodMenuItems(menu, state, {
+      onChangeTimeFilter: (f) => setTimeFilter?.(f),
+      onChangeDateFilter: (f) => setDateFilter?.(f),
+    });
     menu.showAtMouseEvent(e as unknown as MouseEvent);
   };
 };

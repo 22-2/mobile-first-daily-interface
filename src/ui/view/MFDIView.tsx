@@ -8,6 +8,7 @@ import {
   TIME_FILTER_OPTIONS,
 } from "../config/filter-config";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
+import { addPeriodMenuItems } from "../menus/periodMenu";
 import { DateFilter, Granularity, TimeFilter } from "../types";
 import { MFDIViewHandler } from "./MFDIViewHandler";
 
@@ -61,49 +62,11 @@ export class MFDIView extends ItemView {
       this.handlers.onChangeAsTask?.(asTask);
     });
 
-    // --- 表示期間（時間） ---
-    const showTimeFilter =
-      this.state.granularity === "day" && !this.state.asTask;
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
+    // --- 表示期間（日／時間） ---
+    addPeriodMenuItems(menu, this.state, {
+      onChangeTimeFilter: (f) => this.handlers.onChangeTimeFilter?.(f),
+      onChangeDateFilter: (f) => this.handlers.onChangeDateFilter?.(f),
     });
-    for (const f of TIME_FILTER_OPTIONS) {
-      menu.addItem((item) => {
-        const isChecked = showTimeFilter
-          ? this.state.timeFilter === f.id
-          : f.id === "all";
-        item
-          .setTitle(f.label)
-          .setChecked(isChecked)
-          .setDisabled(!showTimeFilter)
-          .onClick(() => {
-            this.handlers.onChangeTimeFilter?.(f.id);
-          });
-      });
-    }
-
-    // --- 表示期間（日） ---
-    const showDateFilter =
-      this.state.granularity === "day" && !this.state.asTask;
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("表示期間（日）").setIcon("calendar").setDisabled(true);
-    });
-    for (const f of DATE_FILTER_OPTIONS) {
-      menu.addItem((item) => {
-        const isChecked = showDateFilter
-          ? this.state.dateFilter === f.id
-          : f.id === "today";
-        item
-          .setTitle(f.label)
-          .setChecked(isChecked)
-          .setDisabled(!showDateFilter)
-          .onClick(() => {
-            this.handlers.onChangeDateFilter?.(f.id);
-          });
-      });
-    }
 
     super.onPaneMenu(menu, prev);
   }
