@@ -1,16 +1,14 @@
-import { Box } from "@chakra-ui/react";
+import { Box, BoxProps } from "@chakra-ui/react";
 import * as React from "react";
 
-interface UnderlinedClickableProps {
-  children: React.ReactNode;
-  onContextMenu: (e: React.MouseEvent) => void;
-  onClick?: (e: React.MouseEvent) => void;
+interface UnderlinedClickableProps extends BoxProps {
 }
 
 export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
   children,
   onContextMenu,
   onClick,
+  ...props
 }) => {
   return (
     <Box
@@ -19,6 +17,7 @@ export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
       _hover={{ textDecoration: "underline" }}
       onContextMenu={onContextMenu}
       onClick={onClick}
+      {...props}
     >
       {children}
     </Box>

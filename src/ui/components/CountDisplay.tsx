@@ -36,7 +36,7 @@ const DateSection: React.FC = () => {
   return (
     <Box>
       <UnderlinedClickable
-        onContextMenu={(e: React.MouseEvent) => {
+        onClick={(e: React.MouseEvent) => {
           e.preventDefault();
           const menu = new Menu();
           addGranularityMenuItems(menu, granularity, onGranularityChange);
@@ -68,7 +68,7 @@ const useFilterMenu = () => {
 const CountSection: React.FC = () => {
   const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter } =
     useMFDIContext();
-  const onContextMenu = useFilterMenu();
+  const onClick = useFilterMenu();
 
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
@@ -79,7 +79,7 @@ const CountSection: React.FC = () => {
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
   return (
-    <UnderlinedClickable onContextMenu={onContextMenu}>
+    <UnderlinedClickable onClick={onClick}>
       {asTask ? `${tasksCount} tasks` : `${filteredPostsCount}${totalPart} posts`}
     </UnderlinedClickable>
   );
@@ -87,7 +87,7 @@ const CountSection: React.FC = () => {
 
 const FilterSuffix: React.FC = () => {
   const { granularity, asTask, timeFilter, dateFilter } = useMFDIContext();
-  const onContextMenu = useFilterMenu();
+  const onClick = useFilterMenu();
 
   if (asTask) return null;
 
@@ -107,7 +107,7 @@ const FilterSuffix: React.FC = () => {
   if (!suffix) return null;
 
   return (
-    <UnderlinedClickable onContextMenu={onContextMenu}>
+    <UnderlinedClickable onClick={onClick}>
       {suffix}
     </UnderlinedClickable>
   );
@@ -128,7 +128,7 @@ const TopicSection: React.FC = () => {
     <>
       {" in "}
       <UnderlinedClickable
-        onContextMenu={(e: React.MouseEvent) => {
+        onClick={(e: React.MouseEvent) => {
           if (!topics || !onTopicChange) return;
           e.preventDefault();
           const menu = new Menu();
