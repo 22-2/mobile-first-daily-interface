@@ -132,6 +132,10 @@ const TopicSection: React.FC = () => {
           if (!topics || !onTopicChange) return;
           e.preventDefault();
           const menu = new Menu();
+          menu.addSeparator();
+          menu.addItem((item) => {
+            item.setTitle("トピック").setIcon("tag").setDisabled(true);
+          });
           topics
             .filter((t) => !t.archived)
             .forEach((topic) => {
