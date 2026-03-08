@@ -63,6 +63,7 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     setAsTask,
     input,
     setInput,
+    inputRef,
   });
 
   // Handle focus requested from View

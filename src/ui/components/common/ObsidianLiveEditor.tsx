@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { App, WorkspaceLeaf } from "obsidian";
+import { App, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { MagicalEditor } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
@@ -28,16 +28,12 @@ export const ObsidianLiveEditor = forwardRef<
 >(({ leaf, app, value, onChange, onSubmit, placeholder, ...props }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const magicalEditorRef = useRef<MagicalEditor | null>(null);
-  const lastNotifiedValue = useRef<string>(value);
 
   useImperativeHandle(ref, () => ({
     focus: () => magicalEditorRef.current?.focus(),
     getValue: () => magicalEditorRef.current?.getContent() ?? "",
     setContent: (text: string) => {
-      const editor = magicalEditorRef.current;
-      if (editor && editor.getContent() !== text) {
-        editor.setContent(text);
-      }
+      magicalEditorRef.current?.setContent(text);
     },
   }));
 
@@ -65,7 +61,7 @@ export const ObsidianLiveEditor = forwardRef<
         magicalEditorRef.current.loadToDom(containerRef.current);
 
         // Add keyboard listener for submission
-        const cm = (editor.view as any).editor?.cm;
+        const cm = (editor.view as MarkdownView).editor?.cm;
         if (cm) {
           cm.dom.addEventListener("keydown", (e: KeyboardEvent) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {

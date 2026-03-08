@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Task } from "../../app-helper";
 import { useAppContext } from "../context/AppContext";
 import { MFDIModal } from "../modals/MFDIModal";
 import { DateFilter, Granularity, Post, TimeFilter } from "../types";
 import { MFDIView } from "../view/MFDIView";
+import { ObsidianLiveEditorRef } from "../components/common/ObsidianLiveEditor";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */
@@ -24,6 +25,7 @@ export interface ViewSyncHandlers {
   /** modal editor */
   input: string;
   setInput: (s: string) => void;
+  inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
 }
 
 /**
@@ -52,9 +54,20 @@ export function useViewSync(
     setAsTask,
     input,
     setInput,
+    inputRef,
   }: ViewSyncHandlers,
 ) {
   const { app } = useAppContext();
+  const inputRefVal = useRef(input);
+  const inputRefObj = useRef(inputRef);
+
+  useEffect(() => {
+    inputRefVal.current = input;
+  }, [input]);
+
+  useEffect(() => {
+    inputRefObj.current = inputRef;
+  }, [inputRef]);
   // ── 値の同期（read-only な参照） ──────────────────────────────
   useEffect(() => {
     view.state.granularity = granularity;
@@ -153,12 +166,18 @@ export function useViewSync(
   useEffect(() => {
     view.handlers.onOpenModalEditor = () => {
       const modal = new MFDIModal(app, {
-        initialContent: input,
+        initialContent: inputRefVal.current,
         onChange: (content) => {
           setInput(content);
+          setTimeout(() => {
+            inputRefObj.current.current?.setContent(content);
+          });
         },
         onClose: (content) => {
           setInput(content);
+          setTimeout(() => {
+            inputRefObj.current.current?.setContent(content);
+          });
         },
       });
       modal.open();
@@ -166,5 +185,5 @@ export function useViewSync(
     return () => {
       view.handlers.onOpenModalEditor = undefined;
     };
-  }, [view, app, input, setInput]);
+  }, [view, app, setInput]);
 }
