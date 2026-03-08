@@ -24,12 +24,16 @@ export function useMFDIEditor({
   const [asTask, setAsTask] = useState<boolean>(
     () => storage.get<boolean>("asTask", false)
   );
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editingPostOffset, setEditingPostOffset] = useState<number | null>(
     () => storage.get<number | null>("editingPostOffset", null)
   );
 
   const inputRef = useRef<ObsidianLiveEditorRef>(null);
+
+  const editingPost = useMemo(() => {
+    if (editingPostOffset === null) return null;
+    return posts.find((p) => p.startOffset === editingPostOffset) ?? null;
+  }, [posts, editingPostOffset]);
 
   const canSubmit = useMemo(() => {
     if (!editingPost) {
@@ -41,7 +45,6 @@ export function useMFDIEditor({
   const startEdit = useCallback(
     (post: Post) => {
       setAsTask(false);
-      setEditingPost(post);
       setEditingPostOffset(post.startOffset);
       storage.set("editingPostDate", date.toISOString());
       storage.set("editingPostGranularity", granularity);
@@ -55,7 +58,6 @@ export function useMFDIEditor({
   );
 
   const cancelEdit = useCallback(() => {
-    setEditingPost(null);
     setEditingPostOffset(null);
     storage.remove("editingPostDate");
     storage.remove("editingPostGranularity");
@@ -86,19 +88,12 @@ export function useMFDIEditor({
     }
   }, [editingPostOffset, date, granularity, storage]);
 
+  // Handle post deletion or list change
   useEffect(() => {
-    if (editingPostOffset !== null) {
-      const found = posts.find((p) => p.startOffset === editingPostOffset);
-      if (found) {
-        setEditingPost(found);
-      } else if (posts.length > 0) {
-        setEditingPost(null);
-        setEditingPostOffset(null);
-      }
-    } else {
-      setEditingPost(null);
+    if (editingPostOffset !== null && posts.length > 0 && !editingPost) {
+      setEditingPostOffset(null);
     }
-  }, [posts, editingPostOffset]);
+  }, [posts, editingPostOffset, editingPost]);
 
   return {
     input,
@@ -107,7 +102,6 @@ export function useMFDIEditor({
     setAsTask,
     editingPost,
     editingPostOffset,
-    setEditingPost,
     setEditingPostOffset,
     inputRef,
     canSubmit,

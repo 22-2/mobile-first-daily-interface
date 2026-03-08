@@ -60,7 +60,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     asTask,
     setAsTask,
     editingPost,
-    setEditingPost,
     editingPostOffset,
     setEditingPostOffset,
     inputRef,
