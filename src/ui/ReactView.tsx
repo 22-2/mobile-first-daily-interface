@@ -89,6 +89,15 @@ const ReactViewContent = () => {
     setInput,
   });
 
+  useEffect(() => {
+    view.onFocusRequested = () => {
+      inputRef.current?.focus();
+    };
+    return () => {
+      view.onFocusRequested = undefined;
+    };
+  }, [view, inputRef]);
+
   // Initial scroll position
   useEffect(() => {
     if (!currentDailyNote || !scrollContainerRef.current) return;

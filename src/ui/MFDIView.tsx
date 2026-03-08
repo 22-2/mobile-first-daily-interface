@@ -27,6 +27,7 @@ export class MFDIView extends ItemView {
   public onChangeTopic?: (topicId: string) => void;
   public onTopicSaveRequested?: (topicId: string) => Promise<void>;
   public onOpenTopicManager?: () => void;
+  public onFocusRequested?: () => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -153,6 +154,12 @@ export class MFDIView extends ItemView {
     });
 
     this.renderNewView();
+
+    this.app.workspace.on("active-leaf-change", leaf => {
+      if (leaf?.id === this.leaf.id) {
+        this.onFocusRequested?.();
+      }
+    })
   }
 
   async onClose() {

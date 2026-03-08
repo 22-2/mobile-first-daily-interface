@@ -18,7 +18,7 @@ interface InputAreaProps {
   asTask: boolean;
   editingPost: Post | null;
   canSubmit: boolean;
-  inputRef: React.RefObject<ObsidianLiveEditorRef>;
+  inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
   handlers: {
     handleClickMovePrevious: () => void;
     handleClickMoveNext: () => void;
