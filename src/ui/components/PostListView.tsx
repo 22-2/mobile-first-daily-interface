@@ -2,10 +2,12 @@ import { Menu, Notice } from "obsidian";
 import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { replaceDayToJa } from "../../utils/strings";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
 import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 import { PostCardView } from "./PostCardView";
+import { Box, Divider, Flex, Text } from "@chakra-ui/react";
 
 export const PostListView: React.FC = React.memo(() => {
   const { app } = useAppContext();
@@ -25,70 +27,94 @@ export const PostListView: React.FC = React.memo(() => {
     () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
     [filteredPosts, editingPostOffset],
   );
+  let lastDate: string | null = null;
+
   return (
     <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-      {displayedPosts.map((x) => (
-        <CSSTransition
-          key={x.timestamp.valueOf()}
-          timeout={300}
-          classNames="item"
-        >
-          <div>
-            <PostCardView
-              post={x}
-              granularity={granularity}
-              viewedDate={viewedDate}
-              timeFilter={timeFilter}
-              onClickTime={handleClickTime}
-              onEdit={startEdit}
-              onContextMenu={(post, e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const menu = new Menu();
-                menu.addItem((item) =>
-                  item
-                    .setTitle("投稿にジャンプ")
-                    .setIcon("clock")
-                    .onClick(() => {
-                      handleClickTime(post);
-                    }),
-                );
-                menu.addItem((item) =>
-                  item
-                    .setTitle("編集")
-                    .setIcon("pencil")
-                    .setDisabled(isReadOnly)
-                    .onClick(() => {
-                      startEdit(post);
-                    }),
-                );
-                menu.addItem((item) =>
-                  item
-                    .setTitle("コピー")
-                    .setIcon("copy")
-                    .onClick(async () => {
-                      await navigator.clipboard.writeText(post.message);
-                      new Notice("copied");
-                    }),
-                );
-                menu.addItem((item) =>
-                  item
-                    .setTitle("削除")
-                    .setIcon("trash")
-                    .setWarning(true)
-                    .setDisabled(isReadOnly)
-                    .onClick(() => {
-                      new DeleteConfirmModal(app, () =>
-                        deletePost(post),
-                      ).open();
-                    }),
-                );
-                menu.showAtMouseEvent(e as unknown as MouseEvent);
-              }}
-            />
-          </div>
-        </CSSTransition>
-      ))}
+      {displayedPosts.map((x) => {
+        const currentDate = x.timestamp.format("YYYY-MM-DD");
+        const showDivider = lastDate !== currentDate;
+        lastDate = currentDate;
+
+        return (
+          <CSSTransition
+            key={x.timestamp.valueOf()}
+            timeout={300}
+            classNames="item"
+          >
+            <div>
+              {showDivider && (
+                <Flex
+                  className="mfdi-date-divider"
+                  placeContent="center"
+                  style={{
+                    padding: "1.5em 1em 0.5em 1em",
+                    fontSize: "0.85em",
+                    fontWeight: "bold",
+                    color: "var(--text-muted)",
+                    gap: "1em",
+                  }}
+                >
+                  <Text whiteSpace="nowrap" color="var(--text-muted)">
+                    {replaceDayToJa(x.timestamp.format("YYYY-MM-DD (ddd)"))}
+                  </Text>
+
+                </Flex>
+              )}
+              <PostCardView
+                post={x}
+                granularity={granularity}
+                viewedDate={viewedDate}
+                timeFilter={timeFilter}
+                onClickTime={handleClickTime}
+                onEdit={startEdit}
+                onContextMenu={(post, e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const menu = new Menu();
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("投稿にジャンプ")
+                      .setIcon("clock")
+                      .onClick(() => {
+                        handleClickTime(post);
+                      }),
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("編集")
+                      .setIcon("pencil")
+                      .setDisabled(isReadOnly)
+                      .onClick(() => {
+                        startEdit(post);
+                      }),
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("コピー")
+                      .setIcon("copy")
+                      .onClick(async () => {
+                        await navigator.clipboard.writeText(post.message);
+                        new Notice("copied");
+                      }),
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("削除")
+                      .setIcon("trash")
+                      .setWarning(true)
+                      .setDisabled(isReadOnly)
+                      .onClick(() => {
+                        new DeleteConfirmModal(app, () => deletePost(post)).open();
+                      }),
+                  );
+                  menu.showAtMouseEvent(e as unknown as MouseEvent);
+                }}
+              />
+            </div>
+          </CSSTransition>
+        );
+      })}
     </TransitionGroup>
   );
 });
