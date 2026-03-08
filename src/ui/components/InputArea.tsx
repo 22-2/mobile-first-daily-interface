@@ -9,25 +9,158 @@ import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { ObsidianIcon } from "../ObsidianIcon";
 import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
 
-export const InputArea: React.FC = React.memo(() => {
-  const { app, view } = useAppContext();
+const InputAreaControl: React.FC = React.memo(() => {
+  const { view } = useAppContext();
   const {
     date,
     granularity,
-    input,
-    setInput,
-    asTask,
-    editingPost,
-    canSubmit,
     isToday,
-    isReadOnly,
-    inputRef,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
     handleChangeCalendarDate,
+  } = useMFDIContext();
+
+  return (
+    <Flex align="center" paddingX="1em">
+      <Box flex="1" />
+      <HStack justify="center" flex="0 0 auto">
+        <ObsidianIcon
+          name="chevron-left"
+          boxSize="1.5em"
+          cursor="pointer"
+          onClick={handleClickMovePrevious}
+        />
+        <Box textAlign={"center"} marginY={"1em"}>
+          <Button
+            marginRight={"0.3em"}
+            fontSize={"80%"}
+            width="3em"
+            height="2em"
+            cursor="pointer"
+            onClick={handleClickToday}
+            onContextMenu={(e) => {
+              const menu = new Menu();
+              addGranularityMenuItems(menu, view.state.granularity, (g) => {
+                view.handlers.onChangeGranularity?.(g);
+              });
+              menu.showAtMouseEvent(e.nativeEvent);
+            }}
+            bg={
+              !isToday
+                ? "var(--color-accent)!important;"
+                : "var(--background-modifier-border)"
+            }
+            color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
+            _hover={{
+              bg: !isToday
+                ? "var(--color-accent-2)"
+                : "var(--background-modifier-border)",
+            }}
+          >
+            {granularityConfig[granularity].todayLabel}
+          </Button>
+          <Input
+            size="md"
+            type={granularityConfig[granularity].inputType}
+            value={date.format(granularityConfig[granularity].inputFormat)}
+            onChange={handleChangeCalendarDate}
+            width={granularity === "year" ? "5.5em" : "9em"}
+          />
+          {granularityConfig[granularity].showWeekday && (
+            <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
+              {replaceDayToJa(date.format("(ddd)"))}
+            </Box>
+          )}
+        </Box>
+        <ObsidianIcon
+          name="chevron-right"
+          boxSize="1.5em"
+          cursor="pointer"
+          onClick={handleClickMoveNext}
+        />
+      </HStack>
+      <Box flex="1" display="flex" justifyContent="flex-end">
+        <ObsidianIcon
+          name="maximize"
+          size="1.1em"
+          cursor="pointer"
+          color="var(--text-muted)"
+          padding="4px"
+          borderRadius="4px"
+          _hover={{
+            color: "var(--text-normal)",
+            bg: "var(--background-modifier-hover)",
+          }}
+          onClick={() => {
+            view.handlers.onOpenModalEditor?.();
+          }}
+        />
+      </Box>
+    </Flex>
+  );
+});
+
+const InputAreaFooter: React.FC = React.memo(() => {
+  const {
+    asTask,
+    editingPost,
+    canSubmit,
+    isReadOnly,
     handleSubmit,
     cancelEdit,
+  } = useMFDIContext();
+
+  return (
+    <HStack
+      justify="flex-end"
+      alignItems="center"
+      paddingY={"0.5em"}
+      paddingBottom={"1em"}
+      marginRight={"2.4em"}
+    >
+      {editingPost && (
+        <Button
+          minHeight={"2.4em"}
+          maxHeight={"2.4em"}
+          variant="ghost"
+          onClick={cancelEdit}
+        >
+          キャンセル
+        </Button>
+      )}
+      <Button
+        disabled={!canSubmit}
+        bg={
+          canSubmit
+            ? "var(--color-accent)!important;"
+            : "var(--background-modifier-border)"
+        }
+        color={canSubmit ? "var(--text-on-accent)" : "var(--text-muted)"}
+        _hover={{
+          bg: canSubmit
+            ? "var(--color-accent-2)"
+            : "var(--background-modifier-border)",
+        }}
+        minHeight={"2.4em"}
+        maxHeight={"2.4em"}
+        cursor={canSubmit ? "pointer" : ""}
+        onClick={handleSubmit}
+      >
+        {isReadOnly ? "閲覧モード" : editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+      </Button>
+    </HStack>
+  );
+});
+
+export const InputArea: React.FC = React.memo(() => {
+  const { app, view } = useAppContext();
+  const {
+    input,
+    setInput,
+    handleSubmit,
+    isReadOnly,
+    inputRef,
   } = useMFDIContext();
 
   return (
@@ -41,88 +174,7 @@ export const InputArea: React.FC = React.memo(() => {
       backgroundColor="var(--background-secondary)"
       border="1px solid var(--table-border-color)"
     >
-      <Flex align="center" paddingX="1em">
-        {/* Left Spacer */}
-        <Box flex="1" />
-
-        {/* Center Navigation */}
-        <HStack justify="center" flex="0 0 auto">
-          <ObsidianIcon
-            name="chevron-left"
-            boxSize="1.5em"
-            cursor="pointer"
-            onClick={handleClickMovePrevious}
-          />
-
-          <Box textAlign={"center"} marginY={"1em"}>
-            <Button
-              marginRight={"0.3em"}
-              fontSize={"80%"}
-              width="3em"
-              height="2em"
-              cursor="pointer"
-              onClick={handleClickToday}
-              onContextMenu={(e) => {
-                const menu = new Menu();
-                addGranularityMenuItems(menu, view.state.granularity, (g) => {
-                  view.handlers.onChangeGranularity?.(g);
-                });
-                menu.showAtMouseEvent(e.nativeEvent);
-              }}
-              bg={
-                !isToday
-                  ? "var(--color-accent)!important;"
-                  : "var(--background-modifier-border)"
-              }
-              color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
-              _hover={{
-                bg: !isToday
-                  ? "var(--color-accent-2)"
-                  : "var(--background-modifier-border)",
-              }}
-            >
-              {granularityConfig[granularity].todayLabel}
-            </Button>
-            <Input
-              size="md"
-              type={granularityConfig[granularity].inputType}
-              value={date.format(granularityConfig[granularity].inputFormat)}
-              onChange={handleChangeCalendarDate}
-              width={granularity === "year" ? "5.5em" : "9em"}
-            />
-            {granularityConfig[granularity].showWeekday && (
-              <Box as="span" marginLeft={"0.2em"} fontSize={"95%"} >
-                {replaceDayToJa(date.format("(ddd)"))}
-              </Box>
-            )}
-          </Box>
-          <ObsidianIcon
-            name="chevron-right"
-            boxSize="1.5em"
-            cursor="pointer"
-            onClick={handleClickMoveNext}
-          />
-        </HStack>
-
-        {/* Right Action */}
-        <Box flex="1" display="flex" justifyContent="flex-end">
-          <ObsidianIcon
-            name="maximize"
-            size="1.1em"
-            cursor="pointer"
-            color="var(--text-muted)"
-            padding="4px"
-            borderRadius="4px"
-            _hover={{
-              color: "var(--text-normal)",
-              bg: "var(--background-modifier-hover)",
-            }}
-            onClick={() => {
-              view.handlers.onOpenModalEditor?.();
-            }}
-          />
-        </Box>
-      </Flex>
+      <InputAreaControl />
 
       <ObsidianLiveEditor
         ref={inputRef}
@@ -136,45 +188,9 @@ export const InputArea: React.FC = React.memo(() => {
         placeholder={isReadOnly ? "閲覧モード（書き込み不可）" : undefined}
       />
 
-      <HStack
-        justify="flex-end"
-        alignItems="center"
-        paddingY={"0.5em"}
-        paddingBottom={"1em"}
-        marginRight={"2.4em"}
-      >
-        {editingPost && (
-          <Button
-            minHeight={"2.4em"}
-            maxHeight={"2.4em"}
-            variant="ghost"
-            onClick={cancelEdit}
-          >
-            キャンセル
-          </Button>
-        )}
-        <Button
-          disabled={!canSubmit}
-          bg={
-            canSubmit
-              ? "var(--color-accent)!important;"
-              : "var(--background-modifier-border)"
-          }
-          color={canSubmit ? "var(--text-on-accent)" : "var(--text-muted)"}
-          _hover={{
-            bg: canSubmit
-              ? "var(--color-accent-2)"
-              : "var(--background-modifier-border)",
-          }}
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
-          cursor={canSubmit ? "pointer" : ""}
-          onClick={handleSubmit}
-        >
-          {isReadOnly ? "閲覧モード" : editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
-        </Button>
-      </HStack>
+      <InputAreaFooter />
     </Flex>
   );
 });
+
 
