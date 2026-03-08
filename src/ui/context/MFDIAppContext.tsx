@@ -45,6 +45,8 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     input,
     setInput,
     inputRef,
+    sidebarOpen,
+    setSidebarOpen,
     scrollContainerRef,
     currentDailyNote,
   } = value;
@@ -64,6 +66,8 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     input,
     setInput,
     inputRef,
+    sidebarOpen,
+    setSidebarOpen,
   });
 
   // Handle focus requested from View

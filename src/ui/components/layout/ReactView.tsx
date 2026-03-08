@@ -43,27 +43,39 @@ const ReactViewContent = () => {
     dateFilter,
     filteredPosts,
     scrollContainerRef,
+    sidebarOpen,
+    setSidebarOpen,
   } = useMFDIContext();
+
+  const [containerWidth, setContainerWidth] = React.useState(1000);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const lastWidthRef = React.useRef(containerWidth);
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        const newWidth = entries[0].contentRect.width;
+        // 1100px を跨いで狭くなった瞬間に一度だけ自動で閉じる（手動での再開は妨げない）
+        if (newWidth <= 1100 && lastWidthRef.current > 1100) {
+          setSidebarOpen(false);
+        }
+        setContainerWidth(newWidth);
+        lastWidthRef.current = newWidth;
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [setSidebarOpen]);
+
+  const effectivelyOpen = sidebarOpen;
 
   const isEmpty =
     (dateFilter === "today" && !currentDailyNote) ||
     (asTask ? tasks.length === 0 : filteredPosts.length === 0);
 
   return (
-    <Flex h="100%" position="relative" w="100%" overflow="hidden">
-      {/* Sidebar: MiniCalendar */}
-      <Box 
-        w="260px" 
-        minW="260px" 
-        h="100%" 
-        display={{ base: "none", md: "flex" }} 
-        flexDirection="column" 
-        py="var(--size-4-2)"
-        px={0}
-      >
-        <MiniCalendar />
-      </Box>
-
+    <Flex h="100%" position="relative" w="100%" overflow="hidden" ref={containerRef}>
       {/* Main Content */}
       <Flex
         flexDirection="column"
@@ -72,7 +84,8 @@ const ReactViewContent = () => {
         position="relative"
         backgroundColor="transparent"
         flexGrow={1}
-        marginX="var(--size-4-2)"
+        marginLeft="var(--size-4-2)"
+        marginRight={effectivelyOpen ? 0 : "var(--size-4-2)"}
         overflow="hidden"
       >
         <InputArea />
@@ -96,6 +109,23 @@ const ReactViewContent = () => {
           )}
         </Box>
       </Flex>
+
+      {/* Sidebar: MiniCalendar (Moved to Right) */}
+      <Box 
+        w={effectivelyOpen ? "260px" : "0px"}
+        minW={effectivelyOpen ? "260px" : "0px"}
+        h="100%" 
+        display={effectivelyOpen ? "flex" : "none"}
+        flexDirection="column" 
+        py="var(--size-4-2)"
+        px={0}
+        ml={effectivelyOpen ? "var(--size-4-2)" : 0}
+        mr="var(--size-4-2)"
+        transition="all 0.2s ease-in-out"
+        overflow="hidden"
+      >
+        <MiniCalendar />
+      </Box>
     </Flex>
   );
 };

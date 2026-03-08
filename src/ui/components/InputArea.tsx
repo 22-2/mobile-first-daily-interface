@@ -42,6 +42,8 @@ const InputAreaControl: React.FC = React.memo(() => {
     granularity,
     dateFilter,
     isToday,
+    sidebarOpen,
+    setSidebarOpen,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,

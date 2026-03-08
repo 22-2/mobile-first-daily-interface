@@ -90,6 +90,10 @@ export class MFDIView extends ItemView {
       return true;
     });
 
+    this.addAction("columns-2", "サイドバーを切り替え", () => {
+      this.handlers.onToggleSidebar?.();
+    });
+
     this.renderNewView();
 
     this.app.workspace.on("active-leaf-change", (leaf) => {

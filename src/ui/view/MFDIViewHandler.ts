@@ -12,4 +12,5 @@ export class MFDIViewHandler {
   onTopicSaveRequested?: (topicId: string) => Promise<void>;
   onOpenTopicManager?: () => void;
   onFocusRequested?: () => void;
+  onToggleSidebar?: () => void;
 }

@@ -26,6 +26,8 @@ export interface ViewSyncHandlers {
   input: string;
   setInput: (s: string) => void;
   inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
+  sidebarOpen: boolean;
+  setSidebarOpen: (o: boolean) => void;
 }
 
 /**
@@ -55,11 +57,23 @@ export function useViewSync(
     input,
     setInput,
     inputRef,
+    sidebarOpen,
+    setSidebarOpen,
   }: ViewSyncHandlers,
 ) {
   const { app } = useAppContext();
   const inputRefVal = useRef(input);
   const inputRefObj = useRef(inputRef);
+  const sidebarOpenRef = useRef(sidebarOpen);
+  const setSidebarOpenRef = useRef(setSidebarOpen);
+
+  useEffect(() => {
+    sidebarOpenRef.current = sidebarOpen;
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    setSidebarOpenRef.current = setSidebarOpen;
+  }, [setSidebarOpen]);
 
   useEffect(() => {
     inputRefVal.current = input;
@@ -186,4 +200,13 @@ export function useViewSync(
       view.handlers.onOpenModalEditor = undefined;
     };
   }, [view, app, setInput]);
+
+  useEffect(() => {
+    view.handlers.onToggleSidebar = () => {
+      setSidebarOpenRef.current(!sidebarOpenRef.current);
+    };
+    return () => {
+      view.handlers.onToggleSidebar = undefined;
+    };
+  }, [view]);
 }

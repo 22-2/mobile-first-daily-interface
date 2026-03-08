@@ -42,6 +42,10 @@ export function useMFDISettings() {
     storage.get<DateFilter>("dateFilter", "today"),
   );
 
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    storage.get<boolean>("sidebarOpen", true),
+  );
+
   const handleChangeTopic = useCallback(
     (topicId: string) => {
       if (activeTopic === topicId) return;
@@ -99,6 +103,10 @@ export function useMFDISettings() {
     storage.set("dateFilter", dateFilter);
   }, [dateFilter, storage]);
 
+  useEffect(() => {
+    storage.set("sidebarOpen", sidebarOpen);
+  }, [sidebarOpen, storage]);
+
   return {
     activeTopic,
     setActiveTopic: handleChangeTopic,
@@ -110,6 +118,8 @@ export function useMFDISettings() {
     setTimeFilter,
     dateFilter,
     setDateFilter,
+    sidebarOpen,
+    setSidebarOpen,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
