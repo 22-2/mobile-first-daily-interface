@@ -11,15 +11,20 @@ export const MiniCalendar: React.FC = () => {
   const { date, setDate, granularity, dateFilter, activeTopic, posts } = useMFDIContext();
 
   const [viewDate, setViewDate] = React.useState(window.moment(date).startOf("month"));
-  const viewDateRef = React.useRef(viewDate);
   const prevDateRef = React.useRef(date);
+  const skipNextViewUpdate = React.useRef(false);
 
   // 外部からのdate変更時のみ、カレンダーの表示月を追従させる
   React.useEffect(() => {
+    if (skipNextViewUpdate.current) {
+      skipNextViewUpdate.current = false;
+      prevDateRef.current = date;
+      return;
+    }
+
     if (!date.isSame(prevDateRef.current, "month")) {
       const newViewDate = window.moment(date).startOf("month");
       setViewDate(newViewDate);
-      viewDateRef.current = newViewDate;
     }
     prevDateRef.current = date;
   }, [date]);
@@ -28,21 +33,26 @@ export const MiniCalendar: React.FC = () => {
     e.stopPropagation();
     const newDate = viewDate.clone().subtract(1, "month");
     setViewDate(newDate);
-    viewDateRef.current = newDate;
   };
 
   const handleNextMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newDate = viewDate.clone().add(1, "month");
     setViewDate(newDate);
-    viewDateRef.current = newDate;
   };
 
   const handleSelectDay = (day: moment.Moment) => {
+    // 網掛け（他月）の日付をクリックしても、カレンダーの表示月を切り替えないようにフラグを立てる
+    if (!day.isSame(viewDate, "month")) {
+      skipNextViewUpdate.current = true;
+    }
     setDate(day.clone());
   };
 
   const handleSelectWeek = (weekStart: moment.Moment) => {
+    if (!weekStart.isSame(viewDate, "month")) {
+      skipNextViewUpdate.current = true;
+    }
     setDate(weekStart.clone());
   };
 
