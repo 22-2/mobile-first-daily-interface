@@ -14,33 +14,10 @@ import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
-export const CountDisplay: React.FC = () => {
-  const { settings } = useAppContext();
-  const {
-    date,
-    granularity,
-    asTask,
-    tasks,
-    filteredPosts,
-    posts,
-    timeFilter,
-    dateFilter,
-    activeTopic,
-    setActiveTopic: onTopicChange,
-    setGranularity: onGranularityChange,
-    setTimeFilter: onTimeFilterChange,
-    setDateFilter: onDateFilterChange,
-    setAsTask: onAsTaskChange,
-  } = useMFDIContext();
+const DateSection: React.FC = () => {
+  const { date, granularity, setGranularity: onGranularityChange } =
+    useMFDIContext();
 
-  const activeTopicName = settings.topics.find(
-    (t) => t.id === activeTopic,
-  )?.title;
-  const tasksCount = tasks.length;
-  const filteredPostsCount = filteredPosts.length;
-  const allPostsCount = posts.length;
-
-  const topics = settings.topics;
   const unitMap: Record<Granularity, string> = {
     day: "日",
     week: "週間",
@@ -57,6 +34,158 @@ export const CountDisplay: React.FC = () => {
       : "";
 
   return (
+    <Box>
+      <UnderlinedClickable
+        onContextMenu={(e: React.MouseEvent) => {
+          e.preventDefault();
+          const menu = new Menu();
+          addGranularityMenuItems(menu, granularity, onGranularityChange);
+          menu.showAtMouseEvent(e as unknown as MouseEvent);
+        }}
+      >
+        {date.format(granularityConfig[granularity].displayFormat)}
+      </UnderlinedClickable>
+      {relativeText}
+    </Box>
+  );
+};
+
+const useFilterMenu = () => {
+  const {
+    granularity,
+    asTask,
+    timeFilter,
+    dateFilter,
+    setTimeFilter: onTimeFilterChange,
+    setDateFilter: onDateFilterChange,
+    setAsTask: onAsTaskChange,
+  } = useMFDIContext();
+
+  return (e: React.MouseEvent) => {
+    if (!onAsTaskChange) return;
+    e.preventDefault();
+    const menu = new Menu();
+
+    // モード切替
+    addPostModeMenuItems(menu, asTask, onAsTaskChange);
+
+    if (!asTask && granularity === "day") {
+      // 期間（日）
+      menu.addSeparator();
+      DATE_FILTER_OPTIONS.forEach((f) => {
+        menu.addItem((item) =>
+          item
+            .setTitle(f.label)
+            .setChecked(dateFilter === f.id)
+            .onClick(() => onDateFilterChange?.(f.id)),
+        );
+      });
+
+      // 期間（時間）
+      menu.addSeparator();
+      TIME_FILTER_OPTIONS.forEach((f) => {
+        menu.addItem((item) =>
+          item
+            .setTitle(f.label)
+            .setChecked(timeFilter === f.id && dateFilter === "today")
+            .setDisabled(dateFilter !== "today")
+            .onClick(() => onTimeFilterChange?.(f.id)),
+        );
+      });
+    }
+
+    menu.showAtMouseEvent(e as unknown as MouseEvent);
+  };
+};
+
+const CountSection: React.FC = () => {
+  const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter } =
+    useMFDIContext();
+  const onContextMenu = useFilterMenu();
+
+  const tasksCount = tasks.length;
+  const filteredPostsCount = filteredPosts.length;
+  const allPostsCount = posts.length;
+
+  const showTotal =
+    dateFilter === "today" && timeFilter !== "all" && granularity === "day";
+  const totalPart = showTotal ? `/${allPostsCount}` : "";
+
+  return (
+    <UnderlinedClickable onContextMenu={onContextMenu}>
+      {asTask ? `${tasksCount} tasks` : `${filteredPostsCount}${totalPart} posts`}
+    </UnderlinedClickable>
+  );
+};
+
+const FilterSuffix: React.FC = () => {
+  const { granularity, asTask, timeFilter, dateFilter } = useMFDIContext();
+  const onContextMenu = useFilterMenu();
+
+  if (asTask) return null;
+
+  const dateFilterLabel = DATE_FILTER_OPTIONS.find(
+    (f) => f.id === dateFilter,
+  )?.label.replace("過去", "");
+
+  let suffix = "";
+  if (dateFilter !== "today") {
+    suffix = ` (${dateFilterLabel})`;
+  } else if (timeFilter === "latest") {
+    suffix = " (最新)";
+  } else if (timeFilter !== "all") {
+    suffix = ` (${timeFilter})`;
+  }
+
+  if (!suffix) return null;
+
+  return (
+    <UnderlinedClickable onContextMenu={onContextMenu}>
+      {suffix}
+    </UnderlinedClickable>
+  );
+};
+
+const TopicSection: React.FC = () => {
+  const { settings } = useAppContext();
+  const { activeTopic, setActiveTopic: onTopicChange } = useMFDIContext();
+
+  const activeTopicName = settings.topics.find(
+    (t) => t.id === activeTopic,
+  )?.title;
+  const topics = settings.topics;
+
+  if (!activeTopicName) return null;
+
+  return (
+    <>
+      {" in "}
+      <UnderlinedClickable
+        onContextMenu={(e: React.MouseEvent) => {
+          if (!topics || !onTopicChange) return;
+          e.preventDefault();
+          const menu = new Menu();
+          topics
+            .filter((t) => !t.archived)
+            .forEach((topic) => {
+              menu.addItem((item) =>
+                item
+                  .setTitle(topic.title)
+                  .setChecked(topic.title === activeTopicName)
+                  .onClick(() => onTopicChange(topic.id)),
+              );
+            });
+          menu.showAtMouseEvent(e as unknown as MouseEvent);
+        }}
+      >
+        {activeTopicName}
+      </UnderlinedClickable>
+    </>
+  );
+};
+
+export const CountDisplay: React.FC = () => {
+  return (
     <HStack
       fontSize="var(--font-ui-smaller)"
       color="var(--text-muted)"
@@ -66,106 +195,13 @@ export const CountDisplay: React.FC = () => {
       spacing={0}
       justifyContent="space-between"
     >
+      <DateSection />
       <Box>
-        <UnderlinedClickable
-          onContextMenu={(e: React.MouseEvent) => {
-            e.preventDefault();
-            const menu = new Menu();
-            addGranularityMenuItems(menu, granularity, onGranularityChange);
-            menu.showAtMouseEvent(e as unknown as MouseEvent);
-          }}
-        >
-          {date.format(granularityConfig[granularity].displayFormat)}
-        </UnderlinedClickable>
-        {relativeText}
-      </Box>
-      <Box>
-        <UnderlinedClickable
-          onContextMenu={(e: React.MouseEvent) => {
-            if (!onAsTaskChange) return;
-            e.preventDefault();
-            const menu = new Menu();
-
-            // モード切替
-            addPostModeMenuItems(menu, asTask, onAsTaskChange);
-
-            if (!asTask && granularity === "day") {
-              // 期間（日）
-              menu.addSeparator();
-              DATE_FILTER_OPTIONS.forEach((f) => {
-                menu.addItem((item) =>
-                  item
-                    .setTitle(f.label)
-                    .setChecked(dateFilter === f.id)
-                    .onClick(() => onDateFilterChange?.(f.id)),
-                );
-              });
-
-              // 期間（時間）
-              menu.addSeparator();
-              TIME_FILTER_OPTIONS.forEach((f) => {
-                menu.addItem((item) =>
-                  item
-                    .setTitle(f.label)
-                    .setChecked(timeFilter === f.id && dateFilter === "today")
-                    .setDisabled(dateFilter !== "today")
-                    .onClick(() => onTimeFilterChange?.(f.id)),
-                );
-              });
-            }
-
-            menu.showAtMouseEvent(e as unknown as MouseEvent);
-          }}
-        >
-          {asTask ? (
-            `${tasksCount} tasks`
-          ) : (
-            <>
-              {filteredPostsCount}
-              {dateFilter === "today" &&
-              timeFilter !== "all" &&
-              granularity === "day"
-                ? `/${allPostsCount}`
-                : ""}
-              {dateFilter !== "today" ? ` (${DATE_FILTER_OPTIONS.find(f => f.id === dateFilter)?.label.replace("過去", "")})` : ""}
-              {dateFilter === "today" &&
-              timeFilter !== "all" &&
-              timeFilter !== "latest"
-                ? ` (${timeFilter})`
-                : ""}
-              {dateFilter === "today" && timeFilter === "latest"
-                ? " (最新)"
-                : ""}{" "}
-              posts
-            </>
-          )}
-        </UnderlinedClickable>
-        {activeTopicName && (
-          <>
-            {" in "}
-            <UnderlinedClickable
-              onContextMenu={(e: React.MouseEvent) => {
-                if (!topics || !onTopicChange) return;
-                e.preventDefault();
-                const menu = new Menu();
-                topics
-                  .filter((t) => !t.archived)
-                  .forEach((topic) => {
-                    menu.addItem((item) =>
-                      item
-                        .setTitle(topic.title)
-                        .setChecked(topic.title === activeTopicName)
-                        .onClick(() => onTopicChange(topic.id)),
-                    );
-                  });
-                menu.showAtMouseEvent(e as unknown as MouseEvent);
-              }}
-            >
-              {activeTopicName}
-            </UnderlinedClickable>
-          </>
-        )}
+        <CountSection />
+        <TopicSection />
+        <FilterSuffix />
       </Box>
     </HStack>
   );
 };
+
