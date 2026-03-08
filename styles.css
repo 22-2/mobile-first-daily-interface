@@ -7,10 +7,6 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-:root {
-  --mfdi-app-transition-ms: 150ms;
-}
-
 .item-enter {
   opacity: 0 !important;
   transform: translateY(-20px);
@@ -20,8 +16,8 @@ If your plugin does not need CSS, delete this file.
   opacity: 1 !important;
   transform: translateY(0);
   transition:
-    opacity var(--mfdi-app-transition-ms) ease-out,
-    transform var(--mfdi-app-transition-ms) ease-out;
+    opacity var(--anim-duration-fast) ease-out,
+    transform var(--anim-duration-fast) ease-out;
 }
 
 .item-exit {
