@@ -2,7 +2,7 @@ export type MomentLike = ReturnType<typeof window.moment>;
 
 export type Granularity = "day" | "week" | "month" | "year";
 
-export type TimeFilter = 1 | 2 | 3 | 6 | 12 | "all" | "latest";
+export type TimeFilter = 1 | 2 | 3 | 6 | 12 | "all" | "latest" | "this_week";
 
 export interface Post {
   timestamp: MomentLike;
@@ -11,5 +11,6 @@ export interface Post {
   startOffset: number;
   endOffset: number;
   bodyStartOffset: number;
-  kind: "codeblock" | "header" | "thino";
+  kind: "thino";
+  path: string;
 }

@@ -1,18 +1,23 @@
 export function formatTaskText(input: string, time?: string): string {
-  const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   const t = time ?? (typeof window !== "undefined" ? window.moment().format("HH:mm:ss") : "00:00:00");
 
-  // single-line -> put content on same line after time
-  if (!normalized.includes("\n")) {
-    const content = normalized.trim();
-    return `- [ ] ${t}${content.length === 0 ? "" : " " + content}`;
+  if (normalized.length === 0) {
+    return `- [ ] ${t}`;
   }
 
-  // multi-line -> time on its own line, body indented
-  const body = normalized
-    .split("\n")
+  const lines = normalized.split("\n");
+  const firstLine = lines[0];
+  const restLines = lines.slice(1);
+
+  const head = `- [ ] ${t} ${firstLine}`;
+  if (restLines.length === 0) {
+    return head;
+  }
+
+  const body = restLines
     .map((x) => (x.length === 0 ? "" : `    ${x}`))
     .join("\n");
 
-  return `- [ ] ${t}\n${body}`;
+  return `${head}\n${body}`;
 }

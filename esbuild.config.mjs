@@ -3,7 +3,8 @@ import builtins from "builtin-modules";
 import esbuild from "esbuild";
 import path from "path";
 import process from "process";
-
+import fs from "fs";
+import babel from "esbuild-plugin-babel";
 
 const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
 const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
@@ -40,6 +41,13 @@ const context = await esbuild.context({
     "@lezer/lr",
     ...builtins,
   ],
+  alias: {
+    "react": "preact/compat",
+    "react-dom": "preact/compat",
+    "react-dom/client": "preact/compat/client",
+    "react-dom/test-utils": "preact/test-utils",
+    "react/jsx-runtime": "preact/jsx-runtime",
+  },
   format: "cjs",
   target: "esnext",
   logLevel: "info",
@@ -47,24 +55,36 @@ const context = await esbuild.context({
   treeShaking: true,
   outfile: "main.js",
   minify: prod,
+  metafile: true,
   plugins: [
-    obsidianCopyPlugin({
-      pluginsDir: PLUGINS_DIR,
-      force: true,
+    babel({
+      filter: /\.[jt]sx?$/,
+      config: {
+        presets: [
+          ["@babel/preset-react", { runtime: "automatic" }],
+          "@babel/preset-typescript",
+        ],
+        plugins: [
+          ["babel-plugin-react-compiler", { target: "18" }],
+        ],
+      },
     }),
     obsidianCopyPlugin({
-      pluginsDir: "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
-      force: true,
-    }),
-    obsidianCopyPlugin({
-      pluginsDir: "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+      pluginsDir: [
+        PLUGINS_DIR,
+        "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+        "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
+        "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
+      ],
       force: true,
     }),
   ],
 });
 
+
 if (prod) {
-  await context.rebuild();
+  const result = await context.rebuild();
+  fs.writeFileSync("metafile.json", JSON.stringify(result.metafile));
   process.exit(0);
 } else {
   await context.watch();

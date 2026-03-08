@@ -6,6 +6,12 @@
 - [x] ページのカードビューを無効化するオプションを追加してくださいっす
 - [x] 粒度追加
 - [ ] deleted:: E:\AppData\obsidian\vaults\suizen\etc\journals\2026-02-19.md
-- [ ] scope
-- [ ] mfdiビューからマークダウンビューに移る時、フォーカスが利かない
-- [ ] 今日/今週などを右クリックしたとき、メニューを開く
+- [x] scope
+- [x] mfdiビューからマークダウンビューに移る時、フォーカスが利かない
+- [x] 今日/今週などを右クリックしたとき、メニューを開く
+- [x] quick menu
+- [x] 無秩序な関数の引数をservice-containerやcontextで整理したいっす
+- [x] thinoのパーサ以外削除
+- [x] obsidian-daily-notes-interfaceからの流用を再統合して単一モジュール化
+- [x] MFDIViewのscopeが利かない
+- [x] get/setstateに保存

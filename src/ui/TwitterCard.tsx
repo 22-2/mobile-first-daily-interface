@@ -1,5 +1,4 @@
 import { Box, Image, Link, Text } from "@chakra-ui/react";
-import parse from "html-react-parser";
 import * as React from "react";
 import { TwitterMeta } from "../utils/meta";
 
@@ -44,7 +43,10 @@ export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
             X / Twitter
           </Text>
         </Box>
-        <Box className="mfdi-html-card-body">{parse(meta.html)}</Box>
+        <Box
+          className="mfdi-html-card-body"
+          dangerouslySetInnerHTML={{ __html: meta.html }}
+        />
       </Box>
       <Link
         href={meta.url}

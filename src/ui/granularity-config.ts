@@ -1,93 +1,21 @@
-import { normalizePath, TFile, TFolder, Vault } from "obsidian";
-import {
-    createDailyNote, createMonthlyNote, createWeeklyNote, createYearlyNote, getAllDailyNotes, getDailyNoteSettings, getDateFromFile, getDateUID, getMonthlyNoteSettings, getWeeklyNoteSettings, getYearlyNoteSettings, IPeriodicNoteSettings
-} from "obsidian-daily-notes-interface";
 import { Granularity, MomentLike } from "./types";
 
-function getAllNotesByGranularity(
-  g: Exclude<Granularity, "day">
-): Record<string, TFile> {
-  const getSettings: Record<
-    Exclude<Granularity, "day">,
-    () => IPeriodicNoteSettings
-  > = {
-    week: getWeeklyNoteSettings,
-    month: getMonthlyNoteSettings,
-    year: getYearlyNoteSettings,
-  };
-  const { folder } = getSettings[g]();
-  const { vault } = (window as any).app;
-
-  const folderFile = folder
-    ? vault.getAbstractFileByPath(normalizePath(folder))
-    : vault.getRoot();
-
-  if (!folderFile || !(folderFile instanceof TFolder)) return {};
-
-  const result: Record<string, TFile> = {};
-  Vault.recurseChildren(folderFile, (note) => {
-    if (note instanceof TFile) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const date = getDateFromFile(note as any, g);
-      if (date) {
-        const uid = getDateUID(date, g);
-        result[uid] = note;
-      }
-    }
-  });
-  return result;
+// ─────────────────────────────────────────────────────────────────
+// UI display config — granularity ごとの表示設定
+// ─────────────────────────────────────────────────────────────────
+export interface GranularityConfigEntry {
+  label: string;
+  menuLabel: string;
+  todayLabel: string;
+  unit: "day" | "week" | "month" | "year";
+  inputType: string;
+  inputFormat: string;
+  displayFormat: string;
+  parseInput: (v: string) => MomentLike;
+  showWeekday: boolean;
 }
 
-export const getAllNotes = (g: Granularity): Record<string, TFile> => {
-  switch (g) {
-    case "week":  return getAllNotesByGranularity("week");
-    case "month": return getAllNotesByGranularity("month");
-    case "year":  return getAllNotesByGranularity("year");
-    default:      return getAllDailyNotes() as Record<string, TFile>;
-  }
-};
-
-export const getNote = (
-  date: MomentLike,
-  notes: Record<string, TFile>,
-  g: Granularity
-): TFile | null => {
-  const uid = getDateUID(date, g);
-  return notes[uid] ?? null;
-};
-
-export const createNote = (date: MomentLike, g: Granularity): Promise<TFile> => {
-  switch (g) {
-    case "week":  return createWeeklyNote(date) as Promise<TFile>;
-    case "month": return createMonthlyNote(date) as Promise<TFile>;
-    case "year":  return createYearlyNote(date) as Promise<TFile>;
-    default:      return createDailyNote(date) as Promise<TFile>;
-  }
-};
-
-export const getNoteSettings = (g: Granularity): IPeriodicNoteSettings => {
-  switch (g) {
-    case "week":  return getWeeklyNoteSettings();
-    case "month": return getMonthlyNoteSettings();
-    case "year":  return getYearlyNoteSettings();
-    default:      return getDailyNoteSettings();
-  }
-};
-
-export const granularityConfig: Record<
-  Granularity,
-  {
-    label: string;
-    menuLabel: string;
-    todayLabel: string;
-    unit: "day" | "week" | "month" | "year";
-    inputType: string;
-    inputFormat: string;
-    displayFormat: string;
-    parseInput: (v: string) => MomentLike;
-    showWeekday: boolean;
-  }
-> = {
+export const granularityConfig: Record<Granularity, GranularityConfigEntry> = {
   day: {
     label: "日",
     menuLabel: "日ごと",

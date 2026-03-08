@@ -1,90 +1,127 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { App, EventRef, WorkspaceLeaf } from "obsidian";
+import { App, WorkspaceLeaf } from "obsidian";
 import { MagicalEditor } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
-interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange"> {
+interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange" | "onSubmit"> {
   leaf: WorkspaceLeaf;
   app: App;
   value: string;
   onChange: (text: string) => void;
+  onSubmit?: () => void;
+  placeholder?: string;
 }
 
 export interface ObsidianLiveEditorRef {
   focus: () => void;
+  getValue: () => string;
+  setContent: (text: string) => void;
 }
 
-export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(({
-  leaf,
-  app,
-  value,
-  onChange,
-  ...props
-}, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const magicalEditorRef = useRef<MagicalEditor | null>(null);
+export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(
+  ({ leaf, app, value, onChange, onSubmit, placeholder, ...props }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const magicalEditorRef = useRef<MagicalEditor | null>(null);
+    const lastNotifiedValue = useRef<string>(value);
 
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      magicalEditorRef.current?.focus();
-    },
-  }));
+    useImperativeHandle(ref, () => ({
+      focus: () => magicalEditorRef.current?.focus(),
+      getValue: () => magicalEditorRef.current?.getContent() ?? "",
+      setContent: (text: string) => {
+        const editor = magicalEditorRef.current;
+        if (editor && editor.getContent() !== text) {
+          editor.setContent(text);
+        }
+      }
+    }));
 
-  const delayedFocus = () => {
-    if (containerRef.current?.ownerDocument.querySelector(".mfdi-modal-editor")) {
-      return;
-    }
-    setTimeout(() => {
-      magicalEditorRef.current?.focus();
-    });
-  };
+    const onSubmitRef = useRef(onSubmit);
+    useEffect(() => {
+      onSubmitRef.current = onSubmit;
+    }, [onSubmit]);
 
-  useEffect(() => {
-    let active = true;
-    let eventRef: EventRef;
-    const init = async () => {
-      if (containerRef.current) {
+    useEffect(() => {
+      let active = true;
+      const init = async () => {
+        if (!containerRef.current) return;
         containerRef.current.empty();
+        
         const editor = await MagicalEditor.create(app, leaf, {
           onChange: (text) => {
-             if (active) onChange(text);
+            if (!active) return;
+            onChange(text);
           },
-          initialContent: value,
-          placeholder: "なんでもかいていいのよ😊",
+          initialContent: value ?? "",
         });
+
         if (active && containerRef.current) {
           magicalEditorRef.current = editor;
-          containerRef.current.appendChild(editor.view.containerEl);
-          delayedFocus();
-          eventRef = app.workspace.on("active-leaf-change", delayedFocus);
+          magicalEditorRef.current.loadToDom(containerRef.current);
+
+          // Add keyboard listener for submission
+          const cm = (editor.view as any).editor?.cm;
+          if (cm) {
+            cm.dom.addEventListener("keydown", (e: KeyboardEvent) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                onSubmitRef.current?.();
+              }
+            });
+          }
         } else {
           editor.destroy();
         }
-      }
-    };
+      };
 
-    init();
+      init();
+      return () => {
+        active = false;
+        magicalEditorRef.current?.destroy();
+      };
+    }, []); // Empty dependency array! Do not re-run on props change.
 
-    return () => {
-      active = false;
-      app.workspace.offref(eventRef);
-      magicalEditorRef.current?.destroy();
-      magicalEditorRef.current = null;
-    };
-  }, []); 
+    // React value is ONLY used for initial renders and placeholder checking. 
+    // Explicit content changes are pushed via ref.setContent() to prevent infinite render loops.
+    
+    // Track value simply for the placeholder rendering
+    const [empty, setEmpty] = React.useState(!value);
+    useEffect(() => {
+       setEmpty(!value && !(magicalEditorRef.current?.getContent()));
+    }, [value]);
 
-  // Handle external value changes (e.g. clearing after submit or starting edit)
-  useEffect(() => {
-    if (magicalEditorRef.current && magicalEditorRef.current.getContent() !== value) {
-      magicalEditorRef.current.setContent(value);
-    }
-  }, [value]);
+    const showPlaceholder = empty;
 
-  return (
-    <Box
-      ref={containerRef}
-      {...props}
-    />
-  );
-});
+    return (
+      <Box position="relative" {...props}>
+          <Box ref={containerRef} height="100%" width="100%" />
+          {showPlaceholder && (
+            <Box
+              position="absolute"
+              top="var(--size-2-1)"
+              left="var(--size-2-1)"
+              pointerEvents="none"
+              color="var(--text-muted)"
+              opacity={0.6}
+              userSelect="none"
+              fontSize="var(--font-text-size)"
+              zIndex={1}
+            >
+              {placeholder ?? "なんでもかいていいのよ😊"}
+            </Box>
+          )}
+          {/* Transparent overlay to catch initial click when empty */}
+          {showPlaceholder && (
+            <Box
+              position="absolute"
+              inset="0"
+              cursor="text"
+              zIndex={2}
+              onClick={() => magicalEditorRef.current?.focus()}
+            />
+          )}
+      </Box>
+    );
+  }
+);

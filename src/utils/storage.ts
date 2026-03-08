@@ -9,7 +9,7 @@ export class MFDIStorage {
     return `mfdi-${this.appId}-${key}`;
   }
 
-  set(key: string, value: any): void {
+  set<T>(key: string, value: T): void {
     try {
       localStorage.setItem(this.getKey(key), JSON.stringify(value));
     } catch (e) {

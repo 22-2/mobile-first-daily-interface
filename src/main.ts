@@ -1,7 +1,9 @@
-import { Notice, Plugin } from "obsidian";
+import { Plugin } from "obsidian";
 import { AppHelper } from "./app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
+import { Topic } from "./topic";
 import { MFDIView, VIEW_TYPE_MFDI } from "./ui/MFDIView";
+import { TopicManagerModal } from "./ui/TopicManagerModal";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -18,14 +20,10 @@ export default class MFDIPlugin extends Plugin {
 
     this.registerView(VIEW_TYPE_MFDI, (leaf) => {
       this.view = new MFDIView(leaf, this.settings);
+      this.setupViewCallbacks(this.view);
       return this.view;
     });
 
-    this.app.workspace.onLayoutReady(async () => {
-      if (this.settings.autoStartOnLaunch) {
-        await this.attachMFDIView();
-      }
-    });
     this.addRibbonIcon("pencil", "Mobile First Daily Interface", async () => {
       await this.attachMFDIView();
     });
@@ -40,10 +38,6 @@ export default class MFDIPlugin extends Plugin {
     });
   }
 
-  // async onunload() {
-  //   this.app.workspace.detachLeavesOfType(VIEW_TYPE_MFDI);
-  // }
-
   /**
    * MFDIのViewをアタッチします
    */
@@ -54,18 +48,7 @@ export default class MFDIPlugin extends Plugin {
       return existed;
     }
 
-    const targetLeaf =
-      this.settings.leaf === "left"
-        ? this.app.workspace.getLeftLeaf(false)
-        : this.settings.leaf === "center"
-        ? this.app.workspace.getLeaf(true)
-        : this.settings.leaf === "right"
-        ? this.app.workspace.getRightLeaf(false)
-        : undefined;
-    if (!targetLeaf) {
-      new Notice(`表示リーフの設定が不正です: ${this.settings.leaf}`);
-      return;
-    }
+    const targetLeaf = this.app.workspace.getLeaf(true)
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
@@ -85,5 +68,33 @@ export default class MFDIPlugin extends Plugin {
 
   rerenderView() {
     this.view?.updateSettings(this.settings);
+  }
+
+  /**
+   * MFDIView のコールバックを設定する
+   */
+  private setupViewCallbacks(view: MFDIView) {
+    // トピック切り替え時に settings を保存 (React側からの変更も含む)
+    view.handlers.onTopicSaveRequested = async (topicId: string) => {
+      this.settings.activeTopic = topicId;
+      await this.saveSettings();
+    };
+
+    // トピック管理モーダルを開く
+    view.handlers.onOpenTopicManager = () => {
+      const modal = new TopicManagerModal(
+        this.app,
+        this.settings.topics,
+        this.settings.activeTopic,
+        async (topics: Topic[], activeTopic: string) => {
+          this.settings.topics = topics;
+          this.settings.activeTopic = activeTopic;
+          await this.saveSettings();
+          // ReactView内の state を更新
+          view.handlers.onChangeTopic?.(activeTopic);
+        }
+      );
+      modal.open();
+    };
   }
 }

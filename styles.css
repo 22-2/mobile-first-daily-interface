@@ -7,23 +7,32 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+:root {
+  --mfdi-app-transition-ms: 150ms;
+}
+
 .item-enter {
-  opacity: 0;
+  opacity: 0 !important;
+  transform: translateY(-20px);
 }
 
 .item-enter-active {
-  opacity: 1;
-  transition: opacity 500ms ease-in;
+  opacity: 1 !important;
+  transform: translateY(0);
+  transition: opacity var(--mfdi-app-transition-ms) ease-out, transform var(--mfdi-app-transition-ms) ease-out;
 }
 
 .item-exit {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
 .item-exit-active {
-  opacity: 0;
-  transition: opacity 500ms ease-in;
+  opacity: 0 !important;
+  transform: scale(0.95);
+  transition: opacity var(--mfdi-app-transition-ms) ease-in, transform var(--mfdi-app-transition-ms) ease-in;
 }
+
+
 
 [data-type="mfdi-view"] .view-content {
   padding-bottom: 0;
@@ -48,4 +57,8 @@ If your plugin does not need CSS, delete this file.
   margin: var(--size-4-2) var(--size-4-4) !important;
   padding: 0!important;
   max-height: 50vh!important;
+}
+
+[data-type="mfdi-view"] .list .markdown-rendered {
+  user-select: text!important;
 }

@@ -5,7 +5,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "nodenext",
-    "target": "ES6",
+    "target": "esnext",
     "allowJs": true,
     "noImplicitAny": true,
     "moduleResolution": "nodenext",
@@ -14,7 +14,7 @@
     "strictPropertyInitialization": false,
     "lib": ["DOM", "ESNext"],
     "jsx": "react",
-    "types": ["@types/bun"]
+    "types": ["@types/bun", "obsidian-typings"]
   },
-  "include": ["**/*.ts", "src/ui/ObsidianLiveEditor.tsx"]
+  "include": ["**/*.ts"]
 }

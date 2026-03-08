@@ -1,9 +1,10 @@
-import { Editor, ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
-import { granularityConfig } from "./granularity-config";
+import { MFDIViewHandler } from "./MFDIViewHandler";
 import { ReactView } from "./ReactView";
+import { addPostModeMenuItems } from "./menus/postModeMenu";
 import { Granularity, TimeFilter } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -14,14 +15,13 @@ type IconName = string;
 export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
-  public onOpenDailyNoteAction?: () => void;
-  public granularity: Granularity = "day";
-  public onChangeGranularity?: (g: Granularity) => void;
-  public asTask: boolean = false;
-  public onChangeAsTask?: (asTask: boolean) => void;
-  public timeFilter: TimeFilter = "all";
-  public onChangeTimeFilter?: (f: TimeFilter) => void;
-  public onOpenModalEditor?: () => void;
+  public readonly handlers = new MFDIViewHandler();
+  public state: MFDIViewState = {
+    granularity: "day",
+    asTask: false,
+    timeFilter: "all",
+    activeTopic: "",
+  };
   public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -29,69 +29,35 @@ export class MFDIView extends ItemView {
     this.settings = settings;
   }
 
-  public editor?: Editor;
-
   onPaneMenu(menu: Menu, prev: string): void {
     menu.addItem((item) => {
       item
         .setTitle("現在のノートを開く")
         .setIcon("external-link")
         .onClick(() => {
-          this.onOpenDailyNoteAction?.();
-        });
-    });
-    menu.addItem((item) => {
-      item
-        .setTitle("モーダルエディタで開く")
-        .setIcon("maximize")
-        .onClick(() => {
-          this.onOpenModalEditor?.();
+          this.handlers.onOpenDailyNoteAction?.();
         });
     });
 
-    // --- 年月日の表示形式 ---
+    // --- トピック ---
     menu.addSeparator();
     menu.addItem((item) => {
-      item.setTitle("年月日の表示形式").setIcon("calendar").setDisabled(true);
+      item
+        .setTitle("トピックを管理...")
+        .setIcon("folder-open")
+        .onClick(() => {
+          this.handlers.onOpenTopicManager?.();
+        });
     });
-    const granularities: Granularity[] = ["day", "week", "month", "year"];
-    for (const g of granularities) {
-      menu.addItem((item) => {
-        item
-          .setTitle(granularityConfig[g].menuLabel)
-          .setChecked(this.granularity === g)
-          .onClick(() => {
-            this.onChangeGranularity?.(g);
-          });
-      });
-    }
 
     // --- 投稿モード ---
     menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("投稿モード").setIcon("pencil").setDisabled(true);
-    });
-    menu.addItem((item) => {
-      item
-        .setTitle("メッセージ投稿モード")
-        .setIcon("message-square")
-        .setChecked(!this.asTask)
-        .onClick(() => {
-          this.onChangeAsTask?.(false);
-        });
-    });
-    menu.addItem((item) => {
-      item
-        .setTitle("タスク投稿モード")
-        .setIcon("check-circle")
-        .setChecked(this.asTask)
-        .onClick(() => {
-          this.onChangeAsTask?.(true);
-        });
+    addPostModeMenuItems(menu, this.state.asTask, (asTask) => {
+      this.handlers.onChangeAsTask?.(asTask);
     });
 
     // --- 表示期間 ---
-    const showTimeFilter = this.granularity === "day" && !this.asTask;
+    const showTimeFilter = this.state.granularity === "day" && !this.state.asTask;
     menu.addSeparator();
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
@@ -99,23 +65,26 @@ export class MFDIView extends ItemView {
     const filters: TimeFilter[] = [
       "all",
       "latest",
-      //  1, 2, 3, 6, 12
+      1, 2, 3, 6, 12,
+      "this_week",
     ];
     for (const f of filters) {
       menu.addItem((item) => {
-        const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
+        const isChecked = showTimeFilter ? this.state.timeFilter === f : f === "all";
         item
           .setTitle(
             f === "all"
-              ? "すべて表示"
+              ? "今日"
               : f === "latest"
               ? "最新のみ表示"
+              : f === "this_week"
+              ? "今週"
               : `直近${f}時間`
           )
           .setChecked(isChecked)
           .setDisabled(!showTimeFilter)
           .onClick(() => {
-            this.onChangeTimeFilter?.(f);
+            this.handlers.onChangeTimeFilter?.(f);
           });
       });
     }
@@ -136,24 +105,33 @@ export class MFDIView extends ItemView {
   }
 
   async onOpen() {
-    this.renderNewView();
-    // Ctrl+Shift+Alt+O でモーダルエディタを開く（thino-extension と同じショートカット）
+    // scope は renderNewView より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
     this.scope = new Scope(this.app.scope);
     this.scope.register(["Ctrl"], "Enter", () => {
       return true;
     });
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
-      this.onOpenModalEditor?.();
+      this.handlers.onOpenModalEditor?.();
       return true;
     });
+
+    this.renderNewView();
+
+    this.app.workspace.on("active-leaf-change", leaf => {
+      if (leaf?.id === this.leaf.id) {
+        this.handlers.onFocusRequested?.();
+      }
+    })
   }
 
   async onClose() {
-    this.root.unmount();
+    this.root?.unmount();
   }
 
   renderNewView() {
-    this.root = createRoot(this.containerEl.children[1]);
+    if (!this.root) {
+      this.root = createRoot(this.containerEl.children[1]);
+    }
     this.root.render(
       <ReactView app={this.app} settings={this.settings} view={this} />
     );
@@ -161,7 +139,28 @@ export class MFDIView extends ItemView {
 
   updateSettings(settings: Settings) {
     this.settings = settings;
-    this.root.unmount();
     this.renderNewView();
   }
+
+  getState(): MFDIViewState {
+    return this.state;
+  }
+
+  async setState(state: MFDIViewState) {
+    this.state.granularity = (state.granularity as Granularity) ?? this.state.granularity;
+    this.state.asTask = (state.asTask as boolean) ?? this.state.asTask;
+    this.state.timeFilter = (state.timeFilter as TimeFilter) ?? this.state.timeFilter;
+    if (state.activeTopic !== undefined) {
+      this.state.activeTopic = state.activeTopic as string;
+      this.handlers.onChangeTopic?.(this.state.activeTopic);
+    }
+    this.renderNewView();
+  }
+}
+
+interface MFDIViewState extends Record<string, unknown> {
+  granularity: Granularity;
+  asTask: boolean;
+  timeFilter: TimeFilter;
+  activeTopic: string;
 }

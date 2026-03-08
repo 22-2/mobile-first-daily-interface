@@ -1,97 +1,91 @@
-import { Box, Flex, HStack, Spacer, Tag, VStack } from "@chakra-ui/react";
-import Markdown from "marked-react";
+import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Settings } from "../settings";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
-import { Card } from "./Card";
-import {
-    DISPLAY_DATE_TIME_FORMAT,
-    DISPLAY_TIME_FORMAT
-} from "./date-formats";
+import { BaseCard } from "./components/BaseCard";
+import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
+import { useAppContext } from "./context/AppContext";
+import { granularityConfig } from "./granularity-config";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
-import { Granularity } from "./types";
+import { Granularity, MomentLike, TimeFilter } from "./types";
+import { Card } from "./Card";
 
+export const PostCardView = React.memo(
+  ({
+    post,
+    granularity,
+    viewedDate,
+    timeFilter,
+    onClickTime,
+    onContextMenu,
+    onEdit,
+    className,
+    style,
+  }: {
+    post: Post;
+    granularity: Granularity;
+    viewedDate: MomentLike;
+    timeFilter?: TimeFilter;
+    onClickTime: (post: Post) => void;
+    onContextMenu?: (post: Post, e: React.MouseEvent) => void;
+    onEdit?: (post: Post) => void;
+    className?: string;
+    style?: React.CSSProperties;
+  }) => {
+    const { settings } = useAppContext();
+    const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
+    const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
+    const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);
 
+    useEffect(() => {
+      if (!settings.enabledCardView) {
+        setHtmlMetas([]);
+        setImageMetas([]);
+        setTwitterMetas([]);
+        return;
+      }
 
-export const PostCardView = ({
-  post,
-  settings,
-  granularity,
-  onClickTime,
-  onContextMenu,
-  onEdit,
-}: {
-  post: Post;
-  settings: Settings;
-  granularity: Granularity;
-  onClickTime: (post: Post) => void;
-  onContextMenu?: (post: Post, e: React.MouseEvent) => void;
-  onEdit?: (post: Post) => void;
-}) => {
-  const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
-  const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
-  const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);
+      (async function () {
+        const urls = pickUrls(post.message);
+        const results = (await Promise.all(urls.map(createMeta))).filter(
+          isPresent
+        );
+        setHtmlMetas(results.filter((x): x is HTMLMeta => x.type === "html"));
+        setImageMetas(
+          results.filter((x): x is ImageMeta => x.type === "image")
+        );
+        setTwitterMetas(
+          results.filter((x): x is TwitterMeta => x.type === "twitter")
+        );
+      })();
+    }, [post.message, settings.enabledCardView]);
 
-  useEffect(() => {
-    if (!settings.enabledCardView) {
-      setHtmlMetas([]);
-      setImageMetas([]);
-      setTwitterMetas([]);
-      return;
-    }
+    const unit = granularityConfig[granularity].unit;
+    const isCurrent = post.timestamp.isSame(window.moment(), unit);
+    const isDimmed = !isCurrent;
 
-    (async function () {
-      const urls = pickUrls(post.message);
-      const results = (await Promise.all(urls.map(createMeta))).filter(
-        isPresent
-      );
-      setHtmlMetas(results.filter((x): x is HTMLMeta => x.type === "html"));
-      setImageMetas(results.filter((x): x is ImageMeta => x.type === "image"));
-      setTwitterMetas(
-        results.filter((x): x is TwitterMeta => x.type === "twitter")
-      );
-    })();
-  }, [post.message, settings.enabledCardView]);
-
-  return (
-    <Card onContextMenu={(e) => onContextMenu?.(post, e)} onDoubleClick={() => onEdit?.(post)}>
-      <Flex direction="column" maxHeight={"50vh"} padding={"var(--size-4-2)"}>
-        <Box
-          padding={5}
-          paddingTop={4}
-          className="markdown-rendered"
-          overflowY="auto"
-          flex="1"
-          sx={{
-            "&::-webkit-scrollbar": {
-              width: "4px",
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "transparent",
-              borderRadius: "10px",
-            },
-            "&:hover::-webkit-scrollbar-thumb": {
-              backgroundColor: "var(--scrollbar-thumb-bg, rgba(0,0,0,0.1))",
-            },
-            "scrollbarWidth": "none",
-            "&:hover": {
-              "scrollbarWidth": "thin",
-            },
-          }}
+    return (
+      <Card className={className} style={style}>
+        <BaseCard
+          timestamp={post.timestamp}
+          granularity={granularity}
+          timeFilter={timeFilter}
+          isDimmed={isDimmed}
+          onContextMenu={(e) => onContextMenu?.(post, e)}
+          onDoubleClick={(e) => onEdit?.(post)}
         >
           <VStack align="stretch" gap={3}>
-
             {/* Message Body */}
             <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-              <Markdown gfm breaks>
-                {post.message}
-              </Markdown>
+              <ObsidianMarkdown
+                content={post.message}
+                sourcePath={post.path}
+              />
             </Box>
 
             {settings.enabledCardView && (
@@ -107,35 +101,9 @@ export const PostCardView = ({
                 ))}
               </Box>
             )}
-
           </VStack>
-        </Box>
-
-        {/* Footer: Info Tag */}
-        <HStack
-          color={"var(--text-muted)"}
-          fontSize={"80%"}
-          padding={3}
-          paddingTop={0}
-          paddingRight={4}
-          align="center"
-          gap={3}
-        >
-          <Spacer />
-          <HStack gap={2}>
-
-
-            <Tag size="sm" variant="subtle" colorScheme="gray">
-              {post.timestamp.format(
-                granularity === "day"
-                  ? DISPLAY_TIME_FORMAT
-                  : DISPLAY_DATE_TIME_FORMAT
-              )}
-            </Tag>
-            
-          </HStack>
-        </HStack>
-      </Flex>
-    </Card>
-  );
-};
+        </BaseCard>
+      </Card>
+    );
+  }
+);
