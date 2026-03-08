@@ -11,6 +11,7 @@ import { EmptyState } from "../EmptyState";
 import { InputArea } from "../InputArea";
 import { PostListView } from "../PostListView";
 import { TaskListView } from "../TaskListView";
+import { MiniCalendar } from "./MiniCalendar";
 
 export type { Post };
 
@@ -49,34 +50,53 @@ const ReactViewContent = () => {
     (asTask ? tasks.length === 0 : filteredPosts.length === 0);
 
   return (
-    <Flex
-      flexDirection="column"
-      height="100%"
-      className="root"
-      position="relative"
-      backgroundColor="transparent"
-      marginX="var(--size-4-2)"
-    >
-      <InputArea />
-      <CountDisplay />
-
-      <Box
-        className="mfdi-scroll-container"
-        flexGrow={1}
-        overflowY="scroll"
-        overflowX="hidden"
-        display="flex"
-        flexDirection={"column"}
-        ref={scrollContainerRef}
+    <Flex h="100%" position="relative" w="100%" overflow="hidden">
+      {/* Sidebar: MiniCalendar */}
+      <Box 
+        w="260px" 
+        minW="260px" 
+        h="100%" 
+        display={{ base: "none", md: "flex" }} 
+        flexDirection="column" 
+        py="var(--size-4-2)"
+        px={0}
       >
-        {isEmpty ? (
-          <EmptyState granularity={granularity} />
-        ) : asTask ? (
-          <TaskListView />
-        ) : (
-          <PostListView />
-        )}
+        <MiniCalendar />
       </Box>
+
+      {/* Main Content */}
+      <Flex
+        flexDirection="column"
+        height="100%"
+        className="root"
+        position="relative"
+        backgroundColor="transparent"
+        flexGrow={1}
+        marginX="var(--size-4-2)"
+        overflow="hidden"
+      >
+        <InputArea />
+        <CountDisplay />
+
+        <Box
+          className="mfdi-scroll-container"
+          flexGrow={1}
+          overflowY="scroll"
+          overflowX="hidden"
+          display="flex"
+          flexDirection={"column"}
+          ref={scrollContainerRef}
+        >
+          {isEmpty ? (
+            <EmptyState granularity={granularity} />
+          ) : asTask ? (
+            <TaskListView />
+          ) : (
+            <PostListView />
+          )}
+        </Box>
+      </Flex>
     </Flex>
   );
 };
+

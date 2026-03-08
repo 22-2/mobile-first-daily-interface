@@ -13,8 +13,14 @@ export const ObsidianIcon = ({ name, size, ...props }: ObsidianIconProps) => {
 
   useEffect(() => {
     if (ref.current) {
-      ref.current.empty();
-      setIcon(ref.current, name);
+      if (typeof ref.current.empty === 'function') {
+        ref.current.empty();
+      } else {
+        ref.current.innerHTML = '';
+      }
+      try {
+        setIcon(ref.current, name);
+      } catch (e) {}
       const svg = ref.current.querySelector("svg");
       if (svg) {
         if (size) {

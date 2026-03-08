@@ -39,6 +39,7 @@ const context = await esbuild.context({
     "@lezer/common",
     "@lezer/highlight",
     "@lezer/lr",
+    "moment",
     ...builtins,
   ],
   alias: {
