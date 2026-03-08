@@ -7,10 +7,10 @@ export function addGranularityMenuItems(
   currentGranularity: Granularity,
   onChangeGranularity?: (g: Granularity) => void,
 ) {
-  // --- 表示単位 ---
+  // --- 表示スケール ---
   menu.addSeparator();
   menu.addItem((item) => {
-    item.setTitle("表示単位").setIcon("calendar").setDisabled(true);
+    item.setTitle("表示スケール").setIcon("calendar").setDisabled(true);
   });
   const granularities: Granularity[] = ["day", "week", "month", "year"];
   for (const g of granularities) {
