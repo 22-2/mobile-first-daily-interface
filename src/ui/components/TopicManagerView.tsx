@@ -1,11 +1,12 @@
 import {
     Badge,
     Box,
-    Button, Flex,
+    Button, Divider, Flex,
     FormControl,
     FormErrorMessage,
     FormHelperText,
     FormLabel,
+    Heading,
     HStack, Input,
     Text,
     VStack
@@ -56,10 +57,20 @@ export const TopicManagerView = ({
     if (isSaving.current) return;
     isSaving.current = true;
     try {
-      await onSave(topics, topicId);
+      // 切り替えたときは自動的にアーカイブ解除する（使い勝手のため）
+      const updatedTopics = topics.map((t) =>
+        t.id === topicId ? { ...t, archived: false } : t
+      );
+      await onSave(updatedTopics, topicId);
     } finally {
       isSaving.current = false;
     }
+  };
+
+  const handleToggleArchive = (topicId: string) => {
+    setTopics((prev) =>
+      prev.map((t) => (t.id === topicId ? { ...t, archived: !t.archived } : t))
+    );
   };
 
   const handleOpenMenu = (topic: Topic, e: React.MouseEvent) => {
@@ -75,7 +86,7 @@ export const TopicManagerView = ({
       );
     }
 
-    // デフォルトトピックはタイトル変更不可
+    // デフォルトトピックはタイトル変更・アーカイブ不可
     if (topic.id !== "") {
       menu.addItem((item) =>
         item
@@ -86,6 +97,13 @@ export const TopicManagerView = ({
             setEditingTitle(topic.title);
             setTimeout(() => editInputRef.current?.focus(), 50);
           })
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle(topic.archived ? "アーカイブ解除" : "アーカイブ")
+          .setIcon(topic.archived ? "unarchive" : "archive")
+          .onClick(() => handleToggleArchive(topic.id))
       );
     }
 
@@ -142,124 +160,138 @@ export const TopicManagerView = ({
     setShowAddForm(false);
   };
 
+  const activeTopics = topics.filter((t) => !t.archived);
+  const archivedTopics = topics.filter((t) => t.archived);
+
+  function renderTopicItem(topic: Topic) {
+    const isActive = topic.id === activeTopic;
+    const isEditing = editingId === topic.id;
+
+    return (
+      <Flex
+        key={topic.id}
+        align="center"
+        paddingX="var(--size-4-3)"
+        paddingY="var(--size-4-2)"
+        cursor="pointer"
+        borderRadius="var(--radius-m)"
+        backgroundColor={
+          isActive
+            ? "var(--background-modifier-active-hover)"
+            : "var(--background-secondary)"
+        }
+        opacity={topic.archived ? 0.6 : 1}
+        _hover={{
+          backgroundColor: "var(--background-modifier-hover)",
+          opacity: 1
+        }}
+        onDoubleClick={() => handleSwitch(topic.id)}
+        transition="all 0.15s"
+      >
+        {/* アクティブインジケータ */}
+        <Box
+          width="3px"
+          height="2.5em"
+          borderRadius="2px"
+          backgroundColor={
+            isActive ? "var(--color-accent)" : "var(--background-secondary)"
+          }
+          marginRight="var(--size-4-3)"
+          flexShrink={0}
+          transition="background 0.15s"
+        />
+
+        {/* タイトル / ID */}
+        <Box flex={1} minWidth={0}>
+          {isEditing ? (
+            <Input
+              ref={editInputRef}
+              size="sm"
+              value={editingTitle}
+              onChange={(e) => setEditingTitle(e.target.value)}
+              onBlur={commitTitleEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitTitleEdit();
+                if (e.key === "Escape") setEditingId(null);
+              }}
+              autoFocus
+              borderColor="var(--color-accent)"
+            />
+          ) : (
+            <>
+              <HStack spacing="var(--size-4-2)" align="center">
+                <Text
+                  fontWeight={isActive ? "600" : "400"}
+                  color="var(--text-normal)"
+                  lineHeight="1.4"
+                  isTruncated
+                >
+                  {topic.title}
+                </Text>
+                {isActive && (
+                  <Badge
+                    colorScheme="blue"
+                    fontSize="0.65em"
+                    paddingX="0.4em"
+                    borderRadius="4px"
+                    backgroundColor="var(--color-accent)"
+                    color="var(--text-on-accent)"
+                  >
+                    使用中
+                  </Badge>
+                )}
+                {topic.archived && !isActive && (
+                  <Badge
+                    fontSize="0.65em"
+                    paddingX="0.4em"
+                    borderRadius="4px"
+                    variant="outline"
+                    color="var(--text-faint)"
+                    borderColor="var(--background-modifier-border)"
+                  >
+                    アーカイブ
+                  </Badge>
+                )}
+              </HStack>
+              <Text
+                fontSize="var(--font-ui-smaller)"
+                color="var(--text-muted)"
+                lineHeight="1.4"
+                marginTop="1px"
+              >
+                {topic.id === "" ? "(デフォルト)" : topic.id}
+              </Text>
+            </>
+          )}
+        </Box>
+
+        {/* ••• メニューボタン */}
+        <Flex
+          aria-label="メニュー"
+          height="24px"
+          width="24px"
+          justifyContent="center"
+          alignItems="center"
+          flexShrink={0}
+          color="var(--text-muted)"
+          _hover={{ color: "var(--text-normal)" }}
+          onClick={(e) => handleOpenMenu(topic, e)}
+        >
+          <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
+        </Flex>
+      </Flex>
+    );
+  }
+
   return (
     <VStack
       align="stretch"
       spacing={0}
       paddingBottom="var(--size-4-4)"
     >
-      {/* トピック一覧 */}
-      <VStack align="stretch" spacing={3}>
-        {topics.map((topic, idx) => {
-          const isActive = topic.id === activeTopic;
-          const isEditing = editingId === topic.id;
-
-          return (
-            <React.Fragment key={topic.id}>
-              {/* {idx > 0 && <Divider borderColor="var(--background-modifier-border)" />} */}
-              <Flex
-                align="center"
-                paddingX="var(--size-4-3)"
-                paddingY="var(--size-4-2)"
-                cursor="pointer"
-                borderRadius="var(--radius-m)"
-                backgroundColor={
-                  isActive
-                    ? "var(--background-modifier-active-hover)"
-                    : "var(--background-secondary)"
-                }
-                _hover={{ backgroundColor: "var(--background-modifier-hover)" }}
-                onDoubleClick={() => handleSwitch(topic.id)}
-                transition="background 0.15s"
-              >
-                {/* アクティブインジケータ */}
-                <Box
-                  width="3px"
-                  height="2.5em"
-                  borderRadius="2px"
-                  backgroundColor={
-                    isActive ? "var(--color-accent)" : "var(--background-secondary)"
-                  }
-                  marginRight="var(--size-4-3)"
-                  flexShrink={0}
-                  transition="background 0.15s"
-                />
-
-                {/* タイトル / ID */}
-                <Box flex={1} minWidth={0}>
-                  {isEditing ? (
-                    <Input
-                      ref={editInputRef}
-                      size="sm"
-                      value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
-                      onBlur={commitTitleEdit}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitTitleEdit();
-                        if (e.key === "Escape") setEditingId(null);
-                      }}
-                      autoFocus
-                      borderColor="var(--color-accent)"
-                    />
-                  ) : (
-                    <>
-                      <HStack spacing="var(--size-4-2)" align="center">
-                        <Text
-                          fontWeight={isActive ? "600" : "400"}
-                          color={
-                            isActive
-                              ? "var(--text-normal)"
-                              : "var(--text-normal)"
-                          }
-                          lineHeight="1.4"
-                          isTruncated
-                        >
-                          {topic.title}
-                        </Text>
-                        {isActive && (
-                          <Badge
-                            colorScheme="blue"
-                            fontSize="0.65em"
-                            paddingX="0.4em"
-                            borderRadius="4px"
-                            backgroundColor="var(--color-accent)"
-                            color="var(--text-on-accent)"
-                          >
-                            使用中
-                          </Badge>
-                        )}
-                      </HStack>
-                      <Text
-                        fontSize="var(--font-ui-smaller)"
-                        color="var(--text-muted)"
-                        lineHeight="1.4"
-                        marginTop="1px"
-                      >
-                        {topic.id === "" ? "(デフォルト)" : topic.id}
-                      </Text>
-                    </>
-                  )}
-                </Box>
-
-                {/* ••• メニューボタン */}
-                <Flex
-                  aria-label="メニュー"
-                  height="24px"
-                  width="24px"
-                  justifyContent="center"
-                  alignItems="center"
-                  flexShrink={0}
-                  color="var(--text-muted)"
-                  _hover={{ color: "var(--text-normal)" }}
-                  onClick={(e) => handleOpenMenu(topic, e)}
-                >
-                  <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
-                </Flex>
-
-              </Flex>
-            </React.Fragment>
-          );
-        })}
+      {/* 通常トピック一覧 */}
+      <VStack align="stretch" spacing={2}>
+        {activeTopics.map((topic) => renderTopicItem(topic))}
       </VStack>
 
       {/* 追加フォーム */}
@@ -342,6 +374,36 @@ export const TopicManagerView = ({
           新しいトピックを追加
         </Button>
       )}
+
+      {/* アーカイブ済み一覧 */}
+      {archivedTopics.length > 0 && (
+        <VStack align="stretch" spacing={2} marginTop="var(--size-4-6)">
+          <Flex align="center" paddingX="var(--size-4-3)">
+            <Heading size="xs" fontSize="0.75rem" fontWeight="600" color="var(--text-faint)" textTransform="uppercase" letterSpacing="0.05em">
+              アーカイブ済み ({archivedTopics.length})
+            </Heading>
+            <Box flex={1} marginLeft="var(--size-4-2)">
+              <Divider borderColor="var(--background-modifier-border)" opacity={0.5} />
+            </Box>
+          </Flex>
+          <VStack align="stretch" spacing={2}>
+            {archivedTopics.map((topic) => renderTopicItem(topic))}
+          </VStack>
+        </VStack>
+      )}
+      {/* 完了ボタン */}
+      <Box marginTop="var(--size-4-6)" borderTop="1px solid var(--background-modifier-border)" paddingTop="var(--size-4-4)">
+        <Button
+          width="100%"
+          variant="solid"
+          backgroundColor="var(--color-accent)"
+          color="var(--text-on-accent)"
+          _hover={{ backgroundColor: "var(--color-accent-2)" }}
+          onClick={() => onSave(topics, activeTopic)}
+        >
+          完了
+        </Button>
+      </Box>
     </VStack>
   );
 };

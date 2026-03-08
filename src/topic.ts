@@ -3,6 +3,8 @@ export interface Topic {
   id: string;
   /** 表示名 */
   title: string;
+  /** アーカイブ済みかどうか */
+  archived?: boolean;
 }
 
-export const DEFAULT_TOPIC: Topic = { id: "", title: "デフォルト" };
+export const DEFAULT_TOPIC: Topic = { id: "", title: "デフォルト", archived: false };

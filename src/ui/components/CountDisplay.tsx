@@ -101,14 +101,16 @@ export const CountDisplay: React.FC = () => {
                 if (!topics || !onTopicChange) return;
                 e.preventDefault();
                 const menu = new Menu();
-                topics.forEach((topic) => {
-                  menu.addItem((item) =>
-                    item
-                      .setTitle(topic.title)
-                      .setChecked(topic.title === activeTopicName)
-                      .onClick(() => onTopicChange(topic.id))
-                  );
-                });
+                topics
+                  .filter((t) => !t.archived)
+                  .forEach((topic) => {
+                    menu.addItem((item) =>
+                      item
+                        .setTitle(topic.title)
+                        .setChecked(topic.title === activeTopicName)
+                        .onClick(() => onTopicChange(topic.id))
+                    );
+                  });
                 menu.showAtMouseEvent(e as unknown as MouseEvent);
               }}
             >
