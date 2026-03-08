@@ -19,7 +19,9 @@ If your plugin does not need CSS, delete this file.
 .item-enter-active {
   opacity: 1 !important;
   transform: translateY(0);
-  transition: opacity var(--mfdi-app-transition-ms) ease-out, transform var(--mfdi-app-transition-ms) ease-out;
+  transition:
+    opacity var(--mfdi-app-transition-ms) ease-out,
+    transform var(--mfdi-app-transition-ms) ease-out;
 }
 
 .item-exit {
@@ -29,10 +31,10 @@ If your plugin does not need CSS, delete this file.
 .item-exit-active {
   opacity: 0 !important;
   transform: scale(0.95);
-  transition: opacity var(--mfdi-app-transition-ms) ease-in, transform var(--mfdi-app-transition-ms) ease-in;
+  transition:
+    opacity var(--mfdi-app-transition-ms) ease-in,
+    transform var(--mfdi-app-transition-ms) ease-in;
 }
-
-
 
 [data-type="mfdi-view"] .view-content {
   padding-bottom: 0;
@@ -44,10 +46,26 @@ If your plugin does not need CSS, delete this file.
 }
 
 [data-type="mfdi-view"] [data-type="markdown"] .cm-content {
-  padding-bottom: 0!important;
+  padding-bottom: 0 !important;
 }
 
-[data-type="mfdi-view"] :is(.markdown-preview-view.is-readable-line-width .markdown-preview-sizer>div, .markdown-source-view.mod-cm6.is-readable-line-width .cm-contentContainer.cm-contentContainer>.cm-content>div, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.embedded-backlinks, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.inline-title, .markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer>.metadata-container) {
+[data-type="mfdi-view"]
+  :is(
+    .markdown-preview-view.is-readable-line-width .markdown-preview-sizer > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-contentContainer.cm-contentContainer
+      > .cm-content
+      > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .embedded-backlinks,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .inline-title,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .metadata-container
+  ) {
   max-width: initial !important;
   width: initial !important;
   margin-inline: initial !important;
@@ -55,17 +73,17 @@ If your plugin does not need CSS, delete this file.
 
 [data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
   margin: var(--size-4-2) var(--size-4-4) !important;
-  padding: 0!important;
-  max-height: 50vh!important;
+  padding: 0 !important;
+  max-height: 50vh !important;
 }
 
 [data-type="mfdi-view"] .list .markdown-rendered {
-  user-select: text!important;
+  user-select: text !important;
 }
 
 [data-type="mfdi-view"] .mfdi-date-input,
-[data-type="mfdi-view"] input[type='month'],
-[data-type="mfdi-view"] input[type='week'] {
+[data-type="mfdi-view"] input[type="month"],
+[data-type="mfdi-view"] input[type="week"] {
   background: var(--background-modifier-form-field);
   border: var(--input-border-width) solid var(--background-modifier-border);
   color: var(--text-normal);
@@ -76,29 +94,31 @@ If your plugin does not need CSS, delete this file.
   outline: none;
   position: relative;
   font-variant-numeric: tabular-nums;
-  padding-left: var(--size-4-6);  
+  padding-left: var(--size-4-6);
 }
 
 @media (hover: hover) {
   [data-type="mfdi-view"] .mfdi-date-input:hover,
-  [data-type="mfdi-view"] input[type='month']:hover,
-  [data-type="mfdi-view"] input[type='week']:hover {
+  [data-type="mfdi-view"] input[type="month"]:hover,
+  [data-type="mfdi-view"] input[type="week"]:hover {
     background-color: var(--background-modifier-form-field-hover);
     border-color: var(--background-modifier-border-hover);
-    transition: box-shadow var(--anim-duration-fast) ease-in-out, border var(--anim-duration-fast) ease-in-out;
+    transition:
+      box-shadow var(--anim-duration-fast) ease-in-out,
+      border var(--anim-duration-fast) ease-in-out;
   }
 }
 
 [data-type="mfdi-view"] .mfdi-date-input:focus,
-[data-type="mfdi-view"] input[type='month']:focus,
-[data-type="mfdi-view"] input[type='week']:focus {
+[data-type="mfdi-view"] input[type="month"]:focus,
+[data-type="mfdi-view"] input[type="week"]:focus {
   border-color: var(--background-modifier-border-focus);
 }
 
 /* Picker indicators and textsegments styling to match Obsidian */
 [data-type="mfdi-view"] .mfdi-date-input::-webkit-calendar-picker-indicator,
-[data-type="mfdi-view"] input[type='month']::-webkit-calendar-picker-indicator,
-[data-type="mfdi-view"] input[type='week']::-webkit-calendar-picker-indicator {
+[data-type="mfdi-view"] input[type="month"]::-webkit-calendar-picker-indicator,
+[data-type="mfdi-view"] input[type="week"]::-webkit-calendar-picker-indicator {
   position: absolute;
   left: var(--size-4-1);
   right: auto;
@@ -107,8 +127,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 [data-type="mfdi-view"] .mfdi-date-input::-webkit-datetime-edit-text,
-[data-type="mfdi-view"] input[type='month']::-webkit-datetime-edit-text,
-[data-type="mfdi-view"] input[type='week']::-webkit-datetime-edit-text {
+[data-type="mfdi-view"] input[type="month"]::-webkit-datetime-edit-text,
+[data-type="mfdi-view"] input[type="week"]::-webkit-datetime-edit-text {
   color: var(--input-date-separator);
   padding-inline-end: 0;
 }
