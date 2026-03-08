@@ -19,6 +19,7 @@ interface InputAreaProps {
   editingPost: Post | null;
   canSubmit: boolean;
   isToday: boolean;
+  isReadOnly: boolean;
   inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
   handlers: {
     handleClickMovePrevious: () => void;
@@ -40,6 +41,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
     editingPost,
     canSubmit,
     isToday,
+    isReadOnly,
     inputRef,
     handlers,
   }) => {
@@ -148,7 +150,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
           onSubmit={handlers.handleSubmit}
           minHeight="var(--size-4-18)"
           marginX="var(--size-4-4)"
-          placeholder={!isToday ? "閲覧モード（書き込み不可）" : undefined}
+          placeholder={isReadOnly ? "閲覧モード（書き込み不可）" : undefined}
         />
 
         <HStack
@@ -186,7 +188,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
             cursor={canSubmit ? "pointer" : ""}
             onClick={handlers.handleSubmit}
           >
-            {!isToday ? "閲覧モード" : editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+            {isReadOnly ? "閲覧モード" : editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
           </Button>
         </HStack>
       </Flex>

@@ -73,6 +73,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     return date.isSame(window.moment(), granularityConfig[granularity].unit);
   }, [date, granularity]);
 
+  const isReadOnly = useMemo(() => {
+    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
+  }, [date, granularity]);
+
   const updateCurrentDailyNote = useCallback(() => {
     const n = getTopicNote(app, date, granularity, activeTopic);
     if (n?.path !== currentDailyNote?.path) {
@@ -234,7 +238,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const deletePost = useCallback(
     async (post: Post) => {
-      if (!isToday) {
+      if (isReadOnly) {
         new Notice("過去のノートの投稿は削除できません");
         return;
       }
@@ -291,7 +295,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const updateTaskChecked = useCallback(
     async (task: Task, checked: boolean) => {
-      if (!isToday) {
+      if (isReadOnly) {
         new Notice("過去のノートのタスクは変更できません");
         return;
       }
@@ -322,7 +326,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   };
 
   const deleteTask = async (task: Task) => {
-    if (!isToday) {
+    if (isReadOnly) {
       new Notice("過去のノートのタスクは削除できません");
       return;
     }
@@ -354,7 +358,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       menu.addItem((item) =>
         item
           .setTitle("削除")
-          .setDisabled(!isToday)
+          .setDisabled(isReadOnly)
           .onClick(() => {
             new DeleteConfirmModal(app, () => deleteTask(task)).open();
           })
@@ -419,5 +423,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     deleteTask,
     taskContextMenu,
     isToday,
+    isReadOnly,
   };
 }

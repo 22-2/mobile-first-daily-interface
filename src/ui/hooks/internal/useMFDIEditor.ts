@@ -37,11 +37,11 @@ export function useMFDIEditor({
   }, [posts, editingPostOffset]);
 
   const canSubmit = useMemo(() => {
-    const isCurrent = date.isSame(
+    const isPast = date.isBefore(
       window.moment(),
       granularityConfig[granularity].unit
     );
-    if (!isCurrent) return false;
+    if (isPast) return false;
 
     if (!editingPost) {
       return input.trim().length > 0;

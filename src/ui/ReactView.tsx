@@ -74,6 +74,7 @@ const ReactViewContent = () => {
     deleteTask,
     taskContextMenu,
     isToday,
+    isReadOnly,
   } = useMFDIApp();
 
   useViewSync(view, granularity, activeTopic, asTask, timeFilter, {
@@ -122,6 +123,7 @@ const ReactViewContent = () => {
       editingPost={editingPost}
       canSubmit={canSubmit}
       isToday={isToday}
+      isReadOnly={isReadOnly}
       inputRef={inputRef}
       handlers={{
         handleClickMovePrevious,
@@ -184,6 +186,7 @@ const ReactViewContent = () => {
             updateTaskChecked={updateTaskChecked}
             taskContextMenu={taskContextMenu}
             isToday={isToday}
+            isReadOnly={isReadOnly}
           />
         ) : (
           <PostListView
@@ -196,6 +199,7 @@ const ReactViewContent = () => {
             startEdit={startEdit}
             deletePost={deletePost}
             isToday={isToday}
+            isReadOnly={isReadOnly}
           />
         )}
       </Box>
