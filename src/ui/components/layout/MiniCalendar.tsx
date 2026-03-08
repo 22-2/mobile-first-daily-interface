@@ -97,7 +97,7 @@ function calcSelectedRange(
 
 function useMiniCalendar() {
   const { app } = useAppContext();
-  const { date, setDate, granularity, dateFilter, activeTopic, posts } = useMFDIContext();
+  const { date, setDate, granularity, setGranularity, dateFilter, activeTopic, posts } = useMFDIContext();
 
   const [viewDate, setViewDate] = React.useState(() =>
     window.moment(date).startOf("month"),
@@ -133,6 +133,7 @@ function useMiniCalendar() {
     if (!day.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
+    setGranularity("day");
     setDate(day.clone());
   };
 
@@ -140,6 +141,7 @@ function useMiniCalendar() {
     if (!weekStart.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
+    setGranularity("week");
     setDate(weekStart.clone());
   };
 
@@ -217,15 +219,22 @@ const DayCell: React.FC<DayCellProps> = ({
   hasPost,
   onClick,
 }) => {
-  const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange;
+  const isToday = day.isSame(window.moment(), "day");
+  const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
 
-  const bg = isSelectedDay
+  // 青背景（アクセントカラー）は「今日」のみに適用
+  // 背景色の決定：今日 > 選択範囲・ホバー
+  // 視認性を高めるため、アクセントカラーを薄く混ぜた色を使用
+  const rangeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
+  const hoverBg = "color-mix(in srgb, var(--color-accent), transparent 75%)";
+
+  const bg = isToday
     ? "var(--color-accent)!important"
     : isInSelectedRange
-    ? "var(--background-modifier-active-hover)"
+    ? rangeBg
     : "transparent";
 
-  const color = isSelectedDay
+  const color = isToday
     ? "var(--text-on-accent)"
     : isInSelectedRange
     ? "var(--color-accent)"
@@ -233,9 +242,9 @@ const DayCell: React.FC<DayCellProps> = ({
     ? "var(--text-normal)"
     : "var(--text-faint)";
 
-  const fontWeight = isSelectedDay || isInSelectedRange ? "bold" : "normal";
+  const fontWeight = isToday || isInSelectedRange ? "bold" : "normal";
 
-  const dotColor = isSelectedDay
+  const dotColor = isToday
     ? "var(--text-on-accent)"
     : isInSelectedRange
     ? "var(--color-accent)"
@@ -251,7 +260,9 @@ const DayCell: React.FC<DayCellProps> = ({
       bg={bg}
       borderRadius="full"
       fontWeight={fontWeight}
-      _hover={{ bg: isSelectedDay ? "var(--color-accent-2)" : "var(--background-modifier-hover)" }}
+      _hover={{ 
+        bg: isToday ? "var(--color-accent-2)" : hoverBg 
+      }}
       transition="all 0.1s ease-in-out"
     >
       {day.date()}
@@ -298,7 +309,7 @@ const WeekRow: React.FC<WeekRowProps> = ({
         justifyContent="center"
         border={`1px solid ${isWeekSelected ? "var(--color-accent)" : "transparent"}`}
         borderRadius="6px"
-        _hover={{ bg: "var(--background-modifier-hover)" }}
+        _hover={{ bg: "color-mix(in srgb, var(--color-accent), transparent 75%)" }}
       >
         {week[0].isoWeek()}
       </Box>

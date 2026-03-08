@@ -41,6 +41,7 @@ describe("MiniCalendar", () => {
       date: moment("2026-03-09T00:00:00.000Z"),
       setDate: mockSetDate,
       granularity: "day",
+      setGranularity: vi.fn(),
       dateFilter: "today",
       posts: [],
       activeTopic: "",
@@ -56,6 +57,7 @@ describe("MiniCalendar", () => {
       date: moment("2026-03-09T00:00:00.000Z"),
       setDate: mockSetDate,
       granularity: "day",
+      setGranularity: vi.fn(),
       dateFilter: "7d",
       posts: [
         { timestamp: moment("2026-03-05T12:00:00.000Z") } // a post exists this day
