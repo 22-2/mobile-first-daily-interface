@@ -181,7 +181,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
             onClick={() => {
               setGranularity("month");
               setDateFilter("today");
-              setDate(baseDate.clone().startOf("month"));
+              setDate(baseDate.clone());
             }}
           >
             <HStack spacing={0} justify="space-between">
@@ -206,7 +206,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
             onClick={() => {
               setGranularity("year");
               setDateFilter("today");
-              setDate(baseDate.clone().startOf("year"));
+              setDate(baseDate.clone());
             }}
           >
             <HStack spacing={0} justify="space-between">
