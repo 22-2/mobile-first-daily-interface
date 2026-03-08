@@ -1,5 +1,5 @@
-import { PostFormat } from "src/settings";
-import { formatTaskText } from "src/utils/task-text";
+import { PostFormat } from "../../settings";
+import { formatTaskText } from "../../utils/task-text";
 import { DATE_TIME_FORMAT, TIME_FORMAT } from "../config/date-formats";
 import { Granularity, MomentLike } from "../types";
 

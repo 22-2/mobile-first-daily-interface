@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Granularity, MomentLike, Post } from "../../types";
 
-import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { ObsidianLiveEditorRef } from "../../components/common/ObsidianLiveEditor";
+import { granularityConfig } from "../../config/granularity-config";
 import { useAppContext } from "../../context/AppContext";
 
 interface UseMFDIEditorOptions {

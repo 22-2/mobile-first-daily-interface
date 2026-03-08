@@ -1,7 +1,7 @@
 import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { Settings } from "src/settings";
+import { Settings } from "../../settings";
 import { ReactView } from "../components/layout/ReactView";
 import {
   DATE_FILTER_OPTIONS,
