@@ -128,3 +128,7 @@ If your plugin does not need CSS, delete this file.
   color: var(--input-date-separator);
   padding-inline-end: 0;
 }
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
+  display: none !important;
+}

@@ -207,7 +207,7 @@ export const InputArea: React.FC = React.memo(() => {
   return (
     <Flex
       flexDirection="column"
-      className="mfdi-input-area"
+      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""}`}
       borderRadius="22px 22px 0 0"
       margin={0}
       marginRight="var(--size-4-3)"
