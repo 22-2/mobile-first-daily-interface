@@ -18,6 +18,7 @@ const NavButton: React.FC<{
 }> = ({ direction, onClick, step }) => {
   return (
     <HStack
+      className={`mfdi-nav-button mfdi-nav-button-${direction}`}
       cursor="pointer"
       onClick={onClick}
       spacing={0}
@@ -51,21 +52,20 @@ const InputAreaControl: React.FC = React.memo(() => {
   const step = getMoveStep();
 
   return (
-    <Flex align="center" paddingX="1em">
+    <Flex align="center" paddingX="1em" marginTop="var(--size-4-2)" className="mfdi-input-area-control">
       <Box flex="1" />
-      <HStack justify="center" flex="0 0 auto">
+      <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         <NavButton
           direction="left"
           onClick={handleClickMovePrevious}
           step={step}
         />
-        <Box textAlign={"center"} marginY={"1em"}>
+        <HStack spacing="0.2em" className="mfdi-date-controls">
           <Button
-            marginRight={"0.3em"}
+            className="mfdi-today-button"
             fontSize={"80%"}
-            width="3em"
-            paddingY="var(--size-4-4)"
-            height="2em"
+            width="3.5em"
+            height="2.2em"
             cursor="pointer"
             onClick={handleClickToday}
             onContextMenu={(e) => {
@@ -90,18 +90,22 @@ const InputAreaControl: React.FC = React.memo(() => {
             {granularityConfig[granularity].todayLabel}
           </Button>
           <Input
-            size="md"
+            className="mfdi-date-input"
+            size="sm"
+            height="2.2em"
+            fontSize="90%"
             type={granularityConfig[granularity].inputType}
             value={date.format(granularityConfig[granularity].inputFormat)}
             onChange={handleChangeCalendarDate}
-            width={granularity === "year" ? "5.5em" : "9em"}
+            width={granularity === "year" ? "6.5em" : "10em"}
+            paddingX="0.5em"
           />
           {granularityConfig[granularity].showWeekday && (
-            <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
+            <Box fontSize={"smaller"} fontWeight="bold" whiteSpace="nowrap" className="mfdi-weekday-label">
               {replaceDayToJa(date.format("(ddd)"))}
             </Box>
           )}
-        </Box>
+        </HStack>
         <NavButton
           direction="right"
           onClick={handleClickMoveNext}
