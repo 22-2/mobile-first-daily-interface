@@ -3,12 +3,8 @@ import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "../../settings";
 import { ReactView } from "../components/layout/ReactView";
-import {
-  DATE_FILTER_OPTIONS,
-  TIME_FILTER_OPTIONS,
-} from "../config/filter-config";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { addPeriodMenuItems } from "../menus/periodMenu";
+import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { DateFilter, Granularity, TimeFilter } from "../types";
 import { MFDIViewHandler } from "./MFDIViewHandler";
 

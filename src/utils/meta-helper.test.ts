@@ -1,10 +1,10 @@
 import { JSDOM } from "jsdom";
 import { describe, expect, test } from "vitest";
 import {
-  getCharsetFromMeta,
-  getCoverUrl,
-  getFaviconUrl,
-  getMetaByHttpEquiv,
+    getCharsetFromMeta,
+    getCoverUrl,
+    getFaviconUrl,
+    getMetaByHttpEquiv
 } from "./meta-helper";
 
 describe.skip("getFaviconUrl", () => {

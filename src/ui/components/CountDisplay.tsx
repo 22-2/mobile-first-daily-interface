@@ -2,8 +2,7 @@ import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import {
-  DATE_FILTER_OPTIONS,
-  TIME_FILTER_OPTIONS,
+    DATE_FILTER_OPTIONS
 } from "../config/filter-config";
 import { granularityConfig } from "../config/granularity-config";
 import { Granularity } from "../types";

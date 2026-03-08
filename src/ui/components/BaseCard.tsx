@@ -1,8 +1,8 @@
 import { Box, Flex, HStack, Spacer, Tag } from "@chakra-ui/react";
 import * as React from "react";
 import {
-  DISPLAY_DATE_TIME_FORMAT,
-  DISPLAY_TIME_FORMAT,
+    DISPLAY_DATE_TIME_FORMAT,
+    DISPLAY_TIME_FORMAT
 } from "../config/date-formats";
 import { Granularity, MomentLike, TimeFilter } from "../types";
 

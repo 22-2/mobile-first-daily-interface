@@ -1,7 +1,7 @@
 import { Menu } from "obsidian";
 import {
-  DATE_FILTER_OPTIONS,
-  TIME_FILTER_OPTIONS,
+    DATE_FILTER_OPTIONS,
+    TIME_FILTER_OPTIONS
 } from "../config/filter-config";
 import { DateFilter, Granularity, TimeFilter } from "../types";
 

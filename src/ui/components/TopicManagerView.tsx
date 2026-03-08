@@ -1,18 +1,18 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Divider,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
-  Heading,
-  HStack,
-  Input,
-  Text,
-  VStack,
+    Badge,
+    Box,
+    Button,
+    Divider,
+    Flex,
+    FormControl,
+    FormErrorMessage,
+    FormHelperText,
+    FormLabel,
+    Heading,
+    HStack,
+    Input,
+    Text,
+    VStack
 } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
