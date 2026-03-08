@@ -17,6 +17,7 @@ export const PostListView: React.FC = React.memo(() => {
     granularity,
     date: viewedDate,
     timeFilter,
+    dateFilter,
     handleClickTime,
     startEdit,
     deletePost,
@@ -33,7 +34,8 @@ export const PostListView: React.FC = React.memo(() => {
     <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
       {displayedPosts.map((x) => {
         const currentDate = x.timestamp.format("YYYY-MM-DD");
-        const showDivider = lastDate !== currentDate;
+        const isTodayOnly = granularity === "day" && dateFilter === "today";
+        const showDivider = !isTodayOnly && lastDate !== currentDate;
         lastDate = currentDate;
 
         return (
@@ -49,7 +51,7 @@ export const PostListView: React.FC = React.memo(() => {
                   placeContent="center"
                   style={{
                     padding: "1.5em 1em 0.5em 1em",
-                    fontSize: "0.85em",
+                    fontSize: "var(--font-smallest);",
                     fontWeight: "bold",
                     color: "var(--text-muted)",
                     gap: "1em",

@@ -103,7 +103,7 @@ const InputAreaControl: React.FC = React.memo(() => {
             paddingX="0.5em"
           />
           {granularityConfig[granularity].showWeekday && (
-            <Box fontSize={"smaller"} fontWeight="bold" whiteSpace="nowrap" className="mfdi-weekday-label">
+            <Box marginLeft="var(--size-4-2)" fontSize=" var(--font-smaller)" fontWeight="bold" whiteSpace="nowrap" className="mfdi-weekday-label" color="var(--text-muted)">
               {replaceDayToJa(date.format("(ddd)"))}
             </Box>
           )}
