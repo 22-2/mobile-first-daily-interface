@@ -4,7 +4,7 @@ import { useMFDIContext } from "../../context/MFDIAppContext";
 import { ObsidianIcon } from "../common/ObsidianIcon";
 
 export const MiniCalendar: React.FC = () => {
-  const { date, setDate, granularity } = useMFDIContext();
+  const { date, setDate, granularity, dateFilter, posts } = useMFDIContext();
 
   const [viewDate, setViewDate] = React.useState(window.moment(date).startOf("month"));
   const viewDateRef = React.useRef(viewDate);
@@ -59,6 +59,33 @@ export const MiniCalendar: React.FC = () => {
   
   const today = window.moment();
 
+  // 計算された範囲
+  let rangeStart = date.clone().startOf(granularity);
+  let rangeEnd = date.clone().endOf(granularity);
+
+  if (granularity === "day" && dateFilter !== "today") {
+    if (dateFilter === "this_week") {
+      rangeStart = date.clone().startOf("isoWeek");
+      rangeEnd = date.clone().endOf("isoWeek");
+    } else {
+      const days = parseInt(dateFilter as string);
+      if (!isNaN(days)) {
+        rangeStart = date.clone().subtract(days - 1, "days").startOf("day");
+        rangeEnd = date.clone().endOf("day");
+      }
+    }
+  }
+
+  const postDates = React.useMemo(() => {
+    const dates = new Set<string>();
+    for (const post of posts || []) {
+      if (post.timestamp) {
+        dates.add(post.timestamp.format("YYYY-MM-DD"));
+      }
+    }
+    return dates;
+  }, [posts]);
+
   return (
     <VStack 
       w="100%" 
@@ -70,7 +97,7 @@ export const MiniCalendar: React.FC = () => {
     >
       {/* カレンダーヘッダー：年月と矢印 */}
       <Flex w="100%" justify="space-between" align="center" px={1}>
-        <Text fontWeight="bold" fontSize="lg" color="var(--text-normal)">
+        <Text fontWeight="bold" fontSize="lg" color="var(--text-normal)" marginLeft="var(--size-4-2)">
           {viewDate.format("YYYY年 M月")}
         </Text>
         <HStack spacing={1}>
@@ -117,11 +144,11 @@ export const MiniCalendar: React.FC = () => {
               {/* その週の各日 */}
               {week.map(day => {
                 const isSelectedDay = day.isSame(date, "day");
-                const isInSelectedRange = day.isBetween(date.clone().startOf(granularity), date.clone().endOf(granularity), "day", "[]");
-                const isToday = day.isSame(today, "day");
+                const isInSelectedRange = day.isBetween(rangeStart, rangeEnd, "day", "[]");
                 
                 const isCurrentMonth = day.isSame(viewDate, "month");
                 const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange;
+                const hasPost = postDates.has(day.format("YYYY-MM-DD"));
                 
                 let bg = "transparent";
                 let color = isForeground ? "var(--text-normal)" : "var(--text-faint)";
@@ -155,7 +182,7 @@ export const MiniCalendar: React.FC = () => {
                     transition="all 0.1s ease-in-out"
                   >
                     {day.date()}
-                    {isToday && !isSelectedDay && (
+                    {hasPost && (
                       <Box
                         position="absolute"
                         bottom="2px"
@@ -164,7 +191,7 @@ export const MiniCalendar: React.FC = () => {
                         w="4px"
                         h="4px"
                         borderRadius="full"
-                        bg="var(--color-accent)"
+                        bg={isSelectedDay ? "var(--text-on-accent)" : isInSelectedRange ? "var(--color-accent)" : "var(--text-muted)"}
                       />
                     )}
                   </Box>

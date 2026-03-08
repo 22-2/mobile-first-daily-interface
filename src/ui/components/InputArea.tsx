@@ -52,7 +52,7 @@ const InputAreaControl: React.FC = React.memo(() => {
   const step = getMoveStep();
 
   return (
-    <Flex align="center" paddingX="1em" marginTop="var(--size-4-2)" className="mfdi-input-area-control">
+    <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         <NavButton
