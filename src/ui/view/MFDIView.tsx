@@ -2,10 +2,10 @@ import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
+import { ReactView } from "../components/layout/ReactView";
+import { addPostModeMenuItems } from "../menus/postModeMenu";
+import { Granularity, TimeFilter } from "../types";
 import { MFDIViewHandler } from "./MFDIViewHandler";
-import { ReactView } from "./ReactView";
-import { addPostModeMenuItems } from "./menus/postModeMenu";
-import { Granularity, TimeFilter } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

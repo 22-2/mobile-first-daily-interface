@@ -9,11 +9,11 @@ import {
 import { Task } from "../../app-helper";
 import { postFormatMap } from "../../settings";
 import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
+import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
-import { DeleteConfirmModal } from "../DeleteConfirmModal";
-import { granularityConfig } from "../granularity-config";
-import { toText } from "../post-utils";
+import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 import { Post } from "../types";
+import { toText } from "../utils/post-utils";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
 import { useMFDISettings } from "./internal/useMFDISettings";
 import { handleThisWeekSyncOnSubmit } from "./internal/useMFDISyncLogic";

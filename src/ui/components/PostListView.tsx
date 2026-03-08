@@ -2,10 +2,10 @@ import { Menu, Notice } from "obsidian";
 import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { DeleteConfirmModal } from "../DeleteConfirmModal";
-import { PostCardView } from "../PostCardView";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
+import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
+import { PostCardView } from "./PostCardView";
 
 export const PostListView: React.FC = React.memo(() => {
   const { app } = useAppContext();

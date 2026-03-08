@@ -5,9 +5,9 @@ import { PostFormat } from "../../settings";
 import { sorter } from "../../utils/collections";
 import { getTopicNote } from "../../utils/daily-notes";
 import { parseThinoEntries } from "../../utils/thino";
-import { DATE_FORMAT, DATE_TIME_FORMAT } from "../date-formats";
 import { Granularity, MomentLike, Post } from "../types";
 
+import { DATE_FORMAT, DATE_TIME_FORMAT } from "../config/date-formats";
 import { useAppContext } from "../context/AppContext";
 
 interface UsePostsAndTasksOptions {

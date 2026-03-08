@@ -1,4 +1,4 @@
-import { Granularity, TimeFilter } from "./types";
+import { Granularity, TimeFilter } from "../types";
 
 export class MFDIViewHandler {
   onOpenDailyNoteAction?: () => void;

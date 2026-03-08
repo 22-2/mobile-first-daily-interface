@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { granularityConfig } from "../../granularity-config";
 import { Granularity, MomentLike, TimeFilter } from "../../types";
 
+import { granularityConfig } from "../../config/granularity-config";
 import { useAppContext } from "../../context/AppContext";
 
 /**

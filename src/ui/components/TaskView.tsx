@@ -1,11 +1,11 @@
 import { Box, Checkbox, HStack } from "@chakra-ui/react";
 import * as React from "react";
-import { Task } from "../app-helper";
-import { excludeWikiLink } from "../utils/strings";
-import { Card } from "./Card";
-import { BaseCard } from "./components/BaseCard";
-import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
-import { Granularity, TimeFilter } from "./types";
+import { Task } from "../../app-helper";
+import { excludeWikiLink } from "../../utils/strings";
+import { Granularity, TimeFilter } from "../types";
+import { BaseCard } from "./BaseCard";
+import { Card } from "./cards/Card";
+import { ObsidianMarkdown } from "./ObsidianMarkdown";
 
 export const TaskView = React.memo(
   ({

@@ -1,16 +1,16 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { App } from "obsidian";
 import * as React from "react";
-import { Settings } from "../settings";
-import { CountDisplay } from "./components/CountDisplay";
-import { EmptyState } from "./components/EmptyState";
-import { InputArea } from "./components/InputArea";
-import { PostListView } from "./components/PostListView";
-import { TaskListView } from "./components/TaskListView";
-import { AppContextProvider, useAppContext } from "./context/AppContext";
-import { MFDIAppProvider, useMFDIContext } from "./context/MFDIAppContext";
-import { MFDIView } from "./MFDIView";
-import { Post } from "./types";
+import { Settings } from "../../../settings";
+import { AppContextProvider, useAppContext } from "../../context/AppContext";
+import { MFDIAppProvider, useMFDIContext } from "../../context/MFDIAppContext";
+import { Post } from "../../types";
+import { MFDIView } from "../../view/MFDIView";
+import { CountDisplay } from "../CountDisplay";
+import { EmptyState } from "../EmptyState";
+import { InputArea } from "../InputArea";
+import { PostListView } from "../PostListView";
+import { TaskListView } from "../TaskListView";
 
 export type { Post };
 

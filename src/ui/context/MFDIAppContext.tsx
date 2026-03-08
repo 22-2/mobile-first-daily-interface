@@ -1,8 +1,8 @@
 import * as React from "react";
-import { createContext, useContext, ReactNode, useEffect } from "react";
-import { useAppContext } from "./AppContext";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import { useMFDIApp } from "../hooks/useMFDIApp";
 import { useViewSync } from "../hooks/useViewSync";
+import { useAppContext } from "./AppContext";
 
 type MFDIAppContextValue = ReturnType<typeof useMFDIApp>;
 

@@ -1,8 +1,8 @@
 import { Box, Flex } from "@chakra-ui/react";
 import * as React from "react";
-import { granularityConfig } from "../granularity-config";
-import { ObsidianIcon } from "../ObsidianIcon";
+import { granularityConfig } from "../config/granularity-config";
 import { Granularity } from "../types";
+import { ObsidianIcon } from "./common/ObsidianIcon";
 
 interface EmptyStateProps {
   granularity: Granularity;

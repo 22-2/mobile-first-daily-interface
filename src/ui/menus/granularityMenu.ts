@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { granularityConfig } from "../granularity-config";
+import { granularityConfig } from "../config/granularity-config";
 import { Granularity } from "../types";
 
 export function addGranularityMenuItems(

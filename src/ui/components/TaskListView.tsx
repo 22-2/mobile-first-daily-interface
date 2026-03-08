@@ -2,8 +2,8 @@ import { Box } from "@chakra-ui/react";
 import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { TaskView } from "../TaskView";
 import { useMFDIContext } from "../context/MFDIAppContext";
+import { TaskView } from "./TaskView";
 
 export const TaskListView: React.FC = React.memo(() => {
   const {

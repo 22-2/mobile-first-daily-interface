@@ -2,12 +2,12 @@ import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import { replaceDayToJa } from "../../utils/strings";
+import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
-import { granularityConfig } from "../granularity-config";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
-import { ObsidianIcon } from "../ObsidianIcon";
-import { ObsidianLiveEditor } from "../ObsidianLiveEditor";
+import { ObsidianIcon } from "./common/ObsidianIcon";
+import { ObsidianLiveEditor } from "./common/ObsidianLiveEditor";
 
 const InputAreaControl: React.FC = React.memo(() => {
   const { view } = useAppContext();

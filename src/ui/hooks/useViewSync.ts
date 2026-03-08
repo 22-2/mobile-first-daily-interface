@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Task } from "../../app-helper";
 import { useAppContext } from "../context/AppContext";
-import { MFDIModal } from "../MFDIModal";
-import { MFDIView } from "../MFDIView";
+import { MFDIModal } from "../modals/MFDIModal";
 import { Granularity, Post, TimeFilter } from "../types";
+import { MFDIView } from "../view/MFDIView";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */

@@ -13,8 +13,8 @@ import {
 import { Menu } from "obsidian";
 import * as React from "react";
 import { useRef, useState } from "react";
-import { DEFAULT_TOPIC, Topic } from "../topic";
-import { ObsidianIcon } from "./ObsidianIcon";
+import { DEFAULT_TOPIC, Topic } from "../../topic";
+import { ObsidianIcon } from "./common/ObsidianIcon";
 
 interface TopicManagerViewProps {
   topics: Topic[];

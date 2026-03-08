@@ -1,7 +1,7 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { granularityConfig } from "../granularity-config";
+import { granularityConfig } from "../config/granularity-config";
 import { Granularity } from "../types";
 
 import { useAppContext } from "../context/AppContext";

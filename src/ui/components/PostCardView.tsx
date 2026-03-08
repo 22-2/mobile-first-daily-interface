@@ -1,19 +1,18 @@
 import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
-import { pickUrls } from "../utils/strings";
-import { isPresent } from "../utils/types";
-import { BaseCard } from "./components/BaseCard";
-import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
-import { useAppContext } from "./context/AppContext";
-import { granularityConfig } from "./granularity-config";
-import { HTMLCard } from "./HTMLCard";
-import { ImageCard } from "./ImageCard";
-import { Post } from "./ReactView";
-import { TwitterCard } from "./TwitterCard";
-import { Granularity, MomentLike, TimeFilter } from "./types";
-import { Card } from "./Card";
+import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../../utils/meta";
+import { pickUrls } from "../../utils/strings";
+import { isPresent } from "../../utils/types";
+import { granularityConfig } from "../config/granularity-config";
+import { useAppContext } from "../context/AppContext";
+import { Granularity, MomentLike, Post, TimeFilter } from "../types";
+import { BaseCard } from "./BaseCard";
+import { Card } from "./cards/Card";
+import { HTMLCard } from "./cards/HTMLCard";
+import { ImageCard } from "./cards/ImageCard";
+import { TwitterCard } from "./cards/TwitterCard";
+import { ObsidianMarkdown } from "./ObsidianMarkdown";
 
 export const PostCardView = React.memo(
   ({
