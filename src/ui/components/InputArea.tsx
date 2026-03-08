@@ -2,6 +2,7 @@ import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import { replaceDayToJa } from "../../utils/strings";
+import { DATE_FILTER_OPTIONS } from "../config/filter-config";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
@@ -10,33 +11,60 @@ import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { ObsidianIcon } from "./common/ObsidianIcon";
 import { ObsidianLiveEditor } from "./common/ObsidianLiveEditor";
 
+const NavButton: React.FC<{
+  direction: "left" | "right";
+  onClick: () => void;
+  step: number;
+}> = ({ direction, onClick, step }) => {
+  return (
+    <HStack
+      cursor="pointer"
+      onClick={onClick}
+      spacing={0}
+      paddingX="0.5em"
+      flexDirection={direction === "left" ? "row" : "row-reverse"}
+    >
+      <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />
+      {step > 1 && (
+        <Box fontSize="smaller" fontWeight="bold" color="var(--text-muted)">
+          {step}
+        </Box>
+      )}
+    </HStack>
+  );
+};
+
 const InputAreaControl: React.FC = React.memo(() => {
   const { view } = useAppContext();
   const {
     date,
     granularity,
+    dateFilter,
     isToday,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
     handleChangeCalendarDate,
+    getMoveStep,
   } = useMFDIContext();
+
+  const step = getMoveStep();
 
   return (
     <Flex align="center" paddingX="1em">
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto">
-        <ObsidianIcon
-          name="chevron-left"
-          boxSize="1.5em"
-          cursor="pointer"
+        <NavButton
+          direction="left"
           onClick={handleClickMovePrevious}
+          step={step}
         />
         <Box textAlign={"center"} marginY={"1em"}>
           <Button
             marginRight={"0.3em"}
             fontSize={"80%"}
             width="3em"
+            paddingY="var(--size-4-4)"
             height="2em"
             cursor="pointer"
             onClick={handleClickToday}
@@ -74,11 +102,10 @@ const InputAreaControl: React.FC = React.memo(() => {
             </Box>
           )}
         </Box>
-        <ObsidianIcon
-          name="chevron-right"
-          boxSize="1.5em"
-          cursor="pointer"
+        <NavButton
+          direction="right"
           onClick={handleClickMoveNext}
+          step={step}
         />
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end">

@@ -41,20 +41,20 @@ export function addPeriodMenuItems(
   }
 
   // --- 表示期間（時間） ---
-  menu.addSeparator();
-  menu.addItem((item) => {
-    item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
-  });
-  for (const f of TIME_FILTER_OPTIONS) {
-    menu.addItem((item) => {
-      const isChecked = showFilter ? state.timeFilter === f.id : f.id === "all";
-      item
-        .setTitle(f.label)
-        .setChecked(isChecked)
-        .setDisabled(!showFilter)
-        .onClick(() => {
-          callbacks.onChangeTimeFilter?.(f.id);
-        });
-    });
-  }
+  // menu.addSeparator();
+  // menu.addItem((item) => {
+  //   item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
+  // });
+  // for (const f of TIME_FILTER_OPTIONS) {
+  //   menu.addItem((item) => {
+  //     const isChecked = showFilter ? state.timeFilter === f.id : f.id === "all";
+  //     item
+  //       .setTitle(f.label)
+  //       .setChecked(isChecked)
+  //       .setDisabled(!showFilter)
+  //       .onClick(() => {
+  //         callbacks.onChangeTimeFilter?.(f.id);
+  //       });
+  //   });
+  // }
 }

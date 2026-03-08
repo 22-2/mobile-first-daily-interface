@@ -37,6 +37,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
+    getMoveStep,
   } = useMFDISettings();
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
@@ -485,5 +486,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     taskContextMenu,
     isToday,
     isReadOnly,
+    getMoveStep,
   };
 }

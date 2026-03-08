@@ -59,13 +59,22 @@ export function useMFDISettings() {
     [granularity],
   );
 
+  const getMoveStep = useCallback(() => {
+    if (granularity !== "day") return 1;
+    if (dateFilter === "this_week") return 7;
+    const days = parseInt(dateFilter);
+    return isNaN(days) ? 1 : days;
+  }, [granularity, dateFilter]);
+
   const handleClickMovePrevious = useCallback(() => {
-    setDate(date.clone().subtract(1, granularityConfig[granularity].unit));
-  }, [date, granularity]);
+    const step = getMoveStep();
+    setDate(date.clone().subtract(step, granularityConfig[granularity].unit));
+  }, [date, granularity, getMoveStep]);
 
   const handleClickMoveNext = useCallback(() => {
-    setDate(date.clone().add(1, granularityConfig[granularity].unit));
-  }, [date, granularity]);
+    const step = getMoveStep();
+    setDate(date.clone().add(step, granularityConfig[granularity].unit));
+  }, [date, granularity, getMoveStep]);
 
   const handleClickToday = useCallback(() => {
     setDate(window.moment());
@@ -105,5 +114,6 @@ export function useMFDISettings() {
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
+    getMoveStep,
   };
 }

@@ -15,8 +15,8 @@ import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, setGranularity: onGranularityChange } =
-    useMFDIContext();
+  const { date, granularity, dateFilter } = useMFDIContext();
+  const onClick = useFilterMenu();
 
   const unitMap: Record<Granularity, string> = {
     day: "日",
@@ -33,17 +33,31 @@ const DateSection: React.FC = () => {
       ? ` (${Math.abs(diff)}${unitMap[granularity]}${diff > 0 ? "後" : "前"})`
       : "";
 
+  const dateLabel = React.useMemo(() => {
+    if (granularity !== "day" || dateFilter === "today") {
+      return date.format(granularityConfig[granularity].displayFormat);
+    }
+
+    const format = granularityConfig.day.displayFormat;
+    if (dateFilter === "this_week") {
+      const start = date.clone().startOf("isoWeek");
+      const end = date.clone().endOf("isoWeek");
+      return `${start.format(format)} - ${end.format(format)}`;
+    }
+
+    const days = parseInt(dateFilter);
+    if (!isNaN(days)) {
+      const start = date.clone().subtract(days - 1, "days");
+      const end = date.clone();
+      return `${start.format(format)} - ${end.format(format)}`;
+    }
+    return date.format(granularityConfig[granularity].displayFormat);
+  }, [date, granularity, dateFilter]);
+
   return (
     <Box>
-      <UnderlinedClickable
-        onClick={(e: React.MouseEvent) => {
-          e.preventDefault();
-          const menu = new Menu();
-          addGranularityMenuItems(menu, granularity, onGranularityChange);
-          menu.showAtMouseEvent(e as unknown as MouseEvent);
-        }}
-      >
-        {date.format(granularityConfig[granularity].displayFormat)}
+      <UnderlinedClickable onClick={onClick}>
+        {dateLabel}
       </UnderlinedClickable>
       {relativeText}
     </Box>
@@ -93,34 +107,6 @@ const CountSection: React.FC = () => {
   return (
     <UnderlinedClickable onClick={onClick}>
       {asTask ? `${tasksCount} tasks` : `${filteredPostsCount}${totalPart} posts`}
-    </UnderlinedClickable>
-  );
-};
-
-const FilterSuffix: React.FC = () => {
-  const { granularity, asTask, timeFilter, dateFilter } = useMFDIContext();
-  const onClick = useFilterMenu();
-
-  if (asTask) return null;
-
-  const dateFilterLabel = DATE_FILTER_OPTIONS.find(
-    (f) => f.id === dateFilter,
-  )?.label.replace("過去", "");
-
-  let suffix = "";
-  if (dateFilter !== "today") {
-    suffix = ` (${dateFilterLabel})`;
-  } else if (timeFilter === "latest") {
-    suffix = " (最新)";
-  } else if (timeFilter !== "all") {
-    suffix = ` (${timeFilter})`;
-  }
-
-  if (!suffix) return null;
-
-  return (
-    <UnderlinedClickable onClick={onClick}>
-      {suffix}
     </UnderlinedClickable>
   );
 };
@@ -182,7 +168,6 @@ export const CountDisplay: React.FC = () => {
       <Box>
         <CountSection />
         <TopicSection />
-        <FilterSuffix />
       </Box>
     </HStack>
   );
