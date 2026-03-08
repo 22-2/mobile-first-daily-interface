@@ -1,8 +1,10 @@
 import { Box, Flex, HStack, Spacer, Tag } from "@chakra-ui/react";
 import * as React from "react";
-import { DISPLAY_DATE_TIME_FORMAT, DISPLAY_TIME_FORMAT } from "../config/date-formats";
+import {
+  DISPLAY_DATE_TIME_FORMAT,
+  DISPLAY_TIME_FORMAT,
+} from "../config/date-formats";
 import { Granularity, MomentLike, TimeFilter } from "../types";
-
 
 interface BaseCardProps {
   timestamp: MomentLike;
@@ -74,11 +76,16 @@ export const BaseCard: React.FC<BaseCardProps> = ({
         {footerAddon}
         <Spacer />
         <HStack gap={2}>
-          <Tag size="sm" variant="subtle" colorScheme="gray" borderRadius="full">
+          <Tag
+            size="sm"
+            variant="subtle"
+            colorScheme="gray"
+            borderRadius="full"
+          >
             {timestamp.format(
               granularity === "day" && timeFilter !== "this_week"
                 ? DISPLAY_TIME_FORMAT
-                : DISPLAY_DATE_TIME_FORMAT
+                : DISPLAY_DATE_TIME_FORMAT,
             )}
           </Tag>
         </HStack>

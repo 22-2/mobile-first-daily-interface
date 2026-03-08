@@ -15,7 +15,7 @@ export function parseMarkdownList(text: string): {
   content: string;
 } {
   const match = Array.from(
-    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/gs)
+    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/gs),
   ).at(0);
 
   if (!match) {
@@ -42,7 +42,7 @@ export function replaceDayToJa(text: string): string {
 
 export function pickUrls(str: string): string[] {
   const urlsMatches = Array.from(
-    str.matchAll(/(^| |\(|\n)(?<url>https?:\/\/[^ \n]+)/g)
+    str.matchAll(/(^| |\(|\n)(?<url>https?:\/\/[^ \n]+)/g),
   ) as RegExpMatchedArray[];
   return urlsMatches.map((x) => x.groups.url);
 }

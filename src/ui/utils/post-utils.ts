@@ -8,14 +8,17 @@ export function toText(
   asTask: boolean,
   postFormat: PostFormat,
   granularity: Granularity,
-  timestamp?: MomentLike
+  timestamp?: MomentLike,
 ): string {
   if (input.trim().length === 0) {
     return "";
   }
 
   const now = timestamp ?? window.moment();
-  const timeStr = granularity === "day" ? now.format(TIME_FORMAT) : now.format(DATE_TIME_FORMAT);
+  const timeStr =
+    granularity === "day"
+      ? now.format(TIME_FORMAT)
+      : now.format(DATE_TIME_FORMAT);
 
   if (asTask) {
     return formatTaskText(input, timeStr) + "\n";

@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 
 import {
-    excludeWikiLink,
-    parseMarkdownList,
-    pickTaskName,
-    pickUrls,
-    replaceDayToJa,
-    trimRedundantEmptyLines
+  excludeWikiLink,
+  parseMarkdownList,
+  pickTaskName,
+  pickUrls,
+  replaceDayToJa,
+  trimRedundantEmptyLines,
 } from "./strings";
 
 describe.each`
@@ -58,14 +58,15 @@ test.each([
     "- [ ] 16:37:23 On-Demand Plugins提出\n    community-pluginsの編集戦略見直し\n    消極的干渉\n\n",
     {
       prefix: "- [ ] ",
-      content: "16:37:23 On-Demand Plugins提出\n    community-pluginsの編集戦略見直し\n    消極的干渉\n\n",
+      content:
+        "16:37:23 On-Demand Plugins提出\n    community-pluginsの編集戦略見直し\n    消極的干渉\n\n",
     },
   ],
 ])(
   `parseMarkdownList("%s")`,
   (text: string, expected: ReturnType<typeof parseMarkdownList>) => {
     expect(parseMarkdownList(text)).toEqual(expected);
-  }
+  },
 );
 
 describe.each`

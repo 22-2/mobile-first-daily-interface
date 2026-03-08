@@ -52,14 +52,14 @@ export const PostCardView = React.memo(
       (async function () {
         const urls = pickUrls(post.message);
         const results = (await Promise.all(urls.map(createMeta))).filter(
-          isPresent
+          isPresent,
         );
         setHtmlMetas(results.filter((x): x is HTMLMeta => x.type === "html"));
         setImageMetas(
-          results.filter((x): x is ImageMeta => x.type === "image")
+          results.filter((x): x is ImageMeta => x.type === "image"),
         );
         setTwitterMetas(
-          results.filter((x): x is TwitterMeta => x.type === "twitter")
+          results.filter((x): x is TwitterMeta => x.type === "twitter"),
         );
       })();
     }, [post.message, settings.enabledCardView]);
@@ -81,10 +81,7 @@ export const PostCardView = React.memo(
           <VStack align="stretch" gap={3}>
             {/* Message Body */}
             <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-              <ObsidianMarkdown
-                content={post.message}
-                sourcePath={post.path}
-              />
+              <ObsidianMarkdown content={post.message} sourcePath={post.path} />
             </Box>
 
             {settings.enabledCardView && (
@@ -104,5 +101,5 @@ export const PostCardView = React.memo(
         </BaseCard>
       </Card>
     );
-  }
+  },
 );

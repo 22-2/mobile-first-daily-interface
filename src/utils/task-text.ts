@@ -1,6 +1,10 @@
 export function formatTaskText(input: string, time?: string): string {
   const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-  const t = time ?? (typeof window !== "undefined" ? window.moment().format("HH:mm:ss") : "00:00:00");
+  const t =
+    time ??
+    (typeof window !== "undefined"
+      ? window.moment().format("HH:mm:ss")
+      : "00:00:00");
 
   if (normalized.length === 0) {
     return `- [ ] ${t}`;

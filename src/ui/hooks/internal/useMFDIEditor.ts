@@ -22,11 +22,11 @@ export function useMFDIEditor({
 }: UseMFDIEditorOptions) {
   const { storage } = useAppContext();
   const [input, setInput] = useState(() => storage.get<string>("input", ""));
-  const [asTask, setAsTask] = useState<boolean>(
-    () => storage.get<boolean>("asTask", false)
+  const [asTask, setAsTask] = useState<boolean>(() =>
+    storage.get<boolean>("asTask", false),
   );
   const [editingPostOffset, setEditingPostOffset] = useState<number | null>(
-    () => storage.get<number | null>("editingPostOffset", null)
+    () => storage.get<number | null>("editingPostOffset", null),
   );
 
   const inputRef = useRef<ObsidianLiveEditorRef>(null);
@@ -39,7 +39,7 @@ export function useMFDIEditor({
   const canSubmit = useMemo(() => {
     const isPast = date.isBefore(
       window.moment(),
-      granularityConfig[granularity].unit
+      granularityConfig[granularity].unit,
     );
     if (isPast) return false;
 
@@ -61,7 +61,7 @@ export function useMFDIEditor({
         inputRef.current?.focus();
       });
     },
-    [date, granularity, storage]
+    [date, granularity, storage],
   );
 
   const cancelEdit = useCallback(() => {
@@ -71,7 +71,6 @@ export function useMFDIEditor({
     setInput("");
     inputRef.current?.setContent("");
   }, [storage]);
-
 
   // ────────────────────────────────────────────────────────────
   // Storage Persistence

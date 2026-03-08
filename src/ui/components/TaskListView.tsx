@@ -18,11 +18,11 @@ export const TaskListView: React.FC = React.memo(() => {
 
   const incompleteTasks = useMemo(
     () => tasks.filter((x) => x.mark === " "),
-    [tasks]
+    [tasks],
   );
   const completedTasks = useMemo(
     () => tasks.filter((x) => x.mark !== " "),
-    [tasks]
+    [tasks],
   );
 
   return (
@@ -80,4 +80,3 @@ export const TaskListView: React.FC = React.memo(() => {
     </>
   );
 });
-

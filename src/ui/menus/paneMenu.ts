@@ -9,7 +9,7 @@ export function addPaneMenuItems(
     granularity: Granularity;
     timeFilter: TimeFilter;
   },
-  handlers: MFDIViewHandler
+  handlers: MFDIViewHandler,
 ) {
   menu.addItem((item) => {
     item
@@ -61,30 +61,19 @@ export function addPaneMenuItems(
   menu.addItem((item) => {
     item.setTitle("表示期間").setIcon("clock").setDisabled(true);
   });
-  const filters: TimeFilter[] = [
-    "all",
-    "latest",
-    1,
-    2,
-    3,
-    6,
-    12,
-    "this_week",
-  ];
+  const filters: TimeFilter[] = ["all", "latest", 1, 2, 3, 6, 12, "this_week"];
   for (const f of filters) {
     menu.addItem((item) => {
-      const isChecked = showTimeFilter
-        ? state.timeFilter === f
-        : f === "all";
+      const isChecked = showTimeFilter ? state.timeFilter === f : f === "all";
       item
         .setTitle(
           f === "all"
             ? "今日"
             : f === "latest"
-            ? "最新のみ表示"
-            : f === "this_week"
-            ? "今週"
-            : `直近${f}時間`
+              ? "最新のみ表示"
+              : f === "this_week"
+                ? "今週"
+                : `直近${f}時間`,
         )
         .setChecked(isChecked)
         .setDisabled(!showTimeFilter)

@@ -72,7 +72,7 @@ export function useNoteSync({
         // 同期などで裏でDaily Noteが作成されたときに更新する
         updateCurrentDailyNote();
         await Promise.all([updatePosts(file), updateTasks(file)]);
-      }
+      },
     );
 
     const deleteEventRef = app.vault.on("delete", async (file) => {
@@ -91,5 +91,12 @@ export function useNoteSync({
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [date, currentDailyNote, granularity, topicId, weekNotePaths, onWeekNoteChanged]);
+  }, [
+    date,
+    currentDailyNote,
+    granularity,
+    topicId,
+    weekNotePaths,
+    onWeekNoteChanged,
+  ]);
 }

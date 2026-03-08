@@ -1,15 +1,18 @@
 import {
-    Badge,
-    Box,
-    Button, Divider, Flex,
-    FormControl,
-    FormErrorMessage,
-    FormHelperText,
-    FormLabel,
-    Heading,
-    HStack, Input,
-    Text,
-    VStack
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  FormLabel,
+  Heading,
+  HStack,
+  Input,
+  Text,
+  VStack,
 } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
@@ -32,7 +35,7 @@ export const TopicManagerView = ({
   onSave,
 }: TopicManagerViewProps) => {
   const [topics, setTopics] = useState<Topic[]>(
-    initialTopics.length > 0 ? initialTopics : [DEFAULT_TOPIC]
+    initialTopics.length > 0 ? initialTopics : [DEFAULT_TOPIC],
   );
   const [activeTopic, setActiveTopic] = useState<string>(initialActiveTopic);
 
@@ -59,7 +62,7 @@ export const TopicManagerView = ({
     try {
       // 切り替えたときは自動的にアーカイブ解除する（使い勝手のため）
       const updatedTopics = topics.map((t) =>
-        t.id === topicId ? { ...t, archived: false } : t
+        t.id === topicId ? { ...t, archived: false } : t,
       );
       await onSave(updatedTopics, topicId);
     } finally {
@@ -69,7 +72,7 @@ export const TopicManagerView = ({
 
   const handleToggleArchive = (topicId: string) => {
     setTopics((prev) =>
-      prev.map((t) => (t.id === topicId ? { ...t, archived: !t.archived } : t))
+      prev.map((t) => (t.id === topicId ? { ...t, archived: !t.archived } : t)),
     );
   };
 
@@ -82,7 +85,7 @@ export const TopicManagerView = ({
         item
           .setTitle("このトピックに切り替え")
           .setIcon("check")
-          .onClick(() => handleSwitch(topic.id))
+          .onClick(() => handleSwitch(topic.id)),
       );
     }
 
@@ -96,14 +99,14 @@ export const TopicManagerView = ({
             setEditingId(topic.id);
             setEditingTitle(topic.title);
             setTimeout(() => editInputRef.current?.focus(), 50);
-          })
+          }),
       );
 
       menu.addItem((item) =>
         item
           .setTitle(topic.archived ? "アーカイブ解除" : "アーカイブ")
           .setIcon(topic.archived ? "unarchive" : "archive")
-          .onClick(() => handleToggleArchive(topic.id))
+          .onClick(() => handleToggleArchive(topic.id)),
       );
     }
 
@@ -118,7 +121,7 @@ export const TopicManagerView = ({
       return;
     }
     setTopics((prev) =>
-      prev.map((t) => (t.id === editingId ? { ...t, title: trimmed } : t))
+      prev.map((t) => (t.id === editingId ? { ...t, title: trimmed } : t)),
     );
     setEditingId(null);
   };
@@ -183,7 +186,7 @@ export const TopicManagerView = ({
         opacity={topic.archived ? 0.6 : 1}
         _hover={{
           backgroundColor: "var(--background-modifier-hover)",
-          opacity: 1
+          opacity: 1,
         }}
         onDoubleClick={() => handleSwitch(topic.id)}
         transition="all 0.15s"
@@ -284,11 +287,7 @@ export const TopicManagerView = ({
   }
 
   return (
-    <VStack
-      align="stretch"
-      spacing={0}
-      paddingBottom="var(--size-4-4)"
-    >
+    <VStack align="stretch" spacing={0} paddingBottom="var(--size-4-4)">
       {/* 通常トピック一覧 */}
       <VStack align="stretch" spacing={2}>
         {activeTopics.map((topic) => renderTopicItem(topic))}
@@ -305,7 +304,11 @@ export const TopicManagerView = ({
         >
           <VStack align="stretch" spacing="var(--size-4-2)">
             <FormControl>
-              <FormLabel fontSize="var(--font-ui-smaller)" color="var(--text-muted)" marginBottom="2px">
+              <FormLabel
+                fontSize="var(--font-ui-smaller)"
+                color="var(--text-muted)"
+                marginBottom="2px"
+              >
                 タイトル
               </FormLabel>
               <Input
@@ -318,8 +321,15 @@ export const TopicManagerView = ({
             </FormControl>
 
             <FormControl isInvalid={!!idError}>
-              <FormLabel fontSize="var(--font-ui-smaller)" color="var(--text-muted)" marginBottom="2px">
-                ID <Text as="span" color="var(--text-faint)">(作成後変更不可)</Text>
+              <FormLabel
+                fontSize="var(--font-ui-smaller)"
+                color="var(--text-muted)"
+                marginBottom="2px"
+              >
+                ID{" "}
+                <Text as="span" color="var(--text-faint)">
+                  (作成後変更不可)
+                </Text>
               </FormLabel>
               <Input
                 size="sm"
@@ -336,9 +346,14 @@ export const TopicManagerView = ({
                 fontFamily="var(--font-monospace)"
               />
               {idError ? (
-                <FormErrorMessage fontSize="var(--font-ui-smaller)">{idError}</FormErrorMessage>
+                <FormErrorMessage fontSize="var(--font-ui-smaller)">
+                  {idError}
+                </FormErrorMessage>
               ) : (
-                <FormHelperText fontSize="var(--font-ui-smaller)" color="var(--text-faint)">
+                <FormHelperText
+                  fontSize="var(--font-ui-smaller)"
+                  color="var(--text-faint)"
+                >
                   英小文字・数字・ハイフンのみ。ファイル名のプレフィックスになります。
                 </FormHelperText>
               )}
@@ -367,7 +382,10 @@ export const TopicManagerView = ({
           leftIcon={<ObsidianIcon name="plus" boxSize="1em" />}
           size="sm"
           color="var(--text-muted)"
-          _hover={{ color: "var(--text-normal)", backgroundColor: "var(--background-modifier-hover)" }}
+          _hover={{
+            color: "var(--text-normal)",
+            backgroundColor: "var(--background-modifier-hover)",
+          }}
           justifyContent="flex-start"
           onClick={() => setShowAddForm(true)}
         >
@@ -379,11 +397,21 @@ export const TopicManagerView = ({
       {archivedTopics.length > 0 && (
         <VStack align="stretch" spacing={2} marginTop="var(--size-4-6)">
           <Flex align="center" paddingX="var(--size-4-3)">
-            <Heading size="xs" fontSize="0.75rem" fontWeight="600" color="var(--text-faint)" textTransform="uppercase" letterSpacing="0.05em">
+            <Heading
+              size="xs"
+              fontSize="0.75rem"
+              fontWeight="600"
+              color="var(--text-faint)"
+              textTransform="uppercase"
+              letterSpacing="0.05em"
+            >
               アーカイブ済み ({archivedTopics.length})
             </Heading>
             <Box flex={1} marginLeft="var(--size-4-2)">
-              <Divider borderColor="var(--background-modifier-border)" opacity={0.5} />
+              <Divider
+                borderColor="var(--background-modifier-border)"
+                opacity={0.5}
+              />
             </Box>
           </Flex>
           <VStack align="stretch" spacing={2}>
@@ -392,7 +420,11 @@ export const TopicManagerView = ({
         </VStack>
       )}
       {/* 完了ボタン */}
-      <Box marginTop="var(--size-4-6)" borderTop="1px solid var(--background-modifier-border)" paddingTop="var(--size-4-4)">
+      <Box
+        marginTop="var(--size-4-6)"
+        borderTop="1px solid var(--background-modifier-border)"
+        paddingTop="var(--size-4-4)"
+      >
         <Button
           width="100%"
           variant="solid"

@@ -29,5 +29,13 @@ export const ObsidianIcon = ({ name, size, ...props }: ObsidianIconProps) => {
     }
   }, [name, size]);
 
-  return <Box ref={ref} display="inline-flex" alignItems="center" justifyContent="center" {...props} />;
+  return (
+    <Box
+      ref={ref}
+      display="inline-flex"
+      alignItems="center"
+      justifyContent="center"
+      {...props}
+    />
+  );
 };

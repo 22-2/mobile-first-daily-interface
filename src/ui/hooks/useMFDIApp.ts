@@ -1,11 +1,5 @@
 import { Menu, Notice, TFile } from "obsidian";
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Task } from "../../app-helper";
 import { postFormatMap } from "../../settings";
 import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
@@ -50,8 +44,16 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const postFormat = postFormatMap[settings.postFormatOption];
 
-  const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks, updatePostsForWeek, updatePostsForDays } =
-    usePostsAndTasks({ postFormat, date, granularity });
+  const {
+    posts,
+    tasks,
+    setPosts,
+    setTasks,
+    updatePosts,
+    updateTasks,
+    updatePostsForWeek,
+    updatePostsForDays,
+  } = usePostsAndTasks({ postFormat, date, granularity });
 
   // 複数日モード中に監視するファイルパス集合
   const weekNotePathsRef = useRef<Set<string>>(new Set());
@@ -93,7 +95,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       setPosts([]);
       setTasks([]);
     },
-    [activeTopic, setActiveTopic, setPosts, setTasks]
+    [activeTopic, setActiveTopic, setPosts, setTasks],
   );
 
   useEffect(() => {
@@ -116,36 +118,53 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       updatePostsForWeek(activeTopic).then((paths) => {
         weekNotePathsRef.current = paths;
       });
-    } else if (dateFilter === "3d" || dateFilter === "5d" || dateFilter === "7d") {
+    } else if (
+      dateFilter === "3d" ||
+      dateFilter === "5d" ||
+      dateFilter === "7d"
+    ) {
       const days = parseInt(dateFilter);
       updatePostsForDays(activeTopic, days).then((paths) => {
         weekNotePathsRef.current = paths;
       });
     }
-  }, [dateFilter, granularity, asTask, activeTopic, updatePostsForWeek, updatePostsForDays]);
+  }, [
+    dateFilter,
+    granularity,
+    asTask,
+    activeTopic,
+    updatePostsForWeek,
+    updatePostsForDays,
+  ]);
 
   useNoteSync({
     date,
     granularity,
     topicId: activeTopic,
     currentDailyNote,
-    weekNotePaths: dateFilter !== "today" ? weekNotePathsRef.current : undefined,
+    weekNotePaths:
+      dateFilter !== "today" ? weekNotePathsRef.current : undefined,
     setDate,
     setTasks,
     setPosts,
     updateCurrentDailyNote,
     updatePosts,
     updateTasks,
-    onWeekNoteChanged: dateFilter !== "today"
-      ? () => {
-          if (dateFilter === "this_week") {
-            updatePostsForWeek(activeTopic).then((paths) => { weekNotePathsRef.current = paths; });
-          } else {
-            const days = parseInt(dateFilter);
-            updatePostsForDays(activeTopic, days).then((paths) => { weekNotePathsRef.current = paths; });
+    onWeekNoteChanged:
+      dateFilter !== "today"
+        ? () => {
+            if (dateFilter === "this_week") {
+              updatePostsForWeek(activeTopic).then((paths) => {
+                weekNotePathsRef.current = paths;
+              });
+            } else {
+              const days = parseInt(dateFilter);
+              updatePostsForDays(activeTopic, days).then((paths) => {
+                weekNotePathsRef.current = paths;
+              });
+            }
           }
-        }
-      : undefined,
+        : undefined,
   });
 
   const createNoteWithInsertAfter = async () => {
@@ -155,7 +174,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       if (!content.includes(settings.insertAfter)) {
         await app.vault.modify(
           created,
-          content ? `${content}\n${settings.insertAfter}` : settings.insertAfter
+          content
+            ? `${content}\n${settings.insertAfter}`
+            : settings.insertAfter,
         );
       }
     }
@@ -189,12 +210,18 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
           targetTs = now;
         }
       }
-      const text = toText(currentInput, false, postFormat, granularity, targetTs);
+      const text = toText(
+        currentInput,
+        false,
+        postFormat,
+        granularity,
+        targetTs,
+      );
       await appHelper.replaceRange(
         path,
         editingPost.startOffset,
         editingPost.endOffset,
-        text
+        text,
       );
       cancelEdit();
       await updatePosts(currentDailyNote);
@@ -212,10 +239,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
       if (dateFilter !== "today") {
-        const updateFn = dateFilter === "this_week"
-          ? () => updatePostsForWeek(activeTopic)
-          : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
-        updateFn().then((paths) => { weekNotePathsRef.current = paths; });
+        const updateFn =
+          dateFilter === "this_week"
+            ? () => updatePostsForWeek(activeTopic)
+            : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
+        updateFn().then((paths) => {
+          weekNotePathsRef.current = paths;
+        });
       }
       setDate(date.clone());
     }
@@ -274,8 +304,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       editingPost?.startOffset,
       cancelEdit,
       updatePosts,
-      isReadOnly
-    ]
+      isReadOnly,
+    ],
   );
 
   const handleClickTime = useCallback(
@@ -288,7 +318,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         const editor = app.workspace.activeEditor!;
         const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
         const endPos = editor.editor!.offsetToPos(
-          post.bodyStartOffset + post.message.length
+          post.bodyStartOffset + post.message.length,
         );
         const from = { line: startPos.line, ch: startPos.ch };
         const to = { line: endPos.line, ch: endPos.ch };
@@ -298,7 +328,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         });
       })();
     },
-    [currentDailyNote, app.workspace]
+    [currentDailyNote, app.workspace],
   );
 
   const updateTaskChecked = useCallback(
@@ -310,11 +340,11 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       if (!currentDailyNote) return;
       const mark = checked ? "x" : " ";
       setTasks(
-        tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x))
+        tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)),
       );
       await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
     },
-    [currentDailyNote, tasks, setTasks, appHelper, isReadOnly]
+    [currentDailyNote, tasks, setTasks, appHelper, isReadOnly],
   );
 
   const openTaskInEditor = (task: Task) => {
@@ -357,10 +387,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       e.stopPropagation();
       const menu = new Menu();
       menu.addItem((item) =>
-        item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task))
+        item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task)),
       );
       menu.addItem((item) =>
-        item.setTitle("編集").onClick(() => openTaskInEditor(task))
+        item.setTitle("編集").onClick(() => openTaskInEditor(task)),
       );
       menu.addItem((item) =>
         item
@@ -368,26 +398,24 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
           .setDisabled(isReadOnly)
           .onClick(() => {
             new DeleteConfirmModal(app, () => deleteTask(task)).open();
-          })
+          }),
       );
       menu.showAtMouseEvent(e as unknown as MouseEvent);
     },
-    [app, openTaskInEditor, deleteTask, isReadOnly]
+    [app, openTaskInEditor, deleteTask, isReadOnly],
   );
 
   const filteredPosts = useMemo(() => {
     if (dateFilter !== "today") return posts;
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;
     if (timeFilter === "latest") return posts.length > 0 ? [posts[0]] : [];
-    
+
     // "1h", "2h" などの文字列から数値を抽出
     const hours = parseInt(timeFilter as string);
     if (isNaN(hours)) return posts;
 
     const now = window.moment();
-    return posts.filter(
-      (p) => now.diff(p.timestamp, "hours") < hours
-    );
+    return posts.filter((p) => now.diff(p.timestamp, "hours") < hours);
   }, [posts, timeFilter, dateFilter, asTask, granularity]);
 
   return {

@@ -1,8 +1,11 @@
 import { TFile, Vault } from "obsidian";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-    getAllTopicNotes, getDailyNoteSettings, getDateUID, getTopicNote,
-    resolveTopicNotePath
+  getAllTopicNotes,
+  getDailyNoteSettings,
+  getDateUID,
+  getTopicNote,
+  resolveTopicNotePath,
 } from "./index";
 
 // Mock Obsidian module before importing anything
@@ -125,7 +128,7 @@ describe("daily-notes-interface utility", () => {
       (Vault as any).recurseChildren.mockImplementation(
         (_folder: any, callback: (f: any) => void) => {
           mockFiles.forEach((f) => callback(f));
-        }
+        },
       );
     });
 
@@ -149,14 +152,14 @@ describe("daily-notes-interface utility", () => {
       f.extension = "md";
 
       (Vault as any).recurseChildren.mockImplementation(
-        (_folder: any, callback: (f: any) => void) => callback(f)
+        (_folder: any, callback: (f: any) => void) => callback(f),
       );
 
       const found = getTopicNote(
         (window as any).app,
         createMockMoment("2026-03-01"),
         "day",
-        ""
+        "",
       );
       expect(found?.basename).toBe("2026-03-01");
 
@@ -164,7 +167,7 @@ describe("daily-notes-interface utility", () => {
         (window as any).app,
         createMockMoment("2099-12-31"),
         "day",
-        ""
+        "",
       );
       expect(notFound).toBeNull();
     });

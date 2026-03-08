@@ -1,9 +1,12 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
+import {
+  DATE_FILTER_OPTIONS,
+  TIME_FILTER_OPTIONS,
+} from "../config/filter-config";
 import { granularityConfig } from "../config/granularity-config";
-import { Granularity, TimeFilter, DateFilter } from "../types";
-import { DATE_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from "../config/filter-config";
+import { Granularity } from "../types";
 
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
@@ -30,7 +33,9 @@ export const CountDisplay: React.FC = () => {
     setAsTask: onAsTaskChange,
   } = useMFDIContext();
 
-  const activeTopicName = settings.topics.find((t) => t.id === activeTopic)?.title;
+  const activeTopicName = settings.topics.find(
+    (t) => t.id === activeTopic,
+  )?.title;
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
   const allPostsCount = posts.length;
@@ -80,10 +85,10 @@ export const CountDisplay: React.FC = () => {
             if (!onAsTaskChange) return;
             e.preventDefault();
             const menu = new Menu();
-            
+
             // モード切替
             addPostModeMenuItems(menu, asTask, onAsTaskChange);
-            
+
             if (!asTask && granularity === "day") {
               // 期間（日）
               menu.addSeparator();
@@ -92,7 +97,7 @@ export const CountDisplay: React.FC = () => {
                   item
                     .setTitle(f.label)
                     .setChecked(dateFilter === f.id)
-                    .onClick(() => onDateFilterChange?.(f.id))
+                    .onClick(() => onDateFilterChange?.(f.id)),
                 );
               });
 
@@ -104,11 +109,11 @@ export const CountDisplay: React.FC = () => {
                     .setTitle(f.label)
                     .setChecked(timeFilter === f.id && dateFilter === "today")
                     .setDisabled(dateFilter !== "today")
-                    .onClick(() => onTimeFilterChange?.(f.id))
+                    .onClick(() => onTimeFilterChange?.(f.id)),
                 );
               });
             }
-            
+
             menu.showAtMouseEvent(e as unknown as MouseEvent);
           }}
         >
@@ -117,14 +122,22 @@ export const CountDisplay: React.FC = () => {
           ) : (
             <>
               {filteredPostsCount}
-              {dateFilter === "today" && timeFilter !== "all" && granularity === "day"
+              {dateFilter === "today" &&
+              timeFilter !== "all" &&
+              granularity === "day"
                 ? `/${allPostsCount}`
                 : ""}
               {dateFilter === "this_week" ? " (今週)" : ""}
               {dateFilter === "3d" ? " (3日間)" : ""}
               {dateFilter === "7d" ? " (7日間)" : ""}
-              {dateFilter === "today" && timeFilter !== "all" && timeFilter !== "latest" ? ` (${timeFilter})` : ""}
-              {dateFilter === "today" && timeFilter === "latest" ? " (最新)" : ""}{" "}
+              {dateFilter === "today" &&
+              timeFilter !== "all" &&
+              timeFilter !== "latest"
+                ? ` (${timeFilter})`
+                : ""}
+              {dateFilter === "today" && timeFilter === "latest"
+                ? " (最新)"
+                : ""}{" "}
               posts
             </>
           )}
@@ -144,7 +157,7 @@ export const CountDisplay: React.FC = () => {
                       item
                         .setTitle(topic.title)
                         .setChecked(topic.title === activeTopicName)
-                        .onClick(() => onTopicChange(topic.id))
+                        .onClick(() => onTopicChange(topic.id)),
                     );
                   });
                 menu.showAtMouseEvent(e as unknown as MouseEvent);

@@ -147,7 +147,13 @@ const InputAreaFooter: React.FC = React.memo(() => {
         cursor={canSubmit ? "pointer" : ""}
         onClick={handleSubmit}
       >
-        {isReadOnly ? "閲覧モード" : editingPost ? "更新" : asTask ? "タスク追加" : "投稿"}
+        {isReadOnly
+          ? "閲覧モード"
+          : editingPost
+            ? "更新"
+            : asTask
+              ? "タスク追加"
+              : "投稿"}
       </Button>
     </HStack>
   );
@@ -155,13 +161,8 @@ const InputAreaFooter: React.FC = React.memo(() => {
 
 export const InputArea: React.FC = React.memo(() => {
   const { app, view } = useAppContext();
-  const {
-    input,
-    setInput,
-    handleSubmit,
-    isReadOnly,
-    inputRef,
-  } = useMFDIContext();
+  const { input, setInput, handleSubmit, isReadOnly, inputRef } =
+    useMFDIContext();
 
   return (
     <Flex
@@ -192,5 +193,3 @@ export const InputArea: React.FC = React.memo(() => {
     </Flex>
   );
 });
-
-

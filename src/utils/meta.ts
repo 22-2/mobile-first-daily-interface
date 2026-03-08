@@ -2,12 +2,12 @@ import { requestUrl } from "obsidian";
 import { defineUserAgent } from "./agent";
 import { forceLowerCaseKeys } from "./collections";
 import {
-    getCharsetFromMeta,
-    getCoverUrl,
-    getFaviconUrl,
-    getMetaByHttpEquiv,
-    getMetaByName,
-    getMetaByProperty
+  getCharsetFromMeta,
+  getCoverUrl,
+  getFaviconUrl,
+  getMetaByHttpEquiv,
+  getMetaByName,
+  getMetaByProperty,
 } from "./meta-helper";
 import { eucJp2String, sjis2String } from "./strings";
 
@@ -35,7 +35,7 @@ export interface TwitterMeta {
 
 async function getTwitterMeta(
   url: string,
-  type: "X" | "Twitter"
+  type: "X" | "Twitter",
 ): Promise<TwitterMeta | null> {
   const twitterEmbedUrl = `https://publish.${
     type === "X" ? "x" : "twitter"
@@ -53,7 +53,7 @@ async function getTwitterMeta(
 
 function htmlString2Document(
   htmlString: string,
-  htmlBuffer: ArrayBuffer
+  htmlBuffer: ArrayBuffer,
 ): Document {
   let html = new DOMParser().parseFromString(htmlString, "text/html");
 
@@ -71,13 +71,13 @@ function htmlString2Document(
     // HTMLのmetaデータにshift_jisと明記されている場合はbodyを作り直す
     html = new DOMParser().parseFromString(
       sjis2String(htmlBuffer),
-      "text/html"
+      "text/html",
     );
   } else if (infer("eucjp")) {
     // HTMLのmetaデータにeuc_jpと明記されている場合はbodyを作り直す
     html = new DOMParser().parseFromString(
       eucJp2String(htmlBuffer),
-      "text/html"
+      "text/html",
     );
   }
 
@@ -91,7 +91,7 @@ export async function createMeta(url: string): Promise<Meta | null> {
   ) {
     const res = await getTwitterMeta(
       url,
-      url.startsWith("https://x.com") ? "X" : "Twitter"
+      url.startsWith("https://x.com") ? "X" : "Twitter",
     );
     if (!res) {
       return null;

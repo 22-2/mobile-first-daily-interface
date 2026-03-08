@@ -52,7 +52,7 @@ export function useViewSync(
     setAsTask,
     input,
     setInput,
-  }: ViewSyncHandlers
+  }: ViewSyncHandlers,
 ) {
   const { app } = useAppContext();
   // ── 値の同期（read-only な参照） ──────────────────────────────
@@ -79,12 +79,16 @@ export function useViewSync(
   // ── ハンドラの同期 ─────────────────────────────────────────────
   useEffect(() => {
     view.handlers.onSubmit = handleSubmit;
-    return () => { view.handlers.onSubmit = undefined; };
+    return () => {
+      view.handlers.onSubmit = undefined;
+    };
   }, [view, handleSubmit]);
 
   useEffect(() => {
     view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
-    return () => { view.handlers.onOpenDailyNoteAction = undefined; };
+    return () => {
+      view.handlers.onOpenDailyNoteAction = undefined;
+    };
   }, [view, handleClickOpenDailyNote]);
 
   useEffect(() => {
@@ -98,39 +102,69 @@ export function useViewSync(
       setPosts([]);
       setTasks([]);
     };
-    return () => { view.handlers.onChangeGranularity = undefined; };
-  }, [view, setGranularity, setTimeFilter, setDateFilter, setCurrentDailyNote, setPosts, setTasks]);
+    return () => {
+      view.handlers.onChangeGranularity = undefined;
+    };
+  }, [
+    view,
+    setGranularity,
+    setTimeFilter,
+    setDateFilter,
+    setCurrentDailyNote,
+    setPosts,
+    setTasks,
+  ]);
 
   useEffect(() => {
     // setActiveTopic is actually handleChangeTopic
     view.handlers.onChangeTopic = setActiveTopic;
-    return () => { view.handlers.onChangeTopic = undefined; };
+    return () => {
+      view.handlers.onChangeTopic = undefined;
+    };
   }, [view, setActiveTopic]);
 
   useEffect(() => {
-    view.handlers.onChangeAsTask = (t: boolean) => { setAsTask(t); };
-    return () => { view.handlers.onChangeAsTask = undefined; };
+    view.handlers.onChangeAsTask = (t: boolean) => {
+      setAsTask(t);
+    };
+    return () => {
+      view.handlers.onChangeAsTask = undefined;
+    };
   }, [view, setAsTask]);
 
   useEffect(() => {
-    view.handlers.onChangeTimeFilter = (t: TimeFilter) => { setTimeFilter(t); };
-    return () => { view.handlers.onChangeTimeFilter = undefined; };
+    view.handlers.onChangeTimeFilter = (t: TimeFilter) => {
+      setTimeFilter(t);
+    };
+    return () => {
+      view.handlers.onChangeTimeFilter = undefined;
+    };
   }, [view, setTimeFilter]);
 
   useEffect(() => {
-    view.handlers.onChangeDateFilter = (d: DateFilter) => { setDateFilter(d); };
-    return () => { view.handlers.onChangeDateFilter = undefined; };
+    view.handlers.onChangeDateFilter = (d: DateFilter) => {
+      setDateFilter(d);
+    };
+    return () => {
+      view.handlers.onChangeDateFilter = undefined;
+    };
   }, [view, setDateFilter]);
 
   useEffect(() => {
     view.handlers.onOpenModalEditor = () => {
       const modal = new MFDIModal(app, {
         initialContent: input,
-        onChange: (content) => { setInput(content); },
-        onClose: (content) => { setInput(content); },
+        onChange: (content) => {
+          setInput(content);
+        },
+        onClose: (content) => {
+          setInput(content);
+        },
       });
       modal.open();
     };
-    return () => { view.handlers.onOpenModalEditor = undefined; };
+    return () => {
+      view.handlers.onOpenModalEditor = undefined;
+    };
   }, [view, app, input, setInput]);
 }

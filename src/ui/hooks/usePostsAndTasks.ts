@@ -56,7 +56,7 @@ export function usePostsAndTasks({
   const updatePosts = useCallback(
     async (note: TFile) => {
       const _posts: Post[] = parseThinoEntries(
-        await appHelper.loadFile(note.path)
+        await appHelper.loadFile(note.path),
       ).map((x) => {
         return {
           timestamp: resolveTimestamp(x.time, date),
@@ -72,14 +72,14 @@ export function usePostsAndTasks({
 
       setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
     },
-    [appHelper, postFormat, date]
+    [appHelper, postFormat, date],
   );
 
   const updateTasks = useCallback(
     async (note: TFile) => {
       setTasks((await appHelper.getTasks(note)) ?? []);
     },
-    [appHelper]
+    [appHelper],
   );
 
   const updatePostsForWeek = useCallback(
@@ -87,13 +87,18 @@ export function usePostsAndTasks({
       // 今週の月曜〜日曜の日付を列挙
       const weekStart = window.moment().startOf("isoWeek");
       const weekDates: MomentLike[] = Array.from({ length: 7 }, (_, i) =>
-        weekStart.clone().add(i, "days")
+        weekStart.clone().add(i, "days"),
       );
 
       // 存在するノートだけを収集
       const entries: { file: TFile; dayDate: MomentLike }[] = weekDates
-        .map((d) => ({ file: getTopicNote(app, d, "day", topicId), dayDate: d }))
-        .filter((x): x is { file: TFile; dayDate: MomentLike } => x.file !== null);
+        .map((d) => ({
+          file: getTopicNote(app, d, "day", topicId),
+          dayDate: d,
+        }))
+        .filter(
+          (x): x is { file: TFile; dayDate: MomentLike } => x.file !== null,
+        );
 
       // 並列で cachedRead
       const allPosts: Post[] = (
@@ -110,7 +115,7 @@ export function usePostsAndTasks({
               kind: "thino" as const,
               path: file.path,
             }));
-          })
+          }),
         )
       ).flat();
 
@@ -119,20 +124,25 @@ export function usePostsAndTasks({
       // 監視対象パス集合を返す
       return new Set(entries.map((e) => e.file.path));
     },
-    [app, appHelper]
+    [app, appHelper],
   );
 
   const updatePostsForDays = useCallback(
     async (topicId: string, days: number): Promise<Set<string>> => {
       // 直近N日間の日付を列挙 (今日を含む)
       const dates: MomentLike[] = Array.from({ length: days }, (_, i) =>
-        window.moment().subtract(i, "days")
+        window.moment().subtract(i, "days"),
       );
 
       // 存在するノートだけを収集
       const entries: { file: TFile; dayDate: MomentLike }[] = dates
-        .map((d) => ({ file: getTopicNote(app, d, "day", topicId), dayDate: d }))
-        .filter((x): x is { file: TFile; dayDate: MomentLike } => x.file !== null);
+        .map((d) => ({
+          file: getTopicNote(app, d, "day", topicId),
+          dayDate: d,
+        }))
+        .filter(
+          (x): x is { file: TFile; dayDate: MomentLike } => x.file !== null,
+        );
 
       // 並列で cachedRead
       const allPosts: Post[] = (
@@ -149,7 +159,7 @@ export function usePostsAndTasks({
               kind: "thino" as const,
               path: file.path,
             }));
-          })
+          }),
         )
       ).flat();
 
@@ -157,8 +167,17 @@ export function usePostsAndTasks({
 
       return new Set(entries.map((e) => e.file.path));
     },
-    [app, appHelper]
+    [app, appHelper],
   );
 
-  return { posts, tasks, setPosts, setTasks, updatePosts, updateTasks, updatePostsForWeek, updatePostsForDays };
+  return {
+    posts,
+    tasks,
+    setPosts,
+    setTasks,
+    updatePosts,
+    updateTasks,
+    updatePostsForWeek,
+    updatePostsForDays,
+  };
 }

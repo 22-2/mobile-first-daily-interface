@@ -15,7 +15,7 @@ describe("handleThisWeekSyncOnSubmit", () => {
     });
 
     expect(updatePostsForWeek).toHaveBeenCalledWith("test-topic");
-    
+
     // Promise の解決を待つ
     await new Promise(process.nextTick);
     expect(setWeekNotePaths).toHaveBeenCalledWith(new Set(["path.md"]));

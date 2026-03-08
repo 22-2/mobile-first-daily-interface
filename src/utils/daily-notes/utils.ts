@@ -8,7 +8,7 @@ import { getPeriodicSettings } from "./settings";
  */
 export function getDateUID(
   date: MomentLike,
-  granularity: Granularity = "day"
+  granularity: Granularity = "day",
 ): string {
   const ts = date.clone().startOf(granularity).format();
   return `${granularity}-${ts}`;
@@ -20,23 +20,23 @@ export function getDateUID(
 export function getDateFromFilename(
   filename: string,
   granularity: Granularity,
-  topicId: string = ""
+  topicId: string = "",
 ): MomentLike | null {
   const settings = getPeriodicSettings(granularity);
   const prefix = topicId ? `${topicId}-` : "";
-  
+
   // If prefix is specified, it must match.
   if (prefix && !filename.startsWith(prefix)) {
     return null;
   }
-  
+
   const datePart = prefix ? filename.slice(prefix.length) : filename;
   const date = (window as any).moment(datePart, settings.format, true);
-  
+
   if (!date.isValid()) {
     return null;
   }
-  
+
   // Extra check for default topic to avoid picking up other topics
   if (!prefix) {
     const formatted = date.format(settings.format);
@@ -44,7 +44,7 @@ export function getDateFromFilename(
       return null;
     }
   }
-  
+
   return date;
 }
 
@@ -54,7 +54,7 @@ export function getDateFromFilename(
 export function getDateFromFile(
   file: TFile,
   granularity: Granularity,
-  topicId: string = ""
+  topicId: string = "",
 ): MomentLike | null {
   return getDateFromFilename(file.basename, granularity, topicId);
 }

@@ -23,7 +23,7 @@ export const PostListView: React.FC = React.memo(() => {
 
   const displayedPosts = useMemo(
     () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
-    [filteredPosts, editingPostOffset]
+    [filteredPosts, editingPostOffset],
   );
   return (
     <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
@@ -51,7 +51,7 @@ export const PostListView: React.FC = React.memo(() => {
                     .setIcon("clock")
                     .onClick(() => {
                       handleClickTime(post);
-                    })
+                    }),
                 );
                 menu.addItem((item) =>
                   item
@@ -60,7 +60,7 @@ export const PostListView: React.FC = React.memo(() => {
                     .setDisabled(isReadOnly)
                     .onClick(() => {
                       startEdit(post);
-                    })
+                    }),
                 );
                 menu.addItem((item) =>
                   item
@@ -69,7 +69,7 @@ export const PostListView: React.FC = React.memo(() => {
                     .onClick(async () => {
                       await navigator.clipboard.writeText(post.message);
                       new Notice("copied");
-                    })
+                    }),
                 );
                 menu.addItem((item) =>
                   item
@@ -78,8 +78,10 @@ export const PostListView: React.FC = React.memo(() => {
                     .setWarning(true)
                     .setDisabled(isReadOnly)
                     .onClick(() => {
-                      new DeleteConfirmModal(app, () => deletePost(post)).open();
-                    })
+                      new DeleteConfirmModal(app, () =>
+                        deletePost(post),
+                      ).open();
+                    }),
                 );
                 menu.showAtMouseEvent(e as unknown as MouseEvent);
               }}
@@ -90,4 +92,3 @@ export const PostListView: React.FC = React.memo(() => {
     </TransitionGroup>
   );
 });
-

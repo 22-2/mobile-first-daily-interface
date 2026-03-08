@@ -11,7 +11,7 @@ import { getDateFromFile, getDateUID } from "./utils";
 export function resolveTopicNotePath(
   date: MomentLike,
   g: Granularity,
-  topicId: string
+  topicId: string,
 ): string {
   const { format, folder } = getPeriodicSettings(g);
   const dateStr = date.format(format);
@@ -29,7 +29,7 @@ export function resolveTopicNotePath(
 export function getAllTopicNotes(
   app: App,
   g: Granularity,
-  topicId: string = ""
+  topicId: string = "",
 ): Record<string, TFile> {
   const { folder } = getPeriodicSettings(g);
   const { vault } = app;
@@ -62,7 +62,7 @@ export function getTopicNote(
   app: App,
   date: MomentLike,
   g: Granularity,
-  topicId: string
+  topicId: string,
 ): TFile | null {
   const notes = getAllTopicNotes(app, g, topicId);
   const uid = getDateUID(date, g);
@@ -77,7 +77,7 @@ export async function createTopicNote(
   app: App,
   date: MomentLike,
   g: Granularity,
-  topicId: string
+  topicId: string,
 ): Promise<TFile> {
   const path = resolveTopicNotePath(date, g, topicId);
   const { vault } = app;

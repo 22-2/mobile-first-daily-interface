@@ -24,13 +24,18 @@ function isThinoHeading(line: string): boolean {
 }
 
 function matchTimeBullet(
-  line: string
-):
-  | { time: string; dashIndex: number; message?: string; messageIndex?: number }
-  | null {
+  line: string,
+): {
+  time: string;
+  dashIndex: number;
+  message?: string;
+  messageIndex?: number;
+} | null {
   // Allows leading spaces. Accept optional trailing text after the time.
   // Support both "HH:mm:ss" and "YYYY-MM-DD HH:mm:ss" formats.
-  const m = line.match(/^([ \t]*)-\s*((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/);
+  const m = line.match(
+    /^([ \t]*)-\s*((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/,
+  );
   if (!m) {
     return null;
   }
@@ -67,25 +72,22 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
   let inThinoSection = false;
 
   const entries: ThinoEntry[] = [];
-  let current:
-    | {
-        time: string;
-        offset: number;
-        startOffset: number;
-        bodyStartOffset: number;
-        bodyLines: string[];
-      }
-    | null = null;
+  let current: {
+    time: string;
+    offset: number;
+    startOffset: number;
+    bodyStartOffset: number;
+    bodyLines: string[];
+  } | null = null;
 
   const flush = (endOffset: number) => {
     if (!current) {
       return;
     }
 
-    const message = trimRedundantEmptyLines(current.bodyLines.join("\n")).replace(
-      /^\n+/g,
-      ""
-    );
+    const message = trimRedundantEmptyLines(
+      current.bodyLines.join("\n"),
+    ).replace(/^\n+/g, "");
 
     // Thino entries without body are allowed (empty message).
     entries.push({
@@ -131,23 +133,23 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
       continue;
     }
     if (timeBullet) {
-        flush(offset);
-        const bodyLines: string[] = [];
-        let bodyStartOffset = offset + rawLine.length + 1;
+      flush(offset);
+      const bodyLines: string[] = [];
+      let bodyStartOffset = offset + rawLine.length + 1;
 
-        // If there's an inline message after the time, treat it as the first body line
-        if (timeBullet.message != null && timeBullet.messageIndex != null) {
-          bodyLines.push(deindentBodyLine(timeBullet.message));
-          bodyStartOffset = offset + timeBullet.messageIndex;
-        }
+      // If there's an inline message after the time, treat it as the first body line
+      if (timeBullet.message != null && timeBullet.messageIndex != null) {
+        bodyLines.push(deindentBodyLine(timeBullet.message));
+        bodyStartOffset = offset + timeBullet.messageIndex;
+      }
 
-        current = {
-          time: timeBullet.time,
-          offset: offset + timeBullet.dashIndex,
-          startOffset: offset,
-          bodyStartOffset,
-          bodyLines,
-        };
+      current = {
+        time: timeBullet.time,
+        offset: offset + timeBullet.dashIndex,
+        startOffset: offset,
+        bodyStartOffset,
+        bodyLines,
+      };
       offset += rawLine.length + 1;
       continue;
     }

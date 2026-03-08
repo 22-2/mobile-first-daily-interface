@@ -7,4 +7,8 @@ export interface Topic {
   archived?: boolean;
 }
 
-export const DEFAULT_TOPIC: Topic = { id: "", title: "デフォルト", archived: false };
+export const DEFAULT_TOPIC: Topic = {
+  id: "",
+  title: "デフォルト",
+  archived: false,
+};

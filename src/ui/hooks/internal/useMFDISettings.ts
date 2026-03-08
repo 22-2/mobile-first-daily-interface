@@ -11,7 +11,7 @@ import { useAppContext } from "../../context/AppContext";
 export function useMFDISettings() {
   const { settings, view, storage } = useAppContext();
   const [activeTopic, setActiveTopic] = useState<string>(
-    () => settings.activeTopic ?? ""
+    () => settings.activeTopic ?? "",
   );
 
   const [granularity, setGranularity] = useState<Granularity>(() => {
@@ -34,12 +34,12 @@ export function useMFDISettings() {
     return m.isValid() ? m : window.moment();
   });
 
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>(
-    () => storage.get<TimeFilter>("timeFilter", "all")
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>(() =>
+    storage.get<TimeFilter>("timeFilter", "all"),
   );
 
-  const [dateFilter, setDateFilter] = useState<DateFilter>(
-    () => storage.get<DateFilter>("dateFilter", "today")
+  const [dateFilter, setDateFilter] = useState<DateFilter>(() =>
+    storage.get<DateFilter>("dateFilter", "today"),
   );
 
   const handleChangeTopic = useCallback(
@@ -49,14 +49,14 @@ export function useMFDISettings() {
       // プラグイン側に保存を要求
       view.handlers.onTopicSaveRequested?.(topicId);
     },
-    [activeTopic, view]
+    [activeTopic, view],
   );
 
   const handleChangeCalendarDate = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setDate(granularityConfig[granularity].parseInput(event.target.value));
     },
-    [granularity]
+    [granularity],
   );
 
   const handleClickMovePrevious = useCallback(() => {
@@ -70,7 +70,6 @@ export function useMFDISettings() {
   const handleClickToday = useCallback(() => {
     setDate(window.moment());
   }, []);
-
 
   // ────────────────────────────────────────────────────────────
   // Storage Persistence

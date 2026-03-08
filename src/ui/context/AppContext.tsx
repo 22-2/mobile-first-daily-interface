@@ -52,11 +52,11 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({
   const appHelper = useMemo(() => new AppHelper(app), [app]);
   const storage = useMemo(
     () => new MFDIStorage(appHelper.getAppId()),
-    [appHelper]
+    [appHelper],
   );
   const value = useMemo<AppContextValue>(
     () => ({ app, appHelper, storage, settings, view }),
-    [app, appHelper, storage, settings, view]
+    [app, appHelper, storage, settings, view],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

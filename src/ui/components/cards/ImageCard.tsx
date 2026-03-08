@@ -23,4 +23,3 @@ export const ImageCard = ({ meta }: { meta: ImageMeta }) => {
     </Box>
   );
 };
-

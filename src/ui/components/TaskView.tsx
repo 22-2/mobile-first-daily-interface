@@ -41,7 +41,12 @@ export const TaskView = React.memo(
               marginTop="0.2em"
               size="md"
             />
-            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"} flex="1">
+            <Box
+              fontSize={"93%"}
+              paddingX={1}
+              wordBreak={"break-word"}
+              flex="1"
+            >
               <ObsidianMarkdown
                 content={excludeWikiLink(task.name)}
                 sourcePath={task.path}
@@ -51,5 +56,5 @@ export const TaskView = React.memo(
         </BaseCard>
       </Card>
     );
-  }
+  },
 );

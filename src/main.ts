@@ -48,7 +48,7 @@ export default class MFDIPlugin extends Plugin {
       return existed;
     }
 
-    const targetLeaf = this.app.workspace.getLeaf(true)
+    const targetLeaf = this.app.workspace.getLeaf(true);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
@@ -92,7 +92,7 @@ export default class MFDIPlugin extends Plugin {
           await this.saveSettings();
           // ReactView内の state を更新
           view.handlers.onChangeTopic?.(activeTopic);
-        }
+        },
       );
       modal.open();
     };

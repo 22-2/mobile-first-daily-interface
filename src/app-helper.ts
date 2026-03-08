@@ -40,25 +40,25 @@ export class AppHelper {
     path: string,
     startOffset: number,
     endOffset: number,
-    replacement: string
+    replacement: string,
   ): Promise<void> {
     const origin = await this.loadFile(path);
     await this.unsafeApp.vault.adapter.write(
       path,
-      origin.slice(0, startOffset) + replacement + origin.slice(endOffset)
+      origin.slice(0, startOffset) + replacement + origin.slice(endOffset),
     );
   }
 
   async setCheckMark(
     path: string,
     mark: "x" | " " | string,
-    offset: number
+    offset: number,
   ): Promise<void> {
     const origin = await this.loadFile(path);
     const markOffset = offset + origin.slice(offset).indexOf("[") + 1;
     await this.unsafeApp.vault.adapter.write(
       path,
-      `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`
+      `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`,
     );
   }
 
@@ -92,10 +92,7 @@ export class AppHelper {
 
     const insertIndex = index + after.length;
     const newContent =
-      content.slice(0, insertIndex) +
-      "\n" +
-      text +
-      content.slice(insertIndex);
+      content.slice(0, insertIndex) + "\n" + text + content.slice(insertIndex);
     await this.unsafeApp.vault.adapter.write(file.path, newContent);
   }
 
@@ -110,10 +107,10 @@ export class AppHelper {
         .map((x) => {
           const startLine = x.position.start.line;
           const endLine = x.position.end.line;
-          
+
           // Basic task text from the metadata cache (usually one line)
           const firstLine = lines.at(startLine)!;
-          
+
           // Find the actual end of the task (including multi-line content)
           // We look ahead until we find another list item at the same or higher level,
           // or a heading, or EOF.
@@ -121,7 +118,11 @@ export class AppHelper {
           for (let i = endLine + 1; i < lines.length; i++) {
             const line = lines[i];
             // If the line is not indented, it's likely the start of a new block
-            if (line.trim().length > 0 && !line.startsWith(" ") && !line.startsWith("\t")) {
+            if (
+              line.trim().length > 0 &&
+              !line.startsWith(" ") &&
+              !line.startsWith("\t")
+            ) {
               break;
             }
             lastLine = i;
@@ -129,8 +130,11 @@ export class AppHelper {
 
           const taskContent = lines.slice(startLine, lastLine + 1).join("\n");
           const { prefix, content: rawName } = parseMarkdownList(taskContent);
-          
-          const { displayName, timestamp } = parseTaskTimestamp(rawName, file.basename);
+
+          const { displayName, timestamp } = parseTaskTimestamp(
+            rawName,
+            file.basename,
+          );
 
           return {
             mark: x.task!,

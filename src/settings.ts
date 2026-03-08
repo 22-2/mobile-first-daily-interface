@@ -41,11 +41,10 @@ export class MFDISettingTab extends PluginSettingTab {
 
     containerEl.createEl("h3", { text: "🌍 全体" });
 
-
     new Setting(containerEl)
       .setName("挿入位置 (文字列の後ろ)")
       .setDesc(
-        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。"
+        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。",
       )
       .addText((tc) =>
         tc
@@ -54,7 +53,7 @@ export class MFDISettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.insertAfter = value;
             await this.plugin.saveSettings();
-          })
+          }),
       );
 
     new Setting(containerEl)
@@ -66,13 +65,15 @@ export class MFDISettingTab extends PluginSettingTab {
             this.plugin.settings.enabledCardView = value;
             await this.plugin.saveSettings();
             this.plugin.rerenderView();
-          }
+          },
         );
       });
 
     new Setting(containerEl)
       .setName("更新時の日時更新ストラテジ")
-      .setDesc("編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）")
+      .setDesc(
+        "編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）",
+      )
       .addDropdown((tc) =>
         tc
           .addOption("never", "常に更新しない（デフォルト）")
@@ -80,10 +81,10 @@ export class MFDISettingTab extends PluginSettingTab {
           .addOption("same_day", "その日の間だけ更新する")
           .setValue(this.plugin.settings.updateDateStrategy)
           .onChange(async (value) => {
-            this.plugin.settings.updateDateStrategy = value as Settings["updateDateStrategy"];
+            this.plugin.settings.updateDateStrategy =
+              value as Settings["updateDateStrategy"];
             await this.plugin.saveSettings();
-          })
+          }),
       );
-
   }
 }

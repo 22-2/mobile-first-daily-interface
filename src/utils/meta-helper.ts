@@ -1,6 +1,6 @@
 export function getMetaByProperty(
   dom: Document,
-  property: string
+  property: string,
 ): string | undefined {
   return dom
     .querySelector(`meta[property='${property}']`)
@@ -20,7 +20,7 @@ export function getCharsetFromMeta(dom: Document): string | undefined {
 
 export function getMetaByHttpEquiv(
   dom: Document,
-  httpEquiv: string
+  httpEquiv: string,
 ): { content?: string; charset?: string } | undefined {
   const meta = dom.querySelector(`meta[http-equiv='${httpEquiv}']`);
   if (!meta) {

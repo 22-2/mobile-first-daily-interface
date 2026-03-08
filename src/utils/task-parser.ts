@@ -7,12 +7,12 @@ export interface ParsedTask {
 
 export function parseTaskTimestamp(
   name: string,
-  fileBasename: string
+  fileBasename: string,
 ): ParsedTask {
   // Regex for "HH:mm:ss" or "YYYY-MM-DD HH:mm:ss" at the start of the task text.
   // This is typical for Thino-style tasks.
   const timeMatch = name.match(
-    /^((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})\s+(.*)$/s
+    /^((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})\s+(.*)$/s,
   );
 
   let timestamp: MomentLike;
@@ -28,7 +28,10 @@ export function parseTaskTimestamp(
     } else {
       // It only has time: "HH:mm:ss". Combine it with the file's date.
       // We assume fileBasename is "YYYY-MM-DD".
-      timestamp = window.moment(`${fileBasename} ${timeStr}`, "YYYY-MM-DD HH:mm:ss");
+      timestamp = window.moment(
+        `${fileBasename} ${timeStr}`,
+        "YYYY-MM-DD HH:mm:ss",
+      );
     }
   } else {
     // No time found in text. Use the file name as the date.

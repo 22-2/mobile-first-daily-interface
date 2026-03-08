@@ -11,7 +11,7 @@ export class TopicManagerModal extends Modal {
     app: App,
     private topics: Topic[],
     private activeTopic: string,
-    private onSave: (topics: Topic[], activeTopic: string) => Promise<void>
+    private onSave: (topics: Topic[], activeTopic: string) => Promise<void>,
   ) {
     super(app);
   }
@@ -29,7 +29,7 @@ export class TopicManagerModal extends Modal {
           this.close();
         },
         onClose: () => this.close(),
-      })
+      }),
     );
   }
 

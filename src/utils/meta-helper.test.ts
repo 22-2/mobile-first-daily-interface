@@ -1,10 +1,10 @@
 import { JSDOM } from "jsdom";
 import { describe, expect, test } from "vitest";
 import {
-    getCharsetFromMeta,
-    getCoverUrl,
-    getFaviconUrl,
-    getMetaByHttpEquiv
+  getCharsetFromMeta,
+  getCoverUrl,
+  getFaviconUrl,
+  getMetaByHttpEquiv,
 } from "./meta-helper";
 
 describe.skip("getFaviconUrl", () => {
@@ -22,7 +22,7 @@ describe.skip("getFaviconUrl", () => {
   `(`getFaviconUrl: $name`, async ({ url, expected }) => {
     const textResponse = await (await fetch(url)).text();
     expect(getFaviconUrl(new JSDOM(textResponse).window.document, url)).toBe(
-      expected
+      expected,
     );
   });
 });
@@ -43,7 +43,7 @@ describe.skip("getCoverUrl", () => {
   `(`getCoverUrl: $name`, async ({ url, expected }) => {
     const textResponse = await (await fetch(url)).text();
     expect(getCoverUrl(new JSDOM(textResponse).window.document, url)).toBe(
-      expected
+      expected,
     );
   });
 });
@@ -62,7 +62,7 @@ describe.skip("getMetaByHttpEquiv", () => {
   `(`getMetaByHttpEquiv: $httpEquiv`, async ({ httpEquiv, url, expected }) => {
     const textResponse = await (await fetch(url)).text();
     expect(
-      getMetaByHttpEquiv(new JSDOM(textResponse).window.document, httpEquiv)
+      getMetaByHttpEquiv(new JSDOM(textResponse).window.document, httpEquiv),
     ).toEqual(expected);
   });
 });
@@ -79,7 +79,7 @@ describe.skip("getCharsetFromMeta", () => {
   `(`getCharsetFromMeta`, async ({ url, expected }) => {
     const textResponse = await (await fetch(url)).text();
     expect(getCharsetFromMeta(new JSDOM(textResponse).window.document)).toBe(
-      expected
+      expected,
     );
   });
 });

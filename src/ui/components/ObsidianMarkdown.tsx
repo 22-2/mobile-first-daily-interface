@@ -31,8 +31,8 @@ export const ObsidianMarkdown: React.FC<Props> = ({
       content,
       rootRef.current,
       sourcePath ?? "",
-      component
-    ).catch(e => console.error("Failed to render markdown", e));
+      component,
+    ).catch((e) => console.error("Failed to render markdown", e));
 
     return () => {
       component.unload();

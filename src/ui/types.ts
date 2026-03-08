@@ -1,4 +1,7 @@
-import { DATE_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from "./config/filter-config";
+import {
+  DATE_FILTER_OPTIONS,
+  TIME_FILTER_OPTIONS,
+} from "./config/filter-config";
 
 export type MomentLike = ReturnType<typeof window.moment>;
 

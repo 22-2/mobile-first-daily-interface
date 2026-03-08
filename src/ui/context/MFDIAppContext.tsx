@@ -20,7 +20,9 @@ interface MFDIAppProviderProps {
   children: ReactNode;
 }
 
-export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({ children }) => {
+export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
+  children,
+}) => {
   const { view } = useAppContext();
   const value = useMFDIApp();
 
@@ -83,8 +85,6 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({ children }) =>
   }, [currentDailyNote, scrollContainerRef]);
 
   return (
-    <MFDIAppContext.Provider value={value}>
-      {children}
-    </MFDIAppContext.Provider>
+    <MFDIAppContext.Provider value={value}>{children}</MFDIAppContext.Provider>
   );
 };

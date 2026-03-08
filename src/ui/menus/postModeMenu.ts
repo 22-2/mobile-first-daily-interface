@@ -3,7 +3,7 @@ import { Menu } from "obsidian";
 export function addPostModeMenuItems(
   menu: Menu,
   asTask: boolean,
-  onChangeAsTask: (asTask: boolean) => void
+  onChangeAsTask: (asTask: boolean) => void,
 ) {
   menu.addItem((item) => {
     item.setTitle("投稿モード").setIcon("pencil").setDisabled(true);

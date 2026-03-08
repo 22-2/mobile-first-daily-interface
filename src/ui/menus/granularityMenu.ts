@@ -5,7 +5,7 @@ import { Granularity } from "../types";
 export function addGranularityMenuItems(
   menu: Menu,
   currentGranularity: Granularity,
-  onChangeGranularity?: (g: Granularity) => void
+  onChangeGranularity?: (g: Granularity) => void,
 ) {
   // --- 表示単位 ---
   menu.addSeparator();

@@ -62,4 +62,3 @@ export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
     </Box>
   );
 };
-

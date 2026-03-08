@@ -13,7 +13,7 @@ describe("parseThinoEntries", () => {
       "- 19:19:57 ",
       "    化物語ってなんか押し付けがましい気がするっすな",
       "",
-      "    [物語シリーズの\"幸せの強制\"](https://example.com)",
+      '    [物語シリーズの"幸せの強制"](https://example.com)',
       "",
       "## Another",
       "- 00:00:00",
@@ -26,15 +26,14 @@ describe("parseThinoEntries", () => {
 
     expect(entries[0].time).toBe("12:53:49");
     expect(entries[0].message).toBe(
-      [
-        "ワムウよりジョジョのほうが不快っすな・・・🥺",
-        "どう思うっすか？",
-      ].join("\n")
+      ["ワムウよりジョジョのほうが不快っすな・・・🥺", "どう思うっすか？"].join(
+        "\n",
+      ),
     );
     expect(entries[0].offset).toBe(content.indexOf("- 12:53:49"));
     expect(entries[0].startOffset).toBe(content.indexOf("- 12:53:49"));
     expect(entries[0].bodyStartOffset).toBe(
-      content.indexOf("- 12:53:49") + "- 12:53:49".length + 1
+      content.indexOf("- 12:53:49") + "- 12:53:49".length + 1,
     );
 
     expect(entries[1].time).toBe("19:19:57");
@@ -42,13 +41,13 @@ describe("parseThinoEntries", () => {
       [
         "化物語ってなんか押し付けがましい気がするっすな",
         "",
-        "[物語シリーズの\"幸せの強制\"](https://example.com)",
-      ].join("\n")
+        '[物語シリーズの"幸せの強制"](https://example.com)',
+      ].join("\n"),
     );
     expect(entries[1].offset).toBe(content.indexOf("- 19:19:57"));
     expect(entries[1].startOffset).toBe(content.indexOf("- 19:19:57"));
     expect(entries[1].bodyStartOffset).toBe(
-      content.indexOf("- 19:19:57") + "- 19:19:57 ".length + 1
+      content.indexOf("- 19:19:57") + "- 19:19:57 ".length + 1,
     );
   });
 
