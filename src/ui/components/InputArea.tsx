@@ -81,7 +81,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
                 onClick={handlers.handleClickToday}
                 onContextMenu={(e) => {
                   const menu = new Menu();
-                  addGranularityMenuItems(menu, view.granularity, (g) => {
+                  addGranularityMenuItems(menu, view.state.granularity, (g) => {
                     view.handlers.onChangeGranularity?.(g);
                   });
                   menu.showAtMouseEvent(e.nativeEvent);

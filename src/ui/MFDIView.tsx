@@ -15,11 +15,13 @@ export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
   public readonly handlers = new MFDIViewHandler();
-  public granularity: Granularity = "day";
-  public asTask: boolean = false;
-  public timeFilter: TimeFilter = "all";
+  public state: MFDIViewState = {
+    granularity: "day",
+    asTask: false,
+    timeFilter: "all",
+    activeTopic: "",
+  };
   public navigation: boolean = false;
-  public activeTopic: string = "";
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -57,8 +59,8 @@ export class MFDIView extends ItemView {
         });
     });
 
-    // addGranularityMenuItems(menu, this.granularity, (g) => {
-    //   this.onChangeGranularity?.(g);
+    // addGranularityMenuItems(menu, this.state.granularity, (g) => {
+    //   this.handler.onChangeGranularity?.(g);
     // });
 
     // --- 投稿モード ---
@@ -70,7 +72,7 @@ export class MFDIView extends ItemView {
       item
         .setTitle("メッセージ投稿モード")
         .setIcon("message-square")
-        .setChecked(!this.asTask)
+        .setChecked(!this.state.asTask)
         .onClick(() => {
           this.handlers.onChangeAsTask?.(false);
         });
@@ -79,14 +81,14 @@ export class MFDIView extends ItemView {
       item
         .setTitle("タスク投稿モード")
         .setIcon("check-circle")
-        .setChecked(this.asTask)
+        .setChecked(this.state.asTask)
         .onClick(() => {
           this.handlers.onChangeAsTask?.(true);
         });
     });
 
     // --- 表示期間 ---
-    const showTimeFilter = this.granularity === "day" && !this.asTask;
+    const showTimeFilter = this.state.granularity === "day" && !this.state.asTask;
     menu.addSeparator();
     menu.addItem((item) => {
       item.setTitle("表示期間").setIcon("clock").setDisabled(true);
@@ -100,7 +102,7 @@ export class MFDIView extends ItemView {
     for (const f of filters) {
       menu
       menu.addItem((item) => {
-        const isChecked = showTimeFilter ? this.timeFilter === f : f === "all";
+        const isChecked = showTimeFilter ? this.state.timeFilter === f : f === "all";
         item
           .setTitle(
             f === "all"
@@ -173,21 +175,16 @@ export class MFDIView extends ItemView {
   }
 
   getState(): MFDIViewState {
-    return {
-      granularity: this.granularity,
-      asTask: this.asTask,
-      timeFilter: this.timeFilter,
-      activeTopic: this.activeTopic,
-    };
+    return this.state;
   }
 
   async setState(state: MFDIViewState) {
-    this.granularity = (state.granularity as Granularity) ?? this.granularity;
-    this.asTask = (state.asTask as boolean) ?? this.asTask;
-    this.timeFilter = (state.timeFilter as TimeFilter) ?? this.timeFilter;
+    this.state.granularity = (state.granularity as Granularity) ?? this.state.granularity;
+    this.state.asTask = (state.asTask as boolean) ?? this.state.asTask;
+    this.state.timeFilter = (state.timeFilter as TimeFilter) ?? this.state.timeFilter;
     if (state.activeTopic !== undefined) {
-      this.activeTopic = state.activeTopic as string;
-      this.handlers.onChangeTopic?.(this.activeTopic);
+      this.state.activeTopic = state.activeTopic as string;
+      this.handlers.onChangeTopic?.(this.state.activeTopic);
     }
     this.renderNewView();
   }

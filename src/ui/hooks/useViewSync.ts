@@ -54,19 +54,19 @@ export function useViewSync(
   const { app } = useAppContext();
   // ── 値の同期（read-only な参照） ──────────────────────────────
   useEffect(() => {
-    view.granularity = granularity;
+    view.state.granularity = granularity;
   }, [view, granularity]);
 
   useEffect(() => {
-    view.asTask = asTask;
+    view.state.asTask = asTask;
   }, [view, asTask]);
 
   useEffect(() => {
-    view.timeFilter = timeFilter;
+    view.state.timeFilter = timeFilter;
   }, [view, timeFilter]);
 
   useEffect(() => {
-    view.activeTopic = activeTopic;
+    view.state.activeTopic = activeTopic;
   }, [view, activeTopic]);
 
   // ── ハンドラの同期 ─────────────────────────────────────────────
