@@ -75,13 +75,13 @@ export default class MFDIPlugin extends Plugin {
    */
   private setupViewCallbacks(view: MFDIView) {
     // トピック切り替え時に settings を保存 (React側からの変更も含む)
-    view.onTopicSaveRequested = async (topicId: string) => {
+    view.handlers.onTopicSaveRequested = async (topicId: string) => {
       this.settings.activeTopic = topicId;
       await this.saveSettings();
     };
 
     // トピック管理モーダルを開く
-    view.onOpenTopicManager = () => {
+    view.handlers.onOpenTopicManager = () => {
       const modal = new TopicManagerModal(
         this.app,
         this.settings.topics,
@@ -91,7 +91,7 @@ export default class MFDIPlugin extends Plugin {
           this.settings.activeTopic = activeTopic;
           await this.saveSettings();
           // ReactView内の state を更新
-          view.onChangeTopic?.(activeTopic);
+          view.handlers.onChangeTopic?.(activeTopic);
         }
       );
       modal.open();

@@ -4,6 +4,7 @@ import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { ReactView } from "./ReactView";
 import { Granularity, TimeFilter } from "./types";
+import { MFDIViewHandler } from "./MFDIViewHandler";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -13,21 +14,12 @@ type IconName = string;
 export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
-  public onOpenDailyNoteAction?: () => void;
+  public readonly handlers = new MFDIViewHandler();
   public granularity: Granularity = "day";
-  public onChangeGranularity?: (g: Granularity) => void;
   public asTask: boolean = false;
-  public onChangeAsTask?: (asTask: boolean) => void;
   public timeFilter: TimeFilter = "all";
-  public onChangeTimeFilter?: (f: TimeFilter) => void;
-  public onOpenModalEditor?: () => void;
   public navigation: boolean = false;
-  public onSubmit?: () => Promise<void>;
   public activeTopic: string = "";
-  public onChangeTopic?: (topicId: string) => void;
-  public onTopicSaveRequested?: (topicId: string) => Promise<void>;
-  public onOpenTopicManager?: () => void;
-  public onFocusRequested?: () => void;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -42,7 +34,7 @@ export class MFDIView extends ItemView {
         .setTitle("現在のノートを開く")
         .setIcon("external-link")
         .onClick(() => {
-          this.onOpenDailyNoteAction?.();
+          this.handlers.onOpenDailyNoteAction?.();
         });
     });
     // menu.addItem((item) => {
@@ -61,7 +53,7 @@ export class MFDIView extends ItemView {
         .setTitle("トピックを管理...")
         .setIcon("folder-open")
         .onClick(() => {
-          this.onOpenTopicManager?.();
+          this.handlers.onOpenTopicManager?.();
         });
     });
 
@@ -80,7 +72,7 @@ export class MFDIView extends ItemView {
         .setIcon("message-square")
         .setChecked(!this.asTask)
         .onClick(() => {
-          this.onChangeAsTask?.(false);
+          this.handlers.onChangeAsTask?.(false);
         });
     });
     menu.addItem((item) => {
@@ -89,7 +81,7 @@ export class MFDIView extends ItemView {
         .setIcon("check-circle")
         .setChecked(this.asTask)
         .onClick(() => {
-          this.onChangeAsTask?.(true);
+          this.handlers.onChangeAsTask?.(true);
         });
     });
 
@@ -122,7 +114,7 @@ export class MFDIView extends ItemView {
           .setChecked(isChecked)
           .setDisabled(!showTimeFilter)
           .onClick(() => {
-            this.onChangeTimeFilter?.(f);
+            this.handlers.onChangeTimeFilter?.(f);
           });
       });
     }
@@ -149,7 +141,7 @@ export class MFDIView extends ItemView {
       return true;
     });
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
-      this.onOpenModalEditor?.();
+      this.handlers.onOpenModalEditor?.();
       return true;
     });
 
@@ -157,7 +149,7 @@ export class MFDIView extends ItemView {
 
     this.app.workspace.on("active-leaf-change", leaf => {
       if (leaf?.id === this.leaf.id) {
-        this.onFocusRequested?.();
+        this.handlers.onFocusRequested?.();
       }
     })
   }
@@ -195,7 +187,7 @@ export class MFDIView extends ItemView {
     this.timeFilter = (state.timeFilter as TimeFilter) ?? this.timeFilter;
     if (state.activeTopic !== undefined) {
       this.activeTopic = state.activeTopic as string;
-      this.onChangeTopic?.(this.activeTopic);
+      this.handlers.onChangeTopic?.(this.activeTopic);
     }
     this.renderNewView();
   }

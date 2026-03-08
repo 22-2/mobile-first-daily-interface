@@ -82,7 +82,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
                 onContextMenu={(e) => {
                   const menu = new Menu();
                   addGranularityMenuItems(menu, view.granularity, (g) => {
-                    view.onChangeGranularity?.(g);
+                    view.handlers.onChangeGranularity?.(g);
                   });
                   menu.showAtMouseEvent(e.nativeEvent);
                 }}
@@ -108,7 +108,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
                 width={granularity === "year" ? "5.5em" : "9em"}
               />
               {granularityConfig[granularity].showWeekday && (
-                <Box as="span" marginLeft={"0.2em"} fontSize={"95%"}>
+                <Box as="span" marginLeft={"0.2em"} fontSize={"95%"} >
                   {replaceDayToJa(date.format("(ddd)"))}
                 </Box>
               )}
@@ -135,7 +135,7 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
                 bg: "var(--background-modifier-hover)",
               }}
               onClick={() => {
-                view.onOpenModalEditor?.();
+                view.handlers.onOpenModalEditor?.();
               }}
             />
           </Box>
@@ -194,4 +194,3 @@ export const InputArea: React.FC<InputAreaProps> = React.memo(
     );
   }
 );
-

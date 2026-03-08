@@ -43,7 +43,7 @@ export function useMFDISettings() {
       if (activeTopic === topicId) return;
       setActiveTopic(topicId);
       // プラグイン側に保存を要求
-      view.onTopicSaveRequested?.(topicId);
+      view.handlers.onTopicSaveRequested?.(topicId);
     },
     [activeTopic, view]
   );

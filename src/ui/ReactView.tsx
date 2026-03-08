@@ -90,11 +90,11 @@ const ReactViewContent = () => {
   });
 
   useEffect(() => {
-    view.onFocusRequested = () => {
+    view.handlers.onFocusRequested = () => {
       inputRef.current?.focus();
     };
     return () => {
-      view.onFocusRequested = undefined;
+      view.handlers.onFocusRequested = undefined;
     };
   }, [view, inputRef]);
 

@@ -71,44 +71,44 @@ export function useViewSync(
 
   // ── ハンドラの同期 ─────────────────────────────────────────────
   useEffect(() => {
-    view.onSubmit = handleSubmit;
-    return () => { view.onSubmit = undefined; };
+    view.handlers.onSubmit = handleSubmit;
+    return () => { view.handlers.onSubmit = undefined; };
   }, [view, handleSubmit]);
 
   useEffect(() => {
-    view.onOpenDailyNoteAction = handleClickOpenDailyNote;
-    return () => { view.onOpenDailyNoteAction = undefined; };
+    view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
+    return () => { view.handlers.onOpenDailyNoteAction = undefined; };
   }, [view, handleClickOpenDailyNote]);
 
   useEffect(() => {
-    view.onChangeGranularity = (g: Granularity) => {
+    view.handlers.onChangeGranularity = (g: Granularity) => {
       setGranularity(g);
       if (g !== "day") setTimeFilter("all");
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
     };
-    return () => { view.onChangeGranularity = undefined; };
+    return () => { view.handlers.onChangeGranularity = undefined; };
   }, [view]);
 
   useEffect(() => {
     // setActiveTopic is actually handleChangeTopic
-    view.onChangeTopic = setActiveTopic;
-    return () => { view.onChangeTopic = undefined; };
+    view.handlers.onChangeTopic = setActiveTopic;
+    return () => { view.handlers.onChangeTopic = undefined; };
   }, [view, setActiveTopic]);
 
   useEffect(() => {
-    view.onChangeAsTask = (t: boolean) => { setAsTask(t); };
-    return () => { view.onChangeAsTask = undefined; };
+    view.handlers.onChangeAsTask = (t: boolean) => { setAsTask(t); };
+    return () => { view.handlers.onChangeAsTask = undefined; };
   }, [view]);
 
   useEffect(() => {
-    view.onChangeTimeFilter = (t: TimeFilter) => { setTimeFilter(t); };
-    return () => { view.onChangeTimeFilter = undefined; };
+    view.handlers.onChangeTimeFilter = (t: TimeFilter) => { setTimeFilter(t); };
+    return () => { view.handlers.onChangeTimeFilter = undefined; };
   }, [view]);
 
   useEffect(() => {
-    view.onOpenModalEditor = () => {
+    view.handlers.onOpenModalEditor = () => {
       const modal = new MFDIModal(app, {
         initialContent: input,
         onChange: (content) => { setInput(content); },
@@ -116,6 +116,6 @@ export function useViewSync(
       });
       modal.open();
     };
-    return () => { view.onOpenModalEditor = undefined; };
+    return () => { view.handlers.onOpenModalEditor = undefined; };
   }, [view, app, input]);
 }
