@@ -58,3 +58,7 @@ If your plugin does not need CSS, delete this file.
   padding: 0!important;
   max-height: 50vh!important;
 }
+
+[data-type="mfdi-view"] .list .markdown-rendered {
+  user-select: text!important;
+}
