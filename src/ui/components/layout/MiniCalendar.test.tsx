@@ -20,6 +20,20 @@ vi.mock("../../context/MFDIAppContext", () => ({
 import moment from "moment";
 (window as any).moment = moment;
 
+vi.mock("../../context/AppContext", () => ({
+  useAppContext: vi.fn(() => ({
+    app: { vault: { getFiles: () => [] } }
+  })),
+}));
+
+vi.mock("../../../utils/daily-notes/notes", () => ({
+  getAllTopicNotes: vi.fn(() => ({})),
+}));
+
+vi.mock("../../../utils/daily-notes/utils", () => ({
+  getDateFromFile: vi.fn(),
+}));
+
 describe("MiniCalendar", () => {
   it("renders without crashing", () => {
     const mockSetDate = vi.fn();
@@ -29,6 +43,7 @@ describe("MiniCalendar", () => {
       granularity: "day",
       dateFilter: "today",
       posts: [],
+      activeTopic: "",
     });
 
     const { getByText } = render(<MiniCalendar />);
@@ -45,6 +60,7 @@ describe("MiniCalendar", () => {
       posts: [
         { timestamp: moment("2026-03-05T12:00:00.000Z") } // a post exists this day
       ],
+      activeTopic: "",
     });
 
     const { getAllByText } = render(<MiniCalendar />);

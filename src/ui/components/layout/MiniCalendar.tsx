@@ -1,10 +1,14 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
+import { getAllTopicNotes } from "../../../utils/daily-notes/notes";
+import { getDateFromFile } from "../../../utils/daily-notes/utils";
+import { useAppContext } from "../../context/AppContext";
 import { useMFDIContext } from "../../context/MFDIAppContext";
 import { ObsidianIcon } from "../common/ObsidianIcon";
 
 export const MiniCalendar: React.FC = () => {
-  const { date, setDate, granularity, dateFilter, posts } = useMFDIContext();
+  const { app } = useAppContext();
+  const { date, setDate, granularity, dateFilter, activeTopic, posts } = useMFDIContext();
 
   const [viewDate, setViewDate] = React.useState(window.moment(date).startOf("month"));
   const viewDateRef = React.useRef(viewDate);
@@ -76,15 +80,24 @@ export const MiniCalendar: React.FC = () => {
     }
   }
 
-  const postDates = React.useMemo(() => {
+  // 表示している月のアクティビティ（ファイルが存在する日）を取得
+  const activityDates = React.useMemo(() => {
+    const notes = getAllTopicNotes(app, "day", activeTopic);
     const dates = new Set<string>();
+    Object.values(notes).forEach(file => {
+      const d = getDateFromFile(file, "day", activeTopic);
+      if (d) {
+        dates.add(d.format("YYYY-MM-DD"));
+      }
+    });
+    // 現在ロードされているpostsの日付も追加（未保存の最新投稿に対応するため）
     for (const post of posts || []) {
       if (post.timestamp) {
         dates.add(post.timestamp.format("YYYY-MM-DD"));
       }
     }
     return dates;
-  }, [posts]);
+  }, [app, activeTopic, posts]);
 
   return (
     <VStack 
@@ -148,7 +161,7 @@ export const MiniCalendar: React.FC = () => {
                 
                 const isCurrentMonth = day.isSame(viewDate, "month");
                 const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange;
-                const hasPost = postDates.has(day.format("YYYY-MM-DD"));
+                const hasPost = activityDates.has(day.format("YYYY-MM-DD"));
                 
                 let bg = "transparent";
                 let color = isForeground ? "var(--text-normal)" : "var(--text-faint)";
