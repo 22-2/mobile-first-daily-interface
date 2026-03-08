@@ -43,6 +43,7 @@ describe("MiniCalendar", () => {
       granularity: "day",
       setGranularity: vi.fn(),
       dateFilter: "today",
+      setDateFilter: vi.fn(),
       posts: [],
       activeTopic: "",
     });
@@ -59,6 +60,7 @@ describe("MiniCalendar", () => {
       granularity: "day",
       setGranularity: vi.fn(),
       dateFilter: "7d",
+      setDateFilter: vi.fn(),
       posts: [
         { timestamp: moment("2026-03-05T12:00:00.000Z") } // a post exists this day
       ],

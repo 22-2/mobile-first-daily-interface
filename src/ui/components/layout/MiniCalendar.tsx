@@ -29,6 +29,7 @@ interface WeekRowProps {
   rangeStart: moment.Moment;
   rangeEnd: moment.Moment;
   viewDate: moment.Moment;
+  dateFilter: string;
   activityDates: Set<string>;
   onSelectDay: (day: moment.Moment) => void;
   onSelectWeek: (weekStart: moment.Moment) => void;
@@ -97,7 +98,12 @@ function calcSelectedRange(
 
 function useMiniCalendar() {
   const { app } = useAppContext();
-  const { date, setDate, granularity, setGranularity, dateFilter, activeTopic, posts } = useMFDIContext();
+  const { 
+    date, setDate, 
+    granularity, setGranularity, 
+    dateFilter, setDateFilter, 
+    activeTopic, posts 
+  } = useMFDIContext();
 
   const [viewDate, setViewDate] = React.useState(() =>
     window.moment(date).startOf("month"),
@@ -134,6 +140,7 @@ function useMiniCalendar() {
       skipNextViewUpdate.current = true;
     }
     setGranularity("day");
+    setDateFilter("today"); // 1日表示に戻す
     setDate(day.clone());
   };
 
@@ -141,7 +148,9 @@ function useMiniCalendar() {
     if (!weekStart.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
-    setGranularity("week");
+    // 週スケール（週ノート）ではなく、日スケールの「今週（範囲表示）」に切り替える
+    setGranularity("day");
+    setDateFilter("this_week");
     setDate(weekStart.clone());
   };
 
@@ -172,6 +181,7 @@ function useMiniCalendar() {
     weeks,
     rangeStart,
     rangeEnd,
+    dateFilter,
     activityDates,
     handlePrevMonth,
     handleNextMonth,
@@ -289,11 +299,12 @@ const WeekRow: React.FC<WeekRowProps> = ({
   rangeStart,
   rangeEnd,
   viewDate,
+  dateFilter,
   activityDates,
   onSelectDay,
   onSelectWeek,
 }) => {
-  const isWeekSelected = granularity === "week" && week[0].isSame(date, "isoWeek");
+  const isWeekSelected = (granularity === "week" || (granularity === "day" && dateFilter === "this_week")) && week[0].isSame(date, "isoWeek");
 
   return (
     <React.Fragment>
@@ -344,6 +355,7 @@ export const MiniCalendar: React.FC = () => {
     weeks,
     rangeStart,
     rangeEnd,
+    dateFilter,
     activityDates,
     handlePrevMonth,
     handleNextMonth,
@@ -386,6 +398,7 @@ export const MiniCalendar: React.FC = () => {
             rangeStart={rangeStart}
             rangeEnd={rangeEnd}
             viewDate={viewDate}
+            dateFilter={dateFilter as string}
             activityDates={activityDates}
             onSelectDay={handleSelectDay}
             onSelectWeek={handleSelectWeek}
