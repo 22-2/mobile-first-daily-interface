@@ -1,4 +1,3 @@
-import * as Encoding from "encoding-japanese";
 import { RegExpMatchedArray } from "./types";
 
 export function excludeWikiLink(text: string): string {
@@ -41,22 +40,14 @@ export function pickUrls(str: string): string[] {
 }
 
 export function sjis2String(sjisBuffer: ArrayBuffer): string {
-  const unicodeArray = Encoding.convert(new Uint8Array(sjisBuffer), {
-    from: "SJIS",
-    to: "UNICODE",
-  });
-  return Encoding.codeToString(unicodeArray);
+  return new TextDecoder("shift_jis").decode(sjisBuffer);
 }
 
 /**
  * EUC-JPのbufferをstringに変換します
  */
 export function eucJp2String(eucJpBuffer: ArrayBuffer): string {
-  const unicodeArray = Encoding.convert(new Uint8Array(eucJpBuffer), {
-    from: "EUCJP",
-    to: "UNICODE",
-  });
-  return Encoding.codeToString(unicodeArray);
+  return new TextDecoder("euc-jp").decode(eucJpBuffer);
 }
 
 export function trimRedundantEmptyLines(text: string): string {
