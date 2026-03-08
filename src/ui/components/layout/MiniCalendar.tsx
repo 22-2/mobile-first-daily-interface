@@ -187,6 +187,9 @@ function useMiniCalendar() {
     handleNextMonth,
     handleSelectDay,
     handleSelectWeek,
+    setDate,
+    setGranularity,
+    setDateFilter,
   };
 }
 
@@ -347,7 +350,9 @@ const WEEK_DAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"] as con
 // メインコンポーネント
 // ─────────────────────────────────────────────
 
-export const MiniCalendar: React.FC = () => {
+export const MiniCalendar: React.FC<{
+  onViewDateChange?: (date: moment.Moment) => void;
+}> = ({ onViewDateChange }) => {
   const {
     date,
     granularity,
@@ -362,6 +367,10 @@ export const MiniCalendar: React.FC = () => {
     handleSelectDay,
     handleSelectWeek,
   } = useMiniCalendar();
+
+  React.useEffect(() => {
+    onViewDateChange?.(viewDate);
+  }, [viewDate, onViewDateChange]);
 
   return (
     <VStack

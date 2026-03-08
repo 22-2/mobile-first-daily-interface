@@ -49,13 +49,11 @@ export const PostListView: React.FC = React.memo(() => {
                 <Flex
                   className="mfdi-date-divider"
                   placeContent="center"
-                  style={{
-                    padding: "1.5em 1em 0.5em 1em",
-                    fontSize: "var(--font-smallest);",
-                    fontWeight: "bold",
-                    color: "var(--text-muted)",
-                    gap: "1em",
-                  }}
+                  padding="1.5em 1em 0.5em 1em"
+                  fontSize= "var(--font-smallest);"
+                  fontWeight= "bold"
+                  color= "var(--text-muted)"
+                  gap= "1em"
                 >
                   <Text whiteSpace="nowrap" color="var(--text-muted)">
                     {replaceDayToJa(x.timestamp.format("YYYY-MM-DD (ddd)"))}

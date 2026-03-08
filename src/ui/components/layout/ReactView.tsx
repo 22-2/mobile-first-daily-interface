@@ -12,6 +12,7 @@ import { InputArea } from "../InputArea";
 import { PostListView } from "../PostListView";
 import { TaskListView } from "../TaskListView";
 import { MiniCalendar } from "./MiniCalendar";
+import { SidebarScales } from "./SidebarScales";
 
 export type { Post };
 
@@ -50,6 +51,8 @@ const ReactViewContent = () => {
   const [containerWidth, setContainerWidth] = React.useState(1000);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const lastWidthRef = React.useRef(containerWidth);
+
+  const [sideBarViewDate, setSideBarViewDate] = React.useState(() => window.moment());
 
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -124,7 +127,8 @@ const ReactViewContent = () => {
         transition="all 0.2s ease-in-out"
         overflow="hidden"
       >
-        <MiniCalendar />
+        <MiniCalendar onViewDateChange={setSideBarViewDate} />
+        <SidebarScales viewedDate={sideBarViewDate} />
       </Box>
     </Flex>
   );

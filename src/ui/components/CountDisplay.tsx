@@ -14,6 +14,31 @@ import { addPeriodMenuItems } from "../menus/periodMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
+const DateSection: React.FC = () => {
+  const { date, granularity, dateFilter } = useMFDIContext();
+  const onClick = useFilterMenu();
+
+  const dateLabel = React.useMemo(() => {
+    if (granularity !== "day" || dateFilter === "today") {
+      return date.format(granularityConfig[granularity].displayFormat);
+    }
+
+    const format = granularityConfig.day.displayFormat;
+    if (dateFilter === "this_week") {
+      const start = date.clone().startOf("isoWeek");
+      const end = date.clone().endOf("isoWeek");
+      return `${start.format(format)} - ${end.format(format)}`;
+    }
+
+    const days = parseInt(dateFilter);
+    if (!isNaN(days)) {
+      const start = date.clone().subtract(days - 1, "days");
+      const end = date.clone();
+      return `${start.format(format)} - ${end.format(format)}`;
+    }
+    return date.format(granularityConfig[granularity].displayFormat);
+  }, [date, granularity, dateFilter]);
+
   return (
     <Box>
       <UnderlinedClickable onClick={onClick}>
