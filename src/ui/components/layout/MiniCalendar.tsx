@@ -6,43 +6,130 @@ import { useAppContext } from "../../context/AppContext";
 import { useMFDIContext } from "../../context/MFDIAppContext";
 import { ObsidianIcon } from "../common/ObsidianIcon";
 
-export const MiniCalendar: React.FC = () => {
+// ─────────────────────────────────────────────
+// 型定義
+// ─────────────────────────────────────────────
+
+type Week = moment.Moment[];
+
+interface DayCellProps {
+  day: moment.Moment;
+  isSelectedDay: boolean;
+  isInSelectedRange: boolean;
+  isCurrentMonth: boolean;
+  hasPost: boolean;
+  onClick: (day: moment.Moment) => void;
+}
+
+interface WeekRowProps {
+  week: Week;
+  weekIndex: number;
+  date: moment.Moment;
+  granularity: string;
+  rangeStart: moment.Moment;
+  rangeEnd: moment.Moment;
+  viewDate: moment.Moment;
+  activityDates: Set<string>;
+  onSelectDay: (day: moment.Moment) => void;
+  onSelectWeek: (weekStart: moment.Moment) => void;
+}
+
+// ─────────────────────────────────────────────
+// 純粋な計算関数
+// ─────────────────────────────────────────────
+
+/** 月の全週（月曜始まり・日曜終わり）を返す */
+function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
+  const startDay = viewDate.clone().startOf("month").startOf("isoWeek");
+  const endDay   = viewDate.clone().endOf("month").endOf("isoWeek");
+  const days: moment.Moment[] = [];
+
+  const cursor = startDay.clone();
+  while (cursor.isSameOrBefore(endDay, "day")) {
+    days.push(cursor.clone());
+    cursor.add(1, "day");
+  }
+
+  const weeks: Week[] = [];
+  for (let i = 0; i < days.length; i += 7) {
+    weeks.push(days.slice(i, i + 7));
+  }
+  return weeks;
+}
+
+/** dateFilter に応じた選択範囲を返す */
+function calcSelectedRange(
+  date: moment.Moment,
+  granularity: string,
+  dateFilter: string,
+): { rangeStart: moment.Moment; rangeEnd: moment.Moment } {
+  if (granularity !== "day" || dateFilter === "today") {
+    return {
+      rangeStart: date.clone().startOf(granularity as moment.unitOfTime.StartOf),
+      rangeEnd:   date.clone().endOf(granularity as moment.unitOfTime.StartOf),
+    };
+  }
+
+  if (dateFilter === "this_week") {
+    return {
+      rangeStart: date.clone().startOf("isoWeek"),
+      rangeEnd:   date.clone().endOf("isoWeek"),
+    };
+  }
+
+  const days = parseInt(dateFilter, 10);
+  if (!isNaN(days)) {
+    return {
+      rangeStart: date.clone().subtract(days - 1, "days").startOf("day"),
+      rangeEnd:   date.clone().endOf("day"),
+    };
+  }
+
+  return {
+    rangeStart: date.clone().startOf("day"),
+    rangeEnd:   date.clone().endOf("day"),
+  };
+}
+
+// ─────────────────────────────────────────────
+// カスタムフック
+// ─────────────────────────────────────────────
+
+function useMiniCalendar() {
   const { app } = useAppContext();
   const { date, setDate, granularity, dateFilter, activeTopic, posts } = useMFDIContext();
 
-  const [viewDate, setViewDate] = React.useState(window.moment(date).startOf("month"));
-  const prevDateRef = React.useRef(date);
-  const skipNextViewUpdate = React.useRef(false);
+  const [viewDate, setViewDate] = React.useState(() =>
+    window.moment(date).startOf("month"),
+  );
 
-  // 外部からのdate変更時のみ、カレンダーの表示月を追従させる
+  const prevDateRef          = React.useRef(date);
+  const skipNextViewUpdate   = React.useRef(false);
+
+  // 外部からの date 変更時のみ表示月を追従
   React.useEffect(() => {
     if (skipNextViewUpdate.current) {
       skipNextViewUpdate.current = false;
       prevDateRef.current = date;
       return;
     }
-
     if (!date.isSame(prevDateRef.current, "month")) {
-      const newViewDate = window.moment(date).startOf("month");
-      setViewDate(newViewDate);
+      setViewDate(window.moment(date).startOf("month"));
     }
     prevDateRef.current = date;
   }, [date]);
 
   const handlePrevMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const newDate = viewDate.clone().subtract(1, "month");
-    setViewDate(newDate);
+    setViewDate(prev => prev.clone().subtract(1, "month"));
   };
 
   const handleNextMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const newDate = viewDate.clone().add(1, "month");
-    setViewDate(newDate);
+    setViewDate(prev => prev.clone().add(1, "month"));
   };
 
   const handleSelectDay = (day: moment.Moment) => {
-    // 網掛け（他月）の日付をクリックしても、カレンダーの表示月を切り替えないようにフラグを立てる
     if (!day.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
@@ -56,52 +143,16 @@ export const MiniCalendar: React.FC = () => {
     setDate(weekStart.clone());
   };
 
-  const daysInMonth = [];
-  const startDay = viewDate.clone().startOf("month").startOf("isoWeek"); // 月曜日始まり
-  const endDay = viewDate.clone().endOf("month").endOf("isoWeek"); // 日曜日終わり
-
-  const currentDay = startDay.clone();
-  while (currentDay.isBefore(endDay) || currentDay.isSame(endDay, "day")) {
-    daysInMonth.push(currentDay.clone());
-    currentDay.add(1, "day");
-  }
-
-  const weeks = [];
-  for (let i = 0; i < daysInMonth.length; i += 7) {
-    weeks.push(daysInMonth.slice(i, i + 7));
-  }
-  
-  const today = window.moment();
-
-  // 計算された範囲
-  let rangeStart = date.clone().startOf(granularity);
-  let rangeEnd = date.clone().endOf(granularity);
-
-  if (granularity === "day" && dateFilter !== "today") {
-    if (dateFilter === "this_week") {
-      rangeStart = date.clone().startOf("isoWeek");
-      rangeEnd = date.clone().endOf("isoWeek");
-    } else {
-      const days = parseInt(dateFilter as string);
-      if (!isNaN(days)) {
-        rangeStart = date.clone().subtract(days - 1, "days").startOf("day");
-        rangeEnd = date.clone().endOf("day");
-      }
-    }
-  }
-
-  // 表示している月のアクティビティ（ファイルが存在する日）を取得
   const activityDates = React.useMemo(() => {
     const notes = getAllTopicNotes(app, "day", activeTopic);
     const dates = new Set<string>();
+
     Object.values(notes).forEach(file => {
       const d = getDateFromFile(file, "day", activeTopic);
-      if (d) {
-        dates.add(d.format("YYYY-MM-DD"));
-      }
+      if (d) dates.add(d.format("YYYY-MM-DD"));
     });
-    // 現在ロードされているpostsの日付も追加（未保存の最新投稿に対応するため）
-    for (const post of posts || []) {
+
+    for (const post of posts ?? []) {
       if (post.timestamp) {
         dates.add(post.timestamp.format("YYYY-MM-DD"));
       }
@@ -109,120 +160,226 @@ export const MiniCalendar: React.FC = () => {
     return dates;
   }, [app, activeTopic, posts]);
 
-  return (
-    <VStack 
-      w="100%" 
-      spacing={4} 
-      p={4} 
-      borderRadius="22px" 
-      bg="var(--background-secondary)"
-      border="1px solid var(--table-border-color)" 
-    >
-      {/* カレンダーヘッダー：年月と矢印 */}
-      <Flex w="100%" justify="space-between" align="center" px={1}>
-        <Text fontWeight="bold" fontSize="lg" color="var(--text-normal)" marginLeft="var(--size-4-2)">
-          {viewDate.format("YYYY年 M月")}
-        </Text>
-        <HStack spacing={1}>
-          <Box cursor="pointer" onClick={handlePrevMonth} p={1.5} borderRadius="4px" _hover={{ bg: "var(--background-modifier-hover)" }} color="var(--text-muted)">
-            <ObsidianIcon name="chevron-left" size="1.2em" />
-          </Box>
-          <Box cursor="pointer" onClick={handleNextMonth} p={1.5} borderRadius="4px" _hover={{ bg: "var(--background-modifier-hover)" }} color="var(--text-muted)">
-            <ObsidianIcon name="chevron-right" size="1.2em" />
-          </Box>
-        </HStack>
-      </Flex>
+  const weeks                         = React.useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
+  const { rangeStart, rangeEnd }      = calcSelectedRange(date, granularity, dateFilter as string);
 
-      {/* カレンダー本体 */}
+  return {
+    date,
+    granularity,
+    viewDate,
+    weeks,
+    rangeStart,
+    rangeEnd,
+    activityDates,
+    handlePrevMonth,
+    handleNextMonth,
+    handleSelectDay,
+    handleSelectWeek,
+  };
+}
+
+// ─────────────────────────────────────────────
+// サブコンポーネント
+// ─────────────────────────────────────────────
+
+const CalendarHeader: React.FC<{
+  viewDate: moment.Moment;
+  onPrev: (e: React.MouseEvent) => void;
+  onNext: (e: React.MouseEvent) => void;
+}> = ({ viewDate, onPrev, onNext }) => (
+  <Flex w="100%" justify="space-between" align="center" px={1}>
+    <Text fontWeight="bold" fontSize="lg" color="var(--text-normal)" marginLeft="var(--size-4-2)">
+      {viewDate.format("YYYY年 M月")}
+    </Text>
+    <HStack spacing={1}>
+      {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
+        <Box
+          key={icon}
+          cursor="pointer"
+          onClick={i === 0 ? onPrev : onNext}
+          p={1.5}
+          borderRadius="4px"
+          _hover={{ bg: "var(--background-modifier-hover)" }}
+          color="var(--text-muted)"
+        >
+          <ObsidianIcon name={icon} size="1.2em" />
+        </Box>
+      ))}
+    </HStack>
+  </Flex>
+);
+
+const DayCell: React.FC<DayCellProps> = ({
+  day,
+  isSelectedDay,
+  isInSelectedRange,
+  isCurrentMonth,
+  hasPost,
+  onClick,
+}) => {
+  const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange;
+
+  const bg = isSelectedDay
+    ? "var(--color-accent)!important"
+    : isInSelectedRange
+    ? "var(--background-modifier-active-hover)"
+    : "transparent";
+
+  const color = isSelectedDay
+    ? "var(--text-on-accent)"
+    : isInSelectedRange
+    ? "var(--color-accent)"
+    : isForeground
+    ? "var(--text-normal)"
+    : "var(--text-faint)";
+
+  const fontWeight = isSelectedDay || isInSelectedRange ? "bold" : "normal";
+
+  const dotColor = isSelectedDay
+    ? "var(--text-on-accent)"
+    : isInSelectedRange
+    ? "var(--color-accent)"
+    : "var(--text-muted)";
+
+  return (
+    <Box
+      cursor="pointer"
+      onClick={() => onClick(day)}
+      py={1.5}
+      position="relative"
+      color={color}
+      bg={bg}
+      borderRadius="full"
+      fontWeight={fontWeight}
+      _hover={{ bg: isSelectedDay ? "var(--color-accent-2)" : "var(--background-modifier-hover)" }}
+      transition="all 0.1s ease-in-out"
+    >
+      {day.date()}
+      {hasPost && (
+        <Box
+          position="absolute"
+          bottom="2px"
+          left="50%"
+          transform="translateX(-50%)"
+          w="4px"
+          h="4px"
+          borderRadius="full"
+          bg={dotColor}
+        />
+      )}
+    </Box>
+  );
+};
+
+const WeekRow: React.FC<WeekRowProps> = ({
+  week,
+  date,
+  granularity,
+  rangeStart,
+  rangeEnd,
+  viewDate,
+  activityDates,
+  onSelectDay,
+  onSelectWeek,
+}) => {
+  const isWeekSelected = granularity === "week" && week[0].isSame(date, "isoWeek");
+
+  return (
+    <React.Fragment>
+      {/* 週番号 */}
+      <Box
+        cursor="pointer"
+        onClick={() => onSelectWeek(week[0])}
+        py={1.5}
+        color={isWeekSelected ? "var(--color-accent)" : "var(--text-muted)"}
+        fontSize="xs"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        border={`1px solid ${isWeekSelected ? "var(--color-accent)" : "transparent"}`}
+        borderRadius="6px"
+        _hover={{ bg: "var(--background-modifier-hover)" }}
+      >
+        {week[0].isoWeek()}
+      </Box>
+
+      {/* 各日 */}
+      {week.map(day => (
+        <DayCell
+          key={day.format("YYYY-MM-DD")}
+          day={day}
+          isSelectedDay={day.isSame(date, "day")}
+          isInSelectedRange={day.isBetween(rangeStart, rangeEnd, "day", "[]")}
+          isCurrentMonth={day.isSame(viewDate, "month")}
+          hasPost={activityDates.has(day.format("YYYY-MM-DD"))}
+          onClick={onSelectDay}
+        />
+      ))}
+    </React.Fragment>
+  );
+};
+
+const WEEK_DAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"] as const;
+
+// ─────────────────────────────────────────────
+// メインコンポーネント
+// ─────────────────────────────────────────────
+
+export const MiniCalendar: React.FC = () => {
+  const {
+    date,
+    granularity,
+    viewDate,
+    weeks,
+    rangeStart,
+    rangeEnd,
+    activityDates,
+    handlePrevMonth,
+    handleNextMonth,
+    handleSelectDay,
+    handleSelectWeek,
+  } = useMiniCalendar();
+
+  return (
+    <VStack
+      w="100%"
+      spacing={4}
+      p={4}
+      borderRadius="22px"
+      bg="var(--background-secondary)"
+      border="1px solid var(--table-border-color)"
+    >
+      <CalendarHeader
+        viewDate={viewDate}
+        onPrev={handlePrevMonth}
+        onNext={handleNextMonth}
+      />
+
       <Grid templateColumns="repeat(8, 1fr)" gap={1} w="100%" textAlign="center" fontSize="sm">
         {/* 曜日ヘッダー */}
-        <Box /> {/* 週番号用の空箱 */}
-        {["月", "火", "水", "木", "金", "土", "日"].map(d => (
-          <Box key={d} color="var(--text-muted)" fontSize="xs" py={1.5}>{d}</Box>
+        <Box /> {/* 週番号列のスペーサー */}
+        {WEEK_DAY_LABELS.map(label => (
+          <Box key={label} color="var(--text-muted)" fontSize="xs" py={1.5}>
+            {label}
+          </Box>
         ))}
 
-        {/* 日付 */}
-        {weeks.map((week, wIdx) => {
-          const isWeekSelected = granularity === "week" && week[0].isSame(date, "isoWeek");
-          
-          return (
-            <React.Fragment key={wIdx}>
-              {/* 週番号（左端） */}
-              <Box
-                cursor="pointer"
-                onClick={() => handleSelectWeek(week[0])}
-                py={1.5}
-                color={isWeekSelected ? "var(--color-accent)" : "var(--text-muted)"}
-                fontSize="xs"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                border={isWeekSelected ? "1px solid var(--color-accent)" : "1px solid transparent"}
-                borderRadius="6px"
-                _hover={{ bg: "var(--background-modifier-hover)" }}
-              >
-                {week[0].isoWeek()}
-              </Box>
-
-              {/* その週の各日 */}
-              {week.map(day => {
-                const isSelectedDay = day.isSame(date, "day");
-                const isInSelectedRange = day.isBetween(rangeStart, rangeEnd, "day", "[]");
-                
-                const isCurrentMonth = day.isSame(viewDate, "month");
-                const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange;
-                const hasPost = activityDates.has(day.format("YYYY-MM-DD"));
-                
-                let bg = "transparent";
-                let color = isForeground ? "var(--text-normal)" : "var(--text-faint)";
-                let fontWeight = "normal";
-
-                if (isSelectedDay) {
-                  bg = "var(--color-accent)!important";
-                  color = "var(--text-on-accent)";
-                  fontWeight = "bold";
-                } else if (isInSelectedRange) {
-                  // 少し薄いアクセントカラーにする
-                  bg = "var(--background-modifier-active-hover)";
-                  color = "var(--color-accent)";
-                  fontWeight = "bold";
-                }
-
-                return (
-                  <Box
-                    key={day.format("YYYY-MM-DD")}
-                    cursor="pointer"
-                    onClick={() => handleSelectDay(day)}
-                    py={1.5}
-                    position="relative"
-                    color={color}
-                    bg={bg}
-                    borderRadius="full"
-                    fontWeight={fontWeight}
-                    _hover={{ 
-                        bg: isSelectedDay ? "var(--color-accent-2)" : "var(--background-modifier-hover)" 
-                    }}
-                    transition="all 0.1s ease-in-out"
-                  >
-                    {day.date()}
-                    {hasPost && (
-                      <Box
-                        position="absolute"
-                        bottom="2px"
-                        left="50%"
-                        transform="translateX(-50%)"
-                        w="4px"
-                        h="4px"
-                        borderRadius="full"
-                        bg={isSelectedDay ? "var(--text-on-accent)" : isInSelectedRange ? "var(--color-accent)" : "var(--text-muted)"}
-                      />
-                    )}
-                  </Box>
-                )
-              })}
-            </React.Fragment>
-          );
-        })}
+        {/* 週ごとの行 */}
+        {weeks.map((week, wIdx) => (
+          <WeekRow
+            key={wIdx}
+            week={week}
+            weekIndex={wIdx}
+            date={date}
+            granularity={granularity}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            viewDate={viewDate}
+            activityDates={activityDates}
+            onSelectDay={handleSelectDay}
+            onSelectWeek={handleSelectWeek}
+          />
+        ))}
       </Grid>
     </VStack>
   );
