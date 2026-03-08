@@ -12,8 +12,8 @@ describe("formatTaskText", () => {
     expect(out).toBe(`- [ ] 01:02:03`);
   });
 
-  test("multi-line creates indented body", () => {
+  test("multi-line creates inline first line and indented rest", () => {
     const out = formatTaskText("a\nb\n", "00:00:00");
-    expect(out).toBe(`- [ ] 00:00:00\n    a\n    b\n`);
+    expect(out).toBe(`- [ ] 00:00:00 a\n    b`);
   });
 });

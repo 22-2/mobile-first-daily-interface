@@ -11,6 +11,7 @@ import { postFormatMap } from "../../settings";
 import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
 import { useAppContext } from "../context/AppContext";
 import { DeleteConfirmModal } from "../DeleteConfirmModal";
+import { granularityConfig } from "../granularity-config";
 import { toText } from "../post-utils";
 import { Post } from "../types";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
@@ -67,6 +68,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     startEdit,
     cancelEdit,
   } = useMFDIEditor({ posts, date, granularity });
+
+  const isToday = useMemo(() => {
+    return date.isSame(window.moment(), granularityConfig[granularity].unit);
+  }, [date, granularity]);
 
   const updateCurrentDailyNote = useCallback(() => {
     const n = getTopicNote(app, date, granularity, activeTopic);
@@ -179,6 +184,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     }
 
     const text = toText(currentInput, asTask, postFormat, granularity);
+    if (!text) {
+      setInput("");
+      inputRef.current?.setContent("");
+      return;
+    }
+
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
@@ -223,6 +234,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const deletePost = useCallback(
     async (post: Post) => {
+      if (!isToday) {
+        new Notice("過去のノートの投稿は削除できません");
+        return;
+      }
       if (!currentDailyNote) return;
       const path = currentDailyNote.path;
       const origin = await appHelper.loadFile(path);
@@ -276,6 +291,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const updateTaskChecked = useCallback(
     async (task: Task, checked: boolean) => {
+      if (!isToday) {
+        new Notice("過去のノートのタスクは変更できません");
+        return;
+      }
       if (!currentDailyNote) return;
       const mark = checked ? "x" : " ";
       setTasks(
@@ -303,6 +322,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   };
 
   const deleteTask = async (task: Task) => {
+    if (!isToday) {
+      new Notice("過去のノートのタスクは削除できません");
+      return;
+    }
     if (!currentDailyNote) return;
     const path = currentDailyNote.path;
     const origin = await appHelper.loadFile(path);
@@ -329,9 +352,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         item.setTitle("編集").onClick(() => openTaskInEditor(task))
       );
       menu.addItem((item) =>
-        item.setTitle("削除").onClick(() => {
-          new DeleteConfirmModal(app, () => deleteTask(task)).open();
-        })
+        item
+          .setTitle("削除")
+          .setDisabled(!isToday)
+          .onClick(() => {
+            new DeleteConfirmModal(app, () => deleteTask(task)).open();
+          })
       );
       menu.showAtMouseEvent(e as unknown as MouseEvent);
     },
@@ -392,5 +418,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     openTaskInEditor,
     deleteTask,
     taskContextMenu,
+    isToday,
   };
 }

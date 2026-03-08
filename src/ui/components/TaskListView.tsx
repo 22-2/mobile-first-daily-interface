@@ -12,10 +12,11 @@ interface TaskListViewProps {
   tasks: Task[];
   updateTaskChecked: (task: Task, checked: boolean) => void;
   taskContextMenu: (task: Task, e: React.MouseEvent) => void;
+  isToday: boolean;
 }
 
 export const TaskListView: React.FC<TaskListViewProps> = React.memo(
-  ({ date, tasks, updateTaskChecked, taskContextMenu }) => {
+  ({ date, tasks, updateTaskChecked, taskContextMenu, isToday }) => {
     const incompleteTasks = useMemo(
       () => tasks.filter((x) => x.mark === " "),
       [tasks]
@@ -43,6 +44,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                     task={x}
                     onChange={(c) => updateTaskChecked(x, c)}
                     onContextMenu={(task, e) => taskContextMenu(task, e)}
+                    disabled={!isToday}
                   />
                 </Box>
               </CSSTransition>
@@ -65,6 +67,7 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                     task={x}
                     onChange={(c) => updateTaskChecked(x, c)}
                     onContextMenu={(task, e) => taskContextMenu(task, e)}
+                    disabled={!isToday}
                   />
                 </Box>
               </CSSTransition>
@@ -75,4 +78,3 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
     );
   }
 );
-

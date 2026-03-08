@@ -18,6 +18,7 @@ interface PostListViewProps {
   handleClickTime: (post: Post) => void;
   startEdit: (post: Post) => void;
   deletePost: (post: Post) => Promise<void>;
+  isToday: boolean;
 }
 
 export const PostListView: React.FC<PostListViewProps> = React.memo(
@@ -30,6 +31,7 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
     handleClickTime,
     startEdit,
     deletePost,
+    isToday,
   }) => {
     const { app, settings } = useAppContext();
     const displayedPosts = useMemo(
@@ -68,6 +70,7 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
                     item
                       .setTitle("編集")
                       .setIcon("pencil")
+                      .setDisabled(!isToday)
                       .onClick(() => {
                         startEdit(post);
                       })
@@ -86,6 +89,7 @@ export const PostListView: React.FC<PostListViewProps> = React.memo(
                       .setTitle("削除")
                       .setIcon("trash")
                       .setWarning(true)
+                      .setDisabled(!isToday)
                       .onClick(() => {
                         new DeleteConfirmModal(app, () => deletePost(post)).open();
                       })

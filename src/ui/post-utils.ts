@@ -1,6 +1,6 @@
 import { PostFormat } from "../settings";
 import { formatTaskText } from "../utils/task-text";
-import { DATE_TIME_FORMAT } from "./date-formats";
+import { DATE_TIME_FORMAT, TIME_FORMAT } from "./date-formats";
 import { Granularity, MomentLike } from "./types";
 
 export function toText(
@@ -10,20 +10,30 @@ export function toText(
   granularity: Granularity,
   timestamp?: MomentLike
 ): string {
-  if (asTask) {
-    return formatTaskText(input) + "\n";
+  if (input.trim().length === 0) {
+    return "";
   }
 
   const now = timestamp ?? window.moment();
+  const timeStr = granularity === "day" ? now.format(TIME_FORMAT) : now.format(DATE_TIME_FORMAT);
 
-  // 常に年月日を記録する。
-  const time = now.format(DATE_TIME_FORMAT);
-  const body = input
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .split("\n")
+  if (asTask) {
+    return formatTaskText(input, timeStr) + "\n";
+  }
+
+  const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  const lines = normalized.split("\n");
+  const firstLine = lines[0];
+  const restLines = lines.slice(1);
+
+  const head = `- ${timeStr} ${firstLine}`;
+  if (restLines.length === 0) {
+    return head + "\n";
+  }
+
+  const body = restLines
     .map((x) => (x.length === 0 ? "" : `    ${x}`))
     .join("\n");
 
-  return (body.length === 0 ? `- ${time}` : `- ${time}\n${body}`) + "\n";
+  return `${head}\n${body}\n`;
 }

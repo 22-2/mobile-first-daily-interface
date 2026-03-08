@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ObsidianLiveEditorRef } from "../../ObsidianLiveEditor";
 import { Granularity, MomentLike, Post } from "../../types";
+import { granularityConfig } from "../../granularity-config";
 
 import { useAppContext } from "../../context/AppContext";
 
@@ -36,11 +37,17 @@ export function useMFDIEditor({
   }, [posts, editingPostOffset]);
 
   const canSubmit = useMemo(() => {
+    const isCurrent = date.isSame(
+      window.moment(),
+      granularityConfig[granularity].unit
+    );
+    if (!isCurrent) return false;
+
     if (!editingPost) {
       return input.trim().length > 0;
     }
     return input !== editingPost.message;
-  }, [input, editingPost]);
+  }, [input, editingPost, date, granularity]);
 
   const startEdit = useCallback(
     (post: Post) => {

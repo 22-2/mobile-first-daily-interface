@@ -10,6 +10,7 @@ interface ObsidianLiveEditorProps extends Omit<BoxProps, "onChange" | "onSubmit"
   value: string;
   onChange: (text: string) => void;
   onSubmit?: () => void;
+  placeholder?: string;
 }
 
 export interface ObsidianLiveEditorRef {
@@ -19,7 +20,7 @@ export interface ObsidianLiveEditorRef {
 }
 
 export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLiveEditorProps>(
-  ({ leaf, app, value, onChange, onSubmit, ...props }, ref) => {
+  ({ leaf, app, value, onChange, onSubmit, placeholder, ...props }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const magicalEditorRef = useRef<MagicalEditor | null>(null);
     const lastNotifiedValue = useRef<string>(value);
@@ -107,7 +108,7 @@ export const ObsidianLiveEditor = forwardRef<ObsidianLiveEditorRef, ObsidianLive
               fontSize="var(--font-text-size)"
               zIndex={1}
             >
-              なんでもかいていいのよ😊
+              {placeholder ?? "なんでもかいていいのよ😊"}
             </Box>
           )}
           {/* Transparent overlay to catch initial click when empty */}
