@@ -11,6 +11,7 @@ import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { addPeriodMenuItems } from "../menus/periodMenu";
+import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
 const DateSection: React.FC = () => {
@@ -49,6 +50,18 @@ const DateSection: React.FC = () => {
   );
 };
 
+const usePostModeMenu = () => {
+  const { asTask, setAsTask: onAsTaskChange } = useMFDIContext();
+
+  return (e: React.MouseEvent) => {
+    if (!onAsTaskChange) return;
+    e.preventDefault();
+    const menu = new Menu();
+    addPostModeMenuItems(menu, asTask, onAsTaskChange);
+    menu.showAtMouseEvent(e as unknown as MouseEvent);
+  };
+};
+
 const useFilterMenu = () => {
   const state = useMFDIContext();
   const { setTimeFilter, setDateFilter } = state;
@@ -67,7 +80,7 @@ const useFilterMenu = () => {
 const CountSection: React.FC = () => {
   const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter } =
     useMFDIContext();
-  const onClick = useFilterMenu();
+  const onClick = usePostModeMenu();
 
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
