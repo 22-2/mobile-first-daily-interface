@@ -4,6 +4,7 @@ import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { MFDIViewHandler } from "./MFDIViewHandler";
 import { ReactView } from "./ReactView";
+import { addPostModeMenuItems } from "./menus/postModeMenu";
 import { Granularity, TimeFilter } from "./types";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -37,14 +38,6 @@ export class MFDIView extends ItemView {
           this.handlers.onOpenDailyNoteAction?.();
         });
     });
-    // menu.addItem((item) => {
-    //   item
-    //     .setTitle("モーダルエディタで開く")
-    //     .setIcon("maximize")
-    //     .onClick(() => {
-    //       this.onOpenModalEditor?.();
-    //     });
-    // });
 
     // --- トピック ---
     menu.addSeparator();
@@ -57,32 +50,10 @@ export class MFDIView extends ItemView {
         });
     });
 
-    // addGranularityMenuItems(menu, this.state.granularity, (g) => {
-    //   this.handler.onChangeGranularity?.(g);
-    // });
-
     // --- 投稿モード ---
     menu.addSeparator();
-    menu.addItem((item) => {
-      item.setTitle("投稿モード").setIcon("pencil").setDisabled(true);
-    });
-    menu.addItem((item) => {
-      item
-        .setTitle("メッセージ投稿モード")
-        .setIcon("message-square")
-        .setChecked(!this.state.asTask)
-        .onClick(() => {
-          this.handlers.onChangeAsTask?.(false);
-        });
-    });
-    menu.addItem((item) => {
-      item
-        .setTitle("タスク投稿モード")
-        .setIcon("check-circle")
-        .setChecked(this.state.asTask)
-        .onClick(() => {
-          this.handlers.onChangeAsTask?.(true);
-        });
+    addPostModeMenuItems(menu, this.state.asTask, (asTask) => {
+      this.handlers.onChangeAsTask?.(asTask);
     });
 
     // --- 表示期間 ---
@@ -98,7 +69,6 @@ export class MFDIView extends ItemView {
       "this_week",
     ];
     for (const f of filters) {
-      menu
       menu.addItem((item) => {
         const isChecked = showTimeFilter ? this.state.timeFilter === f : f === "all";
         item

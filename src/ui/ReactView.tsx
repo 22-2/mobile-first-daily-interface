@@ -148,6 +148,7 @@ const ReactViewContent = () => {
       activeTopicName={activeTopicName}
       onTopicChange={setActiveTopic}
       onGranularityChange={setGranularity}
+      onAsTaskChange={setAsTask}
     />
   );
 

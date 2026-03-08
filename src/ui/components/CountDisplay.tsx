@@ -6,6 +6,7 @@ import { Granularity, MomentLike } from "../types";
 
 import { useAppContext } from "../context/AppContext";
 import { addGranularityMenuItems } from "../menus/granularityMenu";
+import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
 interface CountDisplayProps {
@@ -19,6 +20,7 @@ interface CountDisplayProps {
   activeTopicName?: string;
   onTopicChange?: (topicId: string) => void;
   onGranularityChange?: (granularity: Granularity) => void;
+  onAsTaskChange?: (asTask: boolean) => void;
 }
 
 export const CountDisplay: React.FC<CountDisplayProps> = ({
@@ -32,6 +34,7 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
   activeTopicName,
   onTopicChange,
   onGranularityChange,
+  onAsTaskChange,
 }) => {
   const { settings } = useAppContext();
   const topics = settings.topics;
@@ -74,39 +77,49 @@ export const CountDisplay: React.FC<CountDisplayProps> = ({
         {relativeText}
       </Box>
       <Box>
-        {asTask ? (
-          `${tasksCount} tasks`
-        ) : (
+        <UnderlinedClickable
+          onContextMenu={(e: React.MouseEvent) => {
+            if (!onAsTaskChange) return;
+            e.preventDefault();
+            const menu = new Menu();
+            addPostModeMenuItems(menu, asTask, onAsTaskChange);
+            menu.showAtMouseEvent(e as unknown as MouseEvent);
+          }}
+        >
+          {asTask ? (
+            `${tasksCount} tasks`
+          ) : (
+            <>
+              {filteredPostsCount}
+              {(timeFilter !== "all" && timeFilter !== "this_week") && granularity === "day"
+                ? `/${allPostsCount}`
+                : ""}
+              {timeFilter === "this_week" ? " (今週)" : ""}{" "}
+              posts
+            </>
+          )}
+        </UnderlinedClickable>
+        {activeTopicName && (
           <>
-            {filteredPostsCount}
-            {(timeFilter !== "all" && timeFilter !== "this_week") && granularity === "day"
-              ? `/${allPostsCount}`
-              : ""}
-            {timeFilter === "this_week" ? " (今週)" : ""}{" "}
-            posts
-            {activeTopicName && (
-              <>
-                {" in "}
-                <UnderlinedClickable
-                  onContextMenu={(e: React.MouseEvent) => {
-                    if (!topics || !onTopicChange) return;
-                    e.preventDefault();
-                    const menu = new Menu();
-                    topics.forEach((topic) => {
-                      menu.addItem((item) =>
-                        item
-                          .setTitle(topic.title)
-                          .setChecked(topic.title === activeTopicName)
-                          .onClick(() => onTopicChange(topic.id))
-                      );
-                    });
-                    menu.showAtMouseEvent(e as unknown as MouseEvent);
-                  }}
-                >
-                  {activeTopicName}
-                </UnderlinedClickable>
-              </>
-            )}
+            {" in "}
+            <UnderlinedClickable
+              onContextMenu={(e: React.MouseEvent) => {
+                if (!topics || !onTopicChange) return;
+                e.preventDefault();
+                const menu = new Menu();
+                topics.forEach((topic) => {
+                  menu.addItem((item) =>
+                    item
+                      .setTitle(topic.title)
+                      .setChecked(topic.title === activeTopicName)
+                      .onClick(() => onTopicChange(topic.id))
+                  );
+                });
+                menu.showAtMouseEvent(e as unknown as MouseEvent);
+              }}
+            >
+              {activeTopicName}
+            </UnderlinedClickable>
           </>
         )}
       </Box>
