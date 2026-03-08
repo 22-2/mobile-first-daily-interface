@@ -1,41 +1,54 @@
-import { HStack } from "@chakra-ui/react";
-import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
+import { Box, Checkbox, HStack } from "@chakra-ui/react";
 import * as React from "react";
 import { Task } from "../app-helper";
 import { excludeWikiLink } from "../utils/strings";
 import { Card } from "./Card";
+import { BaseCard } from "./components/BaseCard";
+import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
+import { Granularity, TimeFilter } from "./types";
 
 export const TaskView = React.memo(
   ({
     task,
+    granularity,
+    timeFilter,
     onChange,
     onContextMenu,
     disabled = false,
   }: {
     task: Task;
+    granularity: Granularity;
+    timeFilter?: TimeFilter;
     onChange: (checked: boolean) => void;
     onContextMenu?: (task: Task, e: React.MouseEvent) => void;
     disabled?: boolean;
   }) => {
     return (
-      <Card onContextMenu={(e) => onContextMenu?.(task, e)}>
-        <HStack padding={3} gap={3} opacity={disabled ? 0.6 : 1}>
-          <input
-            type="checkbox"
-            checked={task.mark !== " "}
-            value={task.name}
-            onChange={(ev) => onChange(ev.target.checked)}
-            disabled={disabled}
-            style={{ cursor: disabled ? "not-allowed" : "pointer" }}
-          />
-          <label style={{ cursor: disabled ? "not-allowed" : "pointer" }}>
-            <ObsidianMarkdown
-              content={excludeWikiLink(task.name)}
-              sourcePath={task.path}
-              inline
+      <Card>
+        <BaseCard
+          timestamp={task.timestamp}
+          granularity={granularity}
+          timeFilter={timeFilter}
+          isDimmed={disabled}
+          onContextMenu={(e) => onContextMenu?.(task, e)}
+        >
+          <HStack align="flex-start" gap={3}>
+            <Checkbox
+              isChecked={task.mark !== " "}
+              onChange={(ev) => onChange(ev.target.checked)}
+              isDisabled={disabled}
+              colorScheme="blue"
+              marginTop="0.2em"
+              size="md"
             />
-          </label>
-        </HStack>
+            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"} flex="1">
+              <ObsidianMarkdown
+                content={excludeWikiLink(task.name)}
+                sourcePath={task.path}
+              />
+            </Box>
+          </HStack>
+        </BaseCard>
       </Card>
     );
   }

@@ -5,18 +5,20 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "../TaskView";
 
 import { Task } from "../../app-helper";
-import { MomentLike } from "../types";
+import { Granularity, MomentLike, TimeFilter } from "../types";
 
 interface TaskListViewProps {
   date: MomentLike;
   tasks: Task[];
+  granularity: Granularity;
+  timeFilter: TimeFilter;
   updateTaskChecked: (task: Task, checked: boolean) => void;
   taskContextMenu: (task: Task, e: React.MouseEvent) => void;
   isToday: boolean;
 }
 
 export const TaskListView: React.FC<TaskListViewProps> = React.memo(
-  ({ date, tasks, updateTaskChecked, taskContextMenu, isToday }) => {
+  ({ date, tasks, granularity, timeFilter, updateTaskChecked, taskContextMenu, isToday }) => {
     const incompleteTasks = useMemo(
       () => tasks.filter((x) => x.mark === " "),
       [tasks]
@@ -42,6 +44,8 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                 <Box m={10}>
                   <TaskView
                     task={x}
+                    granularity={granularity}
+                    timeFilter={timeFilter}
                     onChange={(c) => updateTaskChecked(x, c)}
                     onContextMenu={(task, e) => taskContextMenu(task, e)}
                     disabled={!isToday}
@@ -65,6 +69,8 @@ export const TaskListView: React.FC<TaskListViewProps> = React.memo(
                 <Box m={10}>
                   <TaskView
                     task={x}
+                    granularity={granularity}
+                    timeFilter={timeFilter}
                     onChange={(c) => updateTaskChecked(x, c)}
                     onContextMenu={(task, e) => taskContextMenu(task, e)}
                     disabled={!isToday}

@@ -179,6 +179,8 @@ const ReactViewContent = () => {
           <TaskListView
             date={date}
             tasks={tasks}
+            granularity={granularity}
+            timeFilter={timeFilter}
             updateTaskChecked={updateTaskChecked}
             taskContextMenu={taskContextMenu}
             isToday={isToday}

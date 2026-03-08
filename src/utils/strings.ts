@@ -14,9 +14,17 @@ export function parseMarkdownList(text: string): {
   prefix: string;
   content: string;
 } {
-  const { groups } = Array.from(
-    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/g)
-  ).at(0) as unknown as { groups: { prefix: string; content: string } };
+  const match = Array.from(
+    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/gs)
+  ).at(0);
+
+  if (!match) {
+    return { prefix: "", content: text };
+  }
+
+  const { groups } = match as unknown as {
+    groups: { prefix: string; content: string };
+  };
 
   return { prefix: groups.prefix, content: groups.content };
 }

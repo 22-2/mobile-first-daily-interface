@@ -1,12 +1,15 @@
 import { App, Editor, MarkdownView, TFile } from "obsidian";
 import { Commands } from "obsidian-typings";
-import { pickTaskName } from "./utils/strings";
+import { parseMarkdownList } from "./utils/strings";
+import { parseTaskTimestamp } from "./utils/task-parser";
+import { MomentLike } from "./ui/types";
 
 export interface Task {
   mark: " " | string;
   name: string;
   offset: number;
   path: string;
+  timestamp: MomentLike;
 }
 
 interface UnsafeAppInterface {
@@ -105,13 +108,36 @@ export class AppHelper {
         .getFileCache(file)
         ?.listItems?.filter((x) => x.task != null)
         .map((x) => {
-          const text = lines.at(x.position.start.line)!;
-          const name = pickTaskName(text);
+          const startLine = x.position.start.line;
+          const endLine = x.position.end.line;
+          
+          // Basic task text from the metadata cache (usually one line)
+          const firstLine = lines.at(startLine)!;
+          
+          // Find the actual end of the task (including multi-line content)
+          // We look ahead until we find another list item at the same or higher level,
+          // or a heading, or EOF.
+          let lastLine = endLine;
+          for (let i = endLine + 1; i < lines.length; i++) {
+            const line = lines[i];
+            // If the line is not indented, it's likely the start of a new block
+            if (line.trim().length > 0 && !line.startsWith(" ") && !line.startsWith("\t")) {
+              break;
+            }
+            lastLine = i;
+          }
+
+          const taskContent = lines.slice(startLine, lastLine + 1).join("\n");
+          const { prefix, content: rawName } = parseMarkdownList(taskContent);
+          
+          const { displayName, timestamp } = parseTaskTimestamp(rawName, file.basename);
+
           return {
             mark: x.task!,
-            name,
+            name: displayName,
             offset: x.position.start.offset,
             path: file.path,
+            timestamp,
           };
         }) ?? null
     );

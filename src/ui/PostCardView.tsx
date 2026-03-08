@@ -1,22 +1,19 @@
-import { Box, Flex, HStack, Spacer, Tag, VStack } from "@chakra-ui/react";
-import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
+import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
 import { pickUrls } from "../utils/strings";
 import { isPresent } from "../utils/types";
-import { Card } from "./Card";
+import { BaseCard } from "./components/BaseCard";
+import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
 import { useAppContext } from "./context/AppContext";
-import {
-    DISPLAY_DATE_TIME_FORMAT,
-    DISPLAY_TIME_FORMAT
-} from "./date-formats";
 import { granularityConfig } from "./granularity-config";
 import { HTMLCard } from "./HTMLCard";
 import { ImageCard } from "./ImageCard";
 import { Post } from "./ReactView";
 import { TwitterCard } from "./TwitterCard";
 import { Granularity, MomentLike, TimeFilter } from "./types";
+import { Card } from "./Card";
 
 export const PostCardView = React.memo(
   ({
@@ -73,88 +70,40 @@ export const PostCardView = React.memo(
     const isDimmed = !isCurrent;
 
     return (
-      <Card
-        className={className}
-        style={style}
-        onContextMenu={(e) => onContextMenu?.(post, e)}
-        onDoubleClick={() => onEdit?.(post)}
-        opacity={isDimmed ? 0.45 : 1}
-        filter={isDimmed ? "grayscale(40%)" : "none"}
-      >
+      <Card className={className} style={style}>
+        <BaseCard
+          timestamp={post.timestamp}
+          granularity={granularity}
+          timeFilter={timeFilter}
+          isDimmed={isDimmed}
+          onContextMenu={(e) => onContextMenu?.(post, e)}
+          onDoubleClick={(e) => onEdit?.(post)}
+        >
+          <VStack align="stretch" gap={3}>
+            {/* Message Body */}
+            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
+              <ObsidianMarkdown
+                content={post.message}
+                sourcePath={post.path}
+              />
+            </Box>
 
-        <Flex direction="column" maxHeight={"50vh"} padding={"var(--size-4-2)"}>
-          <Box
-            padding={5}
-            paddingTop={4}
-            className="markdown-rendered"
-            overflowY="auto"
-            flex="1"
-            sx={{
-              "&::-webkit-scrollbar": {
-                width: "4px",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "transparent",
-                borderRadius: "10px",
-              },
-              "&:hover::-webkit-scrollbar-thumb": {
-                backgroundColor: "var(--scrollbar-thumb-bg, rgba(0,0,0,0.1))",
-              },
-              scrollbarWidth: "none",
-              "&:hover": {
-                scrollbarWidth: "thin",
-              },
-            }}
-          >
-            <VStack align="stretch" gap={3}>
-              {/* Message Body */}
-              <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-                <ObsidianMarkdown
-                  content={post.message}
-                  sourcePath={post.path}
-                />
+            {settings.enabledCardView && (
+              <Box paddingX={1}>
+                {htmlMetas.map((meta) => (
+                  <HTMLCard key={meta.originUrl} meta={meta} />
+                ))}
+                {imageMetas.map((meta) => (
+                  <ImageCard key={meta.originUrl} meta={meta} />
+                ))}
+                {twitterMetas.map((meta) => (
+                  <TwitterCard key={meta.url} meta={meta} />
+                ))}
               </Box>
-
-              {settings.enabledCardView && (
-                <Box paddingX={1}>
-                  {htmlMetas.map((meta) => (
-                    <HTMLCard key={meta.originUrl} meta={meta} />
-                  ))}
-                  {imageMetas.map((meta) => (
-                    <ImageCard key={meta.originUrl} meta={meta} />
-                  ))}
-                  {twitterMetas.map((meta) => (
-                    <TwitterCard key={meta.url} meta={meta} />
-                  ))}
-                </Box>
-              )}
-            </VStack>
-          </Box>
-
-          {/* Footer: Info Tag */}
-          <HStack
-            color={"var(--text-muted)"}
-            fontSize={"80%"}
-            padding={3}
-            paddingTop={0}
-            paddingRight={4}
-            align="center"
-            gap={3}
-          >
-            <Spacer />
-            <HStack gap={2}>
-              <Tag size="sm" variant="subtle" colorScheme="gray">
-                {post.timestamp.format(
-                  granularity === "day" && timeFilter !== "this_week"
-                    ? DISPLAY_TIME_FORMAT
-                    : DISPLAY_DATE_TIME_FORMAT
-                )}
-              </Tag>
-            </HStack>
-          </HStack>
-        </Flex>
+            )}
+          </VStack>
+        </BaseCard>
       </Card>
     );
   }
 );
-
