@@ -39,12 +39,13 @@ const ReactViewContent = () => {
     currentDailyNote,
     asTask,
     tasks,
+    dateFilter,
     filteredPosts,
     scrollContainerRef,
   } = useMFDIContext();
 
   const isEmpty =
-    !currentDailyNote ||
+    (dateFilter === "today" && !currentDailyNote) ||
     (asTask ? tasks.length === 0 : filteredPosts.length === 0);
 
   return (

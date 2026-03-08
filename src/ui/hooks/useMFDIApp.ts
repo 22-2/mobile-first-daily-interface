@@ -129,6 +129,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       });
     }
   }, [
+    date,
     dateFilter,
     granularity,
     asTask,
@@ -199,33 +200,44 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     const currentInput = inputRef.current?.getValue() ?? input;
 
     if (editingPost) {
-      if (!currentDailyNote) return;
-      const path = currentDailyNote.path;
-      let targetTs = editingPost.timestamp;
-      const now = window.moment();
-      if (settings.updateDateStrategy === "always") {
-        targetTs = now;
-      } else if (settings.updateDateStrategy === "same_day") {
-        if (editingPost.timestamp.isSame(now, "day")) {
+      if (editingPost.path) {
+        const path = editingPost.path;
+        let targetTs = editingPost.timestamp;
+        const now = window.moment();
+        if (settings.updateDateStrategy === "always") {
           targetTs = now;
+        } else if (settings.updateDateStrategy === "same_day") {
+          if (editingPost.timestamp.isSame(now, "day")) {
+            targetTs = now;
+          }
         }
+        const text = toText(
+          currentInput,
+          false,
+          postFormat,
+          granularity,
+          targetTs,
+        );
+        await appHelper.replaceRange(
+          path,
+          editingPost.startOffset,
+          editingPost.endOffset,
+          text,
+        );
+        cancelEdit();
+        // 更新対象のノートを再読込
+        const noteFile = app.vault.getAbstractFileByPath(path);
+        if (noteFile instanceof TFile) {
+          if (dateFilter === "today") {
+            await updatePosts(noteFile);
+          } else if (dateFilter === "this_week") {
+            await updatePostsForWeek(activeTopic);
+          } else {
+            await updatePostsForDays(activeTopic, parseInt(dateFilter));
+          }
+        }
+        return;
       }
-      const text = toText(
-        currentInput,
-        false,
-        postFormat,
-        granularity,
-        targetTs,
-      );
-      await appHelper.replaceRange(
-        path,
-        editingPost.startOffset,
-        editingPost.endOffset,
-        text,
-      );
-      cancelEdit();
-      await updatePosts(currentDailyNote);
-      return;
     }
 
     const text = toText(currentInput, asTask, postFormat, granularity);
@@ -284,8 +296,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         new Notice("過去のノートの投稿は削除できません");
         return;
       }
-      if (!currentDailyNote) return;
-      const path = currentDailyNote.path;
+      const path = post.path;
       const origin = await appHelper.loadFile(path);
       let start = post.startOffset;
       let end = post.endOffset;
@@ -294,16 +305,27 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       let newContent = await appHelper.loadFile(path);
       newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
       await app.vault.adapter.write(path, newContent);
-      if (editingPost?.startOffset === post.startOffset) cancelEdit();
-      await updatePosts(currentDailyNote);
+      if (editingPost?.startOffset === post.startOffset && editingPost?.path === post.path) cancelEdit();
+      
+      if (dateFilter === "today") {
+        const noteFile = app.vault.getAbstractFileByPath(path);
+        if (noteFile instanceof TFile) await updatePosts(noteFile);
+      } else if (dateFilter === "this_week") {
+        await updatePostsForWeek(activeTopic);
+      } else {
+        await updatePostsForDays(activeTopic, parseInt(dateFilter));
+      }
     },
     [
-      currentDailyNote,
+      app.vault,
       appHelper,
-      app.vault.adapter,
-      editingPost?.startOffset,
+      editingPost,
       cancelEdit,
       updatePosts,
+      updatePostsForWeek,
+      updatePostsForDays,
+      activeTopic,
+      dateFilter,
       isReadOnly,
     ],
   );
@@ -311,10 +333,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const handleClickTime = useCallback(
     (post: Post) => {
       (async () => {
-        if (!currentDailyNote) return;
+        const path = post.path;
+        const noteFile = app.vault.getAbstractFileByPath(path);
+        if (!(noteFile instanceof TFile)) return;
         const leaf = app.workspace.getLeaf(true);
         await app.workspace.revealLeaf(leaf);
-        await leaf.openFile(currentDailyNote, { active: true });
+        await leaf.openFile(noteFile, { active: true });
         const editor = app.workspace.activeEditor!;
         const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
         const endPos = editor.editor!.offsetToPos(

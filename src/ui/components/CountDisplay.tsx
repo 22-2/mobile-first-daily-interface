@@ -127,9 +127,7 @@ export const CountDisplay: React.FC = () => {
               granularity === "day"
                 ? `/${allPostsCount}`
                 : ""}
-              {dateFilter === "this_week" ? " (今週)" : ""}
-              {dateFilter === "3d" ? " (3日間)" : ""}
-              {dateFilter === "7d" ? " (7日間)" : ""}
+              {dateFilter !== "today" ? ` (${DATE_FILTER_OPTIONS.find(f => f.id === dateFilter)?.label.replace("過去", "")})` : ""}
               {dateFilter === "today" &&
               timeFilter !== "all" &&
               timeFilter !== "latest"

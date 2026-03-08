@@ -6,11 +6,11 @@ export default defineConfig({
     environment: 'jsdom',
     alias: {
       'obsidian': path.resolve(__dirname, './src/__mocks__/obsidian.ts'),
-      'react': 'preact/compat',
-      'react-dom': 'preact/compat',
-      'react-dom/client': 'preact/compat/client',
-      'react-dom/test-utils': 'preact/test-utils',
-      'react/jsx-runtime': 'preact/jsx-runtime',
+      // 'react': 'preact/compat',
+      // 'react-dom': 'preact/compat',
+      // 'react-dom/client': 'preact/compat/client',
+      // 'react-dom/test-utils': 'preact/test-utils',
+      // 'react/jsx-runtime': 'preact/jsx-runtime',
     },
   },
 });

@@ -84,8 +84,8 @@ export function usePostsAndTasks({
 
   const updatePostsForWeek = useCallback(
     async (topicId: string): Promise<Set<string>> => {
-      // 今週の月曜〜日曜の日付を列挙
-      const weekStart = window.moment().startOf("isoWeek");
+      // 指定された日の週の月曜〜日曜の日付を列挙
+      const weekStart = date.clone().startOf("isoWeek");
       const weekDates: MomentLike[] = Array.from({ length: 7 }, (_, i) =>
         weekStart.clone().add(i, "days"),
       );
@@ -124,14 +124,15 @@ export function usePostsAndTasks({
       // 監視対象パス集合を返す
       return new Set(entries.map((e) => e.file.path));
     },
-    [app, appHelper],
+    [app, appHelper, date],
   );
 
   const updatePostsForDays = useCallback(
     async (topicId: string, days: number): Promise<Set<string>> => {
-      // 直近N日間の日付を列挙 (今日を含む)
+      // 指定された日を含む直近N日間の日付を列挙
+      const baseDate = date.clone().startOf("day");
       const dates: MomentLike[] = Array.from({ length: days }, (_, i) =>
-        window.moment().subtract(i, "days"),
+        baseDate.clone().subtract(i, "days"),
       );
 
       // 存在するノートだけを収集
@@ -167,7 +168,7 @@ export function usePostsAndTasks({
 
       return new Set(entries.map((e) => e.file.path));
     },
-    [app, appHelper],
+    [app, appHelper, date],
   );
 
   return {
