@@ -29,10 +29,12 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({ children }) =>
     activeTopic,
     asTask,
     timeFilter,
+    dateFilter,
     handleSubmit,
     handleClickOpenDailyNote,
     setGranularity,
     setTimeFilter,
+    setDateFilter,
     setCurrentDailyNote,
     setPosts,
     setTasks,
@@ -46,11 +48,12 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({ children }) =>
   } = value;
 
   // Sync state/handlers with Obsidian View
-  useViewSync(view, granularity, activeTopic, asTask, timeFilter, {
+  useViewSync(view, granularity, activeTopic, asTask, timeFilter, dateFilter, {
     handleSubmit,
     handleClickOpenDailyNote,
     setGranularity,
     setTimeFilter,
+    setDateFilter,
     setCurrentDailyNote,
     setPosts,
     setTasks,
@@ -85,4 +88,3 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({ children }) =>
     </MFDIAppContext.Provider>
   );
 };
-

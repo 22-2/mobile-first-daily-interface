@@ -2,9 +2,10 @@ import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
+import { DateFilter, Granularity, TimeFilter } from "../types";
 import { ReactView } from "../components/layout/ReactView";
+import { DATE_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from "../config/filter-config";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { Granularity, TimeFilter } from "../types";
 import { MFDIViewHandler } from "./MFDIViewHandler";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -20,6 +21,7 @@ export class MFDIView extends ItemView {
     granularity: "day",
     asTask: false,
     timeFilter: "all",
+    dateFilter: "today",
     activeTopic: "",
   };
   public navigation: boolean = false;
@@ -56,35 +58,40 @@ export class MFDIView extends ItemView {
       this.handlers.onChangeAsTask?.(asTask);
     });
 
-    // --- 表示期間 ---
+    // --- 表示期間（時間） ---
     const showTimeFilter = this.state.granularity === "day" && !this.state.asTask;
     menu.addSeparator();
     menu.addItem((item) => {
-      item.setTitle("表示期間").setIcon("clock").setDisabled(true);
+      item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
     });
-    const filters: TimeFilter[] = [
-      "all",
-      "latest",
-      1, 2, 3, 6, 12,
-      "this_week",
-    ];
-    for (const f of filters) {
+    for (const f of TIME_FILTER_OPTIONS) {
       menu.addItem((item) => {
-        const isChecked = showTimeFilter ? this.state.timeFilter === f : f === "all";
+        const isChecked = showTimeFilter ? this.state.timeFilter === f.id : f.id === "all";
         item
-          .setTitle(
-            f === "all"
-              ? "今日"
-              : f === "latest"
-              ? "最新のみ表示"
-              : f === "this_week"
-              ? "今週"
-              : `直近${f}時間`
-          )
+          .setTitle(f.label)
           .setChecked(isChecked)
           .setDisabled(!showTimeFilter)
           .onClick(() => {
-            this.handlers.onChangeTimeFilter?.(f);
+            this.handlers.onChangeTimeFilter?.(f.id);
+          });
+      });
+    }
+
+    // --- 表示期間（日） ---
+    const showDateFilter = this.state.granularity === "day" && !this.state.asTask;
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item.setTitle("表示期間（日）").setIcon("calendar").setDisabled(true);
+    });
+    for (const f of DATE_FILTER_OPTIONS) {
+      menu.addItem((item) => {
+        const isChecked = showDateFilter ? this.state.dateFilter === f.id : f.id === "today";
+        item
+          .setTitle(f.label)
+          .setChecked(isChecked)
+          .setDisabled(!showDateFilter)
+          .onClick(() => {
+            this.handlers.onChangeDateFilter?.(f.id);
           });
       });
     }
@@ -150,6 +157,7 @@ export class MFDIView extends ItemView {
     this.state.granularity = (state.granularity as Granularity) ?? this.state.granularity;
     this.state.asTask = (state.asTask as boolean) ?? this.state.asTask;
     this.state.timeFilter = (state.timeFilter as TimeFilter) ?? this.state.timeFilter;
+    this.state.dateFilter = (state.dateFilter as DateFilter) ?? this.state.dateFilter;
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic as string;
       this.handlers.onChangeTopic?.(this.state.activeTopic);
@@ -162,5 +170,6 @@ interface MFDIViewState extends Record<string, unknown> {
   granularity: Granularity;
   asTask: boolean;
   timeFilter: TimeFilter;
+  dateFilter: DateFilter;
   activeTopic: string;
 }

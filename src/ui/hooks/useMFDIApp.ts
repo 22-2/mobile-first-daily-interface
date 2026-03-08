@@ -16,7 +16,6 @@ import { Post } from "../types";
 import { toText } from "../utils/post-utils";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
 import { useMFDISettings } from "./internal/useMFDISettings";
-import { handleThisWeekSyncOnSubmit } from "./internal/useMFDISyncLogic";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
 
@@ -27,7 +26,7 @@ interface UseMFDIAppOptions {}
  * データの取得、更新、設定、編集状態のオーケストレーションを行います。
  */
 export function useMFDIApp(_options?: UseMFDIAppOptions) {
-  const { app, appHelper, storage, settings } = useAppContext();
+  const { app, appHelper, settings } = useAppContext();
 
   const {
     activeTopic,
@@ -38,6 +37,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setDate,
     timeFilter,
     setTimeFilter,
+    dateFilter,
+    setDateFilter,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
@@ -49,10 +50,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const postFormat = postFormatMap[settings.postFormatOption];
 
-  const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks, updatePostsForWeek } =
+  const { posts, tasks, setPosts, setTasks, updatePosts, updateTasks, updatePostsForWeek, updatePostsForDays } =
     usePostsAndTasks({ postFormat, date, granularity });
 
-  // "this_week" モード中に監視する今週のファイルパス集合
+  // 複数日モード中に監視するファイルパス集合
   const weekNotePathsRef = useRef<Set<string>>(new Set());
 
   const {
@@ -102,36 +103,50 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   useEffect(() => {
     if (!currentDailyNote) return;
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
-    if (timeFilter !== "this_week") {
+    if (dateFilter === "today") {
       promises.push(updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, updatePosts, updateTasks, timeFilter]);
+  }, [currentDailyNote, updatePosts, updateTasks, dateFilter]);
+
+  // 複数日モードのデータロード
+  useEffect(() => {
+    if (granularity !== "day" || asTask) return;
+    if (dateFilter === "this_week") {
+      updatePostsForWeek(activeTopic).then((paths) => {
+        weekNotePathsRef.current = paths;
+      });
+    } else if (dateFilter === "3d" || dateFilter === "5d" || dateFilter === "7d") {
+      const days = parseInt(dateFilter);
+      updatePostsForDays(activeTopic, days).then((paths) => {
+        weekNotePathsRef.current = paths;
+      });
+    }
+  }, [dateFilter, granularity, asTask, activeTopic, updatePostsForWeek, updatePostsForDays]);
 
   useNoteSync({
     date,
     granularity,
     topicId: activeTopic,
     currentDailyNote,
-    weekNotePaths: timeFilter === "this_week" ? weekNotePathsRef.current : undefined,
+    weekNotePaths: dateFilter !== "today" ? weekNotePathsRef.current : undefined,
     setDate,
     setTasks,
     setPosts,
     updateCurrentDailyNote,
     updatePosts,
     updateTasks,
-    onWeekNoteChanged: timeFilter === "this_week"
-      ? () => { updatePostsForWeek(activeTopic).then((paths) => { weekNotePathsRef.current = paths; }); }
+    onWeekNoteChanged: dateFilter !== "today"
+      ? () => {
+          if (dateFilter === "this_week") {
+            updatePostsForWeek(activeTopic).then((paths) => { weekNotePathsRef.current = paths; });
+          } else {
+            const days = parseInt(dateFilter);
+            updatePostsForDays(activeTopic, days).then((paths) => { weekNotePathsRef.current = paths; });
+          }
+        }
       : undefined,
   });
-
-  // "this_week" に切り替わったら今週のノートをロード
-  useEffect(() => {
-    if (timeFilter !== "this_week" || granularity !== "day" || asTask) return;
-    updatePostsForWeek(activeTopic).then((paths) => {
-      weekNotePathsRef.current = paths;
-    });
-  }, [timeFilter, granularity, asTask, activeTopic, updatePostsForWeek]);
 
   const createNoteWithInsertAfter = async () => {
     const created = await createTopicNote(app, date, granularity, activeTopic);
@@ -160,7 +175,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
-    // 最新の入力をエディタから直接取得（debounceによる遅延対策）
     const currentInput = inputRef.current?.getValue() ?? input;
 
     if (editingPost) {
@@ -197,15 +211,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
-      handleThisWeekSyncOnSubmit({
-        timeFilter,
-        currentDailyNote,
-        activeTopic,
-        updatePostsForWeek,
-        setWeekNotePaths: (paths) => {
-          weekNotePathsRef.current = paths;
-        },
-      });
+      if (dateFilter !== "today") {
+        const updateFn = dateFilter === "this_week"
+          ? () => updatePostsForWeek(activeTopic)
+          : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
+        updateFn().then((paths) => { weekNotePathsRef.current = paths; });
+      }
       setDate(date.clone());
     }
     const note = getTopicNote(app, date, granularity, activeTopic);
@@ -229,11 +240,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     activeTopic,
     updatePosts,
     updatePostsForWeek,
+    updatePostsForDays,
     createNoteWithInsertAfter,
     cancelEdit,
     setInput,
     setDate,
-    timeFilter,
+    dateFilter,
   ]);
 
   const deletePost = useCallback(
@@ -255,8 +267,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       if (editingPost?.startOffset === post.startOffset) cancelEdit();
       await updatePosts(currentDailyNote);
     },
-
-
     [
       currentDailyNote,
       appHelper,
@@ -264,9 +274,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       editingPost?.startOffset,
       cancelEdit,
       updatePosts,
+      isReadOnly
     ]
   );
-
 
   const handleClickTime = useCallback(
     (post: Post) => {
@@ -275,7 +285,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         const leaf = app.workspace.getLeaf(true);
         await app.workspace.revealLeaf(leaf);
         await leaf.openFile(currentDailyNote, { active: true });
-        await app.workspace.revealLeaf(leaf);
         const editor = app.workspace.activeEditor!;
         const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
         const endPos = editor.editor!.offsetToPos(
@@ -292,7 +301,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     [currentDailyNote, app.workspace]
   );
 
-
   const updateTaskChecked = useCallback(
     async (task: Task, checked: boolean) => {
       if (isReadOnly) {
@@ -306,9 +314,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       );
       await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
     },
-    [currentDailyNote, tasks, setTasks, appHelper]
+    [currentDailyNote, tasks, setTasks, appHelper, isReadOnly]
   );
-
 
   const openTaskInEditor = (task: Task) => {
     (async () => {
@@ -365,23 +372,25 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       );
       menu.showAtMouseEvent(e as unknown as MouseEvent);
     },
-    [app, openTaskInEditor, deleteTask]
+    [app, openTaskInEditor, deleteTask, isReadOnly]
   );
 
-
   const filteredPosts = useMemo(() => {
-    // this_week モードでは既に updatePostsForWeek で今週全件が posts に入っているのでそのまま返す
-    if (timeFilter === "this_week") return posts;
+    if (dateFilter !== "today") return posts;
     if (timeFilter === "all" || asTask || granularity !== "day") return posts;
     if (timeFilter === "latest") return posts.length > 0 ? [posts[0]] : [];
+    
+    // "1h", "2h" などの文字列から数値を抽出
+    const hours = parseInt(timeFilter as string);
+    if (isNaN(hours)) return posts;
+
     const now = window.moment();
     return posts.filter(
-      (p) => now.diff(p.timestamp, "hours") < (timeFilter as number)
+      (p) => now.diff(p.timestamp, "hours") < hours
     );
-  }, [posts, timeFilter, asTask, granularity]);
+  }, [posts, timeFilter, dateFilter, asTask, granularity]);
 
   return {
-    // States
     activeTopic,
     setActiveTopic: handleChangeTopic,
     granularity,
@@ -398,16 +407,16 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     editingPostOffset,
     timeFilter,
     setTimeFilter,
+    dateFilter,
+    setDateFilter,
     posts,
     setPosts,
     filteredPosts,
     tasks,
     setTasks,
     canSubmit,
-    // Refs
     inputRef,
     scrollContainerRef,
-    // Handlers
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,

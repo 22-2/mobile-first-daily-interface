@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Task } from "../../app-helper";
 import { useAppContext } from "../context/AppContext";
 import { MFDIModal } from "../modals/MFDIModal";
-import { Granularity, Post, TimeFilter } from "../types";
+import { DateFilter, Granularity, Post, TimeFilter } from "../types";
 import { MFDIView } from "../view/MFDIView";
 
 export interface ViewSyncHandlers {
@@ -13,6 +13,7 @@ export interface ViewSyncHandlers {
   /** granularity 変更 */
   setGranularity: (g: Granularity) => void;
   setTimeFilter: (t: TimeFilter) => void;
+  setDateFilter: (d: DateFilter) => void;
   setCurrentDailyNote: (note: null) => void;
   setPosts: (posts: Post[]) => void;
   setTasks: (tasks: Task[]) => void;
@@ -37,11 +38,13 @@ export function useViewSync(
   activeTopic: string,
   asTask: boolean,
   timeFilter: TimeFilter,
+  dateFilter: DateFilter,
   {
     handleSubmit,
     handleClickOpenDailyNote,
     setGranularity,
     setTimeFilter,
+    setDateFilter,
     setCurrentDailyNote,
     setPosts,
     setTasks,
@@ -66,6 +69,10 @@ export function useViewSync(
   }, [view, timeFilter]);
 
   useEffect(() => {
+    view.state.dateFilter = dateFilter;
+  }, [view, dateFilter]);
+
+  useEffect(() => {
     view.state.activeTopic = activeTopic;
   }, [view, activeTopic]);
 
@@ -83,13 +90,16 @@ export function useViewSync(
   useEffect(() => {
     view.handlers.onChangeGranularity = (g: Granularity) => {
       setGranularity(g);
-      if (g !== "day") setTimeFilter("all");
+      if (g !== "day") {
+        setTimeFilter("all");
+        setDateFilter("today");
+      }
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
     };
     return () => { view.handlers.onChangeGranularity = undefined; };
-  }, [view]);
+  }, [view, setGranularity, setTimeFilter, setDateFilter, setCurrentDailyNote, setPosts, setTasks]);
 
   useEffect(() => {
     // setActiveTopic is actually handleChangeTopic
@@ -100,12 +110,17 @@ export function useViewSync(
   useEffect(() => {
     view.handlers.onChangeAsTask = (t: boolean) => { setAsTask(t); };
     return () => { view.handlers.onChangeAsTask = undefined; };
-  }, [view]);
+  }, [view, setAsTask]);
 
   useEffect(() => {
     view.handlers.onChangeTimeFilter = (t: TimeFilter) => { setTimeFilter(t); };
     return () => { view.handlers.onChangeTimeFilter = undefined; };
-  }, [view]);
+  }, [view, setTimeFilter]);
+
+  useEffect(() => {
+    view.handlers.onChangeDateFilter = (d: DateFilter) => { setDateFilter(d); };
+    return () => { view.handlers.onChangeDateFilter = undefined; };
+  }, [view, setDateFilter]);
 
   useEffect(() => {
     view.handlers.onOpenModalEditor = () => {
@@ -117,5 +132,5 @@ export function useViewSync(
       modal.open();
     };
     return () => { view.handlers.onOpenModalEditor = undefined; };
-  }, [view, app, input]);
+  }, [view, app, input, setInput]);
 }

@@ -2,7 +2,8 @@ import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import { granularityConfig } from "../config/granularity-config";
-import { Granularity } from "../types";
+import { Granularity, TimeFilter, DateFilter } from "../types";
+import { DATE_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from "../config/filter-config";
 
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
@@ -20,9 +21,12 @@ export const CountDisplay: React.FC = () => {
     filteredPosts,
     posts,
     timeFilter,
+    dateFilter,
     activeTopic,
     setActiveTopic: onTopicChange,
     setGranularity: onGranularityChange,
+    setTimeFilter: onTimeFilterChange,
+    setDateFilter: onDateFilterChange,
     setAsTask: onAsTaskChange,
   } = useMFDIContext();
 
@@ -76,7 +80,35 @@ export const CountDisplay: React.FC = () => {
             if (!onAsTaskChange) return;
             e.preventDefault();
             const menu = new Menu();
+            
+            // モード切替
             addPostModeMenuItems(menu, asTask, onAsTaskChange);
+            
+            if (!asTask && granularity === "day") {
+              // 期間（日）
+              menu.addSeparator();
+              DATE_FILTER_OPTIONS.forEach((f) => {
+                menu.addItem((item) =>
+                  item
+                    .setTitle(f.label)
+                    .setChecked(dateFilter === f.id)
+                    .onClick(() => onDateFilterChange?.(f.id))
+                );
+              });
+
+              // 期間（時間）
+              menu.addSeparator();
+              TIME_FILTER_OPTIONS.forEach((f) => {
+                menu.addItem((item) =>
+                  item
+                    .setTitle(f.label)
+                    .setChecked(timeFilter === f.id && dateFilter === "today")
+                    .setDisabled(dateFilter !== "today")
+                    .onClick(() => onTimeFilterChange?.(f.id))
+                );
+              });
+            }
+            
             menu.showAtMouseEvent(e as unknown as MouseEvent);
           }}
         >
@@ -85,10 +117,14 @@ export const CountDisplay: React.FC = () => {
           ) : (
             <>
               {filteredPostsCount}
-              {(timeFilter !== "all" && timeFilter !== "this_week") && granularity === "day"
+              {dateFilter === "today" && timeFilter !== "all" && granularity === "day"
                 ? `/${allPostsCount}`
                 : ""}
-              {timeFilter === "this_week" ? " (今週)" : ""}{" "}
+              {dateFilter === "this_week" ? " (今週)" : ""}
+              {dateFilter === "3d" ? " (3日間)" : ""}
+              {dateFilter === "7d" ? " (7日間)" : ""}
+              {dateFilter === "today" && timeFilter !== "all" && timeFilter !== "latest" ? ` (${timeFilter})` : ""}
+              {dateFilter === "today" && timeFilter === "latest" ? " (最新)" : ""}{" "}
               posts
             </>
           )}
@@ -122,4 +158,3 @@ export const CountDisplay: React.FC = () => {
     </HStack>
   );
 };
-

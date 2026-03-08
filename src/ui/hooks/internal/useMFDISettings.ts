@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { Granularity, MomentLike, TimeFilter } from "../../types";
+import { DateFilter, Granularity, MomentLike, TimeFilter } from "../../types";
 
 import { granularityConfig } from "../../config/granularity-config";
 import { useAppContext } from "../../context/AppContext";
@@ -36,6 +36,10 @@ export function useMFDISettings() {
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>(
     () => storage.get<TimeFilter>("timeFilter", "all")
+  );
+
+  const [dateFilter, setDateFilter] = useState<DateFilter>(
+    () => storage.get<DateFilter>("dateFilter", "today")
   );
 
   const handleChangeTopic = useCallback(
@@ -83,6 +87,10 @@ export function useMFDISettings() {
     storage.set("timeFilter", timeFilter);
   }, [timeFilter, storage]);
 
+  useEffect(() => {
+    storage.set("dateFilter", dateFilter);
+  }, [dateFilter, storage]);
+
   return {
     activeTopic,
     setActiveTopic: handleChangeTopic,
@@ -92,6 +100,8 @@ export function useMFDISettings() {
     setDate,
     timeFilter,
     setTimeFilter,
+    dateFilter,
+    setDateFilter,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
