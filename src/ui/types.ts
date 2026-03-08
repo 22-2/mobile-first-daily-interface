@@ -12,4 +12,5 @@ export interface Post {
   endOffset: number;
   bodyStartOffset: number;
   kind: "thino";
+  path: string;
 }

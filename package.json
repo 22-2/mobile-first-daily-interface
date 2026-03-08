@@ -48,7 +48,6 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "framer-motion": "^6.5.1",
-    "marked-react": "^1.4.0",
     "obsidian-daily-notes-interface": "^0.9.4",
     "obsidian-magical-editor": "file:..\\..\\my-projects-02\\obsidian-magical-editor",
     "preact": "^10.28.4",

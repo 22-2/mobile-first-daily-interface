@@ -1,5 +1,5 @@
 import { Box, Flex, HStack, Spacer, Tag, VStack } from "@chakra-ui/react";
-import Markdown from "marked-react";
+import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../utils/meta";
@@ -109,9 +109,10 @@ export const PostCardView = React.memo(
             <VStack align="stretch" gap={3}>
               {/* Message Body */}
               <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-                <Markdown gfm breaks>
-                  {post.message}
-                </Markdown>
+                <ObsidianMarkdown
+                  content={post.message}
+                  sourcePath={post.path}
+                />
               </Box>
 
               {settings.enabledCardView && (

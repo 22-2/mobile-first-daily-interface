@@ -6,6 +6,7 @@ export interface Task {
   mark: " " | string;
   name: string;
   offset: number;
+  path: string;
 }
 
 interface UnsafeAppInterface {
@@ -110,6 +111,7 @@ export class AppHelper {
             mark: x.task!,
             name,
             offset: x.position.start.offset,
+            path: file.path,
           };
         }) ?? null
     );

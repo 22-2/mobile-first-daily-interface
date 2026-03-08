@@ -64,6 +64,7 @@ export function usePostsAndTasks({
           endOffset: x.endOffset,
           bodyStartOffset: x.bodyStartOffset,
           kind: "thino" as const,
+          path: note.path,
         };
       });
 
@@ -105,6 +106,7 @@ export function usePostsAndTasks({
               endOffset: x.endOffset,
               bodyStartOffset: x.bodyStartOffset,
               kind: "thino" as const,
+              path: file.path,
             }));
           })
         )

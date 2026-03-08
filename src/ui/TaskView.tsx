@@ -1,5 +1,5 @@
 import { HStack } from "@chakra-ui/react";
-import Markdown from "marked-react";
+import { ObsidianMarkdown } from "./components/ObsidianMarkdown";
 import * as React from "react";
 import { Task } from "../app-helper";
 import { excludeWikiLink } from "../utils/strings";
@@ -25,9 +25,11 @@ export const TaskView = React.memo(
             onChange={(ev) => onChange(ev.target.checked)}
           />
           <label>
-            <Markdown gfm breaks isInline>
-              {excludeWikiLink(task.name)}
-            </Markdown>
+            <ObsidianMarkdown
+              content={excludeWikiLink(task.name)}
+              sourcePath={task.path}
+              inline
+            />
           </label>
         </HStack>
       </Card>

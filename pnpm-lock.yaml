@@ -20,9 +20,6 @@ importers:
       framer-motion:
         specifier: ^6.5.1
         version: 6.5.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      marked-react:
-        specifier: ^1.4.0
-        version: 1.4.0(react@19.2.4)
       obsidian-daily-notes-interface:
         specifier: ^0.9.4
         version: 0.9.4(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
@@ -1412,9 +1409,6 @@ packages:
   '@types/lodash@4.17.23':
     resolution: {integrity: sha512-RDvF6wTulMPjrNdCoYRC8gNR880JNGT8uB+REUpC2Ns4pRqQJhGz90wh7rgdXDPpCczF3VGktDuFGVnz8zP7HA==}
 
-  '@types/marked@4.3.2':
-    resolution: {integrity: sha512-a79Yc3TOk6dGdituy8hmTTJXjOkZ7zsFYV10L337ttq/rec8lRMDBpV7fL3uLx6TgbFCa5DU/h8FmIBQPSbU0w==}
-
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
@@ -2258,19 +2252,9 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  marked-react@1.4.0:
-    resolution: {integrity: sha512-ljNfSUH1LTEgLu82VRb89wPP63UFR21Ot8zvfuIImDDAgFf/FuYi4ca/jcusfEL92KcBcH/rQMc3wVWSC4zBbw==}
-    peerDependencies:
-      react: ^16.8.0 || >=17.0.0
-
   marked@13.0.3:
     resolution: {integrity: sha512-rqRix3/TWzE9rIoFGIn8JmsVfhiuC8VIQ8IdX5TfzmeBucdY05/0UlzKaw0eVtpcN/OdVFpBk7CjKGo9iHJ/zA==}
     engines: {node: '>= 18'}
-    hasBin: true
-
-  marked@4.3.0:
-    resolution: {integrity: sha512-PRsaiG84bK+AMvxziE/lCFss8juXjNaWzVbN5tXAm4XjeaS9NAHhop+PjQxz2A9h8Q4M/xGmzP8vqNwy6JeK0A==}
-    engines: {node: '>= 12'}
     hasBin: true
 
   matcher@3.0.0:
@@ -4211,8 +4195,6 @@ snapshots:
 
   '@types/lodash@4.17.23': {}
 
-  '@types/marked@4.3.2': {}
-
   '@types/node@18.19.130':
     dependencies:
       undici-types: 5.26.5
@@ -5146,15 +5128,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  marked-react@1.4.0(react@19.2.4):
-    dependencies:
-      '@types/marked': 4.3.2
-      marked: 4.3.0
-      react: 19.2.4
-
   marked@13.0.3: {}
-
-  marked@4.3.0: {}
 
   matcher@3.0.0:
     dependencies:
