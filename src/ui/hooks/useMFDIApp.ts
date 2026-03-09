@@ -349,7 +349,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         return;
       }
 
-      const text = toText(post.message, false, postFormat, granularity, nextDay);
+      const fromDateStr = post.timestamp.format("YYYY-MM-DD");
+      const messageWithFrom = `${post.message} (from ${fromDateStr})`;
+      const text = toText(messageWithFrom, false, postFormat, granularity, nextDay);
       await appHelper.insertTextAfter(
         nextNote,
         `\n${text}`,
