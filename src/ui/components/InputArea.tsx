@@ -47,6 +47,7 @@ const InputAreaControl: React.FC = React.memo(() => {
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
+    handleClickHome,
     handleChangeCalendarDate,
     getMoveStep,
   } = useMFDIContext();
@@ -67,7 +68,6 @@ const InputAreaControl: React.FC = React.memo(() => {
 
   return (
     <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
-      <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         <NavButton
           direction="left"
@@ -111,7 +111,20 @@ const InputAreaControl: React.FC = React.memo(() => {
           step={step}
         />
       </HStack>
-      <Box flex="1" display="flex" justifyContent="flex-end">
+      <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
+        <ObsidianIcon
+          name="home"
+          size="1.1em"
+          cursor="pointer"
+          color="var(--text-muted)"
+          padding="4px"
+          borderRadius="4px"
+          _hover={{
+            color: "var(--text-normal)",
+            bg: "var(--background-modifier-hover)",
+          }}
+          onClick={handleClickHome}
+        />
         <ObsidianIcon
           name="maximize"
           size="1.1em"

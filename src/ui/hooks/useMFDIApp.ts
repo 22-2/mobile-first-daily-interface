@@ -75,6 +75,14 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     cancelEdit,
   } = useMFDIEditor({ posts, date, granularity });
 
+  const handleClickHome = useCallback(() => {
+    setGranularity("day");
+    setDateFilter("today");
+    setTimeFilter("all");
+    setAsTask(false);
+    setDate(window.moment());
+  }, [setGranularity, setDateFilter, setTimeFilter, setAsTask, setDate]);
+
   const isToday = useMemo(() => {
     return date.isSame(window.moment(), granularityConfig[granularity].unit);
   }, [date, granularity]);
@@ -519,6 +527,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
+    handleClickHome,
     handleClickOpenDailyNote,
     handleSubmit,
     startEdit,
