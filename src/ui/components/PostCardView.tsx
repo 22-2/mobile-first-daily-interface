@@ -64,9 +64,8 @@ export const PostCardView = React.memo(
       })();
     }, [post.message, settings.enabledCardView]);
 
-    const unit = granularityConfig[granularity].unit;
-    const isCurrent = post.timestamp.isSame(window.moment(), unit);
-    const isDimmed = !isCurrent;
+    const { unit } = granularityConfig[granularity];
+    const isDimmed = post.timestamp.isBefore(window.moment(), unit);
 
     return (
       <Card className={className} style={style}>
