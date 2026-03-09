@@ -21,6 +21,7 @@ export const PostListView: React.FC = React.memo(() => {
     handleClickTime,
     startEdit,
     deletePost,
+    movePostToTomorrow,
     isReadOnly,
   } = useMFDIContext();
 
@@ -93,6 +94,15 @@ export const PostListView: React.FC = React.memo(() => {
                       .onClick(async () => {
                         await navigator.clipboard.writeText(post.message);
                         new Notice("copied");
+                      }),
+                  );
+                  menu.addItem((item) =>
+                    item
+                      .setTitle("明日に送る")
+                      .setIcon("fast-forward")
+                      .setDisabled(isReadOnly)
+                      .onClick(() => {
+                        movePostToTomorrow(post);
                       }),
                   );
                   menu.addItem((item) =>

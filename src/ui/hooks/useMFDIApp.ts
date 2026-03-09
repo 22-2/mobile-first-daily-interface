@@ -333,6 +333,48 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     ],
   );
 
+  const movePostToTomorrow = useCallback(
+    async (post: Post) => {
+      if (isReadOnly) {
+        new Notice("過去のノートの投稿は移動できません");
+        return;
+      }
+
+      const nextDay = post.timestamp.clone().add(1, "day");
+      const nextNote = await createTopicNote(
+        app,
+        nextDay,
+        granularity,
+        activeTopic,
+      );
+      if (!nextNote) {
+        new Notice("明日のノートが見つかりませんでした");
+        return;
+      }
+
+      const text = toText(post.message, false, postFormat, granularity, nextDay);
+      await appHelper.insertTextAfter(
+        nextNote,
+        `\n${text}`,
+        settings.insertAfter,
+      );
+
+      await deletePost(post);
+      new Notice("明日に送りました");
+    },
+    [
+      app,
+      appHelper,
+      deletePost,
+      isReadOnly,
+      granularity,
+      activeTopic,
+      postFormat,
+      settings.insertAfter,
+    ],
+  );
+
+
   const handleClickTime = useCallback(
     (post: Post) => {
       (async () => {
@@ -483,6 +525,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     startEdit,
     cancelEdit,
     deletePost,
+    movePostToTomorrow,
+
     handleClickTime,
     updateTaskChecked,
     openTaskInEditor,

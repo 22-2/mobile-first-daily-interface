@@ -1,4 +1,4 @@
-import { Box, VStack } from "@chakra-ui/react";
+import { Box, Button, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { HTMLMeta, ImageMeta, TwitterMeta, createMeta } from "../../utils/meta";
@@ -6,7 +6,9 @@ import { pickUrls } from "../../utils/strings";
 import { isPresent } from "../../utils/types";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
+import { useMFDIContext } from "../context/MFDIAppContext";
 import { DateFilter, Granularity, Post } from "../types";
+
 import { BaseCard } from "./BaseCard";
 import { ObsidianMarkdown } from "./ObsidianMarkdown";
 import { Card } from "./cards/Card";
@@ -33,6 +35,8 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
+    const { movePostToTomorrow, isReadOnly } = useMFDIContext();
+
     const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
     const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
     const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);

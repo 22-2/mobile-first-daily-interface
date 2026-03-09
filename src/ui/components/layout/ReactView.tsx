@@ -63,6 +63,10 @@ const ReactViewContent = () => {
         if (newWidth <= 1100 && lastWidthRef.current > 1100) {
           setSidebarOpen(false);
         }
+        // 1400px を跨いで広くなった瞬間に自動で開く
+        if (newWidth > 1400 && lastWidthRef.current <= 1400) {
+          setSidebarOpen(true);
+        }
         setContainerWidth(newWidth);
         lastWidthRef.current = newWidth;
       }
