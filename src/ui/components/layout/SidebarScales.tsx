@@ -116,7 +116,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       <VStack align="stretch" spacing={1} className="mfdi-scale-section mfdi-scale-section-week">
         <HStack justify="space-between" px={2} mb={1}>
             <Text fontSize="11px" fontWeight="bold" color="var(--text-muted)" textTransform="uppercase" letterSpacing="0.05em" className="mfdi-scale-label">
-              週 ({baseDate.format("MM")})
+              週
             </Text>
             {loading && <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />}
         </HStack>
