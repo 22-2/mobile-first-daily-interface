@@ -143,6 +143,20 @@ const InputAreaFooter: React.FC = React.memo(() => {
     setAsTask,
   } = useMFDIContext();
 
+  const submitButtonProps = canSubmit
+    ? {
+        bg: "var(--color-accent)!important;",
+        color: "var(--text-on-accent)!important;",
+        cursor: "pointer",
+        _hover: { bg: "var(--color-accent-2)" },
+      }
+    : {
+        bg: "var(--background-modifier-border)",
+        color: "var(--text-muted)",
+        cursor: "default",
+        _hover: { bg: "var(--background-modifier-border)" },
+      };
+
   return (
     <HStack
       justify="flex-end"
@@ -163,20 +177,9 @@ const InputAreaFooter: React.FC = React.memo(() => {
       )}
       <Button
         disabled={!canSubmit}
-        bg={
-          canSubmit
-            ? "var(--color-accent)!important;"
-            : "var(--background-modifier-border)"
-        }
-        color={canSubmit ? "var(--text-on-accent)" : "var(--text-muted)"}
-        _hover={{
-          bg: canSubmit
-            ? "var(--color-accent-2)"
-            : "var(--background-modifier-border)",
-        }}
+        {...submitButtonProps}
         minHeight={"2.4em"}
         maxHeight={"2.4em"}
-        cursor={canSubmit ? "pointer" : ""}
         onClick={handleSubmit}
         onContextMenu={(e) => {
           if (!setAsTask) return;
