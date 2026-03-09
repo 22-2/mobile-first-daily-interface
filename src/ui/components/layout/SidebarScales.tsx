@@ -126,6 +126,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
               granularity === "week" &&
               date.isSame(w, "isoWeek");
             const counts = countsMap[`week-${w.format("YYYY-WW")}`];
+            const hasActivity = counts && (counts.posts > 0 || counts.tasks > 0);
             
             return (
               <Box
@@ -134,7 +135,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 py={1.5}
                 borderRadius="6px"
                 bg={isSelected ? activeBg : inactiveBg}
-                color={isSelected ? activeColor : inactiveColor}
+                color={isSelected ? activeColor : (hasActivity ? inactiveColor : "var(--text-muted)")}
                 cursor="pointer"
                 fontSize="xs"
                 fontWeight={isSelected ? "bold" : "normal"}
@@ -166,56 +167,74 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
           Month / Year
         </Text>
         <VStack align="stretch" spacing={0} className="mfdi-scale-list mfdi-scale-list-month-year">
-          <Box
-            px={3}
-            py={1.5}
-            borderRadius="6px"
-            bg={granularity === "month" ? activeBg : inactiveBg}
-            color={granularity === "month" ? activeColor : inactiveColor}
-            cursor="pointer"
-            fontSize="xs"
-            fontWeight={granularity === "month" ? "bold" : "normal"}
-            transition="background-color 0.1s ease"
-            _hover={{
-              bg: granularity === "month" ? "color-mix(in srgb, var(--color-accent), transparent 80%)" : hoverBg,
-            }}
-            className={`mfdi-scale-item mfdi-scale-item-month ${granularity === "month" ? "is-selected" : ""}`}
-            onClick={() => {
-              setGranularity("month");
-              setDateFilter("today");
-              setDate(baseDate.clone());
-            }}
-          >
-            <HStack spacing={0} justify="space-between">
-              <Text as="span">{baseDate.format("YYYY-MM")}</Text>
-              {renderCountBadge(countsMap[`month-${baseDate.format("YYYY-MM")}`])}
-            </HStack>
-          </Box>
-          <Box
-            px={3}
-            py={1.5}
-            borderRadius="6px"
-            bg={granularity === "year" ? activeBg : inactiveBg}
-            color={granularity === "year" ? activeColor : inactiveColor}
-            cursor="pointer"
-            fontSize="xs"
-            fontWeight={granularity === "year" ? "bold" : "normal"}
-            transition="background-color 0.1s ease"
-            _hover={{
-              bg: granularity === "year" ? "color-mix(in srgb, var(--color-accent), transparent 80%)" : hoverBg,
-            }}
-            className={`mfdi-scale-item mfdi-scale-item-year ${granularity === "year" ? "is-selected" : ""}`}
-            onClick={() => {
-              setGranularity("year");
-              setDateFilter("today");
-              setDate(baseDate.clone());
-            }}
-          >
-            <HStack spacing={0} justify="space-between">
-              <Text as="span">{baseDate.format("YYYY")}</Text>
-              {renderCountBadge(countsMap[`year-${baseDate.format("YYYY")}`])}
-            </HStack>
-          </Box>
+          {(() => {
+            const mKey = `month-${baseDate.format("YYYY-MM")}`;
+            const mCounts = countsMap[mKey];
+            const mHasActivity = mCounts && (mCounts.posts > 0 || mCounts.tasks > 0);
+            const isMonthSelected = granularity === "month";
+
+            return (
+              <Box
+                px={3}
+                py={1.5}
+                borderRadius="6px"
+                bg={isMonthSelected ? activeBg : inactiveBg}
+                color={isMonthSelected ? activeColor : (mHasActivity ? inactiveColor : "var(--text-muted)")}
+                cursor="pointer"
+                fontSize="xs"
+                fontWeight={isMonthSelected ? "bold" : "normal"}
+                transition="background-color 0.1s ease"
+                _hover={{
+                  bg: isMonthSelected ? "color-mix(in srgb, var(--color-accent), transparent 80%)" : hoverBg,
+                }}
+                className={`mfdi-scale-item mfdi-scale-item-month ${isMonthSelected ? "is-selected" : ""}`}
+                onClick={() => {
+                  setGranularity("month");
+                  setDateFilter("today");
+                  setDate(baseDate.clone());
+                }}
+              >
+                <HStack spacing={0} justify="space-between">
+                  <Text as="span">{baseDate.format("YYYY-MM")}</Text>
+                  {renderCountBadge(mCounts)}
+                </HStack>
+              </Box>
+            );
+          })()}
+          {(() => {
+            const yKey = `year-${baseDate.format("YYYY")}`;
+            const yCounts = countsMap[yKey];
+            const yHasActivity = yCounts && (yCounts.posts > 0 || yCounts.tasks > 0);
+            const isYearSelected = granularity === "year";
+
+            return (
+              <Box
+                px={3}
+                py={1.5}
+                borderRadius="6px"
+                bg={isYearSelected ? activeBg : inactiveBg}
+                color={isYearSelected ? activeColor : (yHasActivity ? inactiveColor : "var(--text-muted)")}
+                cursor="pointer"
+                fontSize="xs"
+                fontWeight={isYearSelected ? "bold" : "normal"}
+                transition="background-color 0.1s ease"
+                _hover={{
+                  bg: isYearSelected ? "color-mix(in srgb, var(--color-accent), transparent 80%)" : hoverBg,
+                }}
+                className={`mfdi-scale-item mfdi-scale-item-year ${isYearSelected ? "is-selected" : ""}`}
+                onClick={() => {
+                  setGranularity("year");
+                  setDateFilter("today");
+                  setDate(baseDate.clone());
+                }}
+              >
+                <HStack spacing={0} justify="space-between">
+                  <Text as="span">{baseDate.format("YYYY")}</Text>
+                  {renderCountBadge(yCounts)}
+                </HStack>
+              </Box>
+            );
+          })()}
         </VStack>
       </VStack>
     </VStack>
