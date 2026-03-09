@@ -146,7 +146,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 onClick={() => {
                   setGranularity("week");
                   setDateFilter("today");
-                  setDate(w.clone());
+                  // カレンダーの月表示が変わらないよう、その週の中で「今表示している月」に含まれる日を選択する
+                  const targetDay = w.isBefore(monthStart) ? monthStart.clone() : w.clone();
+                  setDate(targetDay);
                 }}
               >
                 <HStack spacing={0} justify="space-between">
