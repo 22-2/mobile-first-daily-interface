@@ -64,6 +64,13 @@ function calcSelectedRange(
   granularity: string,
   dateFilter: string,
 ): { rangeStart: moment.Moment; rangeEnd: moment.Moment } {
+  if (granularity === "week") {
+    return {
+      rangeStart: date.clone().startOf("isoWeek"),
+      rangeEnd:   date.clone().endOf("isoWeek"),
+    };
+  }
+
   if (granularity !== "day" || dateFilter === "today") {
     return {
       rangeStart: date.clone().startOf(granularity as moment.unitOfTime.StartOf),
@@ -148,9 +155,9 @@ function useMiniCalendar() {
     if (!weekStart.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
-    // 週スケール（週ノート）ではなく、日スケールの「今週（範囲表示）」に切り替える
-    setGranularity("day");
-    setDateFilter("this_week");
+    // 週スケール（週ノート）に切り替える（SidebarScales と挙動を統一）
+    setGranularity("week");
+    setDateFilter("today");
     setDate(weekStart.clone());
   };
 
