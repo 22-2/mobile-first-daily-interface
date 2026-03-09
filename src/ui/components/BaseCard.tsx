@@ -4,12 +4,12 @@ import {
     DISPLAY_DATE_TIME_FORMAT,
     DISPLAY_TIME_FORMAT
 } from "../config/date-formats";
-import { Granularity, MomentLike, TimeFilter } from "../types";
+import { DateFilter, Granularity, MomentLike } from "../types";
 
 interface BaseCardProps {
   timestamp: MomentLike;
   granularity: Granularity;
-  timeFilter?: TimeFilter;
+  dateFilter?: DateFilter;
   isDimmed: boolean;
   onContextMenu?: (e: React.MouseEvent) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
@@ -20,7 +20,7 @@ interface BaseCardProps {
 export const BaseCard: React.FC<BaseCardProps> = ({
   timestamp,
   granularity,
-  timeFilter,
+  dateFilter,
   isDimmed,
   onContextMenu,
   onDoubleClick,
@@ -45,11 +45,11 @@ export const BaseCard: React.FC<BaseCardProps> = ({
         flex="1"
         sx={{
           "&::-webkit-scrollbar": {
-            width: "4px",
+            width: "var(--size-4-1)",
           },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "transparent",
-            borderRadius: "10px",
+            borderRadius: "var(--size-2-5)",
           },
           "&:hover::-webkit-scrollbar-thumb": {
             backgroundColor: "var(--scrollbar-thumb-bg, rgba(0,0,0,0.1))",
@@ -83,7 +83,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
             borderRadius="full"
           >
             {timestamp.format(
-              granularity === "day" && timeFilter !== "this_week"
+              granularity === "day" && dateFilter !== "this_week"
                 ? DISPLAY_TIME_FORMAT
                 : DISPLAY_DATE_TIME_FORMAT,
             )}

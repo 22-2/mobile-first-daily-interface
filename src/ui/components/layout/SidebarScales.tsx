@@ -1,9 +1,9 @@
-import { Box, Flex, HStack, Text, VStack, Spinner } from "@chakra-ui/react";
+import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { useMFDIContext } from "../../context/MFDIAppContext";
-import { useAppContext } from "../../context/AppContext";
 import { getTopicNote } from "../../../utils/daily-notes";
 import { parseThinoEntries } from "../../../utils/thino";
+import { useAppContext } from "../../context/AppContext";
+import { useMFDIContext } from "../../context/MFDIAppContext";
 
 interface Counts {
   posts: number;
@@ -116,7 +116,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       <VStack align="stretch" spacing={1} className="mfdi-scale-section mfdi-scale-section-week">
         <HStack justify="space-between" px={2} mb={1}>
             <Text fontSize="11px" fontWeight="bold" color="var(--text-muted)" textTransform="uppercase" letterSpacing="0.05em" className="mfdi-scale-label">
-              Week ({baseDate.format("MMM")})
+              週 ({baseDate.format("MM")})
             </Text>
             {loading && <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />}
         </HStack>
@@ -164,7 +164,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
 
       <VStack align="stretch" spacing={1} pt={2} className="mfdi-scale-section mfdi-scale-section-month-year">
         <Text fontSize="11px" fontWeight="bold" color="var(--text-muted)" textTransform="uppercase" letterSpacing="0.05em" px={2} mb={1} className="mfdi-scale-label">
-          Month / Year
+          月 / 年
         </Text>
         <VStack align="stretch" spacing={0} className="mfdi-scale-list mfdi-scale-list-month-year">
           {(() => {

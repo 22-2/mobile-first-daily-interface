@@ -49,13 +49,12 @@ export const PostListView: React.FC = React.memo(() => {
                 <Flex
                   className="mfdi-date-divider"
                   placeContent="center"
-                  padding="1.5em 1em 0.5em 1em"
                   fontSize= "var(--font-smallest);"
                   fontWeight= "bold"
                   color= "var(--text-muted)"
                   gap= "1em"
                 >
-                  <Text whiteSpace="nowrap" color="var(--text-muted)">
+                  <Text marginY= "var(--size-4-2)" whiteSpace="nowrap" color="var(--text-muted)">
                     {replaceDayToJa(x.timestamp.format("YYYY-MM-DD (ddd)"))}
                   </Text>
 
@@ -64,9 +63,7 @@ export const PostListView: React.FC = React.memo(() => {
               <PostCardView
                 post={x}
                 granularity={granularity}
-                viewedDate={viewedDate}
-                timeFilter={timeFilter}
-                onClickTime={handleClickTime}
+                dateFilter={dateFilter}
                 onEdit={startEdit}
                 onContextMenu={(post, e) => {
                   e.preventDefault();

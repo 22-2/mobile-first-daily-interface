@@ -102,11 +102,6 @@ const InputAreaControl: React.FC = React.memo(() => {
             width={granularity === "year" ? "6.5em" : "10em"}
             paddingX="0.5em"
           />
-          {granularityConfig[granularity].showWeekday && (
-            <Box marginLeft="var(--size-4-2)" fontSize=" var(--font-smaller)" fontWeight="bold" whiteSpace="nowrap" className="mfdi-weekday-label" color="var(--text-muted)">
-              {replaceDayToJa(date.format("(ddd)"))}
-            </Box>
-          )}
         </HStack>
         <NavButton
           direction="right"

@@ -1,26 +1,24 @@
 import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "../../utils/meta";
+import { HTMLMeta, ImageMeta, TwitterMeta, createMeta } from "../../utils/meta";
 import { pickUrls } from "../../utils/strings";
 import { isPresent } from "../../utils/types";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
-import { Granularity, MomentLike, Post, TimeFilter } from "../types";
+import { DateFilter, Granularity, Post } from "../types";
 import { BaseCard } from "./BaseCard";
+import { ObsidianMarkdown } from "./ObsidianMarkdown";
 import { Card } from "./cards/Card";
 import { HTMLCard } from "./cards/HTMLCard";
 import { ImageCard } from "./cards/ImageCard";
 import { TwitterCard } from "./cards/TwitterCard";
-import { ObsidianMarkdown } from "./ObsidianMarkdown";
 
 export const PostCardView = React.memo(
   ({
     post,
     granularity,
-    viewedDate,
-    timeFilter,
-    onClickTime,
+    dateFilter,
     onContextMenu,
     onEdit,
     className,
@@ -28,9 +26,7 @@ export const PostCardView = React.memo(
   }: {
     post: Post;
     granularity: Granularity;
-    viewedDate: MomentLike;
-    timeFilter?: TimeFilter;
-    onClickTime: (post: Post) => void;
+    dateFilter?: DateFilter;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
     className?: string;
@@ -73,7 +69,7 @@ export const PostCardView = React.memo(
         <BaseCard
           timestamp={post.timestamp}
           granularity={granularity}
-          timeFilter={timeFilter}
+          dateFilter={dateFilter}
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={(e) => onEdit?.(post)}

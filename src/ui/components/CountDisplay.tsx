@@ -1,15 +1,10 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import {
-    DATE_FILTER_OPTIONS
-} from "../config/filter-config";
 import { granularityConfig } from "../config/granularity-config";
-import { Granularity } from "../types";
 
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
-import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { addPeriodMenuItems } from "../menus/periodMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
