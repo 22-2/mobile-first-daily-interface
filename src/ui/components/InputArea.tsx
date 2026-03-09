@@ -53,6 +53,18 @@ const InputAreaControl: React.FC = React.memo(() => {
 
   const step = getMoveStep();
 
+  const todayButtonProps = isToday
+    ? {
+        bg: "var(--background-modifier-border)",
+        color: "var(--text-normal)",
+        _hover: { bg: "var(--background-modifier-border)" },
+      }
+    : {
+        bg: "var(--color-accent)!important;",
+        color: "var(--text-on-accent)!important;",
+        _hover: { bg: "var(--color-accent-2)" },
+      };
+
   return (
     <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
       <Box flex="1" />
@@ -77,17 +89,7 @@ const InputAreaControl: React.FC = React.memo(() => {
               });
               menu.showAtMouseEvent(e.nativeEvent);
             }}
-            bg={
-              !isToday
-                ? "var(--color-accent)!important;"
-                : "var(--background-modifier-border)"
-            }
-            color={!isToday ? "var(--text-on-accent)" : "var(--text-muted)"}
-            _hover={{
-              bg: !isToday
-                ? "var(--color-accent-2)"
-                : "var(--background-modifier-border)",
-            }}
+            {...todayButtonProps}
           >
             {granularityConfig[granularity].todayLabel}
           </Button>
