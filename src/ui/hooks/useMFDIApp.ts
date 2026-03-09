@@ -6,7 +6,7 @@ import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
 import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
-import { Post } from "../types";
+import { MomentLike, Post } from "../types";
 import { toText } from "../utils/post-utils";
 import { useMFDIEditor } from "./internal/useMFDIEditor";
 import { useMFDISettings } from "./internal/useMFDISettings";
@@ -171,8 +171,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         : undefined,
   });
 
-  const createNoteWithInsertAfter = async () => {
-    const created = await createTopicNote(app, date, granularity, activeTopic);
+  const createNoteWithInsertAfter = async (targetDate?: MomentLike) => {
+    const d = targetDate ?? date;
+    const created = await createTopicNote(app, d, granularity, activeTopic);
     if (created && settings.insertAfter) {
       const content = await app.vault.read(created);
       if (!content.includes(settings.insertAfter)) {
@@ -184,6 +185,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         );
       }
     }
+    return created;
   };
 
   const handleClickOpenDailyNote = async () => {
@@ -341,12 +343,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       }
 
       const nextDay = post.timestamp.clone().add(1, "day");
-      const nextNote = await createTopicNote(
-        app,
-        nextDay,
-        granularity,
-        activeTopic,
-      );
+      const nextNote = await createNoteWithInsertAfter(nextDay);
       if (!nextNote) {
         new Notice("明日のノートが見つかりませんでした");
         return;
