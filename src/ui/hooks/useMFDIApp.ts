@@ -209,16 +209,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
               updatePostsForWeek(activeTopic).then((paths) => {
                 setWeekNotePaths(paths);
               });
-            } else if (dateFilter === "infinite") {
-              // タイムラインモード時はとりあえず最新の14日分を同期
-              updatePostsForDays(activeTopic, 14).then(({ paths, hasMore: _hasMore }) => {
-                setWeekNotePaths((prev) => {
-                  const next = new Set(prev);
-                  paths.forEach((p) => next.add(p));
-                  return next;
-                });
-                setHasMore(_hasMore);
-              });
             } else {
               const days = parseInt(dateFilter);
               if (!isNaN(days)) {
@@ -554,6 +544,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     const postsWithoutHidden = posts.filter(
       (p) => !p.metadata.archived && !p.metadata.deleted,
     );
+
+    // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
+    if (displayMode === "timeline") return postsWithoutHidden;
+
     if (dateFilter !== "today") return postsWithoutHidden;
     if (timeFilter === "all" || asTask || granularity !== "day")
       return postsWithoutHidden;

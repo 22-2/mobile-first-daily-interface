@@ -3,7 +3,7 @@ import {
     DATE_FILTER_OPTIONS,
     TIME_FILTER_OPTIONS
 } from "../config/filter-config";
-import { DateFilter, Granularity, TimeFilter } from "../types";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "../types";
 
 export function addPeriodMenuItems(
   menu: Menu,
@@ -12,13 +12,14 @@ export function addPeriodMenuItems(
     asTask: boolean;
     timeFilter: TimeFilter;
     dateFilter: DateFilter;
+    displayMode: DisplayMode;
   },
   callbacks: {
     onChangeTimeFilter?: (filter: TimeFilter) => void;
     onChangeDateFilter?: (filter: DateFilter) => void;
   },
 ) {
-  const showFilter = state.granularity === "day" && !state.asTask;
+  const showFilter = state.granularity === "day" && !state.asTask && state.displayMode !== "timeline";
 
   // --- 表示期間（日） ---
   menu.addSeparator();
