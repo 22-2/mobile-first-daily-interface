@@ -39,10 +39,8 @@ const InputAreaControl: React.FC = React.memo(() => {
   const {
     date,
     granularity,
-    dateFilter,
     isToday,
-    sidebarOpen,
-    setSidebarOpen,
+    isReadOnly,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
@@ -128,15 +126,21 @@ const InputAreaControl: React.FC = React.memo(() => {
         <ObsidianIcon
           name="maximize"
           size="1.1em"
-          cursor="pointer"
+          cursor={isReadOnly ? "default" : "pointer"}
           color="var(--text-muted)"
+          opacity={isReadOnly ? 0.3 : 1}
           padding="4px"
           borderRadius="4px"
-          _hover={{
-            color: "var(--text-normal)",
-            bg: "var(--background-modifier-hover)",
-          }}
+          _hover={
+            isReadOnly
+              ? {}
+              : {
+                  color: "var(--text-normal)",
+                  bg: "var(--background-modifier-hover)",
+                }
+          }
           onClick={() => {
+            if (isReadOnly) return;
             view.handlers.onOpenModalEditor?.();
           }}
         />
