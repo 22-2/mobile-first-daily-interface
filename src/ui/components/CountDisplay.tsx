@@ -10,8 +10,10 @@ import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { UnderlinedClickable } from "./UnderlinedClickable";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, dateFilter } = useMFDIContext();
+  const { date, granularity, dateFilter, displayMode } = useMFDIContext();
   const onClick = useFilterMenu();
+
+  if (displayMode === "timeline") return null;
 
   const dateLabel = React.useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
@@ -71,7 +73,7 @@ const useFilterMenu = () => {
 };
 
 const CountSection: React.FC = () => {
-  const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter } =
+  const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter, displayMode } =
     useMFDIContext();
   const onClick = usePostModeMenu();
 
@@ -80,7 +82,7 @@ const CountSection: React.FC = () => {
   const allPostsCount = posts.length;
 
   const showTotal =
-    dateFilter === "today" && timeFilter !== "all" && granularity === "day";
+    (dateFilter === "today" && timeFilter !== "all" && granularity === "day") || displayMode === "timeline";
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
   return (

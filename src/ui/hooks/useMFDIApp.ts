@@ -34,6 +34,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setDateFilter,
     sidebarOpen,
     setSidebarOpen,
+    displayMode,
+    setDisplayMode,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
@@ -43,7 +45,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-
+  const [oldestLoadedDate, setOldestLoadedDate] = useState<MomentLike>(() => date.clone());
+  const [hasMore, setHasMore] = useState(true);
+  const isLoadingMoreRef = useRef(false);
 
   const {
     posts,
@@ -54,10 +58,11 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updateTasks,
     updatePostsForWeek,
     updatePostsForDays,
+    appendPostsForDays,
   } = usePostsAndTasks({ date, granularity });
 
   // 複数日モード中に監視するファイルパス集合
-  const weekNotePathsRef = useRef<Set<string>>(new Set());
+  const [weekNotePaths, setWeekNotePaths] = useState<Set<string>>(new Set());
 
   const {
     input,
@@ -74,12 +79,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   } = useMFDIEditor({ posts, date, granularity });
 
   const handleClickHome = useCallback(() => {
+    setDisplayMode("focus");
     setGranularity("day");
     setDateFilter("today");
     setTimeFilter("all");
     setAsTask(false);
     setDate(window.moment());
-  }, [setGranularity, setDateFilter, setTimeFilter, setAsTask, setDate]);
+  }, [setDisplayMode, setGranularity, setDateFilter, setTimeFilter, setAsTask, setDate]);
 
   const isToday = useMemo(() => {
     return date.isSame(window.moment(), granularityConfig[granularity].unit);
@@ -103,6 +109,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
+      setHasMore(true);
     },
     [activeTopic, setActiveTopic, setPosts, setTasks],
   );
@@ -132,7 +139,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (granularity !== "day" || asTask) return;
     if (dateFilter === "this_week") {
       updatePostsForWeek(activeTopic).then((paths) => {
-        weekNotePathsRef.current = paths;
+        setWeekNotePaths(paths);
       });
     } else if (
       dateFilter === "3d" ||
@@ -140,8 +147,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       dateFilter === "7d"
     ) {
       const days = parseInt(dateFilter);
-      updatePostsForDays(activeTopic, days).then((paths) => {
-        weekNotePathsRef.current = paths;
+      updatePostsForDays(activeTopic, days).then(({ paths, hasMore: _hasMore }) => {
+        setWeekNotePaths(paths);
+        setHasMore(_hasMore);
       });
     }
   }, [
@@ -154,13 +162,40 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePostsForDays,
   ]);
 
+  // タイムラインモードのデータロード
+  useEffect(() => {
+    if (displayMode !== "timeline" || asTask) return;
+    updatePostsForDays(activeTopic, 14).then(({ paths, hasMore: _hasMore, lastSearchedDate: _lastSearchedDate }) => {
+      setWeekNotePaths(paths);
+      setOldestLoadedDate(_lastSearchedDate.clone().subtract(1, "day"));
+      setHasMore(_hasMore);
+    });
+  }, [displayMode, activeTopic, asTask, updatePostsForDays, date]);
+
+  const loadMore = useCallback(async () => {
+    if (displayMode !== "timeline" || isLoadingMoreRef.current || !hasMore) return;
+    isLoadingMoreRef.current = true;
+    try {
+      const { paths, hasMore: _hasMore, lastSearchedDate: _lastSearchedDate } = await appendPostsForDays(activeTopic, oldestLoadedDate, 14);
+      setWeekNotePaths((prev) => {
+        const next = new Set(prev);
+        paths.forEach((p) => next.add(p));
+        return next;
+      });
+      setOldestLoadedDate(_lastSearchedDate.clone().subtract(1, "day"));
+      setHasMore(_hasMore);
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
+  }, [displayMode, activeTopic, oldestLoadedDate, appendPostsForDays, hasMore]);
+
   useNoteSync({
     date,
     granularity,
     topicId: activeTopic,
     currentDailyNote,
     weekNotePaths:
-      dateFilter !== "today" ? weekNotePathsRef.current : undefined,
+      dateFilter !== "today" ? weekNotePaths : undefined,
     setDate,
     setTasks,
     setPosts,
@@ -172,13 +207,25 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         ? () => {
             if (dateFilter === "this_week") {
               updatePostsForWeek(activeTopic).then((paths) => {
-                weekNotePathsRef.current = paths;
+                setWeekNotePaths(paths);
+              });
+            } else if (dateFilter === "infinite") {
+              // タイムラインモード時はとりあえず最新の14日分を同期
+              updatePostsForDays(activeTopic, 14).then(({ paths, hasMore: _hasMore }) => {
+                setWeekNotePaths((prev) => {
+                  const next = new Set(prev);
+                  paths.forEach((p) => next.add(p));
+                  return next;
+                });
+                setHasMore(_hasMore);
               });
             } else {
               const days = parseInt(dateFilter);
-              updatePostsForDays(activeTopic, days).then((paths) => {
-                weekNotePathsRef.current = paths;
-              });
+              if (!isNaN(days)) {
+                updatePostsForDays(activeTopic, days).then(({ paths }) => {
+                  setWeekNotePaths(paths);
+                });
+              }
             }
           }
         : undefined,
@@ -277,10 +324,10 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       if (dateFilter !== "today") {
         const updateFn =
           dateFilter === "this_week"
-            ? () => updatePostsForWeek(activeTopic)
+            ? () => updatePostsForWeek(activeTopic).then(paths => ({ paths }))
             : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
-        updateFn().then((paths) => {
-          weekNotePathsRef.current = paths;
+        updateFn().then(({ paths }) => {
+          setWeekNotePaths(paths);
         });
       }
       setDate(date.clone());
@@ -426,7 +473,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         });
       })();
     },
-    [currentDailyNote, app.workspace],
+    [app.workspace],
   );
 
   const updateTaskChecked = useCallback(
@@ -542,8 +589,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setDateFilter,
     sidebarOpen,
     setSidebarOpen,
+    displayMode,
+    setDisplayMode,
     posts,
     setPosts,
+    loadMore,
+    hasMore,
     filteredPosts,
     tasks,
     setTasks,

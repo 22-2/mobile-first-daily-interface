@@ -13,6 +13,8 @@ export type TimeFilter = (typeof TIME_FILTER_OPTIONS)[number]["id"];
 /** 日単位のフィルター型を config から自動推論 */
 export type DateFilter = (typeof DATE_FILTER_OPTIONS)[number]["id"];
 
+export type DisplayMode = "focus" | "timeline";
+
 export interface Post {
   timestamp: MomentLike;
   message: string;

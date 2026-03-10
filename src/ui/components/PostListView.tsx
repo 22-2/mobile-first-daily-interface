@@ -1,6 +1,6 @@
 import { Menu, Notice } from "obsidian";
 import * as React from "react";
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { replaceDayToJa } from "../../utils/strings";
 import { useAppContext } from "../context/AppContext";
@@ -24,12 +24,34 @@ export const PostListView: React.FC = React.memo(() => {
     deletePost,
     movePostToTomorrow,
     isReadOnly,
+    setDate,
+    setDisplayMode,
+    displayMode,
+    loadMore,
+    hasMore,
   } = useMFDIContext();
 
   const displayedPosts = useMemo(
     () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
     [filteredPosts, editingPostOffset],
   );
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (displayMode !== "timeline" || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+    return () => observer.disconnect();
+  }, [displayMode, loadMore, hasMore]);
   let lastDate: string | null = null;
 
   return (
@@ -84,6 +106,15 @@ export const PostListView: React.FC = React.memo(() => {
                   );
                   menu.addItem((item) =>
                     item
+                      .setTitle("この日にフォーカス")
+                      .setIcon("calendar-range")
+                      .onClick(() => {
+                        setDate(post.timestamp.clone());
+                        setDisplayMode("focus");
+                      }),
+                  );
+                  menu.addItem((item) =>
+                    item
                       .setTitle("編集")
                       .setIcon("pencil")
                       .setDisabled(isDimmed || isReadOnly)
@@ -126,6 +157,19 @@ export const PostListView: React.FC = React.memo(() => {
           </CSSTransition>
         );
       })}
+      {displayMode === "timeline" && (
+        <Box
+          ref={hasMore ? sentinelRef : undefined}
+          height="100px"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          color="var(--text-muted)"
+          fontSize="var(--font-smallest)"
+        >
+          {hasMore ? "読み込み中..." : "これ以上投稿はありません"}
+        </Box>
+      )}
     </TransitionGroup>
   );
 });

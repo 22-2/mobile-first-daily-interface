@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { DateFilter, Granularity, MomentLike, TimeFilter } from "../../types";
+import { DateFilter, DisplayMode, Granularity, MomentLike, TimeFilter } from "../../types";
 
 import { granularityConfig } from "../../config/granularity-config";
 import { useAppContext } from "../../context/AppContext";
@@ -14,7 +14,7 @@ export function useMFDISettings() {
     () => settings.activeTopic ?? "",
   );
 
-  const [granularity, setGranularity] = useState<Granularity>(() => {
+  const [_granularity, _setGranularity] = useState<Granularity>(() => {
     const savedOffset = storage.get<number | null>("editingPostOffset", null);
     if (savedOffset !== null) {
       return storage.get<Granularity>("editingPostGranularity", "day");
@@ -38,13 +38,35 @@ export function useMFDISettings() {
     storage.get<TimeFilter>("timeFilter", "all"),
   );
 
-  const [dateFilter, setDateFilter] = useState<DateFilter>(() =>
+  const [_dateFilter, _setDateFilter] = useState<DateFilter>(() =>
     storage.get<DateFilter>("dateFilter", "today"),
   );
 
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
     storage.get<boolean>("sidebarOpen", true),
   );
+
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(() =>
+    storage.get<DisplayMode>("displayMode", "focus"),
+  );
+
+  const granularity = _granularity;
+  const setGranularity = useCallback((g: Granularity) => {
+    _setGranularity(g);
+    if (g !== "day") {
+      setDisplayMode("focus");
+    }
+  }, [setDisplayMode]);
+
+  const dateFilter = _dateFilter;
+  const setDateFilter = useCallback((f: DateFilter) => {
+    _setDateFilter(f);
+    if (f === "infinite") {
+      setDisplayMode("timeline");
+    } else {
+      setDisplayMode("focus");
+    }
+  }, [setDisplayMode]);
 
   const handleChangeTopic = useCallback(
     (topicId: string) => {
@@ -59,30 +81,35 @@ export function useMFDISettings() {
   const handleChangeCalendarDate = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       setDate(granularityConfig[granularity].parseInput(event.target.value));
+      setDisplayMode("focus");
     },
-    [granularity],
+    [granularity, setDisplayMode],
   );
 
   const getMoveStep = useCallback(() => {
+    if (displayMode === "timeline") return 1;
     if (granularity !== "day") return 1;
     if (dateFilter === "this_week") return 7;
     const days = parseInt(dateFilter);
     return isNaN(days) ? 1 : days;
-  }, [granularity, dateFilter]);
+  }, [granularity, dateFilter, displayMode]);
 
   const handleClickMovePrevious = useCallback(() => {
     const step = getMoveStep();
     setDate(date.clone().subtract(step, granularityConfig[granularity].unit));
-  }, [date, granularity, getMoveStep]);
+    setDisplayMode("focus");
+  }, [date, granularity, getMoveStep, setDisplayMode]);
 
   const handleClickMoveNext = useCallback(() => {
     const step = getMoveStep();
     setDate(date.clone().add(step, granularityConfig[granularity].unit));
-  }, [date, granularity, getMoveStep]);
+    setDisplayMode("focus");
+  }, [date, granularity, getMoveStep, setDisplayMode]);
 
   const handleClickToday = useCallback(() => {
     setDate(window.moment());
-  }, []);
+    setDisplayMode("focus");
+  }, [setDisplayMode]);
 
   // ────────────────────────────────────────────────────────────
   // Storage Persistence
@@ -107,6 +134,10 @@ export function useMFDISettings() {
     storage.set("sidebarOpen", sidebarOpen);
   }, [sidebarOpen, storage]);
 
+  useEffect(() => {
+    storage.set("displayMode", displayMode);
+  }, [displayMode, storage]);
+
   return {
     activeTopic,
     setActiveTopic: handleChangeTopic,
@@ -120,6 +151,8 @@ export function useMFDISettings() {
     setDateFilter,
     sidebarOpen,
     setSidebarOpen,
+    displayMode,
+    setDisplayMode,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,

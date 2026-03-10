@@ -2,7 +2,7 @@ import { TFile } from "obsidian";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Task } from "../../app-helper";
 import { sorter } from "../../utils/collections";
-import { getTopicNote } from "../../utils/daily-notes";
+import { getAllTopicNotes, getDateUID, getTopicNote } from "../../utils/daily-notes";
 import { parseThinoEntries } from "../../utils/thino";
 import { Granularity, MomentLike, Post } from "../types";
 
@@ -25,7 +25,9 @@ interface UsePostsAndTasksReturn {
   /** 今週のデイリーノートを全件読み込み posts を更新。監視対象パス集合を返す。 */
   updatePostsForWeek: (topicId: string) => Promise<Set<string>>;
   /** 直近N日間のデイリーノートを全件読み込み posts を更新。監視対象パス集合を返す。 */
-  updatePostsForDays: (topicId: string, days: number) => Promise<Set<string>>;
+  updatePostsForDays: (topicId: string, days: number) => Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
+  /** 指定されたベース日から過去N日間のデイリーノートを読み込み posts に追加。監視対象パス集合を返す。 */
+  appendPostsForDays: (topicId: string, baseDate: MomentLike, days: number) => Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
 }
 
 
@@ -116,25 +118,52 @@ export function usePostsAndTasks({
     [app, appHelper, date],
   );
 
-  const updatePostsForDays = useCallback(
-    async (topicId: string, days: number): Promise<Set<string>> => {
-      // 指定された日を含む直近N日間の日付を列挙
-      const baseDate = date.clone().startOf("day");
-      const dates: MomentLike[] = Array.from({ length: days }, (_, i) =>
-        baseDate.clone().subtract(i, "days"),
-      );
+  const getPostsForDays = useCallback(
+    async (topicId: string, baseDate: MomentLike, days: number): Promise<{ posts: Post[], paths: Set<string>, hasMore: boolean, lastSearchedDate: MomentLike }> => {
+      const allTopicNotes = getAllTopicNotes(app, "day", topicId);
+      const uids = Object.keys(allTopicNotes).sort(); // 昇順 (古い順)
+      if (uids.length === 0) {
+        return { posts: [], paths: new Set(), hasMore: false, lastSearchedDate: baseDate };
+      }
 
-      // 存在するノートだけを収集
+      // 存在する全ノートの中で最も古い日付を特定 (UID: day-2025-10-12T00:00:00+09:00)
+      const oldestUid = uids[0];
+      // "day-" プレフィックスを飛ばしてパース
+      const datePart = oldestUid.substring("day-".length);
+      const oldestPossibleDate = window.moment(datePart);
+
+      const start = baseDate.clone().startOf("day");
+      const dates: MomentLike[] = Array.from({ length: days }, (_, i) =>
+        start.clone().subtract(i, "days"),
+      );
+      const lastInWindow = dates[dates.length - 1];
+
       const entries: { file: TFile; dayDate: MomentLike }[] = dates
-        .map((d) => ({
-          file: getTopicNote(app, d, "day", topicId),
-          dayDate: d,
-        }))
+        .map((d) => {
+          const uid = getDateUID(d, "day");
+          return {
+            file: allTopicNotes[uid] ?? null,
+            dayDate: d,
+          };
+        })
         .filter(
           (x): x is { file: TFile; dayDate: MomentLike } => x.file !== null,
         );
 
-      // 並列で cachedRead
+      // --- ギャップスキップロジック ---
+      // もしこの期間に1つもノートがなく、かつまだ過去にノートがあるなら、
+      // 次にノートが存在する日付までジャンプして再試行する
+      if (entries.length === 0 && lastInWindow.isAfter(oldestPossibleDate)) {
+        const lastInWindowUid = getDateUID(lastInWindow, "day");
+        // lastInWindowUid より小さくて最大の UID (＝次に新しいノート) を探す
+        const nextUid = uids.slice().reverse().find(u => u < lastInWindowUid);
+        if (nextUid) {
+          // プレフィックスを削ってパース
+          const nextDatePart = nextUid.substring("day-".length);
+          return getPostsForDays(topicId, window.moment(nextDatePart), days);
+        }
+      }
+
       const allPosts: Post[] = (
         await Promise.all(
           entries.map(async ({ file, dayDate }) => {
@@ -154,11 +183,34 @@ export function usePostsAndTasks({
         )
       ).flat();
 
-      setPosts(allPosts.sort(sorter((x) => x.timestamp.unix(), "desc")));
+      const hasMore = lastInWindow.isAfter(oldestPossibleDate);
 
-      return new Set(entries.map((e) => e.file.path));
+      return {
+        posts: allPosts,
+        paths: new Set(entries.map((e) => e.file.path)),
+        hasMore,
+        lastSearchedDate: lastInWindow,
+      };
     },
-    [app, appHelper, date],
+    [app, appHelper],
+  );
+
+  const updatePostsForDays = useCallback(
+    async (topicId: string, days: number): Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }> => {
+      const { posts: allPosts, paths, hasMore, lastSearchedDate } = await getPostsForDays(topicId, date, days);
+      setPosts(allPosts.sort(sorter((x) => x.timestamp.unix(), "desc")));
+      return { paths, hasMore, lastSearchedDate };
+    },
+    [date, getPostsForDays],
+  );
+
+  const appendPostsForDays = useCallback(
+    async (topicId: string, baseDate: MomentLike, days: number): Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }> => {
+      const { posts: newPosts, paths, hasMore, lastSearchedDate } = await getPostsForDays(topicId, baseDate, days);
+      setPosts((prev) => [...prev, ...newPosts].sort(sorter((x) => x.timestamp.unix(), "desc")));
+      return { paths, hasMore, lastSearchedDate };
+    },
+    [getPostsForDays],
   );
 
   return {
@@ -170,5 +222,6 @@ export function usePostsAndTasks({
     updateTasks,
     updatePostsForWeek,
     updatePostsForDays,
+    appendPostsForDays,
   };
 }

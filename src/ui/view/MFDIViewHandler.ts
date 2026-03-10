@@ -1,4 +1,4 @@
-import { DateFilter, Granularity, TimeFilter } from "../types";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "../types";
 
 export class MFDIViewHandler {
   onOpenDailyNoteAction?: () => void;
@@ -6,6 +6,7 @@ export class MFDIViewHandler {
   onChangeAsTask?: (asTask: boolean) => void;
   onChangeTimeFilter?: (f: TimeFilter) => void;
   onChangeDateFilter?: (f: DateFilter) => void;
+  onChangeDisplayMode?: (mode: DisplayMode) => void;
   onOpenModalEditor?: () => void;
   onSubmit?: () => Promise<void>;
   onChangeTopic?: (topicId: string) => void;

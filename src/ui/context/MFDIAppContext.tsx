@@ -47,6 +47,8 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     inputRef,
     sidebarOpen,
     setSidebarOpen,
+    displayMode,
+    setDisplayMode,
     scrollContainerRef,
     currentDailyNote,
     isReadOnly,
@@ -60,6 +62,7 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     asTask,
     timeFilter,
     dateFilter,
+    displayMode,
     isReadOnly,
     {
       handleSubmit,
@@ -77,6 +80,7 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
       inputRef,
       sidebarOpen,
       setSidebarOpen,
+      setDisplayMode,
     },
   );
 

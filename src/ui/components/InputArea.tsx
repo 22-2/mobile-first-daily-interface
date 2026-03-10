@@ -46,6 +46,8 @@ const InputAreaControl: React.FC = React.memo(() => {
     handleClickToday,
     handleClickHome,
     handleChangeCalendarDate,
+    displayMode,
+    setDisplayMode,
     getMoveStep,
   } = useMFDIContext();
 
@@ -67,47 +69,61 @@ const InputAreaControl: React.FC = React.memo(() => {
     <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
-        <NavButton
-          direction="left"
-          onClick={handleClickMovePrevious}
-          step={step}
-        />
-        <HStack spacing="0.2em" className="mfdi-date-controls">
-          <Button
-            className="mfdi-today-button"
-            fontSize={"80%"}
-            width="3.5em"
-            height="2.2em"
+        {displayMode === "focus" ? (
+          <>
+            <NavButton
+              direction="left"
+              onClick={handleClickMovePrevious}
+              step={step}
+            />
+            <HStack spacing="0.2em" className="mfdi-date-controls">
+              <Button
+                className="mfdi-today-button"
+                fontSize={"80%"}
+                width="3.5em"
+                height="2.2em"
+                cursor="pointer"
+                onClick={handleClickToday}
+                onContextMenu={(e) => {
+                  const menu = new Menu();
+                  addGranularityMenuItems(menu, view.state.granularity, (g) => {
+                    view.handlers.onChangeGranularity?.(g);
+                  });
+                  menu.showAtMouseEvent(e.nativeEvent);
+                }}
+                {...todayButtonProps}
+              >
+                {granularityConfig[granularity].todayLabel}
+              </Button>
+              <Input
+                className="mfdi-date-input"
+                size="sm"
+                height="2.2em"
+                fontSize="90%"
+                type={granularityConfig[granularity].inputType}
+                value={date.format(granularityConfig[granularity].inputFormat)}
+                onChange={handleChangeCalendarDate}
+                width={granularity === "year" ? "6.5em" : "10em"}
+                paddingX="0.5em"
+              />
+            </HStack>
+            <NavButton
+              direction="right"
+              onClick={handleClickMoveNext}
+              step={step}
+            />
+          </>
+        ) : (
+          <Box 
+            fontSize="var(--font-ui-smaller)" 
+            fontWeight="bold" 
+            color="var(--text-accent)"
             cursor="pointer"
-            onClick={handleClickToday}
-            onContextMenu={(e) => {
-              const menu = new Menu();
-              addGranularityMenuItems(menu, view.state.granularity, (g) => {
-                view.handlers.onChangeGranularity?.(g);
-              });
-              menu.showAtMouseEvent(e.nativeEvent);
-            }}
-            {...todayButtonProps}
+            onClick={() => setDisplayMode("focus")}
           >
-            {granularityConfig[granularity].todayLabel}
-          </Button>
-          <Input
-            className="mfdi-date-input"
-            size="sm"
-            height="2.2em"
-            fontSize="90%"
-            type={granularityConfig[granularity].inputType}
-            value={date.format(granularityConfig[granularity].inputFormat)}
-            onChange={handleChangeCalendarDate}
-            width={granularity === "year" ? "6.5em" : "10em"}
-            paddingX="0.5em"
-          />
-        </HStack>
-        <NavButton
-          direction="right"
-          onClick={handleClickMoveNext}
-          step={step}
-        />
+            タイムライン表示中
+          </Box>
+        )}
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
         <ObsidianIcon

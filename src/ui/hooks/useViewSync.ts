@@ -3,7 +3,7 @@ import { Task } from "../../app-helper";
 import { ObsidianLiveEditorRef } from "../components/common/ObsidianLiveEditor";
 import { useAppContext } from "../context/AppContext";
 import { MFDIModal } from "../modals/MFDIModal";
-import { DateFilter, Granularity, Post, TimeFilter } from "../types";
+import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "../types";
 import { MFDIView } from "../view/MFDIView";
 
 export interface ViewSyncHandlers {
@@ -28,6 +28,7 @@ export interface ViewSyncHandlers {
   inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
   sidebarOpen: boolean;
   setSidebarOpen: (o: boolean) => void;
+  setDisplayMode: (m: DisplayMode) => void;
 }
 
 /**
@@ -43,6 +44,7 @@ export function useViewSync(
   asTask: boolean,
   timeFilter: TimeFilter,
   dateFilter: DateFilter,
+  displayMode: DisplayMode,
   isReadOnly: boolean,
   {
     handleSubmit,
@@ -60,6 +62,7 @@ export function useViewSync(
     inputRef,
     sidebarOpen,
     setSidebarOpen,
+    setDisplayMode,
   }: ViewSyncHandlers,
 ) {
   const { app } = useAppContext();
@@ -99,6 +102,10 @@ export function useViewSync(
   useEffect(() => {
     view.state.dateFilter = dateFilter;
   }, [view, dateFilter]);
+
+  useEffect(() => {
+    view.state.displayMode = displayMode;
+  }, [view, displayMode]);
 
   useEffect(() => {
     view.state.activeTopic = activeTopic;
@@ -177,6 +184,15 @@ export function useViewSync(
       view.handlers.onChangeDateFilter = undefined;
     };
   }, [view, setDateFilter]);
+
+  useEffect(() => {
+    view.handlers.onChangeDisplayMode = (m: DisplayMode) => {
+      setDisplayMode(m);
+    };
+    return () => {
+      view.handlers.onChangeDisplayMode = undefined;
+    };
+  }, [view, setDisplayMode]);
 
   useEffect(() => {
     if (isReadOnly) {

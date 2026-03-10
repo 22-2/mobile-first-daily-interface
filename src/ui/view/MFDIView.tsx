@@ -5,7 +5,7 @@ import { Settings } from "../../settings";
 import { ReactView } from "../components/layout/ReactView";
 import { addPeriodMenuItems } from "../menus/periodMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { DateFilter, Granularity, TimeFilter } from "../types";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "../types";
 import { MFDIViewHandler } from "./MFDIViewHandler";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -18,6 +18,7 @@ export class MFDIView extends ItemView {
   private settings: Settings;
   public readonly handlers = new MFDIViewHandler();
   public state: MFDIViewState = {
+    displayMode: "focus",
     granularity: "day",
     asTask: false,
     timeFilter: "all",
@@ -32,6 +33,23 @@ export class MFDIView extends ItemView {
   }
 
   onPaneMenu(menu: Menu, prev: string): void {
+    menu.addItem((item) => {
+      item
+        .setTitle(
+          this.state.displayMode === "focus"
+            ? "タイムライン表示に切替"
+            : "フォーカス表示に切替",
+        )
+        .setIcon(
+          this.state.displayMode === "focus" ? "list-minus" : "calendar-range",
+        )
+        .onClick(() => {
+          this.handlers.onChangeDisplayMode?.(
+            this.state.displayMode === "focus" ? "timeline" : "focus",
+          );
+        });
+    });
+
     menu.addItem((item) => {
       item
         .setTitle("現在のノートを開く")
@@ -133,6 +151,9 @@ export class MFDIView extends ItemView {
       (state.timeFilter as TimeFilter) ?? this.state.timeFilter;
     this.state.dateFilter =
       (state.dateFilter as DateFilter) ?? this.state.dateFilter;
+    if (state.displayMode !== undefined) {
+      this.state.displayMode = state.displayMode as DisplayMode;
+    }
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic as string;
       this.handlers.onChangeTopic?.(this.state.activeTopic);
@@ -142,6 +163,7 @@ export class MFDIView extends ItemView {
 }
 
 interface MFDIViewState extends Record<string, unknown> {
+  displayMode: DisplayMode;
   granularity: Granularity;
   asTask: boolean;
   timeFilter: TimeFilter;
