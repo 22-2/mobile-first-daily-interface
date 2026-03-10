@@ -114,7 +114,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
     if (!isReadOnly && inputRef.current) {
-      inputRef.current.focus();
+      setTimeout(() => inputRef.current?.focus());
     }
   }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly]);
 
