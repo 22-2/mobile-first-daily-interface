@@ -50,6 +50,8 @@ export class MFDIView extends ItemView {
         });
     });
 
+    menu.addSeparator();
+
     menu.addItem((item) => {
       item
         .setTitle("現在のノートを開く")
