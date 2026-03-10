@@ -75,7 +75,7 @@ export const PostCardView = React.memo(
           dateFilter={dateFilter}
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
-          onDoubleClick={(e) => onEdit?.(post)}
+          onDoubleClick={(e) => !isDimmed && onEdit?.(post)}
         >
           <VStack align="stretch" gap={3}>
             {/* Message Body */}

@@ -8,6 +8,7 @@ import { useMFDIContext } from "../context/MFDIAppContext";
 import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 import { PostCardView } from "./PostCardView";
 import { Box, Divider, Flex, Text } from "@chakra-ui/react";
+import { granularityConfig } from "../config/granularity-config";
 
 export const PostListView: React.FC = React.memo(() => {
   const { app } = useAppContext();
@@ -38,6 +39,9 @@ export const PostListView: React.FC = React.memo(() => {
         const isTodayOnly = granularity === "day" && dateFilter === "today";
         const showDivider = !isTodayOnly && lastDate !== currentDate;
         lastDate = currentDate;
+
+        const { unit } = granularityConfig[granularity];
+        const isDimmed = x.timestamp.isBefore(window.moment(), unit);
 
         return (
           <CSSTransition
@@ -82,7 +86,7 @@ export const PostListView: React.FC = React.memo(() => {
                     item
                       .setTitle("編集")
                       .setIcon("pencil")
-                      .setDisabled(isReadOnly)
+                      .setDisabled(isDimmed || isReadOnly)
                       .onClick(() => {
                         startEdit(post);
                       }),
@@ -100,7 +104,7 @@ export const PostListView: React.FC = React.memo(() => {
                     item
                       .setTitle("明日に送る")
                       .setIcon("fast-forward")
-                      .setDisabled(isReadOnly)
+                      .setDisabled(isDimmed || isReadOnly)
                       .onClick(() => {
                         movePostToTomorrow(post);
                       }),
@@ -110,7 +114,7 @@ export const PostListView: React.FC = React.memo(() => {
                       .setTitle("削除")
                       .setIcon("trash")
                       .setWarning(true)
-                      .setDisabled(isReadOnly)
+                      .setDisabled(isDimmed || isReadOnly)
                       .onClick(() => {
                         new DeleteConfirmModal(app, () => deletePost(post)).open();
                       }),
