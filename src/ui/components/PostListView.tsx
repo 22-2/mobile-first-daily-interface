@@ -38,7 +38,8 @@ export const PostListView: React.FC = React.memo(() => {
 
     posts.forEach((post) => {
       const currentDate = post.timestamp.format("YYYY-MM-DD");
-      const isTodayOnly = granularity === "day" && dateFilter === "today";
+      // タイムラインモードなら常に区分けを出す。フォーカスモード（単一閲覧）なら今日以外のみ。
+      const isTodayOnly = displayMode !== "timeline" && granularity === "day" && dateFilter === "today";
       const showDivider = !isTodayOnly && lastDate !== currentDate;
 
       if (showDivider) {
@@ -53,7 +54,7 @@ export const PostListView: React.FC = React.memo(() => {
     });
 
     return list;
-  }, [filteredPosts, editingPostOffset, granularity, dateFilter]);
+  }, [filteredPosts, editingPostOffset, granularity, dateFilter, displayMode]);
 
   const parentRef = scrollContainerRef;
 
