@@ -49,26 +49,36 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     setSidebarOpen,
     scrollContainerRef,
     currentDailyNote,
+    isReadOnly,
   } = value;
 
   // Sync state/handlers with Obsidian View
-  useViewSync(view, granularity, activeTopic, asTask, timeFilter, dateFilter, {
-    handleSubmit,
-    handleClickOpenDailyNote,
-    setGranularity,
-    setTimeFilter,
-    setDateFilter,
-    setCurrentDailyNote,
-    setPosts,
-    setTasks,
-    setActiveTopic,
-    setAsTask,
-    input,
-    setInput,
-    inputRef,
-    sidebarOpen,
-    setSidebarOpen,
-  });
+  useViewSync(
+    view,
+    granularity,
+    activeTopic,
+    asTask,
+    timeFilter,
+    dateFilter,
+    isReadOnly,
+    {
+      handleSubmit,
+      handleClickOpenDailyNote,
+      setGranularity,
+      setTimeFilter,
+      setDateFilter,
+      setCurrentDailyNote,
+      setPosts,
+      setTasks,
+      setActiveTopic,
+      setAsTask,
+      input,
+      setInput,
+      inputRef,
+      sidebarOpen,
+      setSidebarOpen,
+    },
+  );
 
   // Handle focus requested from View
   useEffect(() => {

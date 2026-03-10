@@ -43,6 +43,7 @@ export function useViewSync(
   asTask: boolean,
   timeFilter: TimeFilter,
   dateFilter: DateFilter,
+  isReadOnly: boolean,
   {
     handleSubmit,
     handleClickOpenDailyNote,
@@ -178,6 +179,11 @@ export function useViewSync(
   }, [view, setDateFilter]);
 
   useEffect(() => {
+    if (isReadOnly) {
+      view.handlers.onOpenModalEditor = undefined;
+      return;
+    }
+
     view.handlers.onOpenModalEditor = () => {
       const modal = new MFDIModal(app, {
         initialContent: inputRefVal.current,
@@ -199,7 +205,7 @@ export function useViewSync(
     return () => {
       view.handlers.onOpenModalEditor = undefined;
     };
-  }, [view, app, setInput]);
+  }, [view, app, setInput, isReadOnly]);
 
   useEffect(() => {
     view.handlers.onToggleSidebar = () => {
