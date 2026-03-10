@@ -230,6 +230,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
           postFormat,
           granularity,
           targetTs,
+          editingPost.metadata,
         );
         await appHelper.replaceRange(
           path,
@@ -253,7 +254,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       }
     }
 
-    const text = toText(currentInput, asTask, postFormat, granularity);
+    const now = window.moment();
+    const metadata: Record<string, string> = {};
+    if (!date.isSame(now, "day")) {
+      metadata.posted = now.toISOString();
+    }
+
+    const text = toText(currentInput, asTask, postFormat, granularity, undefined, metadata);
     if (!text) {
       setInput("");
       inputRef.current?.setContent("");
@@ -305,21 +312,23 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const deletePost = useCallback(
     async (post: Post) => {
-      if (isReadOnly) {
-        new Notice("過去のノートの投稿は削除できません");
-        return;
-      }
       const path = post.path;
-      const origin = await appHelper.loadFile(path);
-      let start = post.startOffset;
-      let end = post.endOffset;
-      if (origin.slice(end, end + 1) === "\n") end += 1;
-      await appHelper.replaceRange(path, start, end, "");
-      let newContent = await appHelper.loadFile(path);
-      newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-      await app.vault.adapter.write(path, newContent);
+      const targetTs = post.timestamp;
+      const now = window.moment();
+      const metadata = { ...post.metadata, deleted: now.format("YYYYMMDDHHmmss") };
+
+      const text = toText(
+        post.message,
+        false,
+        postFormat,
+        granularity,
+        targetTs,
+        metadata,
+      );
+
+      await appHelper.replaceRange(path, post.startOffset, post.endOffset, text);
       if (editingPost?.startOffset === post.startOffset && editingPost?.path === post.path) cancelEdit();
-      
+
       if (dateFilter === "today") {
         const noteFile = app.vault.getAbstractFileByPath(path);
         if (noteFile instanceof TFile) await updatePosts(noteFile);
@@ -359,7 +368,20 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
       const fromDateStr = post.timestamp.format("YYYY-MM-DD");
       const messageWithFrom = `${post.message} (from ${fromDateStr})`;
-      const text = toText(messageWithFrom, false, postFormat, granularity, nextDay);
+      const now = window.moment();
+      const metadata = { ...post.metadata };
+      if (!nextDay.isSame(now, "day")) {
+        metadata.posted = now.toISOString();
+      }
+
+      const text = toText(
+        messageWithFrom,
+        false,
+        postFormat,
+        granularity,
+        nextDay,
+        metadata,
+      );
       await appHelper.insertTextAfter(
         nextNote,
         `\n${text}`,
@@ -482,16 +504,21 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   );
 
   const filteredPosts = useMemo(() => {
-    if (dateFilter !== "today") return posts;
-    if (timeFilter === "all" || asTask || granularity !== "day") return posts;
-    if (timeFilter === "latest") return posts.length > 0 ? [posts[0]] : [];
+    const postsWithoutHidden = posts.filter(
+      (p) => !p.metadata.archived && !p.metadata.deleted,
+    );
+    if (dateFilter !== "today") return postsWithoutHidden;
+    if (timeFilter === "all" || asTask || granularity !== "day")
+      return postsWithoutHidden;
+    if (timeFilter === "latest")
+      return postsWithoutHidden.length > 0 ? [postsWithoutHidden[0]] : [];
 
     // "1h", "2h" などの文字列から数値を抽出
     const hours = parseInt(timeFilter as string);
-    if (isNaN(hours)) return posts;
+    if (isNaN(hours)) return postsWithoutHidden;
 
     const now = window.moment();
-    return posts.filter((p) => now.diff(p.timestamp, "hours") < hours);
+    return postsWithoutHidden.filter((p) => now.diff(p.timestamp, "hours") < hours);
   }, [posts, timeFilter, dateFilter, asTask, granularity]);
 
   return {

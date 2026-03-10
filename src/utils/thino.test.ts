@@ -83,7 +83,7 @@ describe("parseThinoEntries", () => {
       "    aaa",
       "    aaa",
       "    aaa",
-      "- 17:41:29 てすこ ",
+      "- 17:41:29 てすこ",
       "- [ ] 17:41:40 てすこら ",
       "",
     ].join("\n");
@@ -94,10 +94,43 @@ describe("parseThinoEntries", () => {
     expect(entries[0].time).toBe("17:41:29");
     expect(entries[0].message).toBe(["aaa", "aaa", "aaa"].join("\n"));
     expect(entries[1].time).toBe("17:41:29");
-    expect(entries[1].message).toBe("てすこ ");
+    expect(entries[1].message).toBe("てすこ");
   });
 
   test("returns empty when no Thino heading", () => {
     expect(parseThinoEntries("## NotThino\n- 12:00:00\n    hi")).toEqual([]);
+  });
+
+  test("parses metadata and trims message", () => {
+    const content = [
+      "## Thino",
+      "- 19:03:56 aaa [archived::true]",
+      "- 19:04:27 test [deleted::20260310190431]",
+      "- 19:05:23 ",
+      "    test",
+      "    test",
+      "    test",
+      "    test [deleted::20260310190539]",
+      "",
+    ].join("\n");
+
+    const entries = parseThinoEntries(content);
+    expect(entries).toHaveLength(3);
+
+    expect(entries[0].message).toBe("aaa");
+    expect(entries[0].metadata).toEqual({ archived: "true" });
+
+    expect(entries[1].message).toBe("test");
+    expect(entries[1].metadata).toEqual({ deleted: "20260310190431" });
+
+    expect(entries[2].message).toBe("test\ntest\ntest\ntest");
+    expect(entries[2].metadata).toEqual({ deleted: "20260310190539" });
+  });
+
+  test("resolves timestamp from posted metadata", () => {
+    const iso = "2026-03-10T19:00:00.000Z";
+    const content = `## Thino\n- 10:00:00 test [posted::${iso}]`;
+    const entries = parseThinoEntries(content);
+    expect(entries[0].metadata.posted).toBe(iso);
   });
 });

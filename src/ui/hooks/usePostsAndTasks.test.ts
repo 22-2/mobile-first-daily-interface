@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as dailyNotes from "../../utils/daily-notes";
 import * as thino from "../../utils/thino";
 import { useAppContext } from "../context/AppContext";
-import { resolveTimestamp, usePostsAndTasks } from "./usePostsAndTasks";
+import { resolveTimestamp } from "../utils/post-utils";
+import { usePostsAndTasks } from "./usePostsAndTasks";
 
 // 簡易的な moment のモックを定義
 const makeMoment = (dateStr: string) => {
@@ -76,6 +77,81 @@ describe("resolveTimestamp", () => {
     const result = resolveTimestamp("2026-03-05 09:30:00", dateFor20260302);
     expect(result.format("YYYY-MM-DD HH:mm:ss")).toBe("2026-03-05 09:30:00");
   });
+
+  it("posted メタデータあり: posted の値を優先する", () => {
+    const posted = "2026-03-10T19:00:00.000Z";
+    const result = resolveTimestamp("10:00:00", dateFor20260302, { posted });
+    expect(result.toISOString()).toBe(posted);
+  });
+});
+
+describe("Sorting with posted metadata", () => {
+  const mockAppHelper = {
+    cachedReadFile: vi.fn(),
+    getTasks: vi.fn(),
+    loadFile: vi.fn(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useAppContext as any).mockReturnValue({
+      app: {},
+      appHelper: mockAppHelper,
+    });
+  });
+
+  it("posted メタデータに基づいて降順にソートされること", async () => {
+    const note = { path: "2026-03-10.md" } as any;
+    const isoLater = "2026-03-10T15:00:00.000Z";
+    const isoEarlier = "2026-03-10T10:00:00.000Z";
+
+    mockAppHelper.loadFile.mockResolvedValue("content");
+    vi.spyOn(thino, "parseThinoEntries").mockReturnValue([
+      { time: "09:00:00", message: "earlier", metadata: { posted: isoEarlier }, offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 },
+      { time: "08:00:00", message: "later", metadata: { posted: isoLater }, offset: 20, startOffset: 20, endOffset: 30, bodyStartOffset: 22 },
+    ] as any);
+
+    const { result } = renderHook(() => usePostsAndTasks({
+      postFormat: { type: "thino" } as any,
+      date: makeMoment("2026-03-10T00:00:00.000Z") as any,
+      granularity: "day"
+    }));
+
+    await act(async () => {
+      await result.current.updatePosts(note);
+    });
+
+    // 15:00 (later) が先頭、10:00 (earlier) が次
+    expect(result.current.posts[0].message).toBe("later");
+    expect(result.current.posts[1].message).toBe("earlier");
+  });
+
+  it("archived や deleted な投稿が含まれないこと", async () => {
+    // Note: filteredPosts のロジックは useMFDIApp にあるため、
+    // ここでは posts 自体が正しく parse されていることを確認
+    const note = { path: "2026-03-10.md" } as any;
+    mockAppHelper.loadFile.mockResolvedValue("content");
+    vi.spyOn(thino, "parseThinoEntries").mockReturnValue([
+      { time: "09:00:00", message: "visible", metadata: {}, offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 },
+      { time: "09:01:00", message: "ignored1", metadata: { archived: "true" }, offset: 20, startOffset: 20, endOffset: 30, bodyStartOffset: 22 },
+      { time: "09:02:00", message: "ignored2", metadata: { deleted: "20260310000000" }, offset: 40, startOffset: 40, endOffset: 50, bodyStartOffset: 42 },
+    ] as any);
+
+    const { result } = renderHook(() => usePostsAndTasks({
+      postFormat: { type: "thino" } as any,
+      date: makeMoment("2026-03-10T00:00:00.000Z") as any,
+      granularity: "day"
+    }));
+
+    await act(async () => {
+      await result.current.updatePosts(note);
+    });
+
+    // parse 自体は全部するが、metadata が入っていることを確認
+    expect(result.current.posts.length).toBe(3);
+    expect(result.current.posts.find(p => p.message === "ignored1")?.metadata.archived).toBe("true");
+    expect(result.current.posts.find(p => p.message === "ignored2")?.metadata.deleted).toBe("20260310000000");
+  });
 });
 
 describe("updatePostsForDays with Topics", () => {
@@ -120,7 +196,7 @@ describe("updatePostsForDays with Topics", () => {
     });
 
     const { result } = renderHook(() => usePostsAndTasks({
-      postFormat: "bullet",
+      postFormat: { type: "thino" } as any,
       date: mockMoment("2026-03-09T12:00:00.000Z") as any,
       granularity: "day"
     }));

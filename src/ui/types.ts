@@ -16,6 +16,7 @@ export type DateFilter = (typeof DATE_FILTER_OPTIONS)[number]["id"];
 export interface Post {
   timestamp: MomentLike;
   message: string;
+  metadata: Record<string, string>;
   offset: number;
   startOffset: number;
   endOffset: number;

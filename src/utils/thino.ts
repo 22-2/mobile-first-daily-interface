@@ -3,6 +3,7 @@ import { trimRedundantEmptyLines } from "./strings";
 export interface ThinoEntry {
   time: string;
   message: string;
+  metadata: Record<string, string>;
   /** Offset to the start of `- HH:MM:SS` (0-based). */
   offset: number;
   /** Offset to the start of the line containing the `- HH:MM:SS` bullet (0-based). */
@@ -85,14 +86,20 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
       return;
     }
 
-    const message = trimRedundantEmptyLines(
-      current.bodyLines.join("\n"),
-    ).replace(/^\n+/g, "");
+    const rawMessage = current.bodyLines.join("\n").trimEnd();
+    const metadata: Record<string, string> = {};
+    const message = rawMessage
+      .replace(/\[([^\]:]+)::([^\]]+)\]/g, (match, key, value) => {
+        metadata[key.trim()] = value.trim();
+        return "";
+      })
+      .trim();
 
     // Thino entries without body are allowed (empty message).
     entries.push({
       time: current.time,
       message,
+      metadata,
       offset: current.offset,
       startOffset: current.startOffset,
       bodyStartOffset: current.bodyStartOffset,

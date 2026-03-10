@@ -116,7 +116,7 @@ export const PostListView: React.FC = React.memo(() => {
                       .setWarning(true)
                       .setDisabled(isDimmed || isReadOnly)
                       .onClick(() => {
-                        new DeleteConfirmModal(app, () => deletePost(post)).open();
+                        deletePost(post);
                       }),
                   );
                   menu.showAtMouseEvent(e as unknown as MouseEvent);

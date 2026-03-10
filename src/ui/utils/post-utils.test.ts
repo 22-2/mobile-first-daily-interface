@@ -39,4 +39,26 @@ describe("toText", () => {
     const result = toText("test", true, postFormatThino, "week");
     expect(result).toBe("- [ ] 2026-03-02 16:00:00 test\n");
   });
+
+  test("thino format - with metadata", () => {
+    const result = toText("test", false, postFormatThino, "day", undefined, {
+      other: "value",
+    });
+    expect(result).toBe("- 16:00:00 test [other::value]\n");
+  });
+
+  test("thino format - filters hidden metadata", () => {
+    const result = toText("test", false, postFormatThino, "day", undefined, {
+      archived: "true",
+      deleted: "20260101000000",
+      posted: "2026-03-10T19:00:00.00Z",
+    });
+    // archived and deleted should be hidden, but posted should remain
+    expect(result).toBe("- 16:00:00 test [posted::2026-03-10T19:00:00.00Z]\n");
+  });
+
+  test("thino format - trims redundant empty lines", () => {
+    const result = toText("test\n\n\n", false, postFormatThino, "day");
+    expect(result).toBe("- 16:00:00 test\n");
+  });
 });

@@ -1,6 +1,6 @@
 import { PostFormat } from "../../settings";
 import { formatTaskText } from "../../utils/task-text";
-import { DATE_TIME_FORMAT, TIME_FORMAT } from "../config/date-formats";
+import { DATE_FORMAT, DATE_TIME_FORMAT, TIME_FORMAT } from "../config/date-formats";
 import { Granularity, MomentLike } from "../types";
 
 export function toText(
@@ -9,6 +9,7 @@ export function toText(
   postFormat: PostFormat,
   granularity: Granularity,
   timestamp?: MomentLike,
+  metadata: Record<string, string> = {},
 ): string {
   if (input.trim().length === 0) {
     return "";
@@ -29,7 +30,12 @@ export function toText(
   const firstLine = lines[0];
   const restLines = lines.slice(1);
 
-  const head = `- ${timeStr} ${firstLine}`;
+  const metaStr = Object.entries(metadata)
+    .filter(([k]) => k !== "archived" && k !== "deleted")
+    .map(([k, v]) => ` [${k}::${v}]`)
+    .join("");
+
+  const head = `- ${timeStr} ${firstLine}${metaStr}`;
   if (restLines.length === 0) {
     return head + "\n";
   }
@@ -39,4 +45,21 @@ export function toText(
     .join("\n");
 
   return `${head}\n${body}\n`;
+}
+
+export function resolveTimestamp(
+  time: string,
+  date: MomentLike,
+  metadata?: Record<string, string>,
+): MomentLike {
+  // Priority: posted metadata (ISO string) > combined datetime
+  if (metadata?.posted) {
+    const m = window.moment(metadata.posted);
+    if (m.isValid()) return m;
+  }
+
+  const hasDate = time.includes("-");
+  return hasDate
+    ? window.moment(time, DATE_TIME_FORMAT)
+    : window.moment(`${date.format(DATE_FORMAT)} ${time}`, DATE_TIME_FORMAT);
 }

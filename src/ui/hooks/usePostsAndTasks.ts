@@ -9,6 +9,7 @@ import { Granularity, MomentLike, Post } from "../types";
 
 import { DATE_FORMAT, DATE_TIME_FORMAT } from "../config/date-formats";
 import { useAppContext } from "../context/AppContext";
+import { resolveTimestamp } from "../utils/post-utils";
 
 interface UsePostsAndTasksOptions {
   postFormat: PostFormat;
@@ -29,17 +30,6 @@ interface UsePostsAndTasksReturn {
   updatePostsForDays: (topicId: string, days: number) => Promise<Set<string>>;
 }
 
-/**
- * エントリの時刻文字列と日付ファイルの日付から timestamp を解決する。
- * 時刻のみ（"HH:mm:ss" 形式）の旧エントリは後方互換のため date の日付を補完する。
- * 日付あり（"YYYY-MM-DD HH:mm:ss" 形式）の新エントリはそのままパースする。
- */
-export function resolveTimestamp(time: string, date: MomentLike): MomentLike {
-  const hasDate = time.includes("-");
-  return hasDate
-    ? window.moment(time, DATE_TIME_FORMAT)
-    : window.moment(`${date.format(DATE_FORMAT)} ${time}`, DATE_TIME_FORMAT);
-}
 
 /**
  * 指定されたファイルから投稿（Post）とタスク（Task）を抽出し、パースするHook。
@@ -59,8 +49,9 @@ export function usePostsAndTasks({
         await appHelper.loadFile(note.path),
       ).map((x) => {
         return {
-          timestamp: resolveTimestamp(x.time, date),
+          timestamp: resolveTimestamp(x.time, date, x.metadata),
           message: x.message,
+          metadata: x.metadata,
           offset: x.offset,
           startOffset: x.startOffset,
           endOffset: x.endOffset,
@@ -106,8 +97,9 @@ export function usePostsAndTasks({
           entries.map(async ({ file, dayDate }) => {
             const content = await appHelper.cachedReadFile(file);
             return parseThinoEntries(content).map((x) => ({
-              timestamp: resolveTimestamp(x.time, dayDate),
+              timestamp: resolveTimestamp(x.time, dayDate, x.metadata),
               message: x.message,
+              metadata: x.metadata,
               offset: x.offset,
               startOffset: x.startOffset,
               endOffset: x.endOffset,
@@ -151,8 +143,9 @@ export function usePostsAndTasks({
           entries.map(async ({ file, dayDate }) => {
             const content = await appHelper.cachedReadFile(file);
             return parseThinoEntries(content).map((x) => ({
-              timestamp: resolveTimestamp(x.time, dayDate),
+              timestamp: resolveTimestamp(x.time, dayDate, x.metadata),
               message: x.message,
+              metadata: x.metadata,
               offset: x.offset,
               startOffset: x.startOffset,
               endOffset: x.endOffset,
