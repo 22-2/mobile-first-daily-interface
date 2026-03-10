@@ -1,8 +1,6 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { replaceDayToJa } from "../../utils/strings";
-import { DATE_FILTER_OPTIONS } from "../config/filter-config";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
@@ -10,6 +8,7 @@ import { addGranularityMenuItems } from "../menus/granularityMenu";
 import { addPostModeMenuItems } from "../menus/postModeMenu";
 import { ObsidianIcon } from "./common/ObsidianIcon";
 import { ObsidianLiveEditor } from "./common/ObsidianLiveEditor";
+import { READONLY_PLACEHOLDER_TEXT, PLACEHOLDER_TEXT } from "../config/consntants";
 
 const NavButton: React.FC<{
   direction: "left" | "right";
@@ -242,9 +241,8 @@ export const InputArea: React.FC = React.memo(() => {
         onSubmit={handleSubmit}
         minHeight="var(--size-4-18)"
         marginX="var(--size-4-4)"
-        placeholder={isReadOnly ? "閲覧モード（書き込み不可）" : undefined}
+        placeholder={isReadOnly ? READONLY_PLACEHOLDER_TEXT : PLACEHOLDER_TEXT}
       />
-
       <InputAreaFooter />
     </Flex>
   );

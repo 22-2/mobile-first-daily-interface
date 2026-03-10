@@ -1,5 +1,6 @@
 import { App, Scope } from "obsidian";
 import { ModalEditor } from "obsidian-magical-editor";
+import { PLACEHOLDER_TEXT } from "../config/consntants";
 
 export interface MFDIModalOptions {
   initialContent: string;
@@ -13,6 +14,7 @@ export class MFDIModal extends ModalEditor {
       initialContent: options.initialContent,
       onChange: options.onChange,
       onClose: options.onClose,
+      placeholder: PLACEHOLDER_TEXT,
     });
     this.modalEl.addClass("mfdi-modal-editor");
 

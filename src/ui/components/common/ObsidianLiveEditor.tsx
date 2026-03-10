@@ -54,6 +54,7 @@ export const ObsidianLiveEditor = forwardRef<
           onChange(text);
         },
         initialContent: value ?? "",
+        placeholder: placeholder,
       });
 
       if (active && containerRef.current) {
@@ -83,45 +84,9 @@ export const ObsidianLiveEditor = forwardRef<
     };
   }, []); // Empty dependency array! Do not re-run on props change.
 
-  // React value is ONLY used for initial renders and placeholder checking.
-  // Explicit content changes are pushed via ref.setContent() to prevent infinite render loops.
-
-  // Track value simply for the placeholder rendering
-  const [empty, setEmpty] = React.useState(!value);
-  useEffect(() => {
-    setEmpty(!value && !magicalEditorRef.current?.getContent());
-  }, [value]);
-
-  const showPlaceholder = empty;
-
   return (
     <Box position="relative" {...props}>
       <Box ref={containerRef} height="100%" width="100%" />
-      {showPlaceholder && (
-        <Box
-          position="absolute"
-          top="var(--size-2-1)"
-          left="var(--size-2-1)"
-          pointerEvents="none"
-          color="var(--text-muted)"
-          opacity={0.6}
-          userSelect="none"
-          fontSize="var(--font-text-size)"
-          zIndex={1}
-        >
-          {placeholder ?? "なんでもかいていいのよ😊"}
-        </Box>
-      )}
-      {/* Transparent overlay to catch initial click when empty */}
-      {showPlaceholder && (
-        <Box
-          position="absolute"
-          inset="0"
-          cursor="text"
-          zIndex={2}
-          onClick={() => magicalEditorRef.current?.focus()}
-        />
-      )}
     </Box>
   );
 });
