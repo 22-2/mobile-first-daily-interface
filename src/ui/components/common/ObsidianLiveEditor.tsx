@@ -14,6 +14,8 @@ interface ObsidianLiveEditorProps extends Omit<
   onChange: (text: string) => void;
   onSubmit?: () => void;
   placeholder?: string;
+  isReadOnly?: boolean;
+  readonlyPlaceholder?: string;
 }
 
 export interface ObsidianLiveEditorRef {
@@ -25,7 +27,7 @@ export interface ObsidianLiveEditorRef {
 export const ObsidianLiveEditor = forwardRef<
   ObsidianLiveEditorRef,
   ObsidianLiveEditorProps
->(({ leaf, app, value, onChange, onSubmit, placeholder, ...props }, ref) => {
+>(({ leaf, app, value, onChange, onSubmit, placeholder, isReadOnly, readonlyPlaceholder, ...props }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const magicalEditorRef = useRef<MagicalEditor | null>(null);
 
@@ -55,6 +57,8 @@ export const ObsidianLiveEditor = forwardRef<
         },
         initialContent: value ?? "",
         placeholder: placeholder,
+        isReadOnly: isReadOnly,
+        readonlyPlaceholder: readonlyPlaceholder,
       });
 
       if (active && containerRef.current) {
@@ -83,6 +87,19 @@ export const ObsidianLiveEditor = forwardRef<
       magicalEditorRef.current?.destroy();
     };
   }, []); // Empty dependency array! Do not re-run on props change.
+
+  // Synchronize read-only state and placeholder
+  useEffect(() => {
+    if (magicalEditorRef.current) {
+      magicalEditorRef.current.setReadOnly(!!isReadOnly);
+    }
+  }, [isReadOnly]);
+
+  useEffect(() => {
+    if (magicalEditorRef.current) {
+      magicalEditorRef.current.setPlaceholder(placeholder || "", readonlyPlaceholder);
+    }
+  }, [placeholder, readonlyPlaceholder]);
 
   return (
     <Box position="relative" {...props}>

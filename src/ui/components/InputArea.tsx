@@ -241,7 +241,9 @@ export const InputArea: React.FC = React.memo(() => {
         onSubmit={handleSubmit}
         minHeight="var(--size-4-18)"
         marginX="var(--size-4-4)"
-        placeholder={isReadOnly ? READONLY_PLACEHOLDER_TEXT : PLACEHOLDER_TEXT}
+        placeholder={PLACEHOLDER_TEXT}
+        isReadOnly={isReadOnly}
+        readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
       />
       <InputAreaFooter />
     </Flex>
