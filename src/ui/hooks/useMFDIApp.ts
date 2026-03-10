@@ -11,6 +11,7 @@ import { useMFDIEditor } from "./internal/useMFDIEditor";
 import { useMFDISettings } from "./internal/useMFDISettings";
 import { useNoteSync } from "./useNoteSync";
 import { usePostsAndTasks } from "./usePostsAndTasks";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface UseMFDIAppOptions {}
 
@@ -45,9 +46,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const [oldestLoadedDate, setOldestLoadedDate] = useState<MomentLike>(() => date.clone());
-  const [hasMore, setHasMore] = useState(true);
-  const isLoadingMoreRef = useRef(false);
+  const lastLoadTimeRef = useRef(0);
+  const COOLDOWN_MS = 1000;
 
   const {
     posts,
@@ -59,6 +59,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePostsForWeek,
     updatePostsForDays,
     appendPostsForDays,
+    getPostsForDays,
   } = usePostsAndTasks({ date, granularity });
 
   // 複数日モード中に監視するファイルパス集合
@@ -109,7 +110,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       setCurrentDailyNote(null);
       setPosts([]);
       setTasks([]);
-      setHasMore(true);
     },
     [activeTopic, setActiveTopic, setPosts, setTasks],
   );
@@ -134,7 +134,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     Promise.all(promises);
   }, [currentDailyNote, updatePosts, updateTasks, dateFilter]);
 
-  // 複数日モードのデータロード
+  // 複数日モードのデータロードは一旦そのまま、後でQuery化も検討
   useEffect(() => {
     if (granularity !== "day" || asTask) return;
     if (dateFilter === "this_week") {
@@ -147,9 +147,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       dateFilter === "7d"
     ) {
       const days = parseInt(dateFilter);
-      updatePostsForDays(activeTopic, days).then(({ paths, hasMore: _hasMore }) => {
+      updatePostsForDays(activeTopic, days).then(({ paths }) => {
         setWeekNotePaths(paths);
-        setHasMore(_hasMore);
       });
     }
   }, [
@@ -162,32 +161,49 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePostsForDays,
   ]);
 
-  // タイムラインモードのデータロード
-  useEffect(() => {
-    if (displayMode !== "timeline" || asTask) return;
-    updatePostsForDays(activeTopic, 14).then(({ paths, hasMore: _hasMore, lastSearchedDate: _lastSearchedDate }) => {
-      setWeekNotePaths(paths);
-      setOldestLoadedDate(_lastSearchedDate.clone().subtract(1, "day"));
-      setHasMore(_hasMore);
-    });
-  }, [displayMode, activeTopic, asTask, updatePostsForDays, date]);
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = window.moment ? 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useInfiniteQuery({
+      queryKey: ["posts", activeTopic, displayMode],
+      queryFn: async ({ pageParam }) => {
+        const baseDate = pageParam ? window.moment(pageParam) : date.clone();
+        const result = await getPostsForDays(activeTopic, baseDate, 14);
+        
+        // 監視対象パスを更新
+        setWeekNotePaths((prev) => {
+          const next = new Set(prev);
+          result.paths.forEach((p) => next.add(p));
+          return next;
+        });
+        
+        return result;
+      },
+      initialPageParam: null as string | null,
+      getNextPageParam: (lastPage) => {
+        return lastPage.hasMore ? lastPage.lastSearchedDate.clone().subtract(1, "day").format() : undefined;
+      },
+      enabled: displayMode === "timeline",
+    }) : { data: null, fetchNextPage: () => {}, hasNextPage: false, isFetchingNextPage: false, refetch: () => {} };
 
-  const loadMore = useCallback(async () => {
-    if (displayMode !== "timeline" || isLoadingMoreRef.current || !hasMore) return;
-    isLoadingMoreRef.current = true;
-    try {
-      const { paths, hasMore: _hasMore, lastSearchedDate: _lastSearchedDate } = await appendPostsForDays(activeTopic, oldestLoadedDate, 14);
-      setWeekNotePaths((prev) => {
-        const next = new Set(prev);
-        paths.forEach((p) => next.add(p));
-        return next;
-      });
-      setOldestLoadedDate(_lastSearchedDate.clone().subtract(1, "day"));
-      setHasMore(_hasMore);
-    } finally {
-      isLoadingMoreRef.current = false;
+  // TanStack Query の結果を posts に反映
+  useEffect(() => {
+    if (displayMode === "timeline" && infiniteData) {
+      const allPosts = (infiniteData as any).pages.flatMap((p: any) => p.posts);
+      setPosts(allPosts.sort((a: Post, b: Post) => b.timestamp.valueOf() - a.timestamp.valueOf()));
     }
-  }, [displayMode, activeTopic, oldestLoadedDate, appendPostsForDays, hasMore]);
+  }, [displayMode, infiniteData, setPosts]);
+
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useNoteSync({
     date,
@@ -588,7 +604,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     posts,
     setPosts,
     loadMore,
-    hasMore,
+    hasMore: hasNextPage,
     filteredPosts,
     tasks,
     setTasks,

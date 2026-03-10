@@ -1,4 +1,5 @@
 import { Box, Flex } from "@chakra-ui/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
 import * as React from "react";
 import { Settings } from "../../../settings";
@@ -14,6 +15,8 @@ import { TaskListView } from "../TaskListView";
 import { MiniCalendar } from "./MiniCalendar";
 import { SidebarScales } from "./SidebarScales";
 
+const queryClient = new QueryClient();
+
 export type { Post };
 
 export const ReactView = ({
@@ -27,9 +30,11 @@ export const ReactView = ({
 }) => {
   return (
     <AppContextProvider app={app} settings={settings} view={view}>
-      <MFDIAppProvider>
-        <ReactViewContent />
-      </MFDIAppProvider>
+      <QueryClientProvider client={queryClient}>
+        <MFDIAppProvider>
+          <ReactViewContent />
+        </MFDIAppProvider>
+      </QueryClientProvider>
     </AppContextProvider>
   );
 };

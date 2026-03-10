@@ -1,25 +1,22 @@
 import { Menu, Notice } from "obsidian";
 import * as React from "react";
-import { useMemo, useRef, useEffect } from "react";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { useMemo, useRef, useEffect, useCallback } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Box } from "@chakra-ui/react";
 import { replaceDayToJa } from "../../utils/strings";
-import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
-import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 import { PostCardView } from "./PostCardView";
-import { Box, Flex, Text } from "@chakra-ui/react";
-import { granularityConfig } from "../config/granularity-config";
 import { DateDivider } from "./DateDivider";
 
 export const PostListView: React.FC = React.memo(() => {
-  const { app } = useAppContext();
   const {
     filteredPosts,
     editingPostOffset,
     granularity,
-    date: viewedDate,
-    timeFilter,
-    dateFilter,
+    displayMode,
+    loadMore,
+    hasMore,
+    scrollContainerRef,
     handleClickTime,
     startEdit,
     deletePost,
@@ -27,55 +24,101 @@ export const PostListView: React.FC = React.memo(() => {
     isReadOnly,
     setDate,
     setDisplayMode,
-    displayMode,
-    loadMore,
-    hasMore,
+    dateFilter,
   } = useMFDIContext();
 
-  const displayedPosts = useMemo(
-    () => filteredPosts.filter((x) => x.startOffset !== editingPostOffset),
-    [filteredPosts, editingPostOffset],
-  );
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const displayedPostsWithDividers = useMemo(() => {
+    const list: (
+      | { type: "post"; post: Post; key: string }
+      | { type: "divider"; date: MomentLike; key: string }
+    )[] = [];
+    let lastDate: string | null = null;
 
+    const posts = filteredPosts.filter((x) => x.startOffset !== editingPostOffset);
+
+    posts.forEach((post) => {
+      const currentDate = post.timestamp.format("YYYY-MM-DD");
+      const isTodayOnly = granularity === "day" && dateFilter === "today";
+      const showDivider = !isTodayOnly && lastDate !== currentDate;
+
+      if (showDivider) {
+        list.push({
+          type: "divider",
+          date: post.timestamp,
+          key: `divider-${currentDate}`,
+        });
+      }
+      list.push({ type: "post", post, key: `post-${post.timestamp.valueOf()}-${post.offset}` });
+      lastDate = currentDate;
+    });
+
+    return list;
+  }, [filteredPosts, editingPostOffset, granularity, dateFilter]);
+
+  const parentRef = scrollContainerRef;
+
+  const rowVirtualizer = useVirtualizer({
+    count: displayedPostsWithDividers.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => {
+      const item = displayedPostsWithDividers[index];
+      return item.type === "divider" ? 50 : 120; // 暫定の高さ
+    },
+    overscan: 10,
+  });
+
+  // 無限スクロールのトリガー
   useEffect(() => {
     if (displayMode !== "timeline" || !hasMore) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
+
+    const virtualItems = rowVirtualizer.getVirtualItems();
+    if (virtualItems.length === 0) return;
+
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (lastItem.index >= displayedPostsWithDividers.length - 1) {
+      loadMore();
     }
-    return () => observer.disconnect();
-  }, [displayMode, loadMore, hasMore]);
-  let lastDate: string | null = null;
+  }, [
+    rowVirtualizer.getVirtualItems(),
+    displayMode,
+    hasMore,
+    loadMore,
+    displayedPostsWithDividers.length,
+  ]);
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    <TransitionGroup className="list" style={{ padding: "var(--size-4-4) 0" }}>
-      {displayedPosts.map((x) => {
-        const currentDate = x.timestamp.format("YYYY-MM-DD");
-        const isTodayOnly = granularity === "day" && dateFilter === "today";
-        const showDivider = !isTodayOnly && lastDate !== currentDate;
-        lastDate = currentDate;
-
-        const { unit } = granularityConfig[granularity];
-        const isDimmed = x.timestamp.isBefore(window.moment(), unit);
+    <Box
+      className="list"
+      style={{
+        height: `${rowVirtualizer.getTotalSize()}px`,
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      {virtualItems.map((virtualItem) => {
+        const item = displayedPostsWithDividers[virtualItem.index];
 
         return (
-          <CSSTransition
-            key={x.timestamp.valueOf()}
-            timeout={300}
-            classNames="item"
+          <Box
+            key={virtualItem.key}
+            data-index={virtualItem.index}
+            ref={rowVirtualizer.measureElement}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              transform: `translateY(${virtualItem.start}px)`,
+              paddingBottom: "1px", // 境界線の重なり防止
+            }}
           >
-            <div>
-              {showDivider && <DateDivider date={x.timestamp} />}
+            {item.type === "divider" ? (
+              <DateDivider date={item.date} />
+            ) : (
               <PostCardView
-                post={x}
+                post={item.post}
                 granularity={granularity}
                 dateFilter={dateFilter}
                 onEdit={startEdit}
@@ -104,7 +147,7 @@ export const PostListView: React.FC = React.memo(() => {
                     item
                       .setTitle("編集")
                       .setIcon("pencil")
-                      .setDisabled(isDimmed || isReadOnly)
+                      .setDisabled(isReadOnly)
                       .onClick(() => {
                         startEdit(post);
                       }),
@@ -122,7 +165,7 @@ export const PostListView: React.FC = React.memo(() => {
                     item
                       .setTitle("明日に送る")
                       .setIcon("fast-forward")
-                      .setDisabled(isDimmed || isReadOnly)
+                      .setDisabled(isReadOnly)
                       .onClick(() => {
                         movePostToTomorrow(post);
                       }),
@@ -132,7 +175,7 @@ export const PostListView: React.FC = React.memo(() => {
                       .setTitle("削除")
                       .setIcon("trash")
                       .setWarning(true)
-                      .setDisabled(isDimmed || isReadOnly)
+                      .setDisabled(isReadOnly)
                       .onClick(() => {
                         deletePost(post);
                       }),
@@ -140,23 +183,46 @@ export const PostListView: React.FC = React.memo(() => {
                   menu.showAtMouseEvent(e as unknown as MouseEvent);
                 }}
               />
-            </div>
-          </CSSTransition>
+            )}
+          </Box>
         );
       })}
-      {displayMode === "timeline" && (
+      {displayMode === "timeline" && hasMore && (
         <Box
-          ref={hasMore ? sentinelRef : undefined}
-          height="100px"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          color="var(--text-muted)"
-          fontSize="var(--font-smallest)"
+          style={{
+            position: "absolute",
+            top: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--text-muted)",
+            fontSize: "var(--font-smallest)",
+          }}
         >
-          {hasMore ? "読み込み中..." : "これ以上投稿はありません"}
+          読み込み中...
         </Box>
       )}
-    </TransitionGroup>
+      {displayMode === "timeline" && !hasMore && (
+        <Box
+          style={{
+            position: "absolute",
+            top: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--text-muted)",
+            fontSize: "var(--font-smallest)",
+          }}
+        >
+          これ以上投稿はありません
+        </Box>
+      )}
+    </Box>
   );
 });
+
+import { MomentLike, Post } from "../types";

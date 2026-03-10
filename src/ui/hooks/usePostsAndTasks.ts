@@ -27,7 +27,11 @@ interface UsePostsAndTasksReturn {
   /** 直近N日間のデイリーノートを全件読み込み posts を更新。監視対象パス集合を返す。 */
   updatePostsForDays: (topicId: string, days: number) => Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
   /** 指定されたベース日から過去N日間のデイリーノートを読み込み posts に追加。監視対象パス集合を返す。 */
-  appendPostsForDays: (topicId: string, baseDate: MomentLike, days: number) => Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
+  appendPostsForDays: (topicId: string, baseDate: MomentLike, days: number) => Promise<{ posts: Post[]; paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
+  
+  // 純粋にデータを取得するだけのメソッド (Query用)
+  getPostsForWeek: (topicId: string) => Promise<{ posts: Post[]; paths: Set<string> }>;
+  getPostsForDays: (topicId: string, baseDate: MomentLike, days: number) => Promise<{ posts: Post[], paths: Set<string>, hasMore: boolean, lastSearchedDate: MomentLike }>;
 }
 
 
@@ -72,8 +76,8 @@ export function usePostsAndTasks({
     [appHelper],
   );
 
-  const updatePostsForWeek = useCallback(
-    async (topicId: string): Promise<Set<string>> => {
+  const getPostsForWeek = useCallback(
+    async (topicId: string): Promise<{ posts: Post[]; paths: Set<string> }> => {
       // 指定された日の週の月曜〜日曜の日付を列挙
       const weekStart = date.clone().startOf("isoWeek");
       const weekDates: MomentLike[] = Array.from({ length: 7 }, (_, i) =>
@@ -110,12 +114,21 @@ export function usePostsAndTasks({
         )
       ).flat();
 
-      setPosts(allPosts.sort(sorter((x) => x.timestamp.unix(), "desc")));
-
-      // 監視対象パス集合を返す
-      return new Set(entries.map((e) => e.file.path));
+      return {
+        posts: allPosts,
+        paths: new Set(entries.map((e) => e.file.path)),
+      };
     },
     [app, appHelper, date],
+  );
+
+  const updatePostsForWeek = useCallback(
+    async (topicId: string): Promise<Set<string>> => {
+      const { posts: allPosts, paths } = await getPostsForWeek(topicId);
+      setPosts(allPosts.sort(sorter((x) => x.timestamp.unix(), "desc")));
+      return paths;
+    },
+    [getPostsForWeek],
   );
 
   const getPostsForDays = useCallback(
@@ -205,10 +218,10 @@ export function usePostsAndTasks({
   );
 
   const appendPostsForDays = useCallback(
-    async (topicId: string, baseDate: MomentLike, days: number): Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }> => {
+    async (topicId: string, baseDate: MomentLike, days: number): Promise<{ posts: Post[]; paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }> => {
       const { posts: newPosts, paths, hasMore, lastSearchedDate } = await getPostsForDays(topicId, baseDate, days);
       setPosts((prev) => [...prev, ...newPosts].sort(sorter((x) => x.timestamp.unix(), "desc")));
-      return { paths, hasMore, lastSearchedDate };
+      return { posts: newPosts, paths, hasMore, lastSearchedDate };
     },
     [getPostsForDays],
   );
@@ -223,5 +236,7 @@ export function usePostsAndTasks({
     updatePostsForWeek,
     updatePostsForDays,
     appendPostsForDays,
+    getPostsForWeek,
+    getPostsForDays,
   };
 }
