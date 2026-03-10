@@ -7,8 +7,9 @@ import { useAppContext } from "../context/AppContext";
 import { useMFDIContext } from "../context/MFDIAppContext";
 import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 import { PostCardView } from "./PostCardView";
-import { Box, Divider, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { granularityConfig } from "../config/granularity-config";
+import { DateDivider } from "./DateDivider";
 
 export const PostListView: React.FC = React.memo(() => {
   const { app } = useAppContext();
@@ -72,21 +73,7 @@ export const PostListView: React.FC = React.memo(() => {
             classNames="item"
           >
             <div>
-              {showDivider && (
-                <Flex
-                  className="mfdi-date-divider"
-                  placeContent="center"
-                  fontSize= "var(--font-smallest);"
-                  fontWeight= "bold"
-                  color= "var(--text-muted)"
-                  gap= "1em"
-                >
-                  <Text marginY= "var(--size-4-2)" whiteSpace="nowrap" color="var(--text-muted)">
-                    {replaceDayToJa(x.timestamp.format("YYYY-MM-DD (ddd)"))}
-                  </Text>
-
-                </Flex>
-              )}
+              {showDivider && <DateDivider date={x.timestamp} />}
               <PostCardView
                 post={x}
                 granularity={granularity}
