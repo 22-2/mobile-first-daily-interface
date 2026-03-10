@@ -14,5 +14,4 @@ export const DATE_FILTER_OPTIONS = [
   { id: "3d", label: "過去3日間" },
   { id: "5d", label: "過去5日間" },
   { id: "7d", label: "過去7日間" },
-  { id: "infinite", label: "タイムライン" },
 ] as const;
