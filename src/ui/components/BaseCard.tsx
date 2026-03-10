@@ -34,7 +34,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       padding={"var(--size-4-2)"}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
-      opacity={isDimmed ? 0.45 : 1}
+      opacity={isDimmed ? 0.6 : 1}
       filter={isDimmed ? "grayscale(40%)" : "none"}
     >
       <Box
