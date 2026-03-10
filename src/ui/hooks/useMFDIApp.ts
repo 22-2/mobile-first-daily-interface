@@ -111,6 +111,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updateCurrentDailyNote();
   }, [date, granularity, activeTopic, updateCurrentDailyNote]);
 
+  // ビュー状態変更時のオートフォーカス
+  useEffect(() => {
+    if (!isReadOnly && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly]);
+
   useEffect(() => {
     if (!currentDailyNote) return;
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
