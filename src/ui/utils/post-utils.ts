@@ -1,4 +1,3 @@
-import { PostFormat } from "../../settings";
 import { formatTaskText } from "../../utils/task-text";
 import { DATE_FORMAT, DATE_TIME_FORMAT, TIME_FORMAT } from "../config/date-formats";
 import { Granularity, MomentLike } from "../types";
@@ -6,7 +5,6 @@ import { Granularity, MomentLike } from "../types";
 export function toText(
   input: string,
   asTask: boolean,
-  postFormat: PostFormat,
   granularity: Granularity,
   timestamp?: MomentLike,
   metadata: Record<string, string> = {},

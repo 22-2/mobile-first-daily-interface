@@ -112,7 +112,6 @@ describe("Sorting with posted metadata", () => {
     ] as any);
 
     const { result } = renderHook(() => usePostsAndTasks({
-      postFormat: { type: "thino" } as any,
       date: makeMoment("2026-03-10T00:00:00.000Z") as any,
       granularity: "day"
     }));
@@ -138,7 +137,6 @@ describe("Sorting with posted metadata", () => {
     ] as any);
 
     const { result } = renderHook(() => usePostsAndTasks({
-      postFormat: { type: "thino" } as any,
       date: makeMoment("2026-03-10T00:00:00.000Z") as any,
       granularity: "day"
     }));
@@ -196,7 +194,6 @@ describe("updatePostsForDays with Topics", () => {
     });
 
     const { result } = renderHook(() => usePostsAndTasks({
-      postFormat: { type: "thino" } as any,
       date: mockMoment("2026-03-09T12:00:00.000Z") as any,
       granularity: "day"
     }));

@@ -1,7 +1,6 @@
 import { TFile } from "obsidian";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Task } from "../../app-helper";
-import { PostFormat } from "../../settings";
 import { sorter } from "../../utils/collections";
 import { getTopicNote } from "../../utils/daily-notes";
 import { parseThinoEntries } from "../../utils/thino";
@@ -12,7 +11,6 @@ import { useAppContext } from "../context/AppContext";
 import { resolveTimestamp } from "../utils/post-utils";
 
 interface UsePostsAndTasksOptions {
-  postFormat: PostFormat;
   date: MomentLike;
   granularity: Granularity;
 }
@@ -35,7 +33,6 @@ interface UsePostsAndTasksReturn {
  * 指定されたファイルから投稿（Post）とタスク（Task）を抽出し、パースするHook。
  */
 export function usePostsAndTasks({
-  postFormat,
   date,
   granularity,
 }: UsePostsAndTasksOptions): UsePostsAndTasksReturn {
@@ -63,7 +60,7 @@ export function usePostsAndTasks({
 
       setPosts(_posts.sort(sorter((x) => x.timestamp.unix(), "desc")));
     },
-    [appHelper, postFormat, date],
+    [appHelper, date],
   );
 
   const updateTasks = useCallback(

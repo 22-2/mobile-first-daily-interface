@@ -1,7 +1,6 @@
 import { Menu, Notice, TFile } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Task } from "../../app-helper";
-import { postFormatMap } from "../../settings";
 import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
 import { granularityConfig } from "../config/granularity-config";
 import { useAppContext } from "../context/AppContext";
@@ -45,7 +44,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const postFormat = postFormatMap[settings.postFormatOption];
 
   const {
     posts,
@@ -56,7 +54,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updateTasks,
     updatePostsForWeek,
     updatePostsForDays,
-  } = usePostsAndTasks({ postFormat, date, granularity });
+  } = usePostsAndTasks({ date, granularity });
 
   // 複数日モード中に監視するファイルパス集合
   const weekNotePathsRef = useRef<Set<string>>(new Set());
@@ -227,7 +225,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         const text = toText(
           currentInput,
           false,
-          postFormat,
           granularity,
           targetTs,
           editingPost.metadata,
@@ -260,7 +257,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       metadata.posted = now.toISOString();
     }
 
-    const text = toText(currentInput, asTask, postFormat, granularity, undefined, metadata);
+    const text = toText(currentInput, asTask, granularity, undefined, metadata);
     if (!text) {
       setInput("");
       inputRef.current?.setContent("");
@@ -293,7 +290,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     editingPost,
     currentDailyNote,
     settings,
-    postFormat,
     granularity,
     appHelper,
     input,
@@ -320,7 +316,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       const text = toText(
         post.message,
         false,
-        postFormat,
         granularity,
         targetTs,
         metadata,
@@ -377,7 +372,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       const text = toText(
         messageWithFrom,
         false,
-        postFormat,
         granularity,
         nextDay,
         metadata,
@@ -398,7 +392,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       isReadOnly,
       granularity,
       activeTopic,
-      postFormat,
       settings.insertAfter,
     ],
   );
