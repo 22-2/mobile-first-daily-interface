@@ -1,8 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
@@ -12,10 +9,11 @@ import { Post } from "src/ui/types";
 import { toText } from "src/ui/utils/post-utils";
 import { getTopicNote } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
+import { useRefreshPosts } from "./useRefreshPosts";
 
 export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
-  const queryClient = useQueryClient();
+  const refreshPosts = useRefreshPosts();
 
   const settingsState = useSettingsStore(useShallow(s => ({
     date: s.date,
@@ -50,30 +48,6 @@ export const usePostActions = () => {
     currentDailyNote: s.currentDailyNote,
     replacePaths: s.replacePaths,
   })));
-
-  // ---------------------------------------------------------------------------
-  // 共通ヘルパー: dateFilter に応じて投稿一覧を再取得する
-  // ---------------------------------------------------------------------------
-  const refreshPosts = useCallback(async (path?: string) => {
-    const { dateFilter, activeTopic, date, displayMode } = settingsState;
-
-    // タイムラインモード: TQ キャッシュを invalidate して再フェッチを促す
-    if (displayMode === DISPLAY_MODE.TIMELINE) {
-      await queryClient.invalidateQueries({ queryKey: ["posts", activeTopic, displayMode] });
-      return;
-    }
-
-    if (dateFilter === DATE_FILTER_IDS.TODAY) {
-      if (!path) return;
-      const noteFile = app.vault.getAbstractFileByPath(path);
-      if (noteFile instanceof TFile) await postsState.updatePosts(noteFile);
-    } else if (dateFilter === DATE_FILTER_IDS.THIS_WEEK) {
-      await postsState.updatePostsForWeek(activeTopic, date);
-    } else {
-      const days = parseInt(dateFilter);
-      if (!isNaN(days)) await postsState.updatePostsForDays(activeTopic, date, days);
-    }
-  }, [app.vault, queryClient, settingsState, postsState]);
 
   // ---------------------------------------------------------------------------
   // 共通ヘルパー: 投稿を上書きして画面を更新する（削除・アーカイブ共通）
@@ -150,11 +124,7 @@ export const usePostActions = () => {
       await noteStore.getState().createNoteWithInsertAfter(app, settings, undefined);
 
       if (settingsState.dateFilter !== "today") {
-        const getPaths =
-          settingsState.dateFilter === "this_week"
-            ? () => postsState.updatePostsForWeek(settingsState.activeTopic, settingsState.date)
-            : () => postsState.updatePostsForDays(settingsState.activeTopic, settingsState.date, parseInt(settingsState.dateFilter)).then(res => res.paths);
-        getPaths().then(paths => noteState.replacePaths(paths));
+        await refreshPosts();
       }
 
       settingsState.setDate(settingsState.date.clone());

@@ -1,20 +1,19 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { getPeriodicSettings } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
+import { useRefreshPosts } from "./internal/useRefreshPosts";
 
 /**
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
  */
 export function useNoteSync() {
   const { app } = useAppContext();
-  const queryClient = useQueryClient();
+  const refreshPosts = useRefreshPosts();
 
   const settingsState = useSettingsStore(useShallow(s => ({
     date: s.date,
@@ -41,27 +40,14 @@ export function useNoteSync() {
   })));
 
   useEffect(() => {
-    const { date, granularity, activeTopic, dateFilter, displayMode } = settingsState;
+    const { date, granularity, activeTopic, dateFilter } = settingsState;
     const { currentDailyNote, weekNotePaths } = noteState;
 
     const eventRef = app.metadataCache.on("changed", async (file) => {
-      // タイムラインモード: TQ キャッシュを invalidate して再フェッチを促す
-      if (displayMode === DISPLAY_MODE.TIMELINE) {
-        queryClient.invalidateQueries({ queryKey: ["posts", activeTopic, displayMode] });
-        return;
-      }
-
-      // 複数日表示モード
-      if (dateFilter !== "today" && weekNotePaths.size > 0) {
-        if (weekNotePaths.has(file.path)) {
-          if (dateFilter === "this_week") {
-            postsState.updatePostsForWeek(activeTopic, date).then(paths => noteState.replacePaths(paths));
-          } else {
-            const days = parseInt(dateFilter);
-            if (!isNaN(days)) {
-              postsState.updatePostsForDays(activeTopic, date, days).then(({ paths }) => noteState.replacePaths(paths));
-            }
-          }
+      // 複数日表示モード または タイムラインモード
+      if (dateFilter !== "today" || settingsState.displayMode === "timeline") {
+        if (settingsState.displayMode === "timeline" || weekNotePaths.has(file.path)) {
+          await refreshPosts(file.path);
         }
         return;
       }
@@ -94,5 +80,5 @@ export function useNoteSync() {
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [app, queryClient, settingsState, noteState, postsState]);
+  }, [app, settingsState, noteState, postsState, refreshPosts]);
 }
