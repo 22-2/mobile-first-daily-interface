@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { Task } from "../../app-helper";
-import { ObsidianLiveEditorRef } from "../components/common/ObsidianLiveEditor";
-import { useAppContext } from "../context/AppContext";
-import { MFDIModal } from "../modals/MFDIModal";
-import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "../types";
-import { MFDIView } from "../view/MFDIView";
+import { Task } from "src/app-helper";
+import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
+import { useAppContext } from "src/ui/context/AppContext";
+import { MFDIModal } from "src/ui/modals/MFDIModal";
+import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
+import { MFDIView } from "src/ui/view/MFDIView";
 
 export interface ViewSyncHandlers {
   /** 投稿送信 */

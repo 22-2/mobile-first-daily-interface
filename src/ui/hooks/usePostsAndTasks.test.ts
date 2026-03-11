@@ -1,60 +1,23 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
+import { useAppContext } from "src/ui/context/AppContext";
+import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
+import { resolveTimestamp } from "src/ui/utils/post-utils";
+import * as dailyNotes from "src/utils/daily-notes";
+import * as thino from "src/utils/thino";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as dailyNotes from "../../utils/daily-notes";
-import * as thino from "../../utils/thino";
-import { useAppContext } from "../context/AppContext";
-import { resolveTimestamp } from "../utils/post-utils";
-import { usePostsAndTasks } from "./usePostsAndTasks";
 
-// 簡易的な moment のモックを定義
-const makeMoment = (dateStr: string) => {
-  const m: any = {
-    // 実際の日付計算をある程度再現する
-    format: vi.fn((f: string) => {
-      const d = new Date(dateStr);
-      if (f === "YYYY-MM-DD") return d.toISOString().split("T")[0];
-      if (f === "HH:mm:ss") return d.toISOString().split("T")[1].split(".")[0];
-      if (f === "YYYY-MM-DD HH:mm:ss") {
-        return `${d.toISOString().split("T")[0]} ${d.toISOString().split("T")[1].split(".")[0]}`;
-      }
-      return dateStr;
-    }),
-    subtract: vi.fn((n: number, _unit: string) => {
-      const d = new Date(dateStr);
-      d.setDate(d.getDate() - n);
-      return makeMoment(d.toISOString());
-    }),
-    add: vi.fn((n: number, _unit: string) => {
-      const d = new Date(dateStr);
-      d.setDate(d.getDate() + n);
-      return makeMoment(d.toISOString());
-    }),
-    startOf: vi.fn((_unit: string) => makeMoment(dateStr)),
-    clone: vi.fn(() => makeMoment(dateStr)),
-    unix: vi.fn(() => new Date(dateStr).getTime() / 1000),
-    isValid: vi.fn(() => true),
-    toISOString: vi.fn(() => dateStr),
-    diff: vi.fn(() => 0),
-    isSame: vi.fn(() => false),
-  };
-  return m;
-};
+import moment from "moment";
 
-const mockMoment = vi.fn((val: string, format?: string) => {
-  if (format === "YYYY-MM-DD HH:mm:ss" && val) {
-    // "2026-03-02 16:00:00" 形式を ISO に変換してモック
-    const [d, t] = val.split(" ");
-    return makeMoment(`${d}T${t}.000Z`);
-  }
-  return makeMoment(val || "2026-03-09T12:00:00.000Z");
-});
-(window as any).moment = mockMoment;
+// Obsidian provides moment globally. Mock it for tests using the installed package.
+(window as any).moment = moment;
 
 vi.mock("../../utils/daily-notes", () => ({
   getTopicNote: vi.fn(),
   resolveTopicNotePath: vi.fn(),
   getPeriodicSettings: vi.fn().mockReturnValue({ format: "YYYY-MM-DD" }),
+  getAllTopicNotes: vi.fn().mockReturnValue({}),
+  getDateUID: vi.fn((date: any, g: string) => `${g}-${date.toISOString()}`),
 }));
 
 vi.mock("../../utils/thino", () => ({
@@ -66,7 +29,7 @@ vi.mock("../context/AppContext", () => ({
 }));
 
 describe("resolveTimestamp", () => {
-  const dateFor20260302 = makeMoment("2026-03-02T12:00:00.000Z") as any;
+  const dateFor20260302 = moment("2026-03-02T12:00:00.000Z") as any;
 
   it("時刻のみ（旧形式）: 日付ファイルの日付を補完してパースする", () => {
     const result = resolveTimestamp("16:00:00", dateFor20260302);
@@ -112,7 +75,7 @@ describe("Sorting with posted metadata", () => {
     ] as any);
 
     const { result } = renderHook(() => usePostsAndTasks({
-      date: makeMoment("2026-03-10T00:00:00.000Z") as any,
+      date: moment("2026-03-10T00:00:00.000Z") as any,
       granularity: "day"
     }));
 
@@ -137,7 +100,7 @@ describe("Sorting with posted metadata", () => {
     ] as any);
 
     const { result } = renderHook(() => usePostsAndTasks({
-      date: makeMoment("2026-03-10T00:00:00.000Z") as any,
+      date: moment("2026-03-10T00:00:00.000Z") as any,
       granularity: "day"
     }));
 
@@ -171,15 +134,13 @@ describe("updatePostsForDays with Topics", () => {
     const mockFileTopic1 = { path: "topic-2026-03-09.md" } as any;
     const mockFileTopic2 = { path: "topic-2026-03-08.md" } as any;
     
-    vi.spyOn(dailyNotes, "getTopicNote")
-      .mockImplementation((_app, date, _g, topicId) => {
-        const d = date.format("YYYY-MM-DD");
-        if (topicId === "topic") {
-          if (d === "2026-03-09") return mockFileTopic1;
-          if (d === "2026-03-08") return mockFileTopic2;
-        }
-        return null;
-      });
+    const date0 = moment("2026-03-09T12:00:00.000Z").startOf("day");
+    const date1 = date0.clone().subtract(1, "days");
+
+    vi.spyOn(dailyNotes, "getAllTopicNotes").mockReturnValue({
+      [`day-${date0.toISOString()}`]: mockFileTopic1,
+      [`day-${date1.toISOString()}`]: mockFileTopic2,
+    });
 
     vi.spyOn(thino, "parseThinoEntries").mockImplementation((content) => {
       if (content === "topic-content1") return [{ time: "10:00:00", message: "topic-post1", offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 }] as any;
@@ -194,7 +155,7 @@ describe("updatePostsForDays with Topics", () => {
     });
 
     const { result } = renderHook(() => usePostsAndTasks({
-      date: mockMoment("2026-03-09T12:00:00.000Z") as any,
+      date: moment("2026-03-09T12:00:00.000Z") as any,
       granularity: "day"
     }));
 

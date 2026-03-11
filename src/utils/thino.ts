@@ -1,4 +1,3 @@
-import { trimRedundantEmptyLines } from "./strings";
 
 export interface ThinoEntry {
   time: string;

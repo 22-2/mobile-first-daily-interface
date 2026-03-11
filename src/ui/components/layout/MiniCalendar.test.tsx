@@ -3,8 +3,8 @@ import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import React from "react";
-import { MiniCalendar } from "./MiniCalendar";
-import { useMFDIContext } from "../../context/MFDIAppContext";
+import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
+import { useMFDIContext } from "src/ui/context/MFDIAppContext";
 
 vi.mock("obsidian", () => ({
   setIcon: vi.fn(),

@@ -1,5 +1,5 @@
+import { formatTaskText } from "src/utils/task-text";
 import { describe, expect, test } from "vitest";
-import { formatTaskText } from "./task-text";
 
 describe("formatTaskText", () => {
   test("single-line includes time and content inline", () => {

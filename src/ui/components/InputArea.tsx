@@ -1,14 +1,14 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { granularityConfig } from "../config/granularity-config";
-import { useAppContext } from "../context/AppContext";
-import { useMFDIContext } from "../context/MFDIAppContext";
-import { addGranularityMenuItems } from "../menus/granularityMenu";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { ObsidianIcon } from "./common/ObsidianIcon";
-import { ObsidianLiveEditor } from "./common/ObsidianLiveEditor";
-import { READONLY_PLACEHOLDER_TEXT, PLACEHOLDER_TEXT } from "../config/consntants";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
+import { PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
+import { granularityConfig } from "src/ui/config/granularity-config";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
+import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 
 const NavButton: React.FC<{
   direction: "left" | "right";

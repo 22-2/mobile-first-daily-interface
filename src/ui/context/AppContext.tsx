@@ -1,10 +1,10 @@
 import { App } from "obsidian";
 import * as React from "react";
 import { createContext, ReactNode, useContext, useMemo } from "react";
-import { AppHelper } from "../../app-helper";
-import { Settings } from "../../settings";
-import { MFDIStorage } from "../../utils/storage";
-import { MFDIView } from "../MFDIView";
+import { AppHelper } from "src/app-helper";
+import { Settings } from "src/settings";
+import { MFDIView } from "src/ui/MFDIView";
+import { MFDIStorage } from "src/utils/storage";
 
 // ─────────────────────────────────────────────────────────────────
 // Context value type

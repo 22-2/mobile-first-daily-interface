@@ -1,9 +1,9 @@
 import { Plugin } from "obsidian";
-import { AppHelper } from "./app-helper";
-import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
-import { Topic } from "./topic";
-import { TopicManagerModal } from "./ui/modals/TopicManagerModal";
-import { MFDIView, VIEW_TYPE_MFDI } from "./ui/view/MFDIView";
+import { AppHelper } from "src/app-helper";
+import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
+import { Topic } from "src/topic";
+import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
+import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;

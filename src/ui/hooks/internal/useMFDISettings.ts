@@ -1,8 +1,8 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { DateFilter, DisplayMode, Granularity, MomentLike, TimeFilter } from "../../types";
+import { DateFilter, DisplayMode, Granularity, MomentLike, TimeFilter } from "src/ui/types";
 
-import { granularityConfig } from "../../config/granularity-config";
-import { useAppContext } from "../../context/AppContext";
+import { granularityConfig } from "src/ui/config/granularity-config";
+import { useAppContext } from "src/ui/context/AppContext";
 
 /**
  * 閲覧設定（トピック、期間、日付、フィルター）を管理するHook。

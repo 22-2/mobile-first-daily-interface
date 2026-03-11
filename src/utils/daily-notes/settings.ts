@@ -1,4 +1,4 @@
-import { Granularity } from "../../ui/types";
+import { Granularity } from "src/ui/types";
 
 export interface PeriodicNoteSettings {
   format: string;

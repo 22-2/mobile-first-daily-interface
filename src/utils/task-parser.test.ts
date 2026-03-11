@@ -1,16 +1,10 @@
+import { parseTaskTimestamp } from "src/utils/task-parser";
 import { describe, expect, test, vi } from "vitest";
-import { parseTaskTimestamp } from "./task-parser";
 
-// Mock window.moment
-// In the real app, window.moment is provided by Obsidian (which is based on moment.js)
-const mockMoment = (val?: any, format?: string) => {
-  const moment = require("moment");
-  return moment(val, format);
-};
+import moment from "moment";
 
-vi.stubGlobal("window", {
-  moment: mockMoment,
-});
+// Obsidian provides moment globally. Mock it for tests using the installed package.
+(window as any).moment = moment;
 
 describe("parseTaskTimestamp", () => {
   const fileBasename = "2026-03-08";

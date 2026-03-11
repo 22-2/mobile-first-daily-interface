@@ -1,9 +1,9 @@
 import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { getTopicNote } from "../../../utils/daily-notes";
-import { parseThinoEntries } from "../../../utils/thino";
-import { useAppContext } from "../../context/AppContext";
-import { useMFDIContext } from "../../context/MFDIAppContext";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { getTopicNote } from "src/utils/daily-notes";
+import { parseThinoEntries } from "src/utils/thino";
 
 interface Counts {
   posts: number;

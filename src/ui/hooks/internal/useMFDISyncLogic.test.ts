@@ -1,5 +1,5 @@
+import { handleThisWeekSyncOnSubmit } from "src/ui/hooks/internal/useMFDISyncLogic";
 import { describe, expect, test, vi } from "vitest";
-import { handleThisWeekSyncOnSubmit } from "./useMFDISyncLogic";
 
 describe("handleThisWeekSyncOnSubmit", () => {
   test("this_week モードで currentDailyNote が null の場合、updatePostsForWeek を呼び出す", async () => {

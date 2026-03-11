@@ -1,10 +1,10 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { getAllTopicNotes } from "../../../utils/daily-notes/notes";
-import { getDateFromFile } from "../../../utils/daily-notes/utils";
-import { useAppContext } from "../../context/AppContext";
-import { useMFDIContext } from "../../context/MFDIAppContext";
-import { ObsidianIcon } from "../common/ObsidianIcon";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { getAllTopicNotes } from "src/utils/daily-notes/notes";
+import { getDateFromFile } from "src/utils/daily-notes/utils";
 
 // ─────────────────────────────────────────────
 // 型定義

@@ -1,17 +1,16 @@
-import { Menu, Notice, TFile } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Task } from "../../app-helper";
-import { createTopicNote, getTopicNote } from "../../utils/daily-notes";
-import { granularityConfig } from "../config/granularity-config";
-import { useAppContext } from "../context/AppContext";
-import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
-import { MomentLike, Post } from "../types";
-import { toText } from "../utils/post-utils";
-import { useMFDIEditor } from "./internal/useMFDIEditor";
-import { useMFDISettings } from "./internal/useMFDISettings";
-import { useNoteSync } from "./useNoteSync";
-import { usePostsAndTasks } from "./usePostsAndTasks";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { Notice, TFile } from "obsidian";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Task } from "src/app-helper";
+import { granularityConfig } from "src/ui/config/granularity-config";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIEditor } from "src/ui/hooks/internal/useMFDIEditor";
+import { useMFDISettings } from "src/ui/hooks/internal/useMFDISettings";
+import { useNoteSync } from "src/ui/hooks/useNoteSync";
+import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
+import { MomentLike, Post } from "src/ui/types";
+import { toText } from "src/ui/utils/post-utils";
+import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
 
@@ -532,29 +531,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setTasks((await appHelper.getTasks(currentDailyNote)) ?? []);
   };
 
-  const taskContextMenu = useCallback(
-    (task: Task, e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const menu = new Menu();
-      menu.addItem((item) =>
-        item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task)),
-      );
-      menu.addItem((item) =>
-        item.setTitle("編集").onClick(() => openTaskInEditor(task)),
-      );
-      menu.addItem((item) =>
-        item
-          .setTitle("削除")
-          .setDisabled(isReadOnly)
-          .onClick(() => {
-            new DeleteConfirmModal(app, () => deleteTask(task)).open();
-          }),
-      );
-      menu.showAtMouseEvent(e as unknown as MouseEvent);
-    },
-    [app, openTaskInEditor, deleteTask, isReadOnly],
-  );
 
   const filteredPosts = useMemo(() => {
     const postsWithoutHidden = posts.filter(
@@ -627,7 +603,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updateTaskChecked,
     openTaskInEditor,
     deleteTask,
-    taskContextMenu,
     isToday,
     isReadOnly,
     getMoveStep,

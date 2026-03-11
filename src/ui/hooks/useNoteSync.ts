@@ -1,10 +1,10 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { Task } from "../../app-helper";
-import { getPeriodicSettings } from "../../utils/daily-notes";
-import { Granularity, MomentLike, Post } from "../types";
+import { Task } from "src/app-helper";
+import { Granularity, MomentLike, Post } from "src/ui/types";
+import { getPeriodicSettings } from "src/utils/daily-notes";
 
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
 
 interface UseNoteSyncOptions {
   date: MomentLike;

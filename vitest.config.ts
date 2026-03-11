@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     alias: {
+      "src": path.resolve(__dirname, './src'),
       'obsidian': path.resolve(__dirname, './src/__mocks__/obsidian.ts'),
       // 'react': 'preact/compat',
       // 'react-dom': 'preact/compat',

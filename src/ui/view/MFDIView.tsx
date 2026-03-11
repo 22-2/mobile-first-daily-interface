@@ -1,12 +1,12 @@
 import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { Settings } from "../../settings";
-import { ReactView } from "../components/layout/ReactView";
-import { addPeriodMenuItems } from "../menus/periodMenu";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { DateFilter, DisplayMode, Granularity, TimeFilter } from "../types";
-import { MFDIViewHandler } from "./MFDIViewHandler";
+import { Settings } from "src/settings";
+import { ReactView } from "src/ui/components/layout/ReactView";
+import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
+import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

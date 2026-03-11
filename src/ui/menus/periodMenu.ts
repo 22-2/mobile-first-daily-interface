@@ -1,9 +1,8 @@
 import { Menu } from "obsidian";
 import {
-    DATE_FILTER_OPTIONS,
-    TIME_FILTER_OPTIONS
-} from "../config/filter-config";
-import { DateFilter, DisplayMode, Granularity, TimeFilter } from "../types";
+    DATE_FILTER_OPTIONS
+} from "src/ui/config/filter-config";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 
 export function addPeriodMenuItems(
   menu: Menu,

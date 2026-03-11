@@ -1,4 +1,4 @@
-import { MomentLike } from "../ui/types";
+import { MomentLike } from "src/ui/types";
 
 export interface ParsedTask {
   displayName: string;

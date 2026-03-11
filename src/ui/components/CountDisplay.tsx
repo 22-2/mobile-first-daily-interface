@@ -1,13 +1,13 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { granularityConfig } from "../config/granularity-config";
+import { granularityConfig } from "src/ui/config/granularity-config";
 
-import { useAppContext } from "../context/AppContext";
-import { useMFDIContext } from "../context/MFDIAppContext";
-import { addPeriodMenuItems } from "../menus/periodMenu";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { UnderlinedClickable } from "./UnderlinedClickable";
+import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
+import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 
 const DateSection: React.FC = () => {
   const { date, granularity, dateFilter, displayMode } = useMFDIContext();
