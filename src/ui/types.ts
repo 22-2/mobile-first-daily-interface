@@ -1,9 +1,10 @@
+import { Moment } from "moment";
 import {
     DATE_FILTER_OPTIONS,
     TIME_FILTER_OPTIONS
 } from "src/ui/config/filter-config";
 
-export type MomentLike = ReturnType<typeof window.moment>;
+export type MomentLike = Moment;
 
 export type Granularity = "day" | "week" | "month" | "year";
 

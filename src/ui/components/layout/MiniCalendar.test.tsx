@@ -3,8 +3,8 @@ import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import React from "react";
-import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 
 vi.mock("obsidian", () => ({
   setIcon: vi.fn(),
@@ -15,10 +15,6 @@ vi.mock("obsidian", () => ({
 vi.mock("../../context/MFDIAppContext", () => ({
   useMFDIContext: vi.fn(),
 }));
-
-// Basic moment.js mock for testing
-import moment from "moment";
-(window as any).moment = moment;
 
 vi.mock("../../context/AppContext", () => ({
   useAppContext: vi.fn(() => ({

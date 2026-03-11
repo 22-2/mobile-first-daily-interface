@@ -1,18 +1,27 @@
 import { Menu, Notice } from "obsidian";
 import { useCallback } from "react";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useShallow } from "zustand/shallow";
 import { Post } from "src/ui/types";
 
 export const usePostContextMenu = () => {
-  const {
-    handleClickTime,
-    setDate,
-    setDisplayMode,
-    startEdit,
-    isReadOnly,
-    movePostToTomorrow,
-    deletePost,
-  } = useMFDIContext();
+  const { setDate, setDisplayMode, isReadOnly } = useSettingsStore(
+    useShallow((s) => ({
+      setDate: s.setDate,
+      setDisplayMode: s.setDisplayMode,
+      isReadOnly: s.isReadOnly(),
+    }))
+  );
+
+  const { startEdit } = useEditorStore(
+    useShallow((s) => ({
+      startEdit: s.startEdit,
+    }))
+  );
+
+  const { handleClickTime, movePostToTomorrow, deletePost } = usePostActions();
 
   const showPostContextMenu = useCallback(
     (post: Post, e: React.MouseEvent) => {

@@ -7,7 +7,9 @@ import { initializeSettingsStore } from "src/ui/store/settingsStore";
 import { initializeEditorStore } from "src/ui/store/editorStore";
 import { initializePostsStore } from "src/ui/store/postsStore";
 
-type MFDIAppContextValue = ReturnType<typeof useMFDIApp>;
+type MFDIAppContextValue = {
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+};
 
 const MFDIAppContext = createContext<MFDIAppContextValue | null>(null);
 
@@ -35,65 +37,10 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     initializePostsStore(app, appHelper);
   }, [settings, storage, app, appHelper]);
 
-  const value = useMFDIApp();
-
-  const {
-    granularity,
-    activeTopic,
-    asTask,
-    timeFilter,
-    dateFilter,
-    handleSubmit,
-    handleClickOpenDailyNote,
-    setGranularity,
-    setTimeFilter,
-    setDateFilter,
-    setCurrentDailyNote,
-    setPosts,
-    setTasks,
-    setActiveTopic,
-    setAsTask,
-    input,
-    setInput,
-    inputRef,
-    sidebarOpen,
-    setSidebarOpen,
-    displayMode,
-    setDisplayMode,
-    scrollContainerRef,
-    currentDailyNote,
-    isReadOnly,
-  } = value;
+  const { scrollContainerRef, inputRef, currentDailyNote } = useMFDIApp();
 
   // Sync state/handlers with Obsidian View
-  useViewSync(
-    view,
-    granularity,
-    activeTopic,
-    asTask,
-    timeFilter,
-    dateFilter,
-    displayMode,
-    isReadOnly,
-    {
-      handleSubmit,
-      handleClickOpenDailyNote,
-      setGranularity,
-      setTimeFilter,
-      setDateFilter,
-      setCurrentDailyNote,
-      setPosts,
-      setTasks,
-      setActiveTopic,
-      setAsTask,
-      input,
-      setInput,
-      inputRef,
-      sidebarOpen,
-      setSidebarOpen,
-      setDisplayMode,
-    },
-  );
+  useViewSync(view);
 
   // Handle focus requested from View
   useEffect(() => {
@@ -113,6 +60,8 @@ export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
     }, 0);
     return () => clearTimeout(timer);
   }, [currentDailyNote, scrollContainerRef]);
+
+  const value = React.useMemo(() => ({ scrollContainerRef }), [scrollContainerRef]);
 
   return (
     <MFDIAppContext.Provider value={value}>{children}</MFDIAppContext.Provider>

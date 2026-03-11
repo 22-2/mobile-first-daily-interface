@@ -2,12 +2,15 @@ import { Menu } from "obsidian";
 import { useCallback } from "react";
 import { Task } from "src/app-helper";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
+import { useShallow } from "zustand/shallow";
 import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 
 export const useTaskContextMenu = () => {
   const { app } = useAppContext();
-  const { isReadOnly, openTaskInEditor, deleteTask } = useMFDIContext();
+  const isReadOnly = useSettingsStore(s => s.isReadOnly());
+  const { openTaskInEditor, deleteTask } = useTaskActions();
 
   const showTaskContextMenu = useCallback(
     (task: Task, e: React.MouseEvent) => {

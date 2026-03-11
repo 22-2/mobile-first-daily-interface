@@ -6,9 +6,14 @@ import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor"
 import { PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useShallow } from "zustand/shallow";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+
+import { usePostsStore, postsStore } from "src/ui/store/postsStore";
 
 const NavButton: React.FC<{
   direction: "left" | "right";
@@ -45,11 +50,31 @@ const InputAreaControl: React.FC = React.memo(() => {
     handleClickMoveNext,
     handleClickToday,
     handleClickHome,
-    handleChangeCalendarDate,
+    handleChangeCalendarDateAction,
     displayMode,
     setDisplayMode,
     getMoveStep,
-  } = useMFDIContext();
+  } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    granularity: s.granularity,
+    isToday: s.isToday(),
+    isReadOnly: s.isReadOnly(),
+    handleClickMovePrevious: s.handleClickMovePrevious,
+    handleClickMoveNext: s.handleClickMoveNext,
+    handleClickToday: s.handleClickToday,
+    handleClickHome: s.handleClickHome,
+    handleChangeCalendarDateAction: s.handleChangeCalendarDate,
+    displayMode: s.displayMode,
+    setDisplayMode: s.setDisplayMode,
+    getMoveStep: s.getMoveStep,
+  })));
+
+  const handleChangeCalendarDate = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      handleChangeCalendarDateAction(event.target.value);
+    },
+    [handleChangeCalendarDateAction]
+  );
 
   const step = getMoveStep();
 
@@ -166,15 +191,21 @@ const InputAreaControl: React.FC = React.memo(() => {
 });
 
 const InputAreaFooter: React.FC = React.memo(() => {
-  const {
-    asTask,
-    editingPost,
-    canSubmit,
-    isReadOnly,
-    handleSubmit,
-    cancelEdit,
-    setAsTask,
-  } = useMFDIContext();
+  const { asTask, isReadOnly, setAsTask } = useSettingsStore(useShallow(s => ({
+    asTask: s.asTask,
+    isReadOnly: s.isReadOnly(),
+    setAsTask: s.setAsTask,
+  })));
+
+  const { editingPostOffset, canSubmit, cancelEdit } = useEditorStore(useShallow(s => ({
+    editingPostOffset: s.editingPostOffset,
+    canSubmit: s.canSubmit(postsStore.getState().posts),
+    cancelEdit: s.cancelEdit,
+  })));
+
+  const editingPost = useEditorStore(s => s.getEditingPost(postsStore.getState().posts));
+
+  const { handleSubmit } = usePostActions();
 
   const submitButtonProps = canSubmit
     ? {
@@ -236,8 +267,15 @@ const InputAreaFooter: React.FC = React.memo(() => {
 
 export const InputArea: React.FC = React.memo(() => {
   const { app, view } = useAppContext();
-  const { input, setInput, handleSubmit, isReadOnly, inputRef } =
-    useMFDIContext();
+  const { input, setInput, inputRef } = useEditorStore(useShallow(s => ({
+    input: s.input,
+    setInput: s.setInput,
+    inputRef: s.inputRef,
+  })));
+  const { isReadOnly } = useSettingsStore(useShallow(s => ({
+    isReadOnly: s.isReadOnly(),
+  })));
+  const { handleSubmit } = usePostActions();
 
   return (
     <Flex

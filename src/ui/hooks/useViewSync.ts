@@ -6,66 +6,66 @@ import { MFDIModal } from "src/ui/modals/MFDIModal";
 import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
 import { MFDIView } from "src/ui/view/MFDIView";
 
-export interface ViewSyncHandlers {
-  /** 投稿送信 */
-  handleSubmit: () => Promise<void>;
-  /** デイリーノートを開く */
-  handleClickOpenDailyNote: () => Promise<void>;
-  /** granularity 変更 */
-  setGranularity: (g: Granularity) => void;
-  setTimeFilter: (t: TimeFilter) => void;
-  setDateFilter: (d: DateFilter) => void;
-  setCurrentDailyNote: (note: null) => void;
-  setPosts: (posts: Post[]) => void;
-  setTasks: (tasks: Task[]) => void;
-  /** topic 変更 */
-  setActiveTopic: (id: string) => void;
-  /** asTask 変更 */
-  setAsTask: (t: boolean) => void;
-  /** modal editor */
-  input: string;
-  setInput: (s: string) => void;
-  inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
-  sidebarOpen: boolean;
-  setSidebarOpen: (o: boolean) => void;
-  setDisplayMode: (m: DisplayMode) => void;
-}
+import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
+import { useEditorStore, editorStore } from "src/ui/store/editorStore";
+import { usePostsStore, postsStore } from "src/ui/store/postsStore";
+import { useNoteStore, noteStore } from "src/ui/store/noteStore";
+import { useShallow } from "zustand/shallow";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
 
 /**
  * ReactView の state/handler を Obsidian View オブジェクトに同期する。
- *
- * View 側から paneMenu や keyboard shortcut でコールバックを呼び出せるよう、
- * `view.onXxx` / `view.xxx` に最新の関数・値を設定する。
  */
-export function useViewSync(
-  view: MFDIView,
-  granularity: Granularity,
-  activeTopic: string,
-  asTask: boolean,
-  timeFilter: TimeFilter,
-  dateFilter: DateFilter,
-  displayMode: DisplayMode,
-  isReadOnly: boolean,
-  {
-    handleSubmit,
-    handleClickOpenDailyNote,
+export function useViewSync(view: MFDIView) {
+  const { app } = useAppContext();
+  
+  const {
+    granularity,
+    activeTopic,
+    asTask,
+    timeFilter,
+    dateFilter,
+    displayMode,
+    isReadOnly,
+    sidebarOpen,
     setGranularity,
     setTimeFilter,
     setDateFilter,
-    setCurrentDailyNote,
-    setPosts,
-    setTasks,
     setActiveTopic,
     setAsTask,
-    input,
-    setInput,
-    inputRef,
-    sidebarOpen,
-    setSidebarOpen,
     setDisplayMode,
-  }: ViewSyncHandlers,
-) {
-  const { app } = useAppContext();
+    setSidebarOpen,
+  } = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    activeTopic: s.activeTopic,
+    asTask: s.asTask,
+    timeFilter: s.timeFilter,
+    dateFilter: s.dateFilter,
+    displayMode: s.displayMode,
+    isReadOnly: s.isReadOnly(),
+    sidebarOpen: s.sidebarOpen,
+    setGranularity: s.setGranularity,
+    setTimeFilter: s.setTimeFilter,
+    setDateFilter: s.setDateFilter,
+    setActiveTopic: s.setActiveTopic,
+    setAsTask: s.setAsTask,
+    setDisplayMode: s.setDisplayMode,
+    setSidebarOpen: s.setSidebarOpen,
+  })));
+
+  const { input, inputRef } = useEditorStore(useShallow(s => ({
+    input: s.input,
+    inputRef: s.inputRef,
+  })));
+  const { setInput } = editorStore.getState();
+
+  const { handleSubmit } = usePostActions();
+  const { handleClickOpenDailyNote } = useNoteManager();
+
+  const { setCurrentDailyNote } = noteStore.getState();
+  const { setPosts, setTasks } = postsStore.getState();
+
   const inputRefVal = useRef(input);
   const inputRefObj = useRef(inputRef);
   const sidebarOpenRef = useRef(sidebarOpen);

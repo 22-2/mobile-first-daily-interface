@@ -5,12 +5,14 @@ import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import * as dailyNotes from "src/utils/daily-notes";
 import * as thino from "src/utils/thino";
+import { initializePostsStore } from "src/ui/store/postsStore";
+import { settingsStore } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import moment from "moment";
 
 // Obsidian provides moment globally. Mock it for tests using the installed package.
-(window as any).moment = moment;
+// (window as any).moment = moment; // Handled by vitest.setup.ts
 
 vi.mock("../../utils/daily-notes", () => ({
   getTopicNote: vi.fn(),
@@ -61,6 +63,8 @@ describe("Sorting with posted metadata", () => {
       app: {},
       appHelper: mockAppHelper,
     });
+    initializePostsStore({} as any, mockAppHelper as any);
+    settingsStore.setState({ date: moment("2026-03-10T00:00:00.000Z") as any });
   });
 
   it("posted メタデータに基づいて降順にソートされること", async () => {
@@ -128,6 +132,8 @@ describe("updatePostsForDays with Topics", () => {
       app: {},
       appHelper: mockAppHelper,
     });
+    initializePostsStore({} as any, mockAppHelper as any);
+    settingsStore.setState({ date: moment("2026-03-09T12:00:00.000Z") as any });
   });
 
   it("トピック指定時に正しく複数日の投稿を取得できること", async () => {

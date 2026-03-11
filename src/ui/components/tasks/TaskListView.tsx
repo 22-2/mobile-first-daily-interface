@@ -3,18 +3,25 @@ import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
+import { useShallow } from "zustand/shallow";
 import { useTaskContextMenu } from "src/ui/hooks/useTaskContextMenu";
 
 export const TaskListView: React.FC = React.memo(() => {
-  const {
-    date,
-    tasks,
-    granularity,
-    timeFilter,
-    updateTaskChecked,
-    isReadOnly,
-  } = useMFDIContext();
+  const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    granularity: s.granularity,
+    timeFilter: s.timeFilter,
+    isReadOnly: s.isReadOnly(),
+  })));
+
+  const { tasks } = usePostsStore(useShallow(s => ({
+    tasks: s.tasks,
+  })));
+
+  const { updateTaskChecked } = useTaskActions();
 
   const { showTaskContextMenu } = useTaskContextMenu();
 

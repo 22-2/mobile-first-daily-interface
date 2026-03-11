@@ -14,6 +14,9 @@ import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useWeekNotePaths } from "src/ui/hooks/internal/useWeekNotePaths";
 import { useMultiDaySync } from "src/ui/hooks/internal/useMultiDaySync";
 import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
+import { usePostsStore, postsStore } from "src/ui/store/postsStore";
+import { useNoteStore, noteStore } from "src/ui/store/noteStore";
+import { useEditorStore, editorStore } from "src/ui/store/editorStore";
 import { getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
@@ -23,33 +26,7 @@ interface UseMFDIAppOptions {}
  * データの取得、更新、設定、編集状態のオーケストレーションを行います。
  */
 export function useMFDIApp(_options?: UseMFDIAppOptions) {
-  const { appHelper, settings } = useAppContext();
-  const app = appHelper.getApp();
-
-  const {
-    activeTopic,
-    granularity,
-    date,
-    setDate,
-    timeFilter,
-    setTimeFilter,
-    dateFilter,
-    setDateFilter,
-    sidebarOpen,
-    setSidebarOpen,
-    displayMode,
-    setDisplayMode,
-    asTask,
-    setAsTask,
-    isToday,
-    isReadOnly,
-    handleClickHome,
-    handleChangeCalendarDate,
-    handleClickMovePrevious,
-    handleClickMoveNext,
-    handleClickToday,
-    getMoveStep,
-  } = useMFDISettings();
+  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly, displayMode } = useMFDISettings();
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,8 +34,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const {
     currentDailyNote,
-    setCurrentDailyNote,
-    updateCurrentDailyNote,
     handleClickOpenDailyNote,
     handleChangeTopic,
   } = useNoteManager();
@@ -66,30 +41,12 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const {
     input,
     setInput,
-    editingPost,
-    editingPostOffset,
     inputRef,
-    canSubmit,
-    startEdit,
-    cancelEdit,
   } = useMFDIEditor({ posts: postsState.posts });
-
 
   const {
     handleSubmit,
-    deletePost,
-    movePostToTomorrow,
-    handleClickTime,
   } = usePostActions(scrollContainerRef);
-
-  const {
-    updateTaskChecked,
-    openTaskInEditor,
-    deleteTask,
-  } = useTaskActions();
-
-  const { loadMore, hasMore } = useInfiniteTimeline();
-
 
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
@@ -110,66 +67,32 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   useMultiDaySync();
   useNoteSync();
 
-  const filteredPosts = useFilteredPosts({
-    posts: postsState.posts,
-    timeFilter,
-    dateFilter,
-    asTask,
-    granularity,
-    displayMode,
-  });
-
   return {
-    activeTopic,
-    setActiveTopic: handleChangeTopic,
-    granularity,
-    setGranularity: (v: any) => settingsStore.getState().setGranularity(v),
-    date,
-    setDate,
-    currentDailyNote,
-    setCurrentDailyNote,
-    input,
-    setInput,
-    asTask,
-    setAsTask,
-    editingPost,
-    editingPostOffset,
-    timeFilter,
-    setTimeFilter,
-    dateFilter,
-    setDateFilter,
-    sidebarOpen,
-    setSidebarOpen,
-    displayMode,
-    setDisplayMode,
-    posts: postsState.posts,
-    setPosts: postsState.setPosts,
-    loadMore,
-    hasMore,
-    filteredPosts,
-    tasks: postsState.tasks,
-    setTasks: postsState.setTasks,
-    canSubmit,
-    inputRef,
     scrollContainerRef,
-    handleChangeCalendarDate,
-    handleClickMovePrevious,
-    handleClickMoveNext,
-    handleClickToday,
-    handleClickHome,
-    handleClickOpenDailyNote,
-    handleSubmit,
-    startEdit,
-    cancelEdit,
-    deletePost,
-    movePostToTomorrow,
-
-    handleClickTime,
-    updateTaskChecked,
-    openTaskInEditor,
-    deleteTask,
-    isToday,
+    // Necessary for useViewSync in Provider
+    granularity,
+    activeTopic,
+    asTask,
+    timeFilter: settingsStore.getState().timeFilter,
+    dateFilter,
+    displayMode,
     isReadOnly,
-    getMoveStep,
+    handleSubmit,
+    handleClickOpenDailyNote,
+    setGranularity: (v: any) => settingsStore.getState().setGranularity(v),
+    setTimeFilter: (v: any) => settingsStore.getState().setTimeFilter(v),
+    setDateFilter: (v: any) => settingsStore.getState().setDateFilter(v),
+    setCurrentDailyNote: (note: TFile | null) => noteStore.getState().setCurrentDailyNote(note),
+    setPosts: postsStore.getState().setPosts,
+    setTasks: postsStore.getState().setTasks,
+    setActiveTopic: settingsStore.getState().setActiveTopic,
+    setAsTask: settingsStore.getState().setAsTask,
+    input,
+    setInput: editorStore.getState().setInput,
+    inputRef,
+    sidebarOpen: settingsStore.getState().sidebarOpen,
+    setSidebarOpen: settingsStore.getState().setSidebarOpen,
+    setDisplayMode: settingsStore.getState().setDisplayMode,
+    currentDailyNote,
   };
 }

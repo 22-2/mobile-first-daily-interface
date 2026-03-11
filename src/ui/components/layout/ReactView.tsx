@@ -11,6 +11,11 @@ import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useShallow } from "zustand/shallow";
 import { MFDIAppProvider, useMFDIContext } from "src/ui/context/MFDIAppContext";
 import { Post } from "src/ui/types";
 import { MFDIView } from "src/ui/view/MFDIView";
@@ -41,17 +46,33 @@ export const ReactView = ({
 
 const ReactViewContent = () => {
   const { view } = useAppContext();
-  const {
-    granularity,
-    currentDailyNote,
-    asTask,
-    tasks,
-    dateFilter,
-    filteredPosts,
-    scrollContainerRef,
-    sidebarOpen,
-    setSidebarOpen,
-  } = useMFDIContext();
+  const settings = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    asTask: s.asTask,
+    dateFilter: s.dateFilter,
+    sidebarOpen: s.sidebarOpen,
+    setSidebarOpen: s.setSidebarOpen,
+    timeFilter: s.timeFilter,
+    displayMode: s.displayMode,
+  })));
+
+  const { tasks, posts } = usePostsStore(useShallow(s => ({
+    tasks: s.tasks,
+    posts: s.posts,
+  })));
+
+  const { currentDailyNote } = useNoteStore(useShallow(s => ({
+    currentDailyNote: s.currentDailyNote,
+  })));
+
+  const { scrollContainerRef } = useMFDIContext();
+
+  const filteredPosts = useFilteredPosts({
+    posts,
+    ...settings,
+  });
+
+  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } = settings;
 
   const [containerWidth, setContainerWidth] = React.useState(1000);
   const containerRef = React.useRef<HTMLDivElement>(null);

@@ -2,7 +2,8 @@ import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 import { DateFilter, Granularity, Post } from "src/ui/types";
 
 import { BaseCard } from "src/ui/components/BaseCard";
@@ -32,7 +33,7 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
-    const { isReadOnly } = useMFDIContext();
+    const isReadOnly = useSettingsStore(s => s.isReadOnly());
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,

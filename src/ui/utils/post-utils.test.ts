@@ -3,9 +3,6 @@ import { toText } from "src/ui/utils/post-utils";
 import moment from "moment";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-// Mock moment
-(window as any).moment = moment;
-
 beforeEach(() => {
   // Fix "now" to a specific date for tests that use window.moment()
   vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));

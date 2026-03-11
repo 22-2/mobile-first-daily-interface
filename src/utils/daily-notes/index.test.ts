@@ -22,11 +22,6 @@ vi.mock("obsidian", () => ({
   },
 }));
 
-import moment from "moment";
-
-// Obsidian provides moment globally. Mock it for tests using the installed package.
-(window as any).moment = moment;
-
 // ─────────────────────────────────────────────────────────────────
 // Mock Obsidian App
 // ─────────────────────────────────────────────────────────────────
@@ -62,7 +57,7 @@ beforeEach(() => {
 describe("daily-notes-interface utility", () => {
   describe("getDateUID", () => {
     it("granularity=day の UID を生成する", () => {
-      const m = moment("2026-03-04");
+      const m = window.moment("2026-03-04");
       const uid = getDateUID(m);
       expect(uid).toMatch(/^day-/);
     });
@@ -78,13 +73,13 @@ describe("daily-notes-interface utility", () => {
 
   describe("resolveTopicNotePath", () => {
     it("トピックなしのパスを生成する", () => {
-      const date = moment("2026-03-04");
+      const date = window.moment("2026-03-04");
       const path = resolveTopicNotePath(date, "day", "");
       expect(path).toBe("Daily/2026-03-04.md");
     });
 
     it("トピックありのパスを生成する", () => {
-      const date = moment("2026-03-04");
+      const date = window.moment("2026-03-04");
       const path = resolveTopicNotePath(date, "day", "novel");
       expect(path).toBe("Daily/novel-2026-03-04.md");
     });
@@ -139,7 +134,7 @@ describe("daily-notes-interface utility", () => {
 
       const found = getTopicNote(
         (window as any).app,
-        moment("2026-03-01"),
+        window.moment("2026-03-01"),
         "day",
         "",
       );
@@ -147,7 +142,7 @@ describe("daily-notes-interface utility", () => {
 
       const notFound = getTopicNote(
         (window as any).app,
-        moment("2099-12-31"),
+        window.moment("2099-12-31"),
         "day",
         "",
       );

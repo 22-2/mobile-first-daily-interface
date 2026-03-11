@@ -4,29 +4,48 @@ import * as React from "react";
 import { useEffect } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useShallow } from "zustand/shallow";
 import { useMFDIContext } from "src/ui/context/MFDIAppContext";
 import { usePostContextMenu } from "src/ui/hooks/usePostContextMenu";
-
 import { useTimelineItems } from "src/ui/hooks/useTimelineItems";
 
 export const PostListView: React.FC = React.memo(() => {
-  const {
-    filteredPosts,
-    editingPostOffset,
-    granularity,
-    displayMode,
-    loadMore,
-    hasMore,
-    scrollContainerRef,
-    handleClickTime,
-    startEdit,
-    deletePost,
-    movePostToTomorrow,
-    isReadOnly,
-    setDate,
-    setDisplayMode,
-    dateFilter,
-  } = useMFDIContext();
+  const settings = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    displayMode: s.displayMode,
+    dateFilter: s.dateFilter,
+    isReadOnly: s.isReadOnly(),
+    setDate: s.setDate,
+    setDisplayMode: s.setDisplayMode,
+    asTask: s.asTask,
+    timeFilter: s.timeFilter,
+  })));
+
+  const { posts } = usePostsStore(useShallow(s => ({
+    posts: s.posts,
+  })));
+
+  const { editingPostOffset, startEdit } = useEditorStore(useShallow(s => ({
+    editingPostOffset: s.editingPostOffset,
+    startEdit: s.startEdit,
+  })));
+
+  const { scrollContainerRef } = useMFDIContext();
+  const { loadMore, hasMore } = useInfiniteTimeline();
+  const { handleClickTime, deletePost, movePostToTomorrow } = usePostActions(scrollContainerRef);
+
+  const filteredPosts = useFilteredPosts({
+    posts,
+    ...settings,
+  });
+
+  const { granularity, displayMode, dateFilter } = settings;
 
   const { showPostContextMenu } = usePostContextMenu();
   const displayedPostsWithDividers = useTimelineItems(
