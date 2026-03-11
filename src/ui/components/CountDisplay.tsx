@@ -5,12 +5,12 @@ import { granularityConfig } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { useShallow } from "zustand/shallow";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
   const { date, granularity, dateFilter, displayMode } = useSettingsStore(useShallow(s => ({

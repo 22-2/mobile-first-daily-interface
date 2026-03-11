@@ -2,11 +2,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
+import { initializePostsStore } from "src/ui/store/postsStore";
+import { settingsStore } from "src/ui/store/settingsStore";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import * as dailyNotes from "src/utils/daily-notes";
 import * as thino from "src/utils/thino";
-import { initializePostsStore } from "src/ui/store/postsStore";
-import { settingsStore } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import moment from "moment";

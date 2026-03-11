@@ -2,10 +2,9 @@ import { Menu } from "obsidian";
 import { useCallback } from "react";
 import { Task } from "src/app-helper";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-import { useShallow } from "zustand/shallow";
 import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 
 export const useTaskContextMenu = () => {
   const { app } = useAppContext();

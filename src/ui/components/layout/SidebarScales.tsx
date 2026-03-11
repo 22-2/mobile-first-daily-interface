@@ -2,9 +2,9 @@ import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { useShallow } from "zustand/shallow";
 import { getTopicNote } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
+import { useShallow } from "zustand/shallow";
 
 interface Counts {
   posts: number;

@@ -1,23 +1,11 @@
-import { Notice, TFile } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { granularityConfig } from "src/ui/config/granularity-config";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useEffect } from "react";
 import { useMFDIEditor } from "src/ui/hooks/internal/useMFDIEditor";
 import { useMFDISettings } from "src/ui/hooks/internal/useMFDISettings";
+import { useMultiDaySync } from "src/ui/hooks/internal/useMultiDaySync";
+import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
-import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
-import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
-import { useWeekNotePaths } from "src/ui/hooks/internal/useWeekNotePaths";
-import { useMultiDaySync } from "src/ui/hooks/internal/useMultiDaySync";
-import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore, postsStore } from "src/ui/store/postsStore";
-import { useNoteStore, noteStore } from "src/ui/store/noteStore";
-import { useEditorStore, editorStore } from "src/ui/store/editorStore";
-import { getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
 
@@ -27,8 +15,6 @@ interface UseMFDIAppOptions {}
  */
 export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly, displayMode } = useMFDISettings();
-
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const postsState = usePostsAndTasks({ date });
 
@@ -46,7 +32,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const {
     handleSubmit,
-  } = usePostActions(scrollContainerRef);
+  } = usePostActions();
 
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
@@ -68,31 +54,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   useNoteSync();
 
   return {
-    scrollContainerRef,
-    // Necessary for useViewSync in Provider
-    granularity,
-    activeTopic,
-    asTask,
-    timeFilter: settingsStore.getState().timeFilter,
-    dateFilter,
-    displayMode,
-    isReadOnly,
-    handleSubmit,
-    handleClickOpenDailyNote,
-    setGranularity: (v: any) => settingsStore.getState().setGranularity(v),
-    setTimeFilter: (v: any) => settingsStore.getState().setTimeFilter(v),
-    setDateFilter: (v: any) => settingsStore.getState().setDateFilter(v),
-    setCurrentDailyNote: (note: TFile | null) => noteStore.getState().setCurrentDailyNote(note),
-    setPosts: postsStore.getState().setPosts,
-    setTasks: postsStore.getState().setTasks,
-    setActiveTopic: settingsStore.getState().setActiveTopic,
-    setAsTask: settingsStore.getState().setAsTask,
-    input,
-    setInput: editorStore.getState().setInput,
     inputRef,
-    sidebarOpen: settingsStore.getState().sidebarOpen,
-    setSidebarOpen: settingsStore.getState().setSidebarOpen,
-    setDisplayMode: settingsStore.getState().setDisplayMode,
     currentDailyNote,
   };
 }

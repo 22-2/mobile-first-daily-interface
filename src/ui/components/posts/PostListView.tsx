@@ -4,16 +4,15 @@ import * as React from "react";
 import { useEffect } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { useEditorStore } from "src/ui/store/editorStore";
-import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { useShallow } from "zustand/shallow";
-import { useMFDIContext } from "src/ui/context/MFDIAppContext";
 import { usePostContextMenu } from "src/ui/hooks/usePostContextMenu";
 import { useTimelineItems } from "src/ui/hooks/useTimelineItems";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 export const PostListView: React.FC = React.memo(() => {
   const settings = useSettingsStore(useShallow(s => ({
@@ -31,14 +30,14 @@ export const PostListView: React.FC = React.memo(() => {
     posts: s.posts,
   })));
 
-  const { editingPostOffset, startEdit } = useEditorStore(useShallow(s => ({
+  const { editingPostOffset, startEdit, scrollContainerRef } = useEditorStore(useShallow(s => ({
     editingPostOffset: s.editingPostOffset,
     startEdit: s.startEdit,
+    scrollContainerRef: s.scrollContainerRef,
   })));
 
-  const { scrollContainerRef } = useMFDIContext();
   const { loadMore, hasMore } = useInfiniteTimeline();
-  const { handleClickTime, deletePost, movePostToTomorrow } = usePostActions(scrollContainerRef);
+  const { handleClickTime, deletePost, movePostToTomorrow } = usePostActions();
 
   const filteredPosts = useFilteredPosts({
     posts,

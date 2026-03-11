@@ -1,18 +1,16 @@
 import { useEffect, useRef } from "react";
-import { Task } from "src/app-helper";
-import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
 import { useAppContext } from "src/ui/context/AppContext";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
-import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
+import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { MFDIView } from "src/ui/view/MFDIView";
 
-import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
-import { useEditorStore, editorStore } from "src/ui/store/editorStore";
-import { usePostsStore, postsStore } from "src/ui/store/postsStore";
-import { useNoteStore, noteStore } from "src/ui/store/noteStore";
-import { useShallow } from "zustand/shallow";
-import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { editorStore, useEditorStore } from "src/ui/store/editorStore";
+import { noteStore } from "src/ui/store/noteStore";
+import { postsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 /**
  * ReactView の state/handler を Obsidian View オブジェクトに同期する。

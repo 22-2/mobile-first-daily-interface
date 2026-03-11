@@ -2,11 +2,11 @@ import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore } from "src/ui/store/settingsStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useShallow } from "zustand/shallow";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { getAllTopicNotes } from "src/utils/daily-notes/notes";
 import { getDateFromFile } from "src/utils/daily-notes/utils";
+import { useShallow } from "zustand/shallow";
 
 // ─────────────────────────────────────────────
 // 型定義

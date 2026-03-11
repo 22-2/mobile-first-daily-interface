@@ -1,11 +1,11 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { useNoteStore, noteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { useShallow } from "zustand/shallow";
 import { useAppContext } from "src/ui/context/AppContext";
+import { noteStore, useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { getPeriodicSettings } from "src/utils/daily-notes";
+import { useShallow } from "zustand/shallow";
 
 /**
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。

@@ -6,14 +6,14 @@ import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor"
 import { PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
-import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useShallow } from "zustand/shallow";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
-import { usePostsStore, postsStore } from "src/ui/store/postsStore";
+import { postsStore } from "src/ui/store/postsStore";
 
 const NavButton: React.FC<{
   direction: "left" | "right";

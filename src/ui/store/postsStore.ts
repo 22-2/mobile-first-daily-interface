@@ -1,13 +1,13 @@
-import { createStore } from "zustand/vanilla";
-import { useStore } from "zustand";
-import { TFile, App } from "obsidian";
-import { Post, MomentLike, Granularity, TimeFilter, DateFilter, DisplayMode } from "src/ui/types";
-import { Task, AppHelper } from "src/app-helper";
-import { parseThinoEntries } from "src/utils/thino";
+import { App, TFile } from "obsidian";
+import { AppHelper, Task } from "src/app-helper";
+import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { sorter } from "src/utils/collections";
 import { getAllTopicNotes, getDateUID, getTopicNote } from "src/utils/daily-notes";
-import { settingsStore } from "./settingsStore";
+import { parseThinoEntries } from "src/utils/thino";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
+import { settingsStore } from "src/ui/store/settingsStore";
 
 interface PostsState {
   posts: Post[];

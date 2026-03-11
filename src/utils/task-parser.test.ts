@@ -1,5 +1,5 @@
 import { parseTaskTimestamp } from "src/utils/task-parser";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 
 describe("parseTaskTimestamp", () => {
   const fileBasename = "2026-03-08";

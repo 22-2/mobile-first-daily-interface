@@ -3,7 +3,6 @@ import * as React from "react";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { useShallow } from "zustand/shallow";
 import { DateFilter, Granularity, Post } from "src/ui/types";
 
 import { BaseCard } from "src/ui/components/BaseCard";

@@ -1,10 +1,10 @@
 import { Menu, Notice } from "obsidian";
 import { useCallback } from "react";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useShallow } from "zustand/shallow";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
+import { useShallow } from "zustand/shallow";
 
 export const usePostContextMenu = () => {
   const { setDate, setDisplayMode, isReadOnly } = useSettingsStore(

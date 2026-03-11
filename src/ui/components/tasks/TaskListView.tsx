@@ -3,11 +3,11 @@ import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-import { useShallow } from "zustand/shallow";
 import { useTaskContextMenu } from "src/ui/hooks/useTaskContextMenu";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = React.memo(() => {
   const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(useShallow(s => ({

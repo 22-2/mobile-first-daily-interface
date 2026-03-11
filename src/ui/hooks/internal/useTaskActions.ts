@@ -1,11 +1,11 @@
 import { Notice } from "obsidian";
 import { useCallback } from "react";
 import { Task } from "src/app-helper";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
-import { useAppContext } from "src/ui/context/AppContext";
 
 export const useTaskActions = () => {
   const { app, appHelper } = useAppContext();

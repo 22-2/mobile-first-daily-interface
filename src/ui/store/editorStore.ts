@@ -1,21 +1,23 @@
-import { createStore } from "zustand/vanilla";
-import { useStore } from "zustand";
 import { RefObject } from "react";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
-import { Post, MomentLike, Granularity } from "src/ui/types";
-import { MFDIStorage } from "src/utils/storage";
 import { granularityConfig } from "src/ui/config/granularity-config";
-import { settingsStore } from "./settingsStore";
+import { Post } from "src/ui/types";
+import { MFDIStorage } from "src/utils/storage";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
+import { settingsStore } from "src/ui/store/settingsStore";
 
 interface EditorState {
   input: string;
   editingPostOffset: number | null;
   inputRef: RefObject<ObsidianLiveEditorRef | null>;
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
   
   // Actions
   setInput: (v: string) => void;
   setEditingPostOffset: (offset: number | null) => void;
   setInputRef: (ref: RefObject<ObsidianLiveEditorRef | null>) => void;
+  setScrollContainerRef: (ref: RefObject<HTMLDivElement | null>) => void;
   
   // Complex Actions
   startEdit: (post: Post) => void;
@@ -32,6 +34,7 @@ export const editorStore = createStore<EditorState>((set, get) => ({
   input: "",
   editingPostOffset: null,
   inputRef: { current: null },
+  scrollContainerRef: { current: null },
 
   setInput: (v) => {
     set({ input: v });
@@ -49,6 +52,10 @@ export const editorStore = createStore<EditorState>((set, get) => ({
 
   setInputRef: (ref) => {
     set({ inputRef: ref });
+  },
+
+  setScrollContainerRef: (ref) => {
+    set({ scrollContainerRef: ref });
   },
 
   startEdit: (post) => {

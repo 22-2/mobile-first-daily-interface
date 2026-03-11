@@ -1,8 +1,8 @@
-import { useEffect, useCallback } from "react";
-import { useNoteStore, noteStore } from "src/ui/store/noteStore";
-import { useShallow } from "zustand/shallow";
+import { useCallback, useEffect } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
+import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 /**
  * デイリーノートの取得、作成、トピック切り替えを管理するHook。

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 /**

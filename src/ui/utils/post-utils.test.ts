@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { toText } from "src/ui/utils/post-utils";
-import moment from "moment";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 beforeEach(() => {

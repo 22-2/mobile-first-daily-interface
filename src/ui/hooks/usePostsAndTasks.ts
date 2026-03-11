@@ -1,8 +1,7 @@
-import { TFile } from "obsidian";
 import { useCallback } from "react";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useShallow } from "zustand/shallow";
 import { MomentLike } from "src/ui/types";
+import { useShallow } from "zustand/shallow";
 
 interface UsePostsAndTasksOptions {
   date: MomentLike;

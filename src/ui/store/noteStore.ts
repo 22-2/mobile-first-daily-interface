@@ -1,11 +1,11 @@
-import { createStore } from "zustand/vanilla";
-import { useStore } from "zustand";
-import { TFile, App, Notice } from "obsidian";
-import { MomentLike, Granularity } from "src/ui/types";
+import { App, Notice, TFile } from "obsidian";
 import { Settings } from "src/settings";
+import { MomentLike } from "src/ui/types";
 import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
-import { settingsStore } from "./settingsStore";
-import { postsStore } from "./postsStore";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
+import { postsStore } from "src/ui/store/postsStore";
+import { settingsStore } from "src/ui/store/settingsStore";
 
 interface NoteState {
   currentDailyNote: TFile | null;

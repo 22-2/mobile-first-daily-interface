@@ -1,6 +1,6 @@
 import { useEditorStore } from "src/ui/store/editorStore";
-import { useShallow } from "zustand/shallow";
 import { Post } from "src/ui/types";
+import { useShallow } from "zustand/shallow";
 
 /**
  * 投稿・編集の入力状態を管理するHook。

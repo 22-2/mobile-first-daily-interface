@@ -11,14 +11,16 @@ import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { useNoteStore } from "src/ui/store/noteStore";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { useShallow } from "zustand/shallow";
-import { MFDIAppProvider, useMFDIContext } from "src/ui/context/MFDIAppContext";
+import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
+import { useViewSync } from "src/ui/hooks/useViewSync";
+import { initializeEditorStore, useEditorStore } from "src/ui/store/editorStore";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { initializePostsStore, usePostsStore } from "src/ui/store/postsStore";
+import { initializeSettingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
 import { MFDIView } from "src/ui/view/MFDIView";
+import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
 
@@ -36,12 +38,53 @@ export const ReactView = ({
   return (
     <AppContextProvider app={app} settings={settings} view={view}>
       <QueryClientProvider client={queryClient}>
-        <MFDIAppProvider>
+        <MFDIAppRoot>
           <ReactViewContent />
-        </MFDIAppProvider>
+        </MFDIAppRoot>
       </QueryClientProvider>
     </AppContextProvider>
   );
+};
+
+const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { view, settings, storage, app, appHelper } = useAppContext();
+
+  // Initialize store once
+  React.useMemo(() => {
+    initializeSettingsStore(settings, storage);
+    initializeEditorStore(storage);
+    initializePostsStore(app, appHelper);
+  }, [settings, storage, app, appHelper]);
+
+  const { inputRef, currentDailyNote } = useMFDIApp();
+
+  // Sync state/handlers with Obsidian View
+  useViewSync(view);
+
+  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
+    scrollContainerRef: s.scrollContainerRef,
+  })));
+
+  // Handle focus requested from View
+  React.useEffect(() => {
+    view.handlers.onFocusRequested = () => {
+      inputRef.current?.focus();
+    };
+    return () => {
+      view.handlers.onFocusRequested = undefined;
+    };
+  }, [view, inputRef]);
+
+  // Initial scroll position when note changes
+  React.useEffect(() => {
+    if (!currentDailyNote || !scrollContainerRef.current) return;
+    const timer = setTimeout(() => {
+      scrollContainerRef.current?.scrollTo({ top: 0 });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [currentDailyNote, scrollContainerRef]);
+
+  return <>{children}</>;
 };
 
 const ReactViewContent = () => {
@@ -65,7 +108,9 @@ const ReactViewContent = () => {
     currentDailyNote: s.currentDailyNote,
   })));
 
-  const { scrollContainerRef } = useMFDIContext();
+  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
+    scrollContainerRef: s.scrollContainerRef,
+  })));
 
   const filteredPosts = useFilteredPosts({
     posts,

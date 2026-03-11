@@ -1,15 +1,15 @@
-import { createStore } from "zustand/vanilla";
-import { useStore } from "zustand";
-import { 
-  DateFilter, 
-  DisplayMode, 
-  Granularity, 
-  MomentLike, 
-  TimeFilter 
-} from "src/ui/types";
-import { granularityConfig } from "src/ui/config/granularity-config";
-import { MFDIStorage } from "src/utils/storage";
 import { Settings } from "src/settings";
+import { granularityConfig } from "src/ui/config/granularity-config";
+import {
+    DateFilter,
+    DisplayMode,
+    Granularity,
+    MomentLike,
+    TimeFilter
+} from "src/ui/types";
+import { MFDIStorage } from "src/utils/storage";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
 
 interface SettingsState {
   activeTopic: string;

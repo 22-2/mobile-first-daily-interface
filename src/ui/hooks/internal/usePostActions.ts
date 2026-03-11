@@ -1,16 +1,16 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { useEditorStore } from "src/ui/store/editorStore";
-import { useNoteStore, noteStore } from "src/ui/store/noteStore";
-import { useShallow } from "zustand/shallow";
 import { useAppContext } from "src/ui/context/AppContext";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { noteStore, useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { Post } from "src/ui/types";
 import { toText } from "src/ui/utils/post-utils";
 import { getTopicNote } from "src/utils/daily-notes";
-import { Granularity, MomentLike, Post } from "src/ui/types";
+import { useShallow } from "zustand/shallow";
 
-export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivElement | null>) => {
+export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
 
   const settingsState = useSettingsStore(useShallow(s => ({
@@ -34,6 +34,7 @@ export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivEleme
     input: s.input,
     setInput: s.setInput,
     inputRef: s.inputRef,
+    scrollContainerRef: s.scrollContainerRef,
     editingPost: s.getEditingPost(postsState.posts),
     canSubmit: s.canSubmit(postsState.posts),
     cancelEdit: s.cancelEdit,
@@ -110,8 +111,8 @@ export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivEleme
     }
     editorState.setInput("");
     editorState.inputRef.current?.setContent("");
-    scrollContainerRef?.current?.scrollTo({ top: 0 });
-  }, [app, appHelper, settings, settingsState, postsState, editorState, noteState, scrollContainerRef]);
+    editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
+  }, [app, appHelper, settings, settingsState, postsState, editorState, noteState]);
 
   const deletePost = useCallback(async (post: Post) => {
     const path = post.path;
