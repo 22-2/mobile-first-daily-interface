@@ -33,10 +33,15 @@ export interface TwitterMeta {
   html: string;
 }
 
+interface TwitterOEmbedResponse {
+  author_name: string;
+  html: string;
+}
+
 async function getTwitterMeta(
   url: string,
   type: "X" | "Twitter",
-): Promise<TwitterMeta | null> {
+): Promise<TwitterOEmbedResponse | null> {
   const twitterEmbedUrl = `https://publish.${
     type === "X" ? "x" : "twitter"
   }.com/oembed?hide_media=true&hide_thread=true&omit_script=true&lang=ja&url=${url}`;
@@ -48,7 +53,7 @@ async function getTwitterMeta(
     console.debug(`twitter embed status is ${res.status}`);
     return null;
   }
-  return res.json;
+  return res.json as TwitterOEmbedResponse;
 }
 
 function htmlString2Document(

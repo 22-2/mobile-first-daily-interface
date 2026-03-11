@@ -14,6 +14,13 @@ import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
 
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 
+type PostsPage = {
+  posts: Post[];
+  paths: Set<string>;
+  hasMore: boolean;
+  lastSearchedDate: MomentLike;
+};
+
 interface UseMFDIAppOptions {}
 
 /**
@@ -228,7 +235,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     isFetchingNextPage,
   } = window.moment ? 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    useInfiniteQuery({
+    useInfiniteQuery<PostsPage, Error, { pages: PostsPage[]; pageParams: (string | null)[] }, string[], string | null>({
       queryKey: ["posts", activeTopic, displayMode],
       queryFn: async ({ pageParam }) => {
         const baseDate = pageParam ? window.moment(pageParam) : date.clone();
@@ -253,7 +260,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   // TanStack Query の結果を posts に反映
   useEffect(() => {
     if (displayMode === "timeline" && infiniteData) {
-      const allPosts = (infiniteData as any).pages.flatMap((p: any) => p.posts);
+      const allPosts = infiniteData.pages.flatMap((p: PostsPage) => p.posts);
       setPosts(allPosts.sort((a: Post, b: Post) => b.timestamp.valueOf() - a.timestamp.valueOf()));
     }
   }, [displayMode, infiniteData, setPosts]);

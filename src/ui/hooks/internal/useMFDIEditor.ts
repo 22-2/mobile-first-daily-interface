@@ -29,7 +29,7 @@ export function useMFDIEditor({
     () => storage.get<number | null>("editingPostOffset", null),
   );
 
-  const inputRef = useRef<ObsidianLiveEditorRef>(null);
+  const inputRef = useRef<ObsidianLiveEditorRef | null>(null);
 
   const editingPost = useMemo(() => {
     if (editingPostOffset === null) return null;

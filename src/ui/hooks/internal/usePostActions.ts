@@ -1,15 +1,17 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { AppHelper } from "src/app-helper";
-import { MomentLike, Post } from "src/ui/types";
+import { Settings } from "src/settings";
+import { Granularity, MomentLike, Post } from "src/ui/types";
 import { toText } from "src/ui/utils/post-utils";
 import { getTopicNote } from "src/utils/daily-notes";
+import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
 
 interface UsePostActionsProps {
   appHelper: AppHelper;
-  settings: any;
+  settings: Settings;
   date: MomentLike;
-  granularity: any;
+  granularity: Granularity;
   activeTopic: string;
   dateFilter: string;
   currentDailyNote: TFile | null;
@@ -18,7 +20,7 @@ interface UsePostActionsProps {
   asTask: boolean;
   editingPost: Post | null;
   canSubmit: boolean;
-  inputRef: React.RefObject<any>;
+  inputRef: React.RefObject<ObsidianLiveEditorRef | null>;
   isReadOnly: boolean;
   
   // Setters/Updaters

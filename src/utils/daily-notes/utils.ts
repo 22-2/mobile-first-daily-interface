@@ -31,7 +31,7 @@ export function getDateFromFilename(
   }
 
   const datePart = prefix ? filename.slice(prefix.length) : filename;
-  const date = (window as any).moment(datePart, settings.format, true);
+  const date = window.moment(datePart, settings.format, true);
 
   if (!date.isValid()) {
     return null;
