@@ -149,8 +149,10 @@ const ReactViewContent = () => {
   const effectivelyOpen = sidebarOpen;
 
   const isEmpty =
-    (dateFilter === "today" && !currentDailyNote) ||
-    (asTask ? tasks.length === 0 : filteredPosts.length === 0);
+    settings.displayMode !== "timeline" && (
+      (dateFilter === "today" && !currentDailyNote) ||
+      (asTask ? tasks.length === 0 : filteredPosts.length === 0)
+    );
 
   return (
     <Flex h="100%" position="relative" w="100%" overflow="hidden" ref={containerRef}>

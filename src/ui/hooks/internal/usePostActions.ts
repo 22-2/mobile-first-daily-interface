@@ -133,6 +133,7 @@ export const usePostActions = () => {
     const note = getTopicNote(app, settingsState.date, settingsState.granularity, settingsState.activeTopic);
     if (note) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
+      await refreshPosts(note.path);
     }
 
     editorState.setInput("");

@@ -84,6 +84,8 @@ export const useInfiniteTimeline = () => {
       .filter((x): x is { file: TFile; dayDate: MomentLike } => x.file !== null);
 
     // ウィンドウ内にノートがなく、まだ古いデータが残っている場合は次ウィンドウへ再帰
+    // ただし、baseDate が今日の場合は、今日より先のデータ（未来）はないので、
+    // ウィンドウ内にデータがなくてもすぐには諦めず、oldestDate まで探索を続ける
     if (entries.length === 0 && windowEnd.isAfter(oldestDate)) {
       const windowEndUid = getDateUID(windowEnd, "day");
       const nextUid      = uids.slice().reverse().find(u => u < windowEndUid);
@@ -115,7 +117,7 @@ export const useInfiniteTimeline = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery<PostsPage, Error, { pages: PostsPage[]; pageParams: (string | null)[] }, string[], string | null>({
-    queryKey:   ["posts", activeTopic, displayMode],
+    queryKey:   ["posts", activeTopic, displayMode, date.format("YYYY-MM-DD")],
     enabled:    displayMode === DISPLAY_MODE.TIMELINE,
     initialPageParam: null,
 
