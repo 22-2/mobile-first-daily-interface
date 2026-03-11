@@ -1,4 +1,3 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Notice, TFile } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { granularityConfig } from "src/ui/config/granularity-config";
@@ -7,19 +6,12 @@ import { useMFDIEditor } from "src/ui/hooks/internal/useMFDIEditor";
 import { useMFDISettings } from "src/ui/hooks/internal/useMFDISettings";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
-import { MomentLike, Post } from "src/ui/types";
-import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-
-type PostsPage = {
-  posts: Post[];
-  paths: Set<string>;
-  hasMore: boolean;
-  lastSearchedDate: MomentLike;
-};
+import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
 
@@ -53,7 +45,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     getMoveStep,
   } = useMFDISettings();
 
-  const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -67,6 +58,23 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePostsForDays,
     getPostsForDays,
   } = usePostsAndTasks({ date, granularity });
+
+  const {
+    currentDailyNote,
+    setCurrentDailyNote,
+    updateCurrentDailyNote,
+    createNoteWithInsertAfter,
+    handleChangeTopic,
+  } = useNoteManager({
+    app,
+    settings,
+    date,
+    granularity,
+    activeTopic,
+    setActiveTopic,
+    setPosts,
+    setTasks,
+  });
 
   // 複数日モード中に監視するファイルパス集合
   const [weekNotePaths, setWeekNotePaths] = useState<Set<string>>(new Set());
@@ -87,23 +95,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const isReadOnly = useMemo(() => {
     return date.isBefore(window.moment(), granularityConfig[granularity].unit);
   }, [date, granularity]);
-
-  const createNoteWithInsertAfter = useCallback(async (targetDate?: MomentLike) => {
-    const d = targetDate ?? date;
-    const created = await createTopicNote(app, d, granularity, activeTopic);
-    if (created && settings.insertAfter) {
-      const content = await app.vault.read(created);
-      if (!content.includes(settings.insertAfter)) {
-        await app.vault.modify(
-          created,
-          content
-            ? `${content}\n${settings.insertAfter}`
-            : settings.insertAfter,
-        );
-      }
-    }
-    return created;
-  }, [app, date, granularity, activeTopic, settings.insertAfter]);
 
   const {
     handleSubmit,
@@ -148,6 +139,15 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     isReadOnly,
   });
 
+  const { loadMore, hasMore } = useInfiniteTimeline({
+    activeTopic,
+    displayMode,
+    date,
+    getPostsForDays,
+    setPosts,
+    setWeekNotePaths,
+  });
+
   const handleClickHome = useCallback(() => {
     setDisplayMode("focus");
     setGranularity("day");
@@ -160,28 +160,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
   const isToday = useMemo(() => {
     return date.isSame(window.moment(), granularityConfig[granularity].unit);
   }, [date, granularity]);
-
-  const updateCurrentDailyNote = useCallback(() => {
-    const n = getTopicNote(app, date, granularity, activeTopic);
-    if (n?.path !== currentDailyNote?.path) {
-      setCurrentDailyNote(n);
-    }
-  }, [app, date, granularity, activeTopic, currentDailyNote]);
-
-  const handleChangeTopic = useCallback(
-    (topicId: string) => {
-      if (activeTopic === topicId) return;
-      setActiveTopic(topicId);
-      setCurrentDailyNote(null);
-      setPosts([]);
-      setTasks([]);
-    },
-    [activeTopic, setActiveTopic, setPosts, setTasks],
-  );
-
-  useEffect(() => {
-    updateCurrentDailyNote();
-  }, [date, granularity, activeTopic, updateCurrentDailyNote]);
 
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
@@ -227,49 +205,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePostsForWeek,
     updatePostsForDays,
   ]);
-
-  const {
-    data: infiniteData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = window.moment ? 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useInfiniteQuery<PostsPage, Error, { pages: PostsPage[]; pageParams: (string | null)[] }, string[], string | null>({
-      queryKey: ["posts", activeTopic, displayMode],
-      queryFn: async ({ pageParam }) => {
-        const baseDate = pageParam ? window.moment(pageParam) : date.clone();
-        const result = await getPostsForDays(activeTopic, baseDate, 14);
-        
-        // 監視対象パスを更新
-        setWeekNotePaths((prev) => {
-          const next = new Set(prev);
-          result.paths.forEach((p) => next.add(p));
-          return next;
-        });
-        
-        return result;
-      },
-      initialPageParam: null as string | null,
-      getNextPageParam: (lastPage) => {
-        return lastPage.hasMore ? lastPage.lastSearchedDate.clone().subtract(1, "day").format() : undefined;
-      },
-      enabled: displayMode === "timeline",
-    }) : { data: null, fetchNextPage: () => {}, hasNextPage: false, isFetchingNextPage: false };
-
-  // TanStack Query の結果を posts に反映
-  useEffect(() => {
-    if (displayMode === "timeline" && infiniteData) {
-      const allPosts = infiniteData.pages.flatMap((p: PostsPage) => p.posts);
-      setPosts(allPosts.sort((a: Post, b: Post) => b.timestamp.valueOf() - a.timestamp.valueOf()));
-    }
-  }, [displayMode, infiniteData, setPosts]);
-
-  const loadMore = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useNoteSync({
     date,
@@ -350,7 +285,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     posts,
     setPosts,
     loadMore,
-    hasMore: hasNextPage,
+    hasMore,
     filteredPosts,
     tasks,
     setTasks,

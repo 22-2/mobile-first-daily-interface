@@ -6,6 +6,35 @@ export interface PeriodicNoteSettings {
   template: string;
 }
 
+interface PeriodicNotesPlugin {
+  settings: {
+    [key: string]: {
+      enabled: boolean;
+      format?: string;
+      folder?: string;
+      template?: string;
+    } | undefined;
+  };
+}
+
+interface DailyNotesPlugin {
+  instance: {
+    options: {
+      format?: string;
+      folder?: string;
+      template?: string;
+    };
+  };
+}
+
+interface CalendarPlugin {
+  options: {
+    weeklyNoteFormat?: string;
+    weeklyNoteFolder?: string;
+    weeklyNoteTemplate?: string;
+  };
+}
+
 const DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
 const DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
 const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
@@ -13,30 +42,30 @@ const DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
 const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
 
 function shouldUsePeriodicNotesSettings(periodicity: string): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const periodicNotes = (window as any).app.plugins.getPlugin("periodic-notes");
-  return periodicNotes && periodicNotes.settings?.[periodicity]?.enabled;
+  const periodicNotes = (window as any).app.plugins.getPlugin("periodic-notes") as
+    | PeriodicNotesPlugin
+    | undefined;
+  return !!(periodicNotes && periodicNotes.settings?.[periodicity]?.enabled);
 }
 
 export function getDailyNoteSettings(): PeriodicNoteSettings {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { internalPlugins, plugins } = (window as any).app;
     if (shouldUsePeriodicNotesSettings("daily")) {
-      const { format, folder, template } =
-        plugins.getPlugin("periodic-notes")?.settings?.daily || {};
+      const daily = (plugins.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)
+        ?.settings?.daily;
       return {
-        format: format || DEFAULT_DAILY_NOTE_FORMAT,
-        folder: folder?.trim() || "",
-        template: template?.trim() || "",
+        format: daily?.format || DEFAULT_DAILY_NOTE_FORMAT,
+        folder: daily?.folder?.trim() || "",
+        template: daily?.template?.trim() || "",
       };
     }
-    const { folder, format, template } =
-      internalPlugins.getPluginById("daily-notes")?.instance?.options || {};
+    const dailyOptions = (internalPlugins.getPluginById("daily-notes") as DailyNotesPlugin | undefined)
+      ?.instance?.options;
     return {
-      format: format || DEFAULT_DAILY_NOTE_FORMAT,
-      folder: folder?.trim() || "",
-      template: template?.trim() || "",
+      format: dailyOptions?.format || DEFAULT_DAILY_NOTE_FORMAT,
+      folder: dailyOptions?.folder?.trim() || "",
+      template: dailyOptions?.template?.trim() || "",
     };
   } catch {
     return { format: DEFAULT_DAILY_NOTE_FORMAT, folder: "", template: "" };
@@ -45,23 +74,28 @@ export function getDailyNoteSettings(): PeriodicNoteSettings {
 
 export function getWeeklyNoteSettings(): PeriodicNoteSettings {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pluginManager = (window as any).app.plugins;
-    const calendarSettings = pluginManager.getPlugin("calendar")?.options;
-    const periodicNotesSettings =
-      pluginManager.getPlugin("periodic-notes")?.settings?.weekly;
+    const calendarSettings = (
+      pluginManager.getPlugin("calendar") as
+        | CalendarPlugin
+        | undefined
+    )?.options;
+    const periodicNotesSettings = (
+      pluginManager.getPlugin("periodic-notes") as
+        | PeriodicNotesPlugin
+        | undefined
+    )?.settings?.weekly;
     if (shouldUsePeriodicNotesSettings("weekly")) {
       return {
-        format: periodicNotesSettings.format || DEFAULT_WEEKLY_NOTE_FORMAT,
-        folder: periodicNotesSettings.folder?.trim() || "",
-        template: periodicNotesSettings.template?.trim() || "",
+        format: periodicNotesSettings?.format || DEFAULT_WEEKLY_NOTE_FORMAT,
+        folder: periodicNotesSettings?.folder?.trim() || "",
+        template: periodicNotesSettings?.template?.trim() || "",
       };
     }
-    const settings = calendarSettings || {};
     return {
-      format: settings.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
-      folder: settings.weeklyNoteFolder?.trim() || "",
-      template: settings.weeklyNoteTemplate?.trim() || "",
+      format: calendarSettings?.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
+      folder: calendarSettings?.weeklyNoteFolder?.trim() || "",
+      template: calendarSettings?.weeklyNoteTemplate?.trim() || "",
     };
   } catch {
     return { format: DEFAULT_WEEKLY_NOTE_FORMAT, folder: "", template: "" };
@@ -70,16 +104,14 @@ export function getWeeklyNoteSettings(): PeriodicNoteSettings {
 
 export function getMonthlyNoteSettings(): PeriodicNoteSettings {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pluginManager = (window as any).app.plugins;
-    const settings =
-      (shouldUsePeriodicNotesSettings("monthly") &&
-        pluginManager.getPlugin("periodic-notes")?.settings?.monthly) ||
-      {};
+    const periodic = shouldUsePeriodicNotesSettings("monthly") 
+      ? (pluginManager.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)?.settings?.monthly 
+      : undefined;
     return {
-      format: (settings as any).format || DEFAULT_MONTHLY_NOTE_FORMAT,
-      folder: (settings as any).folder?.trim() || "",
-      template: (settings as any).template?.trim() || "",
+      format: periodic?.format || DEFAULT_MONTHLY_NOTE_FORMAT,
+      folder: periodic?.folder?.trim() || "",
+      template: periodic?.template?.trim() || "",
     };
   } catch {
     return { format: DEFAULT_MONTHLY_NOTE_FORMAT, folder: "", template: "" };
@@ -88,16 +120,14 @@ export function getMonthlyNoteSettings(): PeriodicNoteSettings {
 
 export function getYearlyNoteSettings(): PeriodicNoteSettings {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pluginManager = (window as any).app.plugins;
-    const settings =
-      (shouldUsePeriodicNotesSettings("yearly") &&
-        pluginManager.getPlugin("periodic-notes")?.settings?.yearly) ||
-      {};
+    const periodic = shouldUsePeriodicNotesSettings("yearly")
+      ? (pluginManager.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)?.settings?.yearly
+      : undefined;
     return {
-      format: (settings as any).format || DEFAULT_YEARLY_NOTE_FORMAT,
-      folder: (settings as any).folder?.trim() || "",
-      template: (settings as any).template?.trim() || "",
+      format: periodic?.format || DEFAULT_YEARLY_NOTE_FORMAT,
+      folder: periodic?.folder?.trim() || "",
+      template: periodic?.template?.trim() || "",
     };
   } catch {
     return { format: DEFAULT_YEARLY_NOTE_FORMAT, folder: "", template: "" };
