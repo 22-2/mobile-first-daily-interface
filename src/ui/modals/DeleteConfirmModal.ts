@@ -14,10 +14,12 @@ export class DeleteConfirmModal extends Modal {
     contentEl.createEl("p", { text: "この投稿を削除しますか？" });
 
     const buttonContainer = contentEl.createDiv();
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "10px";
-    buttonContainer.style.marginTop = "20px";
-    buttonContainer.style.justifyContent = "flex-end";
+    buttonContainer.setCssStyles({
+      display: "flex",
+      gap: "10px",
+      marginTop: "20px",
+      justifyContent: "flex-end",
+    });
 
     buttonContainer
       .createEl("button", { text: "キャンセル" })
@@ -26,7 +28,9 @@ export class DeleteConfirmModal extends Modal {
       });
 
     const deleteButton = buttonContainer.createEl("button", { text: "削除" });
-    deleteButton.style.color = "var(--text-error)";
+    deleteButton.setCssStyles({
+      color: "var(--text-error)",
+    });
     deleteButton.addEventListener("click", async () => {
       await this.onConfirm();
       this.close();

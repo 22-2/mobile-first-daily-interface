@@ -25,11 +25,15 @@ export const ObsidianIcon = ({ name, size, ...props }: ObsidianIconProps) => {
       if (svg) {
         if (size) {
           const s = typeof size === "number" ? `${size}px` : size;
-          svg.style.width = s;
-          svg.style.height = s;
+          svg.setCssStyles({
+            width: s,
+            height: s,
+          });
         } else {
-          svg.style.width = "100%";
-          svg.style.height = "100%";
+          svg.setCssStyles({
+            width: "100%",
+            height: "100%",
+          });
         }
       }
     }

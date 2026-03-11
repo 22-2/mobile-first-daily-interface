@@ -18,7 +18,9 @@ export class TopicManagerModal extends Modal {
 
   onOpen() {
     this.titleEl.setText("トピック管理");
-    this.modalEl.style.width = "480px";
+    this.modalEl.setCssStyles({
+      width: "480px",
+    });
     this.root = createRoot(this.contentEl);
     this.root.render(
       React.createElement(TopicManagerView, {
