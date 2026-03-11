@@ -52,6 +52,18 @@ export const usePostContextMenu = () => {
 
       menu.addItem((item) =>
         item
+          .setTitle("明日に送る")
+          .setIcon("fast-forward")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            movePostToTomorrow(post);
+          }),
+      );
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
           .setTitle("編集")
           .setIcon("pencil")
           .setDisabled(isReadOnly)
@@ -70,15 +82,7 @@ export const usePostContextMenu = () => {
           }),
       );
 
-      menu.addItem((item) =>
-        item
-          .setTitle("明日に送る")
-          .setIcon("fast-forward")
-          .setDisabled(isReadOnly)
-          .onClick(() => {
-            movePostToTomorrow(post);
-          }),
-      );
+      menu.addSeparator();
 
       menu.addItem((item) =>
         item
