@@ -67,11 +67,18 @@ export const PostListView: React.FC = React.memo(() => {
     overscan: 10,
   });
 
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
   // 無限スクロールのトリガー
   useEffect(() => {
     if (displayMode !== "timeline" || !hasMore) return;
 
-    const virtualItems = rowVirtualizer.getVirtualItems();
+    // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
+    if (displayedPostsWithDividers.length === 0) {
+      loadMore();
+      return;
+    }
+
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
@@ -79,14 +86,13 @@ export const PostListView: React.FC = React.memo(() => {
       loadMore();
     }
   }, [
-    rowVirtualizer.getVirtualItems(),
     displayMode,
     hasMore,
     loadMore,
     displayedPostsWithDividers.length,
+    virtualItems.length,
+    virtualItems[virtualItems.length - 1]?.index,
   ]);
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
     <Box
