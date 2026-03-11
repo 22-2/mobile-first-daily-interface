@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { useNoteStore } from "src/ui/store/noteStore";
+import { useNoteStore, noteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useShallow } from "zustand/shallow";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -24,7 +24,6 @@ export function useNoteSync() {
   const noteState = useNoteStore(useShallow(s => ({
     currentDailyNote: s.currentDailyNote,
     weekNotePaths: s.weekNotePaths,
-    updateCurrentDailyNote: () => s.updateCurrentDailyNote(app),
     replacePaths: s.replacePaths,
   })));
 
@@ -68,7 +67,7 @@ export function useNoteSync() {
         if (file.path !== `${dir}${prefix}${entry}.md`) return;
       }
 
-      noteState.updateCurrentDailyNote();
+      noteStore.getState().updateCurrentDailyNote(app);
       if (file instanceof TFile) {
         await Promise.all([postsState.updatePosts(file), postsState.updateTasks(file)]);
       }

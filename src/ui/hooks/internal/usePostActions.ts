@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { useNoteStore } from "src/ui/store/noteStore";
+import { useNoteStore, noteStore } from "src/ui/store/noteStore";
 import { useShallow } from "zustand/shallow";
 import { useAppContext } from "src/ui/context/AppContext";
 import { toText } from "src/ui/utils/post-utils";
@@ -41,7 +41,6 @@ export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivEleme
 
   const noteState = useNoteStore(useShallow(s => ({
     currentDailyNote: s.currentDailyNote,
-    createNoteWithInsertAfter: (d?: any) => s.createNoteWithInsertAfter(app, settings, d),
     replacePaths: s.replacePaths,
   })));
 
@@ -96,7 +95,7 @@ export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivEleme
 
     if (!noteState.currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      await noteState.createNoteWithInsertAfter();
+      await noteStore.getState().createNoteWithInsertAfter(app, settings, undefined);
       if (settingsState.dateFilter !== "today") {
         const updateFn = settingsState.dateFilter === "this_week"
           ? () => postsState.updatePostsForWeek(settingsState.activeTopic, settingsState.date)
@@ -143,7 +142,7 @@ export const usePostActions = (scrollContainerRef?: React.RefObject<HTMLDivEleme
       return;
     }
     const nextDay = post.timestamp.clone().add(1, "day");
-    const nextNote = await noteState.createNoteWithInsertAfter(nextDay);
+    const nextNote = await noteStore.getState().createNoteWithInsertAfter(app, settings, nextDay);
     if (!nextNote) {
       new Notice("明日のノートが見つかりませんでした");
       return;

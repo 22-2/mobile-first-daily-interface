@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useNoteStore } from "src/ui/store/noteStore";
+import { useEffect, useCallback } from "react";
+import { useNoteStore, noteStore } from "src/ui/store/noteStore";
 import { useShallow } from "zustand/shallow";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -16,15 +16,29 @@ export const useNoteManager = () => {
   const state = useNoteStore(useShallow((s) => ({
     currentDailyNote: s.currentDailyNote,
     setCurrentDailyNote: s.setCurrentDailyNote,
-    updateCurrentDailyNote: () => s.updateCurrentDailyNote(app),
-    createNoteWithInsertAfter: (targetDate?: any) => s.createNoteWithInsertAfter(app, settings, targetDate),
-    handleClickOpenDailyNote: () => s.handleClickOpenDailyNote(app, settings),
     handleChangeTopic: s.handleChangeTopic,
   })));
 
-  useEffect(() => {
-    state.updateCurrentDailyNote();
-  }, [date, granularity, activeTopic, state.updateCurrentDailyNote]);
+  const updateCurrentDailyNote = useCallback(() => {
+    noteStore.getState().updateCurrentDailyNote(app);
+  }, [app]);
 
-  return state;
+  const createNoteWithInsertAfter = useCallback((targetDate?: any) => {
+    return noteStore.getState().createNoteWithInsertAfter(app, settings, targetDate);
+  }, [app, settings]);
+
+  const handleClickOpenDailyNote = useCallback(() => {
+    return noteStore.getState().handleClickOpenDailyNote(app, settings);
+  }, [app, settings]);
+
+  useEffect(() => {
+    updateCurrentDailyNote();
+  }, [date, granularity, activeTopic, updateCurrentDailyNote]);
+
+  return {
+    ...state,
+    updateCurrentDailyNote,
+    createNoteWithInsertAfter,
+    handleClickOpenDailyNote,
+  };
 };

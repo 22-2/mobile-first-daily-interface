@@ -105,7 +105,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       promises.push(postsState.updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, postsState, dateFilter]);
+  }, [currentDailyNote, postsState.updateTasks, postsState.updatePosts, dateFilter]);
 
   useMultiDaySync();
   useNoteSync();
