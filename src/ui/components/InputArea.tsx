@@ -3,7 +3,7 @@ import { Menu } from "obsidian";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
-import { PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
+import { DISPLAY_MODE, PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -94,7 +94,7 @@ const InputAreaControl: React.FC = React.memo(() => {
     <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
-        {displayMode === "focus" ? (
+        {displayMode === DISPLAY_MODE.FOCUS ? (
           <>
             <NavButton
               direction="left"
@@ -144,7 +144,7 @@ const InputAreaControl: React.FC = React.memo(() => {
             fontWeight="bold" 
             color="var(--text-accent)"
             cursor="pointer"
-            onClick={() => setDisplayMode("focus")}
+            onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
           >
             タイムライン表示中
           </Box>

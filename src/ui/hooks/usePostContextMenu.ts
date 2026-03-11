@@ -5,6 +5,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
 import { useShallow } from "zustand/shallow";
+import { DISPLAY_MODE } from "../config/consntants";
 
 export const usePostContextMenu = () => {
   const { setDate, setDisplayMode, isReadOnly } = useSettingsStore(
@@ -45,7 +46,7 @@ export const usePostContextMenu = () => {
           .setIcon("calendar-range")
           .onClick(() => {
             setDate(post.timestamp.clone());
-            setDisplayMode("focus");
+            setDisplayMode(DISPLAY_MODE.FOCUS);
           }),
       );
 

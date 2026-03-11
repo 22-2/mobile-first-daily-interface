@@ -10,6 +10,7 @@ import {
 import { MFDIStorage } from "src/utils/storage";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 
 interface SettingsState {
   activeTopic: string;
@@ -67,7 +68,7 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
   timeFilter: "all" as TimeFilter,
   dateFilter: "today" as DateFilter,
   sidebarOpen: true,
-  displayMode: "focus" as DisplayMode,
+  displayMode: DISPLAY_MODE.FOCUS as DisplayMode,
   asTask: false,
 
   setActiveTopic: (topicId) => {
@@ -77,7 +78,7 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
   setGranularity: (g) => {
     set({ granularity: g });
     if (g !== "day") {
-      set({ displayMode: "focus" });
+      set({ displayMode: DISPLAY_MODE.FOCUS });
     }
     persist("granularity", g);
     persist("displayMode", get().displayMode);
@@ -95,9 +96,9 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
 
   setDateFilter: (f) => {
     set({ dateFilter: f });
-    set({ displayMode: "focus" });
+    set({ displayMode: DISPLAY_MODE.FOCUS });
     persist("dateFilter", f);
-    persist("displayMode", "focus");
+    persist("displayMode", DISPLAY_MODE.FOCUS);
   },
 
   setSidebarOpen: (o) => {
@@ -118,7 +119,7 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
   handleClickHome: () => {
     const now = window.moment();
     set({
-      displayMode: "focus",
+      displayMode: DISPLAY_MODE.TIMELINE,
       granularity: "day",
       dateFilter: "today",
       timeFilter: "all",
@@ -126,7 +127,7 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
       date: now,
     });
     // Persist all
-    persist("displayMode", "focus");
+    persist("displayMode", "timeline");
     persist("granularity", "day");
     persist("dateFilter", "today");
     persist("timeFilter", "all");
@@ -136,9 +137,9 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
 
   handleClickToday: () => {
     const now = window.moment();
-    set({ date: now, displayMode: "focus" });
+    set({ date: now, displayMode: DISPLAY_MODE.TIMELINE });
     persist("date", now.toISOString());
-    persist("displayMode", "focus");
+    persist("displayMode", DISPLAY_MODE.TIMELINE);
   },
 
   getMoveStep: () => {
@@ -154,26 +155,26 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
     const { date, granularity, getMoveStep } = get();
     const step = getMoveStep();
     const nextDate = date.clone().subtract(step, granularityConfig[granularity].unit);
-    set({ date: nextDate, displayMode: "focus" });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
     persist("date", nextDate.toISOString());
-    persist("displayMode", "focus");
+    persist("displayMode", DISPLAY_MODE.FOCUS);
   },
 
   handleClickMoveNext: () => {
     const { date, granularity, getMoveStep } = get();
     const step = getMoveStep();
     const nextDate = date.clone().add(step, granularityConfig[granularity].unit);
-    set({ date: nextDate, displayMode: "focus" });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
     persist("date", nextDate.toISOString());
-    persist("displayMode", "focus");
+    persist("displayMode", DISPLAY_MODE.FOCUS);
   },
 
   handleChangeCalendarDate: (value: string) => {
     const { granularity } = get();
     const nextDate = granularityConfig[granularity].parseInput(value);
-    set({ date: nextDate, displayMode: "focus" });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
     persist("date", nextDate.toISOString());
-    persist("displayMode", "focus");
+    persist("displayMode", DISPLAY_MODE.FOCUS);
   },
 
   isToday: () => {
@@ -214,7 +215,7 @@ export function initializeSettingsStore(settings: Settings, storage: MFDIStorage
     timeFilter: storage.get<TimeFilter>("timeFilter", "all"),
     dateFilter: storage.get<DateFilter>("dateFilter", "today"),
     sidebarOpen: storage.get<boolean>("sidebarOpen", true),
-    displayMode: storage.get<DisplayMode>("displayMode", "focus"),
+    displayMode: storage.get<DisplayMode>("displayMode", DISPLAY_MODE.FOCUS),
     asTask: storage.get<boolean>("asTask", false),
   });
 }

@@ -7,6 +7,7 @@ import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -18,7 +19,7 @@ export class MFDIView extends ItemView {
   private settings: Settings;
   public readonly handlers = new MFDIViewHandler();
   public state: MFDIViewState = {
-    displayMode: "focus",
+    displayMode: DISPLAY_MODE.FOCUS,
     granularity: "day",
     asTask: false,
     timeFilter: "all",
@@ -36,16 +37,16 @@ export class MFDIView extends ItemView {
     menu.addItem((item) => {
       item
         .setTitle(
-          this.state.displayMode === "focus"
+          this.state.displayMode === DISPLAY_MODE.FOCUS
             ? "タイムライン表示に切替"
             : "フォーカス表示に切替",
         )
         .setIcon(
-          this.state.displayMode === "focus" ? "list-minus" : "calendar-range",
+          this.state.displayMode === DISPLAY_MODE.FOCUS ? "list-minus" : "calendar-range",
         )
         .onClick(() => {
           this.handlers.onChangeDisplayMode?.(
-            this.state.displayMode === "focus" ? "timeline" : "focus",
+            this.state.displayMode === DISPLAY_MODE.FOCUS ? DISPLAY_MODE.TIMELINE : DISPLAY_MODE.FOCUS,
           );
         });
     });
