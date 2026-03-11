@@ -1,5 +1,6 @@
 import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
+import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
@@ -21,6 +22,7 @@ export const usePostActions = () => {
     asTask: s.asTask,
     setDate: s.setDate,
     isReadOnly: s.isReadOnly(),
+    displayMode: s.displayMode,
   })));
 
   const postsState = usePostsStore(useShallow(s => ({
@@ -51,11 +53,11 @@ export const usePostActions = () => {
   const refreshPosts = useCallback(async (path?: string) => {
     const { dateFilter, activeTopic, date } = settingsState;
 
-    if (dateFilter === "today") {
+    if (dateFilter === DATE_FILTER_IDS.TODAY) {
       if (!path) return;
       const noteFile = app.vault.getAbstractFileByPath(path);
       if (noteFile instanceof TFile) await postsState.updatePosts(noteFile);
-    } else if (dateFilter === "this_week") {
+    } else if (dateFilter === DATE_FILTER_IDS.THIS_WEEK) {
       await postsState.updatePostsForWeek(activeTopic, date);
     } else {
       const days = parseInt(dateFilter);
@@ -70,6 +72,7 @@ export const usePostActions = () => {
     post: Post,
     extraMetadata: Record<string, string>,
   ) => {
+
     const metadata = {
       ...post.metadata,
       ...extraMetadata,

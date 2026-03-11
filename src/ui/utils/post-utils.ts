@@ -29,7 +29,6 @@ export function toText(
   const restLines = lines.slice(1);
 
   const metaStr = Object.entries(metadata)
-    .filter(([k]) => k !== "archived" && k !== "deleted")
     .map(([k, v]) => ` [${k}::${v}]`)
     .join("");
 
