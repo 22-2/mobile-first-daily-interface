@@ -22,7 +22,8 @@ export const usePostContextMenu = () => {
     }))
   );
 
-  const { handleClickTime, movePostToTomorrow, deletePost } = usePostActions();
+  const { handleClickTime, movePostToTomorrow, deletePost, archivePost } =
+    usePostActions();
 
   const showPostContextMenu = useCallback(
     (post: Post, e: React.MouseEvent) => {
@@ -86,6 +87,16 @@ export const usePostContextMenu = () => {
 
       menu.addItem((item) =>
         item
+          .setTitle("アーカイブ")
+          .setIcon("archive")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            archivePost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
           .setTitle("削除")
           .setIcon("trash")
           .setWarning(true)
@@ -105,6 +116,7 @@ export const usePostContextMenu = () => {
       isReadOnly,
       movePostToTomorrow,
       deletePost,
+      archivePost,
     ],
   );
 

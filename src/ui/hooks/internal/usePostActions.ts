@@ -179,9 +179,33 @@ export const usePostActions = () => {
     })();
   }, [app.vault, app.workspace]);
 
+  const archivePost = useCallback(async (post: Post) => {
+    const path = post.path;
+    const targetTs = post.timestamp;
+    const now = window.moment();
+    const metadata = { ...post.metadata, archived: now.format("YYYYMMDDHHmmss") };
+    const text = toText(post.message, false, settingsState.granularity, targetTs, metadata);
+
+    await appHelper.replaceRange(path, post.startOffset, post.endOffset, text);
+    if (editorState.editingPost?.startOffset === post.startOffset && editorState.editingPost?.path === post.path) {
+      editorState.cancelEdit();
+    }
+
+    if (settingsState.dateFilter === "today") {
+      const noteFile = app.vault.getAbstractFileByPath(path);
+      if (noteFile instanceof TFile) await postsState.updatePosts(noteFile);
+    } else if (settingsState.dateFilter === "this_week") {
+      await postsState.updatePostsForWeek(settingsState.activeTopic, settingsState.date);
+    } else {
+      const days = parseInt(settingsState.dateFilter);
+      if (!isNaN(days)) await postsState.updatePostsForDays(settingsState.activeTopic, settingsState.date, days);
+    }
+  }, [app.vault, appHelper, settingsState, postsState, editorState]);
+
   return {
     handleSubmit,
     deletePost,
+    archivePost,
     movePostToTomorrow,
     handleClickTime,
   };
