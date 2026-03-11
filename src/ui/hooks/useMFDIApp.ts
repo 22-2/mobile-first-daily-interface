@@ -20,19 +20,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const {
     currentDailyNote,
-    handleClickOpenDailyNote,
-    handleChangeTopic,
   } = useNoteManager();
 
   const {
-    input,
-    setInput,
     inputRef,
   } = useMFDIEditor({ posts: postsState.posts });
 
-  const {
-    handleSubmit,
-  } = usePostActions();
+  usePostActions();
 
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
