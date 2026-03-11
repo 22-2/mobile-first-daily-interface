@@ -11,6 +11,8 @@ import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useWeekNotePaths } from "src/ui/hooks/internal/useWeekNotePaths";
+import { useMultiDaySync } from "src/ui/hooks/internal/useMultiDaySync";
 import { getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
@@ -38,6 +40,11 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setSidebarOpen,
     displayMode,
     setDisplayMode,
+    asTask,
+    setAsTask,
+    isToday,
+    isReadOnly,
+    handleClickHome,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
@@ -64,11 +71,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setCurrentDailyNote,
     updateCurrentDailyNote,
     createNoteWithInsertAfter,
+    handleClickOpenDailyNote,
     handleChangeTopic,
   } = useNoteManager({
     app,
     settings,
     date,
+    setDate,
     granularity,
     activeTopic,
     setActiveTopic,
@@ -76,25 +85,19 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setTasks,
   });
 
-  // 複数日モード中に監視するファイルパス集合
-  const [weekNotePaths, setWeekNotePaths] = useState<Set<string>>(new Set());
+  const { weekNotePaths, replacePaths, addPaths } = useWeekNotePaths();
 
   const {
     input,
     setInput,
-    asTask,
-    setAsTask,
     editingPost,
     editingPostOffset,
     inputRef,
     canSubmit,
     startEdit,
     cancelEdit,
-  } = useMFDIEditor({ posts, date, granularity });
+  } = useMFDIEditor({ posts, date, granularity, asTask, setAsTask });
 
-  const isReadOnly = useMemo(() => {
-    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
-  }, [date, granularity]);
 
   const {
     handleSubmit,
@@ -122,7 +125,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updatePosts,
     updatePostsForWeek,
     updatePostsForDays,
-    setWeekNotePaths,
+    replacePaths,
     createNoteWithInsertAfter,
     scrollContainerRef,
   });
@@ -145,21 +148,9 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     date,
     getPostsForDays,
     setPosts,
-    setWeekNotePaths,
+    addPaths,
   });
 
-  const handleClickHome = useCallback(() => {
-    setDisplayMode("focus");
-    setGranularity("day");
-    setDateFilter("today");
-    setTimeFilter("all");
-    setAsTask(false);
-    setDate(window.moment());
-  }, [setDisplayMode, setGranularity, setDateFilter, setTimeFilter, setAsTask, setDate]);
-
-  const isToday = useMemo(() => {
-    return date.isSame(window.moment(), granularityConfig[granularity].unit);
-  }, [date, granularity]);
 
   // ビュー状態変更時のオートフォーカス
   useEffect(() => {
@@ -177,26 +168,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     Promise.all(promises);
   }, [currentDailyNote, updatePosts, updateTasks, dateFilter]);
 
-  // 複数日モードのデータロード
-  useEffect(() => {
-    if (granularity !== "day" || asTask) return;
-    if (dateFilter === "this_week") {
-      updatePostsForWeek(activeTopic).then((paths) => {
-        setWeekNotePaths(paths);
-      });
-    } else if (
-      dateFilter === "3d" ||
-      dateFilter === "5d" ||
-      dateFilter === "7d"
-    ) {
-      const days = parseInt(dateFilter);
-      if (!isNaN(days)) {
-        updatePostsForDays(activeTopic, days).then(({ paths }) => {
-          setWeekNotePaths(paths);
-        });
-      }
-    }
-  }, [
+  useMultiDaySync({
     date,
     dateFilter,
     granularity,
@@ -204,7 +176,8 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     activeTopic,
     updatePostsForWeek,
     updatePostsForDays,
-  ]);
+    replacePaths,
+  });
 
   useNoteSync({
     date,
@@ -224,13 +197,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         ? () => {
             if (dateFilter === "this_week") {
               updatePostsForWeek(activeTopic).then((paths) => {
-                setWeekNotePaths(paths);
+                replacePaths(paths);
               });
             } else {
               const days = parseInt(dateFilter);
               if (!isNaN(days)) {
                 updatePostsForDays(activeTopic, days).then(({ paths }) => {
-                  setWeekNotePaths(paths);
+                  replacePaths(paths);
                 });
               }
             }
@@ -238,17 +211,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         : undefined,
   });
 
-  const handleClickOpenDailyNote = useCallback(async () => {
-    if (!currentDailyNote) {
-      new Notice("ノートが存在しなかったので新しく作成しました");
-      await createNoteWithInsertAfter();
-      setDate(date.clone());
-    }
-    const note = getTopicNote(app, date, granularity, activeTopic);
-    if (note) {
-      await app.workspace.getLeaf(true).openFile(note);
-    }
-  }, [app, date, granularity, activeTopic, currentDailyNote, createNoteWithInsertAfter, setDate]);
 
   const filteredPosts = useFilteredPosts({
     posts,

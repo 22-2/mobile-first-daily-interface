@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { DateFilter, DisplayMode, Granularity, MomentLike, TimeFilter } from "src/ui/types";
 
 import { granularityConfig } from "src/ui/config/granularity-config";
@@ -50,6 +50,10 @@ export function useMFDISettings() {
     storage.get<DisplayMode>("displayMode", "focus"),
   );
 
+  const [asTask, setAsTask] = useState<boolean>(() =>
+    storage.get<boolean>("asTask", false),
+  );
+
   const granularity = _granularity;
   const setGranularity = useCallback((g: Granularity) => {
     _setGranularity(g);
@@ -61,11 +65,7 @@ export function useMFDISettings() {
   const dateFilter = _dateFilter;
   const setDateFilter = useCallback((f: DateFilter) => {
     _setDateFilter(f);
-    if (f === "infinite") {
-      setDisplayMode("timeline");
-    } else {
-      setDisplayMode("focus");
-    }
+    setDisplayMode("focus");
   }, [setDisplayMode]);
 
   const handleChangeTopic = useCallback(
@@ -111,6 +111,23 @@ export function useMFDISettings() {
     setDisplayMode("focus");
   }, [setDisplayMode]);
 
+  const isReadOnly = useMemo(() => {
+    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
+  }, [date, granularity]);
+
+  const isToday = useMemo(() => {
+    return date.isSame(window.moment(), granularityConfig[granularity].unit);
+  }, [date, granularity]);
+
+  const handleClickHome = useCallback(() => {
+    setDisplayMode("focus");
+    setGranularity("day");
+    setDateFilter("today");
+    setTimeFilter("all");
+    setAsTask(false);
+    setDate(window.moment());
+  }, [setDisplayMode, setGranularity, setDateFilter, setTimeFilter, setAsTask, setDate]);
+
   // ────────────────────────────────────────────────────────────
   // Storage Persistence
   // ────────────────────────────────────────────────────────────
@@ -138,6 +155,10 @@ export function useMFDISettings() {
     storage.set("displayMode", displayMode);
   }, [displayMode, storage]);
 
+  useEffect(() => {
+    storage.set("asTask", asTask);
+  }, [asTask, storage]);
+
   return {
     activeTopic,
     setActiveTopic: handleChangeTopic,
@@ -153,10 +174,15 @@ export function useMFDISettings() {
     setSidebarOpen,
     displayMode,
     setDisplayMode,
+    asTask,
+    setAsTask,
     handleChangeCalendarDate,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
+    handleClickHome,
+    isToday,
+    isReadOnly,
     getMoveStep,
   };
 }

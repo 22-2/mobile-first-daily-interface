@@ -20,7 +20,7 @@ interface UseInfiniteTimelineProps {
     days: number,
   ) => Promise<PostsPage>;
   setPosts: (posts: Post[]) => void;
-  setWeekNotePaths: React.Dispatch<React.SetStateAction<Set<string>>>;
+  addPaths: (paths: Set<string>) => void;
 }
 
 /**
@@ -32,7 +32,7 @@ export const useInfiniteTimeline = ({
   date,
   getPostsForDays,
   setPosts,
-  setWeekNotePaths,
+  addPaths,
 }: UseInfiniteTimelineProps) => {
   const {
     data: infiniteData,
@@ -54,11 +54,7 @@ export const useInfiniteTimeline = ({
           const result = await getPostsForDays(activeTopic, baseDate, 14);
 
           // 監視対象パスを更新
-          setWeekNotePaths((prev) => {
-            const next = new Set(prev);
-            result.paths.forEach((p) => next.add(p));
-            return next;
-          });
+          addPaths(result.paths);
 
           return result;
         },

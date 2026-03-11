@@ -30,7 +30,7 @@ interface UsePostActionsProps {
   updatePosts: (file: TFile) => Promise<void>;
   updatePostsForWeek: (topicId: string) => Promise<Set<string>>;
   updatePostsForDays: (topicId: string, days: number) => Promise<{ paths: Set<string>; hasMore: boolean; lastSearchedDate: MomentLike }>;
-  setWeekNotePaths: React.Dispatch<React.SetStateAction<Set<string>>>;
+  replacePaths: (paths: Set<string>) => void;
   createNoteWithInsertAfter: (targetDate?: MomentLike) => Promise<TFile | null>;
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -55,7 +55,7 @@ export const usePostActions = ({
   updatePosts,
   updatePostsForWeek,
   updatePostsForDays,
-  setWeekNotePaths,
+  replacePaths,
   createNoteWithInsertAfter,
   scrollContainerRef,
 }: UsePostActionsProps) => {
@@ -129,7 +129,7 @@ export const usePostActions = ({
             ? () => updatePostsForWeek(activeTopic).then(paths => ({ paths }))
             : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
         updateFn().then(({ paths }) => {
-          setWeekNotePaths(paths);
+          replacePaths(paths);
         });
       }
       setDate(date.clone());
@@ -161,7 +161,7 @@ export const usePostActions = ({
     setDate,
     dateFilter,
     inputRef,
-    setWeekNotePaths,
+    replacePaths,
     scrollContainerRef,
     app.vault,
   ]);

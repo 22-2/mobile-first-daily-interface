@@ -9,6 +9,8 @@ interface UseMFDIEditorOptions {
   posts: Post[];
   date: MomentLike;
   granularity: Granularity;
+  asTask: boolean;
+  setAsTask: (v: boolean) => void;
 }
 
 /**
@@ -19,12 +21,11 @@ export function useMFDIEditor({
   posts,
   date,
   granularity,
+  asTask,
+  setAsTask,
 }: UseMFDIEditorOptions) {
   const { storage } = useAppContext();
   const [input, setInput] = useState(() => storage.get<string>("input", ""));
-  const [asTask, setAsTask] = useState<boolean>(() =>
-    storage.get<boolean>("asTask", false),
-  );
   const [editingPostOffset, setEditingPostOffset] = useState<number | null>(
     () => storage.get<number | null>("editingPostOffset", null),
   );
@@ -61,7 +62,7 @@ export function useMFDIEditor({
         inputRef.current?.focus();
       });
     },
-    [date, granularity, storage],
+    [date, granularity, storage, setAsTask],
   );
 
   const cancelEdit = useCallback(() => {
@@ -75,10 +76,6 @@ export function useMFDIEditor({
   // ────────────────────────────────────────────────────────────
   // Storage Persistence
   // ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    storage.set("asTask", asTask);
-  }, [asTask, storage]);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       storage.set("input", input);

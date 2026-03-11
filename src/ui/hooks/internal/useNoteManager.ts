@@ -8,6 +8,7 @@ interface UseNoteManagerProps {
   app: App;
   settings: Settings;
   date: MomentLike;
+  setDate: (date: MomentLike) => void;
   granularity: Granularity;
   activeTopic: string;
   setActiveTopic: (topicId: string) => void;
@@ -22,6 +23,7 @@ export const useNoteManager = ({
   app,
   settings,
   date,
+  setDate,
   granularity,
   activeTopic,
   setActiveTopic,
@@ -51,8 +53,8 @@ export const useNoteManager = ({
           await app.vault.modify(
             created,
             content
-              ? `${content}\n${settings.insertAfter}`
-              : settings.insertAfter,
+            ? `${content}\n${settings.insertAfter}`
+            : settings.insertAfter,
           );
         }
       }
@@ -60,6 +62,18 @@ export const useNoteManager = ({
     },
     [app, date, granularity, activeTopic, settings.insertAfter],
   );
+
+  const handleClickOpenDailyNote = useCallback(async () => {
+    if (!currentDailyNote) {
+      new Notice("ノートが存在しなかったので新しく作成しました");
+      await createNoteWithInsertAfter();
+      setDate(date.clone());
+    }
+    const note = getTopicNote(app, date, granularity, activeTopic);
+    if (note) {
+      await app.workspace.getLeaf(true).openFile(note);
+    }
+  }, [app, date, granularity, activeTopic, currentDailyNote, createNoteWithInsertAfter, setDate]);
 
   const handleChangeTopic = useCallback(
     (topicId: string) => {
@@ -77,6 +91,7 @@ export const useNoteManager = ({
     setCurrentDailyNote,
     updateCurrentDailyNote,
     createNoteWithInsertAfter,
+    handleClickOpenDailyNote,
     handleChangeTopic,
   };
 };
