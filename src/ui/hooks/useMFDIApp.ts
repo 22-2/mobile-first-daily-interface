@@ -1,7 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Notice, TFile } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Task } from "src/app-helper";
 import { granularityConfig } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useMFDIEditor } from "src/ui/hooks/internal/useMFDIEditor";
@@ -9,8 +8,11 @@ import { useMFDISettings } from "src/ui/hooks/internal/useMFDISettings";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostsAndTasks } from "src/ui/hooks/usePostsAndTasks";
 import { MomentLike, Post } from "src/ui/types";
-import { toText } from "src/ui/utils/post-utils";
 import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
+
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 
 interface UseMFDIAppOptions {}
 
@@ -45,8 +47,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const lastLoadTimeRef = useRef(0);
-  const COOLDOWN_MS = 1000;
 
   const {
     posts,
@@ -57,7 +57,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     updateTasks,
     updatePostsForWeek,
     updatePostsForDays,
-    appendPostsForDays,
     getPostsForDays,
   } = usePostsAndTasks({ date, granularity });
 
@@ -71,12 +70,77 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setAsTask,
     editingPost,
     editingPostOffset,
-    setEditingPostOffset,
     inputRef,
     canSubmit,
     startEdit,
     cancelEdit,
   } = useMFDIEditor({ posts, date, granularity });
+
+  const isReadOnly = useMemo(() => {
+    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
+  }, [date, granularity]);
+
+  const createNoteWithInsertAfter = useCallback(async (targetDate?: MomentLike) => {
+    const d = targetDate ?? date;
+    const created = await createTopicNote(app, d, granularity, activeTopic);
+    if (created && settings.insertAfter) {
+      const content = await app.vault.read(created);
+      if (!content.includes(settings.insertAfter)) {
+        await app.vault.modify(
+          created,
+          content
+            ? `${content}\n${settings.insertAfter}`
+            : settings.insertAfter,
+        );
+      }
+    }
+    return created;
+  }, [app, date, granularity, activeTopic, settings.insertAfter]);
+
+  const {
+    handleSubmit,
+    deletePost,
+    movePostToTomorrow,
+    handleClickTime,
+  } = usePostActions({
+    app,
+    appHelper,
+    settings,
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    currentDailyNote,
+    posts,
+    input,
+    asTask,
+    editingPost,
+    canSubmit,
+    inputRef,
+    isReadOnly,
+    setInput,
+    setDate,
+    cancelEdit,
+    updatePosts,
+    updatePostsForWeek,
+    updatePostsForDays,
+    setWeekNotePaths,
+    createNoteWithInsertAfter,
+    scrollContainerRef,
+  });
+
+  const {
+    updateTaskChecked,
+    openTaskInEditor,
+    deleteTask,
+  } = useTaskActions({
+    app,
+    appHelper,
+    currentDailyNote,
+    tasks,
+    setTasks,
+    isReadOnly,
+  });
 
   const handleClickHome = useCallback(() => {
     setDisplayMode("focus");
@@ -89,10 +153,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const isToday = useMemo(() => {
     return date.isSame(window.moment(), granularityConfig[granularity].unit);
-  }, [date, granularity]);
-
-  const isReadOnly = useMemo(() => {
-    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
   }, [date, granularity]);
 
   const updateCurrentDailyNote = useCallback(() => {
@@ -122,7 +182,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (!isReadOnly && inputRef.current) {
       setTimeout(() => inputRef.current?.focus());
     }
-  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly]);
+  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly, inputRef]);
 
   useEffect(() => {
     if (!currentDailyNote) return;
@@ -133,7 +193,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     Promise.all(promises);
   }, [currentDailyNote, updatePosts, updateTasks, dateFilter]);
 
-  // 複数日モードのデータロードは一旦そのまま、後でQuery化も検討
+  // 複数日モードのデータロード
   useEffect(() => {
     if (granularity !== "day" || asTask) return;
     if (dateFilter === "this_week") {
@@ -146,9 +206,11 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
       dateFilter === "7d"
     ) {
       const days = parseInt(dateFilter);
-      updatePostsForDays(activeTopic, days).then(({ paths }) => {
-        setWeekNotePaths(paths);
-      });
+      if (!isNaN(days)) {
+        updatePostsForDays(activeTopic, days).then(({ paths }) => {
+          setWeekNotePaths(paths);
+        });
+      }
     }
   }, [
     date,
@@ -165,7 +227,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
   } = window.moment ? 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useInfiniteQuery({
@@ -188,7 +249,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         return lastPage.hasMore ? lastPage.lastSearchedDate.clone().subtract(1, "day").format() : undefined;
       },
       enabled: displayMode === "timeline",
-    }) : { data: null, fetchNextPage: () => {}, hasNextPage: false, isFetchingNextPage: false, refetch: () => {} };
+    }) : { data: null, fetchNextPage: () => {}, hasNextPage: false, isFetchingNextPage: false };
 
   // TanStack Query の結果を posts に反映
   useEffect(() => {
@@ -236,24 +297,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
         : undefined,
   });
 
-  const createNoteWithInsertAfter = async (targetDate?: MomentLike) => {
-    const d = targetDate ?? date;
-    const created = await createTopicNote(app, d, granularity, activeTopic);
-    if (created && settings.insertAfter) {
-      const content = await app.vault.read(created);
-      if (!content.includes(settings.insertAfter)) {
-        await app.vault.modify(
-          created,
-          content
-            ? `${content}\n${settings.insertAfter}`
-            : settings.insertAfter,
-        );
-      }
-    }
-    return created;
-  };
-
-  const handleClickOpenDailyNote = async () => {
+  const handleClickOpenDailyNote = useCallback(async () => {
     if (!currentDailyNote) {
       new Notice("ノートが存在しなかったので新しく作成しました");
       await createNoteWithInsertAfter();
@@ -263,296 +307,16 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (note) {
       await app.workspace.getLeaf(true).openFile(note);
     }
-  };
+  }, [app, date, granularity, activeTopic, currentDailyNote, createNoteWithInsertAfter, setDate]);
 
-  const handleSubmit = useCallback(async () => {
-    if (!canSubmit) return;
-    const currentInput = inputRef.current?.getValue() ?? input;
-
-    if (editingPost) {
-      if (editingPost.path) {
-        const path = editingPost.path;
-        let targetTs = editingPost.timestamp;
-        const now = window.moment();
-        if (settings.updateDateStrategy === "always") {
-          targetTs = now;
-        } else if (settings.updateDateStrategy === "same_day") {
-          if (editingPost.timestamp.isSame(now, "day")) {
-            targetTs = now;
-          }
-        }
-        const text = toText(
-          currentInput,
-          false,
-          granularity,
-          targetTs,
-          editingPost.metadata,
-        );
-        await appHelper.replaceRange(
-          path,
-          editingPost.startOffset,
-          editingPost.endOffset,
-          text,
-        );
-        cancelEdit();
-        // 更新対象のノートを再読込
-        const noteFile = app.vault.getAbstractFileByPath(path);
-        if (noteFile instanceof TFile) {
-          if (dateFilter === "today") {
-            await updatePosts(noteFile);
-          } else if (dateFilter === "this_week") {
-            await updatePostsForWeek(activeTopic);
-          } else {
-            await updatePostsForDays(activeTopic, parseInt(dateFilter));
-          }
-        }
-        return;
-      }
-    }
-
-    const now = window.moment();
-    const metadata: Record<string, string> = {};
-    if (!date.isSame(now, "day")) {
-      metadata.posted = now.toISOString();
-    }
-
-    const text = toText(currentInput, asTask, granularity, undefined, metadata);
-    if (!text) {
-      setInput("");
-      inputRef.current?.setContent("");
-      return;
-    }
-
-    if (!currentDailyNote) {
-      new Notice("ノートが存在しなかったので新しく作成しました");
-      await createNoteWithInsertAfter();
-      if (dateFilter !== "today") {
-        const updateFn =
-          dateFilter === "this_week"
-            ? () => updatePostsForWeek(activeTopic).then(paths => ({ paths }))
-            : () => updatePostsForDays(activeTopic, parseInt(dateFilter));
-        updateFn().then(({ paths }) => {
-          setWeekNotePaths(paths);
-        });
-      }
-      setDate(date.clone());
-    }
-    const note = getTopicNote(app, date, granularity, activeTopic);
-    if (note) {
-      await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
-    }
-    setInput("");
-    inputRef.current?.setContent("");
-    scrollContainerRef.current?.scrollTo({ top: 0 });
-  }, [
-    canSubmit,
-    editingPost,
-    currentDailyNote,
-    settings,
-    granularity,
-    appHelper,
-    input,
-    asTask,
-    date,
-    activeTopic,
-    updatePosts,
-    updatePostsForWeek,
-    updatePostsForDays,
-    createNoteWithInsertAfter,
-    cancelEdit,
-    setInput,
-    setDate,
+  const filteredPosts = useFilteredPosts({
+    posts,
+    timeFilter,
     dateFilter,
-  ]);
-
-  const deletePost = useCallback(
-    async (post: Post) => {
-      const path = post.path;
-      const targetTs = post.timestamp;
-      const now = window.moment();
-      const metadata = { ...post.metadata, deleted: now.format("YYYYMMDDHHmmss") };
-
-      const text = toText(
-        post.message,
-        false,
-        granularity,
-        targetTs,
-        metadata,
-      );
-
-      await appHelper.replaceRange(path, post.startOffset, post.endOffset, text);
-      if (editingPost?.startOffset === post.startOffset && editingPost?.path === post.path) cancelEdit();
-
-      if (dateFilter === "today") {
-        const noteFile = app.vault.getAbstractFileByPath(path);
-        if (noteFile instanceof TFile) await updatePosts(noteFile);
-      } else if (dateFilter === "this_week") {
-        await updatePostsForWeek(activeTopic);
-      } else {
-        await updatePostsForDays(activeTopic, parseInt(dateFilter));
-      }
-    },
-    [
-      app.vault,
-      appHelper,
-      editingPost,
-      cancelEdit,
-      updatePosts,
-      updatePostsForWeek,
-      updatePostsForDays,
-      activeTopic,
-      dateFilter,
-      isReadOnly,
-    ],
-  );
-
-  const movePostToTomorrow = useCallback(
-    async (post: Post) => {
-      if (isReadOnly) {
-        new Notice("過去のノートの投稿は移動できません");
-        return;
-      }
-
-      const nextDay = post.timestamp.clone().add(1, "day");
-      const nextNote = await createNoteWithInsertAfter(nextDay);
-      if (!nextNote) {
-        new Notice("明日のノートが見つかりませんでした");
-        return;
-      }
-
-      const fromDateStr = post.timestamp.format("YYYY-MM-DD");
-      const messageWithFrom = `${post.message} (from ${fromDateStr})`;
-      const now = window.moment();
-      const metadata = { ...post.metadata };
-      if (!nextDay.isSame(now, "day")) {
-        metadata.posted = now.toISOString();
-      }
-
-      const text = toText(
-        messageWithFrom,
-        false,
-        granularity,
-        nextDay,
-        metadata,
-      );
-      await appHelper.insertTextAfter(
-        nextNote,
-        `\n${text}`,
-        settings.insertAfter,
-      );
-
-      await deletePost(post);
-      new Notice("明日に送りました");
-    },
-    [
-      app,
-      appHelper,
-      deletePost,
-      isReadOnly,
-      granularity,
-      activeTopic,
-      settings.insertAfter,
-    ],
-  );
-
-
-  const handleClickTime = useCallback(
-    (post: Post) => {
-      (async () => {
-        const path = post.path;
-        const noteFile = app.vault.getAbstractFileByPath(path);
-        if (!(noteFile instanceof TFile)) return;
-        const leaf = app.workspace.getLeaf(true);
-        await app.workspace.revealLeaf(leaf);
-        await leaf.openFile(noteFile, { active: true });
-        const editor = app.workspace.activeEditor!;
-        const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
-        const endPos = editor.editor!.offsetToPos(
-          post.bodyStartOffset + post.message.length,
-        );
-        const from = { line: startPos.line, ch: startPos.ch };
-        const to = { line: endPos.line, ch: endPos.ch };
-        queueMicrotask(() => {
-          // @ts-expect-error
-          editor.editMode!.highlightSearchMatches([{ from, to }]);
-        });
-      })();
-    },
-    [app.workspace],
-  );
-
-  const updateTaskChecked = useCallback(
-    async (task: Task, checked: boolean) => {
-      if (isReadOnly) {
-        new Notice("過去のノートのタスクは変更できません");
-        return;
-      }
-      if (!currentDailyNote) return;
-      const mark = checked ? "x" : " ";
-      setTasks(
-        tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)),
-      );
-      await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
-    },
-    [currentDailyNote, tasks, setTasks, appHelper, isReadOnly],
-  );
-
-  const openTaskInEditor = (task: Task) => {
-    (async () => {
-      if (!currentDailyNote) return;
-      const leaf = app.workspace.getLeaf(true);
-      await leaf.openFile(currentDailyNote);
-      const editor = appHelper.getActiveMarkdownEditor()!;
-      if (!editor) return;
-      const pos = editor.offsetToPos(task.offset);
-      editor.setCursor(pos);
-      await leaf.openFile(currentDailyNote, {
-        eState: { line: pos.line },
-      });
-    })();
-  };
-
-  const deleteTask = async (task: Task) => {
-    if (isReadOnly) {
-      new Notice("過去のノートのタスクは削除できません");
-      return;
-    }
-    if (!currentDailyNote) return;
-    const path = currentDailyNote.path;
-    const origin = await appHelper.loadFile(path);
-    let start = task.offset;
-    let end = origin.indexOf("\n", start);
-    if (end === -1) end = origin.length;
-    else end += 1;
-    await appHelper.replaceRange(path, start, end, "");
-    let newContent = await appHelper.loadFile(path);
-    newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-    await app.vault.adapter.write(path, newContent);
-    setTasks((await appHelper.getTasks(currentDailyNote)) ?? []);
-  };
-
-
-  const filteredPosts = useMemo(() => {
-    const postsWithoutHidden = posts.filter(
-      (p) => !p.metadata.archived && !p.metadata.deleted,
-    );
-
-    // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
-    if (displayMode === "timeline") return postsWithoutHidden;
-
-    if (dateFilter !== "today") return postsWithoutHidden;
-    if (timeFilter === "all" || asTask || granularity !== "day")
-      return postsWithoutHidden;
-    if (timeFilter === "latest")
-      return postsWithoutHidden.length > 0 ? [postsWithoutHidden[0]] : [];
-
-    // "1h", "2h" などの文字列から数値を抽出
-    const hours = parseInt(timeFilter as string);
-    if (isNaN(hours)) return postsWithoutHidden;
-
-    const now = window.moment();
-    return postsWithoutHidden.filter((p) => now.diff(p.timestamp, "hours") < hours);
-  }, [posts, timeFilter, dateFilter, asTask, granularity]);
+    asTask,
+    granularity,
+    displayMode,
+  });
 
   return {
     activeTopic,
