@@ -3,6 +3,9 @@ import { createContext, ReactNode, useContext, useEffect } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
 import { useViewSync } from "src/ui/hooks/useViewSync";
+import { initializeSettingsStore } from "src/ui/store/settingsStore";
+import { initializeEditorStore } from "src/ui/store/editorStore";
+import { initializePostsStore } from "src/ui/store/postsStore";
 
 type MFDIAppContextValue = ReturnType<typeof useMFDIApp>;
 
@@ -23,7 +26,15 @@ interface MFDIAppProviderProps {
 export const MFDIAppProvider: React.FC<MFDIAppProviderProps> = ({
   children,
 }) => {
-  const { view } = useAppContext();
+  const { view, settings, storage, app, appHelper } = useAppContext();
+
+  // Initialize store once
+  React.useMemo(() => {
+    initializeSettingsStore(settings, storage);
+    initializeEditorStore(storage);
+    initializePostsStore(app, appHelper);
+  }, [settings, storage, app, appHelper]);
+
   const value = useMFDIApp();
 
   const {

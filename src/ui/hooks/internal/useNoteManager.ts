@@ -1,97 +1,30 @@
-import { App, Notice, TFile } from "obsidian";
-import { useCallback, useEffect, useState } from "react";
-import { Settings } from "src/settings";
-import { Granularity, MomentLike, Post } from "src/ui/types";
-import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
-
-interface UseNoteManagerProps {
-  app: App;
-  settings: Settings;
-  date: MomentLike;
-  setDate: (date: MomentLike) => void;
-  granularity: Granularity;
-  activeTopic: string;
-  setActiveTopic: (topicId: string) => void;
-  setPosts: (posts: Post[]) => void;
-  setTasks: (tasks: any[]) => void;
-}
+import { useEffect } from "react";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { useShallow } from "zustand/shallow";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 
 /**
- * ノート（TFile）の取得、作成、トピック切り替えを管理するHook。
+ * デイリーノートの取得、作成、トピック切り替えを管理するHook。
  */
-export const useNoteManager = ({
-  app,
-  settings,
-  date,
-  setDate,
-  granularity,
-  activeTopic,
-  setActiveTopic,
-  setPosts,
-  setTasks,
-}: UseNoteManagerProps) => {
-  const [currentDailyNote, setCurrentDailyNote] = useState<TFile | null>(null);
+export const useNoteManager = () => {
+  const { app, settings } = useAppContext();
+  const date = useSettingsStore(s => s.date);
+  const granularity = useSettingsStore(s => s.granularity);
+  const activeTopic = useSettingsStore(s => s.activeTopic);
 
-  const updateCurrentDailyNote = useCallback(() => {
-    const n = getTopicNote(app, date, granularity, activeTopic);
-    if (n?.path !== currentDailyNote?.path) {
-      setCurrentDailyNote(n);
-    }
-  }, [app, date, granularity, activeTopic, currentDailyNote]);
+  const state = useNoteStore(useShallow((s) => ({
+    currentDailyNote: s.currentDailyNote,
+    setCurrentDailyNote: s.setCurrentDailyNote,
+    updateCurrentDailyNote: () => s.updateCurrentDailyNote(app),
+    createNoteWithInsertAfter: (targetDate?: any) => s.createNoteWithInsertAfter(app, settings, targetDate),
+    handleClickOpenDailyNote: () => s.handleClickOpenDailyNote(app, settings),
+    handleChangeTopic: s.handleChangeTopic,
+  })));
 
   useEffect(() => {
-    updateCurrentDailyNote();
-  }, [date, granularity, activeTopic, updateCurrentDailyNote]);
+    state.updateCurrentDailyNote();
+  }, [date, granularity, activeTopic, state.updateCurrentDailyNote]);
 
-  const createNoteWithInsertAfter = useCallback(
-    async (targetDate?: MomentLike) => {
-      const d = targetDate ?? date;
-      const created = await createTopicNote(app, d, granularity, activeTopic);
-      if (created && settings.insertAfter) {
-        const content = await app.vault.read(created);
-        if (!content.includes(settings.insertAfter)) {
-          await app.vault.modify(
-            created,
-            content
-            ? `${content}\n${settings.insertAfter}`
-            : settings.insertAfter,
-          );
-        }
-      }
-      return created;
-    },
-    [app, date, granularity, activeTopic, settings.insertAfter],
-  );
-
-  const handleClickOpenDailyNote = useCallback(async () => {
-    if (!currentDailyNote) {
-      new Notice("ノートが存在しなかったので新しく作成しました");
-      await createNoteWithInsertAfter();
-      setDate(date.clone());
-    }
-    const note = getTopicNote(app, date, granularity, activeTopic);
-    if (note) {
-      await app.workspace.getLeaf(true).openFile(note);
-    }
-  }, [app, date, granularity, activeTopic, currentDailyNote, createNoteWithInsertAfter, setDate]);
-
-  const handleChangeTopic = useCallback(
-    (topicId: string) => {
-      if (activeTopic === topicId) return;
-      setActiveTopic(topicId);
-      setCurrentDailyNote(null);
-      setPosts([]);
-      setTasks([]);
-    },
-    [activeTopic, setActiveTopic, setPosts, setTasks],
-  );
-
-  return {
-    currentDailyNote,
-    setCurrentDailyNote,
-    updateCurrentDailyNote,
-    createNoteWithInsertAfter,
-    handleClickOpenDailyNote,
-    handleChangeTopic,
-  };
+  return state;
 };

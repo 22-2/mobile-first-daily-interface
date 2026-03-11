@@ -1,23 +1,25 @@
-import { Notice, TFile } from "obsidian";
+import { Notice } from "obsidian";
 import { useCallback } from "react";
-import { AppHelper, Task } from "src/app-helper";
+import { Task } from "src/app-helper";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
+import { useAppContext } from "src/ui/context/AppContext";
 
-interface UseTaskActionsProps {
-  appHelper: AppHelper;
-  currentDailyNote: TFile | null;
-  tasks: Task[];
-  setTasks: (tasks: Task[]) => void;
-  isReadOnly: boolean;
-}
+export const useTaskActions = () => {
+  const { app, appHelper } = useAppContext();
 
-export const useTaskActions = ({
-  appHelper,
-  currentDailyNote,
-  tasks,
-  setTasks,
-  isReadOnly,
-}: UseTaskActionsProps) => {
-  const app = appHelper.getApp();
+  const isReadOnly = useSettingsStore(s => s.isReadOnly());
+  
+  const noteState = useNoteStore(useShallow(s => ({
+    currentDailyNote: s.currentDailyNote,
+  })));
+
+  const postsState = usePostsStore(useShallow(s => ({
+    tasks: s.tasks,
+    setTasks: s.setTasks,
+  })));
 
   const updateTaskChecked = useCallback(
     async (task: Task, checked: boolean) => {
@@ -25,38 +27,38 @@ export const useTaskActions = ({
         new Notice("過去のノートのタスクは変更できません");
         return;
       }
-      if (!currentDailyNote) return;
+      if (!noteState.currentDailyNote) return;
       const mark = checked ? "x" : " ";
-      setTasks(
-        tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)),
+      postsState.setTasks(
+        postsState.tasks.map((x) => (x.offset === task.offset ? { ...x, mark } : x)),
       );
-      await appHelper.setCheckMark(currentDailyNote.path, mark, task.offset);
+      await appHelper.setCheckMark(noteState.currentDailyNote.path, mark, task.offset);
     },
-    [currentDailyNote, tasks, setTasks, appHelper, isReadOnly],
+    [noteState.currentDailyNote, postsState.tasks, postsState.setTasks, appHelper, isReadOnly],
   );
 
   const openTaskInEditor = useCallback((task: Task) => {
     (async () => {
-      if (!currentDailyNote) return;
+      if (!noteState.currentDailyNote) return;
       const leaf = app.workspace.getLeaf(true);
-      await leaf.openFile(currentDailyNote);
+      await leaf.openFile(noteState.currentDailyNote);
       const editor = appHelper.getActiveMarkdownEditor()!;
       if (!editor) return;
       const pos = editor.offsetToPos(task.offset);
       editor.setCursor(pos);
-      await leaf.openFile(currentDailyNote, {
+      await leaf.openFile(noteState.currentDailyNote, {
         eState: { line: pos.line },
       });
     })();
-  }, [app.workspace, appHelper, currentDailyNote]);
+  }, [app.workspace, appHelper, noteState.currentDailyNote]);
 
   const deleteTask = useCallback(async (task: Task) => {
     if (isReadOnly) {
       new Notice("過去のノートのタスクは削除できません");
       return;
     }
-    if (!currentDailyNote) return;
-    const path = currentDailyNote.path;
+    if (!noteState.currentDailyNote) return;
+    const path = noteState.currentDailyNote.path;
     const origin = await appHelper.loadFile(path);
     let start = task.offset;
     let end = origin.indexOf("\n", start);
@@ -66,8 +68,8 @@ export const useTaskActions = ({
     let newContent = await appHelper.loadFile(path);
     newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
     await app.vault.adapter.write(path, newContent);
-    setTasks((await appHelper.getTasks(currentDailyNote)) ?? []);
-  }, [app.vault.adapter, appHelper, currentDailyNote, isReadOnly, setTasks]);
+    postsState.setTasks((await appHelper.getTasks(noteState.currentDailyNote)) ?? []);
+  }, [app.vault.adapter, appHelper, noteState.currentDailyNote, isReadOnly, postsState.setTasks]);
 
   return {
     updateTaskChecked,

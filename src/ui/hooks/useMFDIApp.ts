@@ -13,6 +13,7 @@ import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useWeekNotePaths } from "src/ui/hooks/internal/useWeekNotePaths";
 import { useMultiDaySync } from "src/ui/hooks/internal/useMultiDaySync";
+import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
 import { getTopicNote } from "src/utils/daily-notes";
 
 interface UseMFDIAppOptions {}
@@ -27,9 +28,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const {
     activeTopic,
-    setActiveTopic,
     granularity,
-    setGranularity,
     date,
     setDate,
     timeFilter,
@@ -54,38 +53,15 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    posts,
-    tasks,
-    setPosts,
-    setTasks,
-    updatePosts,
-    updateTasks,
-    updatePostsForWeek,
-    updatePostsForDays,
-    getPostsForDays,
-  } = usePostsAndTasks({ date, granularity });
+  const postsState = usePostsAndTasks({ date });
 
   const {
     currentDailyNote,
     setCurrentDailyNote,
     updateCurrentDailyNote,
-    createNoteWithInsertAfter,
     handleClickOpenDailyNote,
     handleChangeTopic,
-  } = useNoteManager({
-    app,
-    settings,
-    date,
-    setDate,
-    granularity,
-    activeTopic,
-    setActiveTopic,
-    setPosts,
-    setTasks,
-  });
-
-  const { weekNotePaths, replacePaths, addPaths } = useWeekNotePaths();
+  } = useNoteManager();
 
   const {
     input,
@@ -96,7 +72,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     canSubmit,
     startEdit,
     cancelEdit,
-  } = useMFDIEditor({ posts, date, granularity, asTask, setAsTask });
+  } = useMFDIEditor({ posts: postsState.posts });
 
 
   const {
@@ -104,52 +80,15 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     deletePost,
     movePostToTomorrow,
     handleClickTime,
-  } = usePostActions({
-    appHelper,
-    settings,
-    date,
-    granularity,
-    activeTopic,
-    dateFilter,
-    currentDailyNote,
-    posts,
-    input,
-    asTask,
-    editingPost,
-    canSubmit,
-    inputRef,
-    isReadOnly,
-    setInput,
-    setDate,
-    cancelEdit,
-    updatePosts,
-    updatePostsForWeek,
-    updatePostsForDays,
-    replacePaths,
-    createNoteWithInsertAfter,
-    scrollContainerRef,
-  });
+  } = usePostActions(scrollContainerRef);
 
   const {
     updateTaskChecked,
     openTaskInEditor,
     deleteTask,
-  } = useTaskActions({
-    appHelper,
-    currentDailyNote,
-    tasks,
-    setTasks,
-    isReadOnly,
-  });
+  } = useTaskActions();
 
-  const { loadMore, hasMore } = useInfiniteTimeline({
-    activeTopic,
-    displayMode,
-    date,
-    getPostsForDays,
-    setPosts,
-    addPaths,
-  });
+  const { loadMore, hasMore } = useInfiniteTimeline();
 
 
   // ビュー状態変更時のオートフォーカス
@@ -161,59 +100,18 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
 
   useEffect(() => {
     if (!currentDailyNote) return;
-    const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
+    const promises: Promise<void>[] = [postsState.updateTasks(currentDailyNote)];
     if (dateFilter === "today") {
-      promises.push(updatePosts(currentDailyNote));
+      promises.push(postsState.updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, updatePosts, updateTasks, dateFilter]);
+  }, [currentDailyNote, postsState, dateFilter]);
 
-  useMultiDaySync({
-    date,
-    dateFilter,
-    granularity,
-    asTask,
-    activeTopic,
-    updatePostsForWeek,
-    updatePostsForDays,
-    replacePaths,
-  });
-
-  useNoteSync({
-    date,
-    granularity,
-    topicId: activeTopic,
-    currentDailyNote,
-    weekNotePaths:
-      dateFilter !== "today" ? weekNotePaths : undefined,
-    setDate,
-    setTasks,
-    setPosts,
-    updateCurrentDailyNote,
-    updatePosts,
-    updateTasks,
-    onWeekNoteChanged:
-      dateFilter !== "today"
-        ? () => {
-            if (dateFilter === "this_week") {
-              updatePostsForWeek(activeTopic).then((paths) => {
-                replacePaths(paths);
-              });
-            } else {
-              const days = parseInt(dateFilter);
-              if (!isNaN(days)) {
-                updatePostsForDays(activeTopic, days).then(({ paths }) => {
-                  replacePaths(paths);
-                });
-              }
-            }
-          }
-        : undefined,
-  });
-
+  useMultiDaySync();
+  useNoteSync();
 
   const filteredPosts = useFilteredPosts({
-    posts,
+    posts: postsState.posts,
     timeFilter,
     dateFilter,
     asTask,
@@ -225,7 +123,7 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     activeTopic,
     setActiveTopic: handleChangeTopic,
     granularity,
-    setGranularity,
+    setGranularity: (v: any) => settingsStore.getState().setGranularity(v),
     date,
     setDate,
     currentDailyNote,
@@ -244,13 +142,13 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     setSidebarOpen,
     displayMode,
     setDisplayMode,
-    posts,
-    setPosts,
+    posts: postsState.posts,
+    setPosts: postsState.setPosts,
     loadMore,
     hasMore,
     filteredPosts,
-    tasks,
-    setTasks,
+    tasks: postsState.tasks,
+    setTasks: postsState.setTasks,
     canSubmit,
     inputRef,
     scrollContainerRef,
