@@ -1,102 +1,88 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { Task } from "../../app-helper";
-import { getPeriodicSettings } from "../../utils/daily-notes";
-import { Granularity, MomentLike, Post } from "../types";
-
-import { useAppContext } from "../context/AppContext";
-
-interface UseNoteSyncOptions {
-  date: MomentLike;
-  granularity: Granularity;
-  topicId: string;
-  currentDailyNote: TFile | null;
-  /** "this_week" モード中に監視する今週のファイルパス集合。undefined のときは通常モード。 */
-  weekNotePaths?: Set<string>;
-  setDate: (d: MomentLike) => void;
-  setTasks: (t: Task[]) => void;
-  setPosts: (p: Post[]) => void;
-  updateCurrentDailyNote: () => void;
-  updatePosts: (note: TFile) => Promise<void>;
-  updateTasks: (note: TFile) => Promise<void>;
-  /** "this_week" モード中に今週のいずれかのファイルが変更されたときに呼び出すコールバック。 */
-  onWeekNoteChanged?: () => void;
-}
+import { useAppContext } from "src/ui/context/AppContext";
+import { noteStore, useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { getPeriodicSettings } from "src/utils/daily-notes";
+import { useShallow } from "zustand/shallow";
 
 /**
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
  */
-export function useNoteSync({
-  date,
-  granularity,
-  topicId,
-  currentDailyNote,
-  weekNotePaths,
-  setDate,
-  setTasks,
-  setPosts,
-  updateCurrentDailyNote,
-  updatePosts,
-  updateTasks,
-  onWeekNoteChanged,
-}: UseNoteSyncOptions) {
+export function useNoteSync() {
   const { app } = useAppContext();
+
+  const settingsState = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    granularity: s.granularity,
+    activeTopic: s.activeTopic,
+    dateFilter: s.dateFilter,
+    setDate: s.setDate,
+  })));
+
+  const noteState = useNoteStore(useShallow(s => ({
+    currentDailyNote: s.currentDailyNote,
+    weekNotePaths: s.weekNotePaths,
+    replacePaths: s.replacePaths,
+  })));
+
+  const postsState = usePostsStore(useShallow(s => ({
+    setTasks: s.setTasks,
+    setPosts: s.setPosts,
+    updatePosts: s.updatePosts,
+    updateTasks: s.updateTasks,
+    updatePostsForWeek: s.updatePostsForWeek,
+    updatePostsForDays: s.updatePostsForDays,
+  })));
+
   useEffect(() => {
-    const eventRef = app.metadataCache.on(
-      "changed",
-      async (file, _data, _cache) => {
-        // "this_week" モード: 今週のいずれかのファイルが変わったら週全体を再読み込み
-        if (weekNotePaths && weekNotePaths.size > 0) {
-          if (weekNotePaths.has(file.path)) {
-            onWeekNoteChanged?.();
-          }
-          return;
-        }
+    const { date, granularity, activeTopic, dateFilter } = settingsState;
+    const { currentDailyNote, weekNotePaths } = noteState;
 
-        // 通常モード: currentDailyNoteが存在してパスが異なるなら、違う日なので更新は不要
-        if (currentDailyNote != null && file.path !== currentDailyNote.path) {
-          return;
-        }
-
-        if (currentDailyNote == null) {
-          const ds = getPeriodicSettings(granularity);
-          const dir = ds.folder ? `${ds.folder}/` : "";
-          const prefix = topicId ? `${topicId}-` : "";
-          const entry = date.format(ds.format ?? "YYYY-MM-DD");
-          // 更新されたファイルがcurrentNoteになるべきファイルではなければ処理は不要
-          if (file.path !== `${dir}${prefix}${entry}.md`) {
-            return;
+    const eventRef = app.metadataCache.on("changed", async (file) => {
+      // 複数日表示モード
+      if (dateFilter !== "today" && weekNotePaths.size > 0) {
+        if (weekNotePaths.has(file.path)) {
+          if (dateFilter === "this_week") {
+            postsState.updatePostsForWeek(activeTopic, date).then(paths => noteState.replacePaths(paths));
+          } else {
+            const days = parseInt(dateFilter);
+            if (!isNaN(days)) {
+              postsState.updatePostsForDays(activeTopic, date, days).then(({ paths }) => noteState.replacePaths(paths));
+            }
           }
         }
-
-        // 同期などで裏でDaily Noteが作成されたときに更新する
-        updateCurrentDailyNote();
-        await Promise.all([updatePosts(file), updateTasks(file)]);
-      },
-    );
-
-    const deleteEventRef = app.vault.on("delete", async (file) => {
-      // currentDailyNoteとは別のファイルなら関係ない
-      if (file.path !== currentDailyNote?.path) {
         return;
       }
 
-      // 再読み込みをするためにクローンを入れて参照を更新
-      setDate(date.clone());
-      setTasks([]);
-      setPosts([]);
+      // 通常モード
+      if (currentDailyNote != null && file.path !== currentDailyNote.path) return;
+
+      if (currentDailyNote == null) {
+        const ds = getPeriodicSettings(granularity);
+        const dir = ds.folder ? `${ds.folder}/` : "";
+        const prefix = activeTopic ? `${activeTopic}-` : "";
+        const entry = date.format(ds.format ?? "YYYY-MM-DD");
+        if (file.path !== `${dir}${prefix}${entry}.md`) return;
+      }
+
+      noteStore.getState().updateCurrentDailyNote(app);
+      if (file instanceof TFile) {
+        await Promise.all([postsState.updatePosts(file), postsState.updateTasks(file)]);
+      }
+    });
+
+    const deleteEventRef = app.vault.on("delete", async (file) => {
+      if (file.path !== currentDailyNote?.path) return;
+      settingsState.setDate(date.clone());
+      postsState.setTasks([]);
+      postsState.setPosts([]);
     });
 
     return () => {
       app.metadataCache.offref(eventRef);
       app.vault.offref(deleteEventRef);
     };
-  }, [
-    date,
-    currentDailyNote,
-    granularity,
-    topicId,
-    weekNotePaths,
-    onWeekNoteChanged,
-  ]);
+  }, [app, settingsState, noteState, postsState]);
 }

@@ -1,8 +1,8 @@
 import { App, Modal } from "obsidian";
 import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { Topic } from "../../topic";
-import { TopicManagerView } from "../components/TopicManagerView";
+import { Topic } from "src/topic";
+import { TopicManagerView } from "src/ui/components/topics/TopicManagerView";
 
 export class TopicManagerModal extends Modal {
   private root: Root;

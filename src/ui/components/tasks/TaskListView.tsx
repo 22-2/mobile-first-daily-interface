@@ -2,19 +2,28 @@ import { Box } from "@chakra-ui/react";
 import * as React from "react";
 import { useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { useMFDIContext } from "../context/MFDIAppContext";
-import { TaskView } from "./TaskView";
+import { TaskView } from "src/ui/components/tasks/TaskView";
+import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
+import { useTaskContextMenu } from "src/ui/hooks/useTaskContextMenu";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = React.memo(() => {
-  const {
-    date,
-    tasks,
-    granularity,
-    timeFilter,
-    updateTaskChecked,
-    taskContextMenu,
-    isReadOnly,
-  } = useMFDIContext();
+  const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    granularity: s.granularity,
+    timeFilter: s.timeFilter,
+    isReadOnly: s.isReadOnly(),
+  })));
+
+  const { tasks } = usePostsStore(useShallow(s => ({
+    tasks: s.tasks,
+  })));
+
+  const { updateTaskChecked } = useTaskActions();
+
+  const { showTaskContextMenu } = useTaskContextMenu();
 
   const incompleteTasks = useMemo(
     () => tasks.filter((x) => x.mark === " "),
@@ -44,7 +53,7 @@ export const TaskListView: React.FC = React.memo(() => {
                   granularity={granularity}
                   timeFilter={timeFilter}
                   onChange={(c) => updateTaskChecked(x, c)}
-                  onContextMenu={(task, e) => taskContextMenu(task, e)}
+                  onContextMenu={showTaskContextMenu}
                   disabled={isReadOnly}
                 />
               </Box>
@@ -69,7 +78,7 @@ export const TaskListView: React.FC = React.memo(() => {
                   granularity={granularity}
                   timeFilter={timeFilter}
                   onChange={(c) => updateTaskChecked(x, c)}
-                  onContextMenu={(task, e) => taskContextMenu(task, e)}
+                  onContextMenu={showTaskContextMenu}
                   disabled={isReadOnly}
                 />
               </Box>

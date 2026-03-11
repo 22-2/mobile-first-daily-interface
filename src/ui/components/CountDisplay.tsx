@@ -1,16 +1,24 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { granularityConfig } from "../config/granularity-config";
+import { granularityConfig } from "src/ui/config/granularity-config";
 
-import { useAppContext } from "../context/AppContext";
-import { useMFDIContext } from "../context/MFDIAppContext";
-import { addPeriodMenuItems } from "../menus/periodMenu";
-import { addPostModeMenuItems } from "../menus/postModeMenu";
-import { UnderlinedClickable } from "./UnderlinedClickable";
+import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
+import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, dateFilter, displayMode } = useMFDIContext();
+  const { date, granularity, dateFilter, displayMode } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    granularity: s.granularity,
+    dateFilter: s.dateFilter,
+    displayMode: s.displayMode,
+  })));
   const onClick = useFilterMenu();
 
   if (displayMode === "timeline") return null;
@@ -46,7 +54,10 @@ const DateSection: React.FC = () => {
 };
 
 const usePostModeMenu = () => {
-  const { asTask, setAsTask: onAsTaskChange } = useMFDIContext();
+  const { asTask, setAsTask: onAsTaskChange } = useSettingsStore(useShallow(s => ({
+    asTask: s.asTask,
+    setAsTask: s.setAsTask
+  })));
 
   return (e: React.MouseEvent) => {
     if (!onAsTaskChange) return;
@@ -58,7 +69,17 @@ const usePostModeMenu = () => {
 };
 
 const useFilterMenu = () => {
-  const state = useMFDIContext();
+  const state = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    date: s.date,
+    timeFilter: s.timeFilter,
+    dateFilter: s.dateFilter,
+    displayMode: s.displayMode,
+    asTask: s.asTask,
+    activeTopic: s.activeTopic,
+    setTimeFilter: s.setTimeFilter,
+    setDateFilter: s.setDateFilter,
+  })));
   const { setTimeFilter, setDateFilter } = state;
 
   return (e: React.MouseEvent) => {
@@ -73,8 +94,23 @@ const useFilterMenu = () => {
 };
 
 const CountSection: React.FC = () => {
-  const { granularity, asTask, tasks, filteredPosts, posts, dateFilter, timeFilter, displayMode } =
-    useMFDIContext();
+  const settings = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    asTask: s.asTask,
+    dateFilter: s.dateFilter,
+    timeFilter: s.timeFilter,
+    displayMode: s.displayMode,
+  })));
+  const postsState = usePostsStore(useShallow(s => ({
+    posts: s.posts,
+    tasks: s.tasks,
+  })));
+  const filteredPosts = useFilteredPosts({
+    posts: postsState.posts,
+    ...settings,
+  });
+  const { granularity, asTask, dateFilter, timeFilter, displayMode } = settings;
+  const { posts, tasks } = postsState;
   const onClick = usePostModeMenu();
 
   const tasksCount = tasks.length;
@@ -94,7 +130,10 @@ const CountSection: React.FC = () => {
 
 const TopicSection: React.FC = () => {
   const { settings } = useAppContext();
-  const { activeTopic, setActiveTopic: onTopicChange } = useMFDIContext();
+  const { activeTopic, setActiveTopic: onTopicChange } = useSettingsStore(useShallow(s => ({
+    activeTopic: s.activeTopic,
+    setActiveTopic: s.setActiveTopic,
+  })));
 
   const activeTopicName = settings.topics.find(
     (t) => t.id === activeTopic,

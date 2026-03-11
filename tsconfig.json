@@ -2,6 +2,9 @@
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "nodenext",
@@ -16,5 +19,5 @@
     "jsx": "react",
     "types": ["@types/bun", "obsidian-typings"]
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }

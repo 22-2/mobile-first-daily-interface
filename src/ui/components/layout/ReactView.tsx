@@ -2,18 +2,25 @@ import { Box, Flex } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
 import * as React from "react";
-import { Settings } from "../../../settings";
-import { AppContextProvider, useAppContext } from "../../context/AppContext";
-import { MFDIAppProvider, useMFDIContext } from "../../context/MFDIAppContext";
-import { Post } from "../../types";
-import { MFDIView } from "../../view/MFDIView";
-import { CountDisplay } from "../CountDisplay";
-import { EmptyState } from "../EmptyState";
-import { InputArea } from "../InputArea";
-import { PostListView } from "../PostListView";
-import { TaskListView } from "../TaskListView";
-import { MiniCalendar } from "./MiniCalendar";
-import { SidebarScales } from "./SidebarScales";
+import { Settings } from "src/settings";
+import { CountDisplay } from "src/ui/components/CountDisplay";
+import { EmptyState } from "src/ui/components/EmptyState";
+import { InputArea } from "src/ui/components/InputArea";
+import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
+import { SidebarScales } from "src/ui/components/layout/SidebarScales";
+import { PostListView } from "src/ui/components/posts/PostListView";
+import { TaskListView } from "src/ui/components/tasks/TaskListView";
+import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
+import { useViewSync } from "src/ui/hooks/useViewSync";
+import { initializeEditorStore, useEditorStore } from "src/ui/store/editorStore";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { initializePostsStore, usePostsStore } from "src/ui/store/postsStore";
+import { initializeSettingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { Post } from "src/ui/types";
+import { MFDIView } from "src/ui/view/MFDIView";
+import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
 
@@ -31,27 +38,86 @@ export const ReactView = ({
   return (
     <AppContextProvider app={app} settings={settings} view={view}>
       <QueryClientProvider client={queryClient}>
-        <MFDIAppProvider>
+        <MFDIAppRoot>
           <ReactViewContent />
-        </MFDIAppProvider>
+        </MFDIAppRoot>
       </QueryClientProvider>
     </AppContextProvider>
   );
 };
 
+const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { view, settings, storage, app, appHelper } = useAppContext();
+
+  // Initialize store once
+  React.useMemo(() => {
+    initializeSettingsStore(settings, storage);
+    initializeEditorStore(storage);
+    initializePostsStore(app, appHelper);
+  }, [settings, storage, app, appHelper]);
+
+  const { inputRef, currentDailyNote } = useMFDIApp();
+
+  // Sync state/handlers with Obsidian View
+  useViewSync(view);
+
+  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
+    scrollContainerRef: s.scrollContainerRef,
+  })));
+
+  // Handle focus requested from View
+  React.useEffect(() => {
+    view.handlers.onFocusRequested = () => {
+      inputRef.current?.focus();
+    };
+    return () => {
+      view.handlers.onFocusRequested = undefined;
+    };
+  }, [view, inputRef]);
+
+  // Initial scroll position when note changes
+  React.useEffect(() => {
+    if (!currentDailyNote || !scrollContainerRef.current) return;
+    const timer = setTimeout(() => {
+      scrollContainerRef.current?.scrollTo({ top: 0 });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [currentDailyNote, scrollContainerRef]);
+
+  return <>{children}</>;
+};
+
 const ReactViewContent = () => {
   const { view } = useAppContext();
-  const {
-    granularity,
-    currentDailyNote,
-    asTask,
-    tasks,
-    dateFilter,
-    filteredPosts,
-    scrollContainerRef,
-    sidebarOpen,
-    setSidebarOpen,
-  } = useMFDIContext();
+  const settings = useSettingsStore(useShallow(s => ({
+    granularity: s.granularity,
+    asTask: s.asTask,
+    dateFilter: s.dateFilter,
+    sidebarOpen: s.sidebarOpen,
+    setSidebarOpen: s.setSidebarOpen,
+    timeFilter: s.timeFilter,
+    displayMode: s.displayMode,
+  })));
+
+  const { tasks, posts } = usePostsStore(useShallow(s => ({
+    tasks: s.tasks,
+    posts: s.posts,
+  })));
+
+  const { currentDailyNote } = useNoteStore(useShallow(s => ({
+    currentDailyNote: s.currentDailyNote,
+  })));
+
+  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
+    scrollContainerRef: s.scrollContainerRef,
+  })));
+
+  const filteredPosts = useFilteredPosts({
+    posts,
+    ...settings,
+  });
+
+  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } = settings;
 
   const [containerWidth, setContainerWidth] = React.useState(1000);
   const containerRef = React.useRef<HTMLDivElement>(null);

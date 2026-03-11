@@ -1,4 +1,4 @@
-import { RegExpMatchedArray } from "./types";
+import { RegExpMatchedArray } from "src/utils/types";
 
 export function excludeWikiLink(text: string): string {
   return text

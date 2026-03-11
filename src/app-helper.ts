@@ -1,8 +1,8 @@
 import { App, Editor, MarkdownView, TFile } from "obsidian";
 import { Commands } from "obsidian-typings";
-import { MomentLike } from "./ui/types";
-import { parseMarkdownList } from "./utils/strings";
-import { parseTaskTimestamp } from "./utils/task-parser";
+import { MomentLike } from "src/ui/types";
+import { parseMarkdownList } from "src/utils/strings";
+import { parseTaskTimestamp } from "src/utils/task-parser";
 
 export interface Task {
   mark: " " | string;
@@ -22,6 +22,10 @@ export class AppHelper {
 
   constructor(app: App) {
     this.unsafeApp = app as any;
+  }
+
+  getApp(): App {
+    return this.unsafeApp;
   }
 
   getAppId(): string {

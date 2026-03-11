@@ -4,13 +4,10 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/vitest.setup.ts'],
     alias: {
+      "src": path.resolve(__dirname, './src'),
       'obsidian': path.resolve(__dirname, './src/__mocks__/obsidian.ts'),
-      // 'react': 'preact/compat',
-      // 'react-dom': 'preact/compat',
-      // 'react-dom/client': 'preact/compat/client',
-      // 'react-dom/test-utils': 'preact/test-utils',
-      // 'react/jsx-runtime': 'preact/jsx-runtime',
     },
   },
 });

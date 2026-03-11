@@ -1,12 +1,12 @@
 import { TFile, Vault } from "obsidian";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     getAllTopicNotes,
     getDailyNoteSettings,
     getDateUID,
     getTopicNote,
     resolveTopicNotePath
-} from "./index";
+} from "src/utils/daily-notes/index";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Obsidian module before importing anything
 vi.mock("obsidian", () => ({
@@ -21,29 +21,6 @@ vi.mock("obsidian", () => ({
     recurseChildren: vi.fn(),
   },
 }));
-
-// ─────────────────────────────────────────────────────────────────
-// Mock moment
-// ─────────────────────────────────────────────────────────────────
-const createMockMoment = (initialDateStr: string) => {
-  let d = new Date(initialDateStr);
-  const mock: any = {
-    isValid: () => !isNaN(d.getTime()),
-    format: (f: string) => {
-      if (f === "YYYY-MM-DD") return d.toISOString().split("T")[0];
-      return initialDateStr;
-    },
-    clone: () => createMockMoment(d.toISOString()),
-    startOf: (g: string) => mock,
-  };
-  return mock;
-};
-
-const momentMock: any = vi.fn((input: any, _format?: any, _strict?: any) => {
-  if (typeof input === "string") return createMockMoment(input);
-  return createMockMoment(new Date().toISOString());
-});
-(window as any).moment = momentMock;
 
 // ─────────────────────────────────────────────────────────────────
 // Mock Obsidian App
@@ -80,7 +57,7 @@ beforeEach(() => {
 describe("daily-notes-interface utility", () => {
   describe("getDateUID", () => {
     it("granularity=day の UID を生成する", () => {
-      const m = createMockMoment("2026-03-04");
+      const m = window.moment("2026-03-04");
       const uid = getDateUID(m);
       expect(uid).toMatch(/^day-/);
     });
@@ -96,13 +73,13 @@ describe("daily-notes-interface utility", () => {
 
   describe("resolveTopicNotePath", () => {
     it("トピックなしのパスを生成する", () => {
-      const date = createMockMoment("2026-03-04");
+      const date = window.moment("2026-03-04");
       const path = resolveTopicNotePath(date, "day", "");
       expect(path).toBe("Daily/2026-03-04.md");
     });
 
     it("トピックありのパスを生成する", () => {
-      const date = createMockMoment("2026-03-04");
+      const date = window.moment("2026-03-04");
       const path = resolveTopicNotePath(date, "day", "novel");
       expect(path).toBe("Daily/novel-2026-03-04.md");
     });
@@ -157,7 +134,7 @@ describe("daily-notes-interface utility", () => {
 
       const found = getTopicNote(
         (window as any).app,
-        createMockMoment("2026-03-01"),
+        window.moment("2026-03-01"),
         "day",
         "",
       );
@@ -165,7 +142,7 @@ describe("daily-notes-interface utility", () => {
 
       const notFound = getTopicNote(
         (window as any).app,
-        createMockMoment("2099-12-31"),
+        window.moment("2099-12-31"),
         "day",
         "",
       );

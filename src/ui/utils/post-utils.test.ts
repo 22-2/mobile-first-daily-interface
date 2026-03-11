@@ -1,21 +1,11 @@
 // @vitest-environment jsdom
-import { describe, expect, test } from "vitest";
-import { toText } from "./post-utils";
+import { toText } from "src/ui/utils/post-utils";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-// Mock moment
-const mockMoment = (_ts?: string) => {
-  return {
-    format: (f: string) => {
-      // Return specific format based on the request
-      if (f === "YYYY-MM-DD HH:mm:ss") return "2026-03-02 16:00:00";
-      if (f === "HH:mm:ss") return "16:00:00";
-      return "mocked";
-    },
-    toISOString: () => "2026-03-02T16:00:00.000+09:00",
-  } as any;
-};
-
-(window as any).moment = mockMoment;
+beforeEach(() => {
+  // Fix "now" to a specific date for tests that use window.moment()
+  vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));
+});
 
 describe("toText", () => {
   test("thino format - day granularity uses only time", () => {

@@ -1,4 +1,4 @@
-import { Granularity, MomentLike } from "./types";
+import { Granularity, MomentLike } from "src/ui/config/types";
 
 // ─────────────────────────────────────────────────────────────────
 // UI display config — granularity ごとの表示設定

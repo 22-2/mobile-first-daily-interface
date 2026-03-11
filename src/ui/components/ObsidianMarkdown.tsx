@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import { Component, MarkdownRenderer } from "obsidian";
 import * as React from "react";
 import { useEffect, useRef } from "react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
 
 interface Props {
   content: string;

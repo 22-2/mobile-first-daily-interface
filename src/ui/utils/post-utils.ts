@@ -1,6 +1,6 @@
-import { formatTaskText } from "../../utils/task-text";
-import { DATE_FORMAT, DATE_TIME_FORMAT, TIME_FORMAT } from "../config/date-formats";
-import { Granularity, MomentLike } from "../types";
+import { DATE_FORMAT, DATE_TIME_FORMAT, TIME_FORMAT } from "src/ui/config/date-formats";
+import { Granularity, MomentLike } from "src/ui/types";
+import { formatTaskText } from "src/utils/task-text";
 
 export function toText(
   input: string,

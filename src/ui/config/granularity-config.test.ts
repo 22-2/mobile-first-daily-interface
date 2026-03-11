@@ -1,5 +1,5 @@
+import { granularityConfig } from "src/ui/config/granularity-config";
 import { describe, expect, it } from "vitest";
-import { granularityConfig } from "./granularity-config";
 
 // ─────────────────────────────────────────────────────────────────
 // granularityConfig — UI 表示設定の静的値テスト

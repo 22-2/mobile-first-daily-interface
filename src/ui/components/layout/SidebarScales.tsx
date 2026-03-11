@@ -1,9 +1,10 @@
 import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { getTopicNote } from "../../../utils/daily-notes";
-import { parseThinoEntries } from "../../../utils/thino";
-import { useAppContext } from "../../context/AppContext";
-import { useMFDIContext } from "../../context/MFDIAppContext";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { getTopicNote } from "src/utils/daily-notes";
+import { parseThinoEntries } from "src/utils/thino";
+import { useShallow } from "zustand/shallow";
 
 interface Counts {
   posts: number;
@@ -20,9 +21,15 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     setGranularity,
     setDateFilter,
     granularity,
-    dateFilter,
     activeTopic,
-  } = useMFDIContext();
+  } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    setDate: s.setDate,
+    setGranularity: s.setGranularity,
+    setDateFilter: s.setDateFilter,
+    granularity: s.granularity,
+    activeTopic: s.activeTopic,
+  })));
 
   const baseDate = viewedDate || date;
   const monthStart = baseDate.clone().startOf("month");

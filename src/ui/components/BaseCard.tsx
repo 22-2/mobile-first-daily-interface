@@ -3,8 +3,8 @@ import * as React from "react";
 import {
     DISPLAY_DATE_TIME_FORMAT,
     DISPLAY_TIME_FORMAT
-} from "../config/date-formats";
-import { DateFilter, Granularity, MomentLike } from "../types";
+} from "src/ui/config/date-formats";
+import { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
 interface BaseCardProps {
   timestamp: MomentLike;

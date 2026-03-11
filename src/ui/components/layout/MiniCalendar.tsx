@@ -1,10 +1,12 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { getAllTopicNotes } from "../../../utils/daily-notes/notes";
-import { getDateFromFile } from "../../../utils/daily-notes/utils";
-import { useAppContext } from "../../context/AppContext";
-import { useMFDIContext } from "../../context/MFDIAppContext";
-import { ObsidianIcon } from "../common/ObsidianIcon";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { useAppContext } from "src/ui/context/AppContext";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import { getAllTopicNotes } from "src/utils/daily-notes/notes";
+import { getDateFromFile } from "src/utils/daily-notes/utils";
+import { useShallow } from "zustand/shallow";
 
 // ─────────────────────────────────────────────
 // 型定義
@@ -109,8 +111,20 @@ function useMiniCalendar() {
     date, setDate, 
     granularity, setGranularity, 
     dateFilter, setDateFilter, 
-    activeTopic, posts 
-  } = useMFDIContext();
+    activeTopic
+  } = useSettingsStore(useShallow(s => ({
+    date: s.date,
+    setDate: s.setDate,
+    granularity: s.granularity,
+    setGranularity: s.setGranularity,
+    dateFilter: s.dateFilter,
+    setDateFilter: s.setDateFilter,
+    activeTopic: s.activeTopic,
+  })));
+
+  const { posts } = usePostsStore(useShallow(s => ({
+    posts: s.posts,
+  })));
 
   const [viewDate, setViewDate] = React.useState(() =>
     window.moment(date).startOf("month"),

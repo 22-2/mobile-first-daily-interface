@@ -1,5 +1,5 @@
+import { forceLowerCaseKeys, mirrorMap } from "src/utils/collections";
 import { describe, expect, test } from "vitest";
-import { forceLowerCaseKeys, mirrorMap } from "./collections";
 
 describe.each`
   obj                                      | expected
