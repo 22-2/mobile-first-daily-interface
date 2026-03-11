@@ -1,10 +1,9 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
-import { Task } from "src/app-helper";
+import { AppHelper, Task } from "src/app-helper";
 
 interface UseTaskActionsProps {
-  app: any;
-  appHelper: any;
+  appHelper: AppHelper;
   currentDailyNote: TFile | null;
   tasks: Task[];
   setTasks: (tasks: Task[]) => void;
@@ -12,13 +11,13 @@ interface UseTaskActionsProps {
 }
 
 export const useTaskActions = ({
-  app,
   appHelper,
   currentDailyNote,
   tasks,
   setTasks,
   isReadOnly,
 }: UseTaskActionsProps) => {
+  const app = appHelper.getApp();
 
   const updateTaskChecked = useCallback(
     async (task: Task, checked: boolean) => {

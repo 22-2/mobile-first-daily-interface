@@ -1,12 +1,12 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
+import { AppHelper } from "src/app-helper";
 import { MomentLike, Post } from "src/ui/types";
 import { toText } from "src/ui/utils/post-utils";
 import { getTopicNote } from "src/utils/daily-notes";
 
 interface UsePostActionsProps {
-  app: any;
-  appHelper: any;
+  appHelper: AppHelper;
   settings: any;
   date: MomentLike;
   granularity: any;
@@ -34,7 +34,6 @@ interface UsePostActionsProps {
 }
 
 export const usePostActions = ({
-  app,
   appHelper,
   settings,
   date,
@@ -58,6 +57,7 @@ export const usePostActions = ({
   createNoteWithInsertAfter,
   scrollContainerRef,
 }: UsePostActionsProps) => {
+  const app = appHelper.getApp();
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;

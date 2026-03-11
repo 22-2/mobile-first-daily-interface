@@ -21,7 +21,8 @@ interface UseMFDIAppOptions {}
  * データの取得、更新、設定、編集状態のオーケストレーションを行います。
  */
 export function useMFDIApp(_options?: UseMFDIAppOptions) {
-  const { app, appHelper, settings } = useAppContext();
+  const { appHelper, settings } = useAppContext();
+  const app = appHelper.getApp();
 
   const {
     activeTopic,
@@ -103,7 +104,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     movePostToTomorrow,
     handleClickTime,
   } = usePostActions({
-    app,
     appHelper,
     settings,
     date,
@@ -134,7 +134,6 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     openTaskInEditor,
     deleteTask,
   } = useTaskActions({
-    app,
     appHelper,
     currentDailyNote,
     tasks,

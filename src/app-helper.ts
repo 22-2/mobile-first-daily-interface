@@ -24,6 +24,10 @@ export class AppHelper {
     this.unsafeApp = app as any;
   }
 
+  getApp(): App {
+    return this.unsafeApp;
+  }
+
   getAppId(): string {
     return this.unsafeApp.appId;
   }
