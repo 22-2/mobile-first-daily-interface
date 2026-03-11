@@ -8,6 +8,7 @@ import { parseThinoEntries } from "src/utils/thino";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import { settingsStore } from "src/ui/store/settingsStore";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 
 interface PostsState {
   posts: Post[];
@@ -102,7 +103,7 @@ export const postsStore = createStore<PostsState>((set, get) => ({
 
     const getPostsRecursive = async (baseDate: MomentLike): Promise<{ posts: Post[], paths: Set<string>, hasMore: boolean, lastSearchedDate: MomentLike }> => {
       const allTopicNotes = getAllTopicNotes(_app!, "day", topicId);
-      const uids = Object.keys(allTopicNotes).sort();
+      const uids = Object.keys(allTopicNotes).toSorted();
       if (uids.length === 0) return { posts: [], paths: new Set(), hasMore: false, lastSearchedDate: baseDate };
 
       const oldestPossibleDate = window.moment(uids[0].substring("day-".length));
@@ -159,7 +160,7 @@ export const postsStore = createStore<PostsState>((set, get) => ({
     const { timeFilter, dateFilter, asTask, granularity, displayMode } = settingsStore.getState();
     
     const postsWithoutHidden = posts.filter((p) => !p.metadata.archived && !p.metadata.deleted);
-    if (displayMode === "timeline") return postsWithoutHidden;
+    if (displayMode === DISPLAY_MODE.TIMELINE) return postsWithoutHidden;
     if (dateFilter !== "today") return postsWithoutHidden;
     if (timeFilter === "all" || asTask || granularity !== "day") return postsWithoutHidden;
     if (timeFilter === "latest") return postsWithoutHidden.length > 0 ? [postsWithoutHidden[0]] : [];
