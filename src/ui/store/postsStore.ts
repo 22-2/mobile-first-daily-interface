@@ -9,6 +9,7 @@ import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 
 interface PostsState {
   posts: Post[];
@@ -161,9 +162,9 @@ export const postsStore = createStore<PostsState>((set, get) => ({
     
     const postsWithoutHidden = posts.filter((p) => !p.metadata.archived && !p.metadata.deleted);
     if (displayMode === DISPLAY_MODE.TIMELINE) return postsWithoutHidden;
-    if (dateFilter !== "today") return postsWithoutHidden;
-    if (timeFilter === "all" || asTask || granularity !== "day") return postsWithoutHidden;
-    if (timeFilter === "latest") return postsWithoutHidden.length > 0 ? [postsWithoutHidden[0]] : [];
+    if (dateFilter !== DATE_FILTER_IDS.TODAY) return postsWithoutHidden;
+    if (timeFilter === TIME_FILTER_IDS.ALL || asTask || granularity !== "day") return postsWithoutHidden;
+    if (timeFilter === TIME_FILTER_IDS.LATEST) return postsWithoutHidden.length > 0 ? [postsWithoutHidden[0]] : [];
 
     const hours = parseInt(timeFilter as string);
     if (isNaN(hours)) return postsWithoutHidden;

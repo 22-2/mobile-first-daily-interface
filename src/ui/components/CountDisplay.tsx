@@ -1,7 +1,7 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -25,10 +25,10 @@ const DateSection: React.FC = () => {
 
   const dateLabel = React.useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
-      return date.format(granularityConfig[granularity].displayFormat);
+      return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
     }
 
-    const format = granularityConfig.day.displayFormat;
+    const format = GRANULARITY_CONFIG.day.displayFormat;
     if (dateFilter === "this_week") {
       const start = date.clone().startOf("isoWeek");
       const end = date.clone().endOf("isoWeek");
@@ -41,7 +41,7 @@ const DateSection: React.FC = () => {
       const end = date.clone();
       return `${start.format(format)} - ${end.format(format)}`;
     }
-    return date.format(granularityConfig[granularity].displayFormat);
+    return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
   }, [date, granularity, dateFilter]);
 
   return (

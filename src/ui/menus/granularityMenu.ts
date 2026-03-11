@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { Granularity } from "src/ui/types";
 
 export function addGranularityMenuItems(
@@ -16,7 +16,7 @@ export function addGranularityMenuItems(
   for (const g of granularities) {
     menu.addItem((item) => {
       item
-        .setTitle(granularityConfig[g].menuLabel)
+        .setTitle(GRANULARITY_CONFIG[g].menuLabel)
         .setChecked(currentGranularity === g)
         .onClick(() => {
           onChangeGranularity?.(g);

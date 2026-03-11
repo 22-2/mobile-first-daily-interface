@@ -4,7 +4,7 @@ import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
 import { DISPLAY_MODE, PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
@@ -118,15 +118,15 @@ const InputAreaControl: React.FC = React.memo(() => {
                 }}
                 {...todayButtonProps}
               >
-                {granularityConfig[granularity].todayLabel}
+                {GRANULARITY_CONFIG[granularity].todayLabel}
               </Button>
               <Input
                 className="mfdi-date-input"
                 size="sm"
                 height="2.2em"
                 fontSize="90%"
-                type={granularityConfig[granularity].inputType}
-                value={date.format(granularityConfig[granularity].inputFormat)}
+                type={GRANULARITY_CONFIG[granularity].inputType}
+                value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
                 onChange={handleChangeCalendarDate}
                 width={granularity === "year" ? "6.5em" : "10em"}
                 paddingX="0.5em"

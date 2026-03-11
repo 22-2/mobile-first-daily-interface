@@ -1,13 +1,14 @@
-import { Granularity, MomentLike } from "src/ui/config/types";
 
 // ─────────────────────────────────────────────────────────────────
 // UI display config — granularity ごとの表示設定
-// ─────────────────────────────────────────────────────────────────
+
+import { MomentLike, Granularity } from "src/ui/types";
+
 export interface GranularityConfigEntry {
   label: string;
   menuLabel: string;
   todayLabel: string;
-  unit: "day" | "week" | "month" | "year";
+  unit: Granularity;
   inputType: string;
   inputFormat: string;
   displayFormat: string;
@@ -15,7 +16,7 @@ export interface GranularityConfigEntry {
   showWeekday: boolean;
 }
 
-export const granularityConfig: Record<Granularity, GranularityConfigEntry> = {
+export const GRANULARITY_CONFIG: Record<Granularity, GranularityConfigEntry> = {
   day: {
     label: "日",
     menuLabel: "日ごと",

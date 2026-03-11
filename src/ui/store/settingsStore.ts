@@ -1,5 +1,5 @@
 import { Settings } from "src/settings";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import {
     DateFilter,
     DisplayMode,
@@ -10,7 +10,8 @@ import {
 import { MFDIStorage } from "src/utils/storage";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DISPLAY_MODE, MOVE_STEP, STORAGE_KEYS } from "src/ui/config/consntants";
+import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "../config/filter-config";
 
 interface SettingsState {
   activeTopic: string;
@@ -63,10 +64,10 @@ const persist = (key: string, value: any) => {
 
 export const settingsStore = createStore<SettingsState>((set, get) => ({
   activeTopic: "",
-  granularity: "day" as Granularity,
+  granularity: GRANULARITY_CONFIG.day.unit,
   date: window.moment(),
-  timeFilter: "all" as TimeFilter,
-  dateFilter: "today" as DateFilter,
+  timeFilter: TIME_FILTER_IDS.ALL,
+  dateFilter: DATE_FILTER_IDS.TODAY,
   sidebarOpen: true,
   displayMode: DISPLAY_MODE.FOCUS as DisplayMode,
   asTask: false,
@@ -77,114 +78,114 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
 
   setGranularity: (g) => {
     set({ granularity: g });
-    if (g !== "day") {
+    if (g !== GRANULARITY_CONFIG.day.unit) {
       set({ displayMode: DISPLAY_MODE.FOCUS });
     }
-    persist("granularity", g);
-    persist("displayMode", get().displayMode);
+    persist(STORAGE_KEYS.GRANULARITY, g);
+    persist(STORAGE_KEYS.DISPLAY_MODE, get().displayMode);
   },
 
   setDate: (d) => {
     set({ date: d });
-    persist("date", d.toISOString());
+    persist(STORAGE_KEYS.DATE, d.toISOString());
   },
 
   setTimeFilter: (f) => {
     set({ timeFilter: f });
-    persist("timeFilter", f);
+    persist(STORAGE_KEYS.TIME_FILTER, f);
   },
 
   setDateFilter: (f) => {
     set({ dateFilter: f });
     set({ displayMode: DISPLAY_MODE.FOCUS });
-    persist("dateFilter", f);
-    persist("displayMode", DISPLAY_MODE.FOCUS);
+    persist(STORAGE_KEYS.DATE_FILTER, f);
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
   },
 
   setSidebarOpen: (o) => {
     set({ sidebarOpen: o });
-    persist("sidebarOpen", o);
+    persist(STORAGE_KEYS.SIDEBAR_OPEN, o);
   },
 
   setDisplayMode: (m) => {
     set({ displayMode: m });
-    persist("displayMode", m);
+    persist(STORAGE_KEYS.DISPLAY_MODE, m);
   },
 
   setAsTask: (asTask) => {
     set({ asTask: asTask });
-    persist("asTask", asTask);
+    persist(STORAGE_KEYS.AS_TASK, asTask);
   },
 
   handleClickHome: () => {
     const now = window.moment();
     set({
       displayMode: DISPLAY_MODE.TIMELINE,
-      granularity: "day",
-      dateFilter: "today",
-      timeFilter: "all",
+      granularity: GRANULARITY_CONFIG.day.unit,
+      dateFilter: DATE_FILTER_IDS.TODAY,
+      timeFilter: TIME_FILTER_IDS.ALL,
       asTask: false,
       date: now,
     });
     // Persist all
-    persist("displayMode", "timeline");
-    persist("granularity", "day");
-    persist("dateFilter", "today");
-    persist("timeFilter", "all");
-    persist("asTask", false);
-    persist("date", now.toISOString());
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.TIMELINE);
+    persist(STORAGE_KEYS.GRANULARITY, GRANULARITY_CONFIG.day.unit);
+    persist(STORAGE_KEYS.DATE_FILTER, DATE_FILTER_IDS.TODAY);
+    persist(STORAGE_KEYS.TIME_FILTER, TIME_FILTER_IDS.ALL);
+    persist(STORAGE_KEYS.AS_TASK, false);
+    persist(STORAGE_KEYS.DATE, now.toISOString());
   },
 
   handleClickToday: () => {
     const now = window.moment();
     set({ date: now, displayMode: DISPLAY_MODE.TIMELINE });
-    persist("date", now.toISOString());
-    persist("displayMode", DISPLAY_MODE.TIMELINE);
+    persist(STORAGE_KEYS.DATE, now.toISOString());
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.TIMELINE);
   },
 
   getMoveStep: () => {
     const { displayMode, granularity, dateFilter } = get();
-    if (displayMode === "timeline") return 1;
-    if (granularity !== "day") return 1;
-    if (dateFilter === "this_week") return 7;
+    if (displayMode === DISPLAY_MODE.TIMELINE) return MOVE_STEP.DEFAULT;
+    if (granularity !== GRANULARITY_CONFIG.day.unit) return MOVE_STEP.DEFAULT;
+    if (dateFilter === DATE_FILTER_IDS.THIS_WEEK) return MOVE_STEP.WEEK;
     const days = parseInt(dateFilter);
-    return isNaN(days) ? 1 : days;
+    return isNaN(days) ? MOVE_STEP.DEFAULT : days;
   },
 
   handleClickMovePrevious: () => {
     const { date, granularity, getMoveStep } = get();
     const step = getMoveStep();
-    const nextDate = date.clone().subtract(step, granularityConfig[granularity].unit);
+    const nextDate = date.clone().subtract(step, GRANULARITY_CONFIG[granularity].unit);
     set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
-    persist("date", nextDate.toISOString());
-    persist("displayMode", DISPLAY_MODE.FOCUS);
+    persist(STORAGE_KEYS.DATE, nextDate.toISOString());
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
   },
 
   handleClickMoveNext: () => {
     const { date, granularity, getMoveStep } = get();
     const step = getMoveStep();
-    const nextDate = date.clone().add(step, granularityConfig[granularity].unit);
+    const nextDate = date.clone().add(step, GRANULARITY_CONFIG[granularity].unit);
     set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
-    persist("date", nextDate.toISOString());
-    persist("displayMode", DISPLAY_MODE.FOCUS);
+    persist(STORAGE_KEYS.DATE, nextDate.toISOString());
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
   },
 
   handleChangeCalendarDate: (value: string) => {
     const { granularity } = get();
-    const nextDate = granularityConfig[granularity].parseInput(value);
+    const nextDate = GRANULARITY_CONFIG[granularity].parseInput(value);
     set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
-    persist("date", nextDate.toISOString());
-    persist("displayMode", DISPLAY_MODE.FOCUS);
+    persist(STORAGE_KEYS.DATE, nextDate.toISOString());
+    persist(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
   },
 
   isToday: () => {
     const { date, granularity } = get();
-    return date.isSame(window.moment(), granularityConfig[granularity].unit);
+    return date.isSame(window.moment(), GRANULARITY_CONFIG[granularity].unit);
   },
 
   isReadOnly: () => {
     const { date, granularity } = get();
-    return date.isBefore(window.moment(), granularityConfig[granularity].unit);
+    return date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
   },
 }));
 
@@ -195,15 +196,15 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
 export function initializeSettingsStore(settings: Settings, storage: MFDIStorage) {
   _storage = storage;
 
-  const savedOffset = storage.get<number | null>("editingPostOffset", null);
+  const savedOffset = storage.get<number | null>(STORAGE_KEYS.EDITING_POST_OFFSET, null);
   
   const granularity = savedOffset !== null 
-    ? storage.get<Granularity>("editingPostGranularity", "day")
-    : storage.get<Granularity>("granularity", "day");
+    ? storage.get<Granularity>(STORAGE_KEYS.EDITING_POST_GRANULARITY, GRANULARITY_CONFIG.day.unit)
+    : storage.get<Granularity>(STORAGE_KEYS.GRANULARITY, GRANULARITY_CONFIG.day.unit);
 
   let savedDate = savedOffset !== null 
-    ? storage.get<string | null>("editingPostDate", null)
-    : storage.get<string | null>("date", null);
+    ? storage.get<string | null>(STORAGE_KEYS.EDITING_POST_DATE, null)
+    : storage.get<string | null>(STORAGE_KEYS.DATE, null);
   
   const date = savedDate ? window.moment(savedDate) : window.moment();
   const validDate = date.isValid() ? date : window.moment();
@@ -212,11 +213,11 @@ export function initializeSettingsStore(settings: Settings, storage: MFDIStorage
     activeTopic: settings.activeTopic ?? "",
     granularity: granularity,
     date: validDate,
-    timeFilter: storage.get<TimeFilter>("timeFilter", "all"),
-    dateFilter: storage.get<DateFilter>("dateFilter", "today"),
-    sidebarOpen: storage.get<boolean>("sidebarOpen", true),
-    displayMode: storage.get<DisplayMode>("displayMode", DISPLAY_MODE.FOCUS),
-    asTask: storage.get<boolean>("asTask", false),
+    timeFilter: storage.get<TimeFilter>(STORAGE_KEYS.TIME_FILTER, TIME_FILTER_IDS.ALL),
+    dateFilter: storage.get<DateFilter>(STORAGE_KEYS.DATE_FILTER, DATE_FILTER_IDS.TODAY),
+    sidebarOpen: storage.get<boolean>(STORAGE_KEYS.SIDEBAR_OPEN, true),
+    displayMode: storage.get<DisplayMode>(STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS),
+    asTask: storage.get<boolean>(STORAGE_KEYS.AS_TASK, false),
   });
 }
 

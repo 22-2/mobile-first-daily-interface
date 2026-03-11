@@ -1,7 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { Granularity } from "src/ui/types";
 
 interface EmptyStateProps {
@@ -21,7 +21,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ granularity }) => {
     >
       <ObsidianIcon name="feather" boxSize="2.5em" opacity={0.35} />
       <Box fontSize="var(--font-ui-small)" opacity={0.6} textAlign="center">
-        この{granularityConfig[granularity].label}の記録はまだありません
+        この{GRANULARITY_CONFIG[granularity].label}の記録はまだありません
       </Box>
     </Flex>
   );

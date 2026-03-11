@@ -1,6 +1,6 @@
 import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DateFilter, Granularity, Post } from "src/ui/types";
@@ -39,7 +39,7 @@ export const PostCardView = React.memo(
       settings.enabledCardView
     );
 
-    const { unit } = granularityConfig[granularity];
+    const { unit } = GRANULARITY_CONFIG[granularity];
     const isToday = post.timestamp.isSame(window.moment(), unit);
     // 過去の投稿は薄くする
     const isDimmed = post.timestamp.isBefore(window.moment(), unit);

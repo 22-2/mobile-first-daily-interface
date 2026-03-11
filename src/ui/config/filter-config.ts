@@ -15,3 +15,21 @@ export const DATE_FILTER_OPTIONS = [
   { id: "5d", label: "過去5日間" },
   { id: "7d", label: "過去7日間" },
 ] as const;
+
+export const TIME_FILTER_IDS = {
+  ALL: "all",
+  LATEST: "latest",
+  "1H": "1h",
+  "2H": "2h",
+  "3H": "3h",
+  "6H": "6h",
+  "12H": "12h",
+} as const;
+
+export const DATE_FILTER_IDS = {
+  TODAY: "today",
+  THIS_WEEK: "this_week",
+  "3D": "3d",
+  "5D": "5d",
+  "7D": "7d",
+} as const;

@@ -1,11 +1,12 @@
 import { RefObject } from "react";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
-import { granularityConfig } from "src/ui/config/granularity-config";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { Post } from "src/ui/types";
 import { MFDIStorage } from "src/utils/storage";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import { settingsStore } from "src/ui/store/settingsStore";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
 
 interface EditorState {
   input: string;
@@ -39,14 +40,14 @@ export const editorStore = createStore<EditorState>((set, get) => ({
   setInput: (v) => {
     set({ input: v });
     if (_storage) {
-      _storage.set("input", v);
+      _storage.set(STORAGE_KEYS.INPUT, v);
     }
   },
 
   setEditingPostOffset: (offset) => {
     set({ editingPostOffset: offset });
     if (_storage) {
-      _storage.set("editingPostOffset", offset);
+      _storage.set(STORAGE_KEYS.EDITING_POST_OFFSET, offset);
     }
   },
 
@@ -63,9 +64,9 @@ export const editorStore = createStore<EditorState>((set, get) => ({
     setAsTask(false);
     set({ editingPostOffset: post.startOffset });
     if (_storage) {
-      _storage.set("editingPostOffset", post.startOffset);
-      _storage.set("editingPostDate", date.toISOString());
-      _storage.set("editingPostGranularity", granularity);
+      _storage.set(STORAGE_KEYS.EDITING_POST_OFFSET, post.startOffset);
+      _storage.set(STORAGE_KEYS.EDITING_POST_DATE, date.toISOString());
+      _storage.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
     }
     get().setInput(post.message);
     setTimeout(() => {
@@ -77,9 +78,9 @@ export const editorStore = createStore<EditorState>((set, get) => ({
   cancelEdit: () => {
     set({ editingPostOffset: null });
     if (_storage) {
-      _storage.remove("editingPostOffset");
-      _storage.remove("editingPostDate");
-      _storage.remove("editingPostGranularity");
+      _storage.remove(STORAGE_KEYS.EDITING_POST_OFFSET);
+      _storage.remove(STORAGE_KEYS.EDITING_POST_DATE);
+      _storage.remove(STORAGE_KEYS.EDITING_POST_GRANULARITY);
     }
     get().setInput("");
     get().inputRef.current?.setContent("");
@@ -94,7 +95,7 @@ export const editorStore = createStore<EditorState>((set, get) => ({
   canSubmit: (posts) => {
     const { input } = get();
     const { date, granularity } = settingsStore.getState();
-    const isPast = date.isBefore(window.moment(), granularityConfig[granularity].unit);
+    const isPast = date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
     if (isPast) return false;
 
     const editingPost = get().getEditingPost(posts);
@@ -108,8 +109,8 @@ export const editorStore = createStore<EditorState>((set, get) => ({
 export function initializeEditorStore(storage: MFDIStorage) {
   _storage = storage;
   editorStore.setState({
-    input: storage.get<string>("input", ""),
-    editingPostOffset: storage.get<number | null>("editingPostOffset", null),
+    input: storage.get<string>(STORAGE_KEYS.INPUT, ""),
+    editingPostOffset: storage.get<number | null>(STORAGE_KEYS.EDITING_POST_OFFSET, null),
   });
 }
 
