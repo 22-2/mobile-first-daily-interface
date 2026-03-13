@@ -24,6 +24,7 @@ export const usePostActions = () => {
     setDate: s.setDate,
     isReadOnly: s.isReadOnly(),
     displayMode: s.displayMode,
+    getEffectiveDate: s.getEffectiveDate,
   })));
 
 
@@ -108,7 +109,9 @@ export const usePostActions = () => {
     // --- 新規投稿 ---
     const now = window.moment();
     const metadata: Record<string, string> = {};
-    if (!settingsState.date.isSame(now, "day")) {
+    // タイムライン表示時は常に今日のノートに投稿
+    const targetDate = settingsState.getEffectiveDate();
+    if (!targetDate.isSame(now, "day")) {
       metadata.posted = now.toISOString();
     }
 
@@ -130,7 +133,7 @@ export const usePostActions = () => {
       settingsState.setDate(settingsState.date.clone());
     }
 
-    const note = getTopicNote(app, settingsState.date, settingsState.granularity, settingsState.activeTopic);
+    const note = getTopicNote(app, targetDate, settingsState.granularity, settingsState.activeTopic);
     if (note) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
       await refreshPosts(note.path);

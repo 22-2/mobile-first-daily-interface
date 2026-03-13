@@ -94,8 +94,9 @@ export const editorStore = createStore<EditorState>((set, get) => ({
 
   canSubmit: (posts) => {
     const { input } = get();
-    const { date, granularity } = settingsStore.getState();
-    const isPast = date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
+    const { granularity, getEffectiveDate } = settingsStore.getState();
+    const effectiveDate = getEffectiveDate();
+    const isPast = effectiveDate.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
     if (isPast) return false;
 
     const editingPost = get().getEditingPost(posts);

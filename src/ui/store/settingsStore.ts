@@ -44,6 +44,7 @@ interface SettingsState {
   isToday: () => boolean;
   isReadOnly: () => boolean;
   getMoveStep: () => number;
+  getEffectiveDate: () => MomentLike;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -184,8 +185,16 @@ export const settingsStore = createStore<SettingsState>((set, get) => ({
   },
 
   isReadOnly: () => {
-    const { date, granularity } = get();
+    const { date, granularity, displayMode } = get();
+    // タイムライン表示のときは常に最新日に書き込みできるようにする（閲覧専用にしない）
+    if (displayMode === DISPLAY_MODE.TIMELINE) return false;
     return date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
+  },
+
+  getEffectiveDate: () => {
+    const { date, displayMode } = get();
+    // タイムライン表示時は常に今日を返す
+    return displayMode === DISPLAY_MODE.TIMELINE ? window.moment() : date;
   },
 }));
 
