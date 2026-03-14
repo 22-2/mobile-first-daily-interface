@@ -5,9 +5,9 @@ import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { sorter } from "src/utils/collections";
 import {
-  getAllTopicNotes,
-  getDateUID,
-  getTopicNote,
+    getAllTopicNotes,
+    getDateUID,
+    getTopicNote
 } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";

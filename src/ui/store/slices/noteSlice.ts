@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
+import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, NoteSlice } from "./types";
-import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
 
 export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   set,

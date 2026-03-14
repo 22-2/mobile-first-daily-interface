@@ -4,9 +4,9 @@ import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
 import {
-  DISPLAY_MODE,
-  PLACEHOLDER_TEXT,
-  READONLY_PLACEHOLDER_TEXT,
+    DISPLAY_MODE,
+    PLACEHOLDER_TEXT,
+    READONLY_PLACEHOLDER_TEXT
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";

@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import {
-  DateFilter,
-  DisplayMode,
-  Granularity,
-  MomentLike,
-  Post,
+    DateFilter,
+    DisplayMode,
+    Granularity,
+    MomentLike,
+    Post
 } from "src/ui/types";
 
 export type TimelineItem =

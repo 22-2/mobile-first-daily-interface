@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import {
-  DateFilter,
-  DisplayMode,
-  Granularity,
-  Post,
-  TimeFilter,
+    DateFilter,
+    DisplayMode,
+    Granularity,
+    Post,
+    TimeFilter
 } from "src/ui/types";
 
 interface UseFilteredPostsProps {

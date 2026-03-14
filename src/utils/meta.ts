@@ -2,12 +2,12 @@ import { requestUrl } from "obsidian";
 import { defineUserAgent } from "src/utils/agent";
 import { forceLowerCaseKeys } from "src/utils/collections";
 import {
-  getCharsetFromMeta,
-  getCoverUrl,
-  getFaviconUrl,
-  getMetaByHttpEquiv,
-  getMetaByName,
-  getMetaByProperty,
+    getCharsetFromMeta,
+    getCoverUrl,
+    getFaviconUrl,
+    getMetaByHttpEquiv,
+    getMetaByName,
+    getMetaByProperty
 } from "src/utils/meta-helper";
 import { eucJp2String, sjis2String } from "src/utils/strings";
 

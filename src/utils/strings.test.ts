@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  excludeWikiLink,
-  parseMarkdownList,
-  pickTaskName,
-  pickUrls,
-  replaceDayToJa,
-  trimRedundantEmptyLines,
+    excludeWikiLink,
+    parseMarkdownList,
+    pickTaskName,
+    pickUrls,
+    replaceDayToJa,
+    trimRedundantEmptyLines
 } from "src/utils/strings";
 
 describe.each`

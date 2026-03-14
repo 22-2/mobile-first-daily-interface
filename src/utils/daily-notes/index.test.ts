@@ -1,10 +1,10 @@
 import { TFile, Vault } from "obsidian";
 import {
-  getAllTopicNotes,
-  getDailyNoteSettings,
-  getDateUID,
-  getTopicNote,
-  resolveTopicNotePath,
+    getAllTopicNotes,
+    getDailyNoteSettings,
+    getDateUID,
+    getTopicNote,
+    resolveTopicNotePath
 } from "src/utils/daily-notes/index";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

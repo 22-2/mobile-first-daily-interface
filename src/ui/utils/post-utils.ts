@@ -1,7 +1,7 @@
 import {
-  DATE_FORMAT,
-  DATE_TIME_FORMAT,
-  TIME_FORMAT,
+    DATE_FORMAT,
+    DATE_TIME_FORMAT,
+    TIME_FORMAT
 } from "src/ui/config/date-formats";
 import { Granularity, MomentLike } from "src/ui/types";
 import { formatTaskText } from "src/utils/task-text";

@@ -1,8 +1,8 @@
 import { Settings } from "src/settings";
 import {
-  DISPLAY_MODE,
-  MOVE_STEP,
-  STORAGE_KEYS,
+    DISPLAY_MODE,
+    MOVE_STEP,
+    STORAGE_KEYS
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";

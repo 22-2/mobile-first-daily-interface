@@ -4,10 +4,10 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { Granularity, MomentLike } from "src/ui/types";
 import { getPeriodicSettings } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
 import { useRefreshPosts } from "./internal/useRefreshPosts";
-import { Granularity, MomentLike } from "src/ui/types";
 
 type CurrentDayFileParams = {
   date: MomentLike;

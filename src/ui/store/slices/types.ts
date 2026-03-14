@@ -4,12 +4,12 @@ import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
 import {
-  DateFilter,
-  DisplayMode,
-  Granularity,
-  MomentLike,
-  Post,
-  TimeFilter,
+    DateFilter,
+    DisplayMode,
+    Granularity,
+    MomentLike,
+    Post,
+    TimeFilter
 } from "src/ui/types";
 import { MFDIStorage } from "src/utils/storage";
 

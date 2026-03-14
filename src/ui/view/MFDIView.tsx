@@ -3,11 +3,11 @@ import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { ReactView } from "src/ui/components/layout/ReactView";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
