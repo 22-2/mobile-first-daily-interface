@@ -14,17 +14,21 @@ interface UseMFDIAppOptions {}
  * データの取得、更新、設定、編集状態のオーケストレーションを行います。
  */
 export function useMFDIApp(_options?: UseMFDIAppOptions) {
-  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly, displayMode } = useMFDISettings();
+  const {
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    asTask,
+    isReadOnly,
+    displayMode,
+  } = useMFDISettings();
 
   const postsState = usePostsAndTasks({ date });
 
-  const {
-    currentDailyNote,
-  } = useNoteManager();
+  const { currentDailyNote } = useNoteManager();
 
-  const {
-    inputRef,
-  } = useMFDIEditor({ posts: postsState.posts });
+  const { inputRef } = useMFDIEditor({ posts: postsState.posts });
 
   usePostActions();
 
@@ -33,16 +37,31 @@ export function useMFDIApp(_options?: UseMFDIAppOptions) {
     if (!isReadOnly && inputRef.current) {
       setTimeout(() => inputRef.current?.focus());
     }
-  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly, inputRef]);
+  }, [
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    asTask,
+    isReadOnly,
+    inputRef,
+  ]);
 
   useEffect(() => {
     if (!currentDailyNote) return;
-    const promises: Promise<void>[] = [postsState.updateTasks(currentDailyNote)];
+    const promises: Promise<void>[] = [
+      postsState.updateTasks(currentDailyNote),
+    ];
     if (dateFilter === "today") {
       promises.push(postsState.updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, postsState.updateTasks, postsState.updatePosts, dateFilter]);
+  }, [
+    currentDailyNote,
+    postsState.updateTasks,
+    postsState.updatePosts,
+    dateFilter,
+  ]);
 
   useMultiDaySync();
   useNoteSync();

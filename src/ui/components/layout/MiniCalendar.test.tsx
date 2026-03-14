@@ -4,7 +4,10 @@ import React from "react";
 import { DEFAULT_SETTINGS } from "src/settings";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { initializePostsStore } from "src/ui/store/postsStore";
-import { initializeSettingsStore, settingsStore } from "src/ui/store/settingsStore";
+import {
+  initializeSettingsStore,
+  settingsStore,
+} from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("obsidian", () => ({
@@ -28,7 +31,7 @@ vi.mock("obsidian", () => ({
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(() => ({
-    app: { vault: { getFiles: () => [] } }
+    app: { vault: { getFiles: () => [] } },
   })),
 }));
 
@@ -43,7 +46,10 @@ vi.mock("src/utils/daily-notes/utils", () => ({
 describe("MiniCalendar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    initializeSettingsStore(DEFAULT_SETTINGS, { get: vi.fn(), set: vi.fn() } as any);
+    initializeSettingsStore(DEFAULT_SETTINGS, {
+      get: vi.fn(),
+      set: vi.fn(),
+    } as any);
     initializePostsStore({} as any, {} as any);
   });
 
@@ -66,7 +72,7 @@ describe("MiniCalendar", () => {
       dateFilter: "7d",
       activeTopic: "",
     });
-    
+
     // In MiniCalendar, posts are just used to show dots (activityDates)
     // The range calculation is internal to calcSelectedRange and buildWeeksInMonth
 
@@ -75,11 +81,10 @@ describe("MiniCalendar", () => {
     // 3/3 to 3/8 should be in the selected range (active hover bg)
     // We'll just ensure it renders and doesn't crash, the UI checks are handled by Chakra styles
     expect(getAllByText("2026年 3月").length).toBeGreaterThan(0);
-    
+
     // Day 5 should be present
     expect(getAllByText("5").length).toBeGreaterThan(0);
-    
+
     // Finding dots or backgrounds purely by render isn't perfect without test IDs, but we can verify it doesn't crash.
   });
 });
-

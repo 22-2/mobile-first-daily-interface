@@ -10,16 +10,20 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = React.memo(() => {
-  const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(useShallow(s => ({
-    date: s.date,
-    granularity: s.granularity,
-    timeFilter: s.timeFilter,
-    isReadOnly: s.isReadOnly(),
-  })));
+  const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(
+    useShallow((s) => ({
+      date: s.date,
+      granularity: s.granularity,
+      timeFilter: s.timeFilter,
+      isReadOnly: s.isReadOnly(),
+    })),
+  );
 
-  const { tasks } = usePostsStore(useShallow(s => ({
-    tasks: s.tasks,
-  })));
+  const { tasks } = usePostsStore(
+    useShallow((s) => ({
+      tasks: s.tasks,
+    })),
+  );
 
   const { updateTaskChecked } = useTaskActions();
 

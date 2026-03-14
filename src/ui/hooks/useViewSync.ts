@@ -17,7 +17,7 @@ import { useShallow } from "zustand/shallow";
  */
 export function useViewSync(view: MFDIView) {
   const { app } = useAppContext();
-  
+
   const {
     granularity,
     activeTopic,
@@ -34,28 +34,32 @@ export function useViewSync(view: MFDIView) {
     setAsTask,
     setDisplayMode,
     setSidebarOpen,
-  } = useSettingsStore(useShallow(s => ({
-    granularity: s.granularity,
-    activeTopic: s.activeTopic,
-    asTask: s.asTask,
-    timeFilter: s.timeFilter,
-    dateFilter: s.dateFilter,
-    displayMode: s.displayMode,
-    isReadOnly: s.isReadOnly(),
-    sidebarOpen: s.sidebarOpen,
-    setGranularity: s.setGranularity,
-    setTimeFilter: s.setTimeFilter,
-    setDateFilter: s.setDateFilter,
-    setActiveTopic: s.setActiveTopic,
-    setAsTask: s.setAsTask,
-    setDisplayMode: s.setDisplayMode,
-    setSidebarOpen: s.setSidebarOpen,
-  })));
+  } = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      activeTopic: s.activeTopic,
+      asTask: s.asTask,
+      timeFilter: s.timeFilter,
+      dateFilter: s.dateFilter,
+      displayMode: s.displayMode,
+      isReadOnly: s.isReadOnly(),
+      sidebarOpen: s.sidebarOpen,
+      setGranularity: s.setGranularity,
+      setTimeFilter: s.setTimeFilter,
+      setDateFilter: s.setDateFilter,
+      setActiveTopic: s.setActiveTopic,
+      setAsTask: s.setAsTask,
+      setDisplayMode: s.setDisplayMode,
+      setSidebarOpen: s.setSidebarOpen,
+    })),
+  );
 
-  const { input, inputRef } = useEditorStore(useShallow(s => ({
-    input: s.input,
-    inputRef: s.inputRef,
-  })));
+  const { input, inputRef } = useEditorStore(
+    useShallow((s) => ({
+      input: s.input,
+      inputRef: s.inputRef,
+    })),
+  );
   const { setInput } = editorStore.getState();
 
   const { handleSubmit } = usePostActions();

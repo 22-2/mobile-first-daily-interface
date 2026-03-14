@@ -1,4 +1,3 @@
-
 export interface ThinoEntry {
   time: string;
   message: string;
@@ -23,9 +22,7 @@ function isThinoHeading(line: string): boolean {
   return /^#{1,6}\s+thino\s*$/i.test(line.trim());
 }
 
-function matchTimeBullet(
-  line: string,
-): {
+function matchTimeBullet(line: string): {
   time: string;
   dashIndex: number;
   message?: string;

@@ -44,7 +44,7 @@ interface WeekRowProps {
 /** 月の全週（月曜始まり・日曜終わり）を返す */
 function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
   const startDay = viewDate.clone().startOf("month").startOf("isoWeek");
-  const endDay   = viewDate.clone().endOf("month").endOf("isoWeek");
+  const endDay = viewDate.clone().endOf("month").endOf("isoWeek");
   const days: moment.Moment[] = [];
 
   const cursor = startDay.clone();
@@ -69,35 +69,40 @@ function calcSelectedRange(
   if (granularity === "week") {
     return {
       rangeStart: date.clone().startOf("isoWeek"),
-      rangeEnd:   date.clone().endOf("isoWeek"),
+      rangeEnd: date.clone().endOf("isoWeek"),
     };
   }
 
   if (granularity !== "day" || dateFilter === "today") {
     return {
-      rangeStart: date.clone().startOf(granularity as moment.unitOfTime.StartOf),
-      rangeEnd:   date.clone().endOf(granularity as moment.unitOfTime.StartOf),
+      rangeStart: date
+        .clone()
+        .startOf(granularity as moment.unitOfTime.StartOf),
+      rangeEnd: date.clone().endOf(granularity as moment.unitOfTime.StartOf),
     };
   }
 
   if (dateFilter === "this_week") {
     return {
       rangeStart: date.clone().startOf("isoWeek"),
-      rangeEnd:   date.clone().endOf("isoWeek"),
+      rangeEnd: date.clone().endOf("isoWeek"),
     };
   }
 
   const days = parseInt(dateFilter, 10);
   if (!isNaN(days)) {
     return {
-      rangeStart: date.clone().subtract(days - 1, "days").startOf("day"),
-      rangeEnd:   date.clone().endOf("day"),
+      rangeStart: date
+        .clone()
+        .subtract(days - 1, "days")
+        .startOf("day"),
+      rangeEnd: date.clone().endOf("day"),
     };
   }
 
   return {
     rangeStart: date.clone().startOf("day"),
-    rangeEnd:   date.clone().endOf("day"),
+    rangeEnd: date.clone().endOf("day"),
   };
 }
 
@@ -107,31 +112,38 @@ function calcSelectedRange(
 
 function useMiniCalendar() {
   const { app } = useAppContext();
-  const { 
-    date, setDate, 
-    granularity, setGranularity, 
-    dateFilter, setDateFilter, 
-    activeTopic
-  } = useSettingsStore(useShallow(s => ({
-    date: s.date,
-    setDate: s.setDate,
-    granularity: s.granularity,
-    setGranularity: s.setGranularity,
-    dateFilter: s.dateFilter,
-    setDateFilter: s.setDateFilter,
-    activeTopic: s.activeTopic,
-  })));
+  const {
+    date,
+    setDate,
+    granularity,
+    setGranularity,
+    dateFilter,
+    setDateFilter,
+    activeTopic,
+  } = useSettingsStore(
+    useShallow((s) => ({
+      date: s.date,
+      setDate: s.setDate,
+      granularity: s.granularity,
+      setGranularity: s.setGranularity,
+      dateFilter: s.dateFilter,
+      setDateFilter: s.setDateFilter,
+      activeTopic: s.activeTopic,
+    })),
+  );
 
-  const { posts } = usePostsStore(useShallow(s => ({
-    posts: s.posts,
-  })));
+  const { posts } = usePostsStore(
+    useShallow((s) => ({
+      posts: s.posts,
+    })),
+  );
 
   const [viewDate, setViewDate] = React.useState(() =>
     window.moment(date).startOf("month"),
   );
 
-  const prevDateRef          = React.useRef(date);
-  const skipNextViewUpdate   = React.useRef(false);
+  const prevDateRef = React.useRef(date);
+  const skipNextViewUpdate = React.useRef(false);
 
   // 外部からの date 変更時のみ表示月を追従
   React.useEffect(() => {
@@ -148,12 +160,12 @@ function useMiniCalendar() {
 
   const handlePrevMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setViewDate(prev => prev.clone().subtract(1, "month"));
+    setViewDate((prev) => prev.clone().subtract(1, "month"));
   };
 
   const handleNextMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setViewDate(prev => prev.clone().add(1, "month"));
+    setViewDate((prev) => prev.clone().add(1, "month"));
   };
 
   const handleSelectDay = (day: moment.Moment) => {
@@ -179,7 +191,7 @@ function useMiniCalendar() {
     const notes = getAllTopicNotes(app, "day", activeTopic);
     const dates = new Set<string>();
 
-    Object.values(notes).forEach(file => {
+    Object.values(notes).forEach((file) => {
       const d = getDateFromFile(file, "day", activeTopic);
       if (d) dates.add(d.format("YYYY-MM-DD"));
     });
@@ -192,8 +204,12 @@ function useMiniCalendar() {
     return dates;
   }, [app, activeTopic, posts]);
 
-  const weeks                         = React.useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
-  const { rangeStart, rangeEnd }      = calcSelectedRange(date, granularity, dateFilter as string);
+  const weeks = React.useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
+  const { rangeStart, rangeEnd } = calcSelectedRange(
+    date,
+    granularity,
+    dateFilter as string,
+  );
 
   return {
     date,
@@ -224,7 +240,12 @@ const CalendarHeader: React.FC<{
   onNext: (e: React.MouseEvent) => void;
 }> = ({ viewDate, onPrev, onNext }) => (
   <Flex w="100%" justify="space-between" align="center" px={1}>
-    <Text fontWeight="bold" fontSize="lg" color="var(--text-normal)" marginLeft="var(--size-4-2)">
+    <Text
+      fontWeight="bold"
+      fontSize="lg"
+      color="var(--text-normal)"
+      marginLeft="var(--size-4-2)"
+    >
       {viewDate.format("YYYY年 M月")}
     </Text>
     <HStack spacing={1}>
@@ -254,7 +275,8 @@ const DayCell: React.FC<DayCellProps> = ({
   onClick,
 }) => {
   const isToday = day.isSame(window.moment(), "day");
-  const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
+  const isForeground =
+    isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
 
   // 青背景（アクセントカラー）は「今日」のみに適用
   // 背景色の決定：今日 > 選択範囲・ホバー
@@ -265,24 +287,24 @@ const DayCell: React.FC<DayCellProps> = ({
   const bg = isToday
     ? "var(--color-accent)!important"
     : isInSelectedRange
-    ? rangeBg
-    : "transparent";
+      ? rangeBg
+      : "transparent";
 
   const color = isToday
     ? "var(--text-on-accent)"
     : isInSelectedRange
-    ? "var(--color-accent)"
-    : isForeground
-    ? "var(--text-normal)"
-    : "var(--text-faint)";
+      ? "var(--color-accent)"
+      : isForeground
+        ? "var(--text-normal)"
+        : "var(--text-faint)";
 
   const fontWeight = isToday || isInSelectedRange ? "bold" : "normal";
 
   const dotColor = isToday
     ? "var(--text-on-accent)"
     : isInSelectedRange
-    ? "var(--color-accent)"
-    : "var(--text-muted)";
+      ? "var(--color-accent)"
+      : "var(--text-muted)";
 
   return (
     <Box
@@ -294,8 +316,8 @@ const DayCell: React.FC<DayCellProps> = ({
       bg={bg}
       borderRadius="full"
       fontWeight={fontWeight}
-      _hover={{ 
-        bg: isToday ? "var(--color-accent-2)" : hoverBg 
+      _hover={{
+        bg: isToday ? "var(--color-accent-2)" : hoverBg,
       }}
       transition="all 0.1s ease-in-out"
     >
@@ -328,7 +350,10 @@ const WeekRow: React.FC<WeekRowProps> = ({
   onSelectDay,
   onSelectWeek,
 }) => {
-  const isWeekSelected = (granularity === "week" || (granularity === "day" && dateFilter === "this_week")) && week[0].isSame(date, "isoWeek");
+  const isWeekSelected =
+    (granularity === "week" ||
+      (granularity === "day" && dateFilter === "this_week")) &&
+    week[0].isSame(date, "isoWeek");
 
   return (
     <React.Fragment>
@@ -344,13 +369,15 @@ const WeekRow: React.FC<WeekRowProps> = ({
         justifyContent="center"
         border={`1px solid ${isWeekSelected ? "var(--color-accent)" : "transparent"}`}
         borderRadius="6px"
-        _hover={{ bg: "color-mix(in srgb, var(--color-accent), transparent 75%)" }}
+        _hover={{
+          bg: "color-mix(in srgb, var(--color-accent), transparent 75%)",
+        }}
       >
         {week[0].isoWeek()}
       </Box>
 
       {/* 各日 */}
-      {week.map(day => (
+      {week.map((day) => (
         <DayCell
           key={day.format("YYYY-MM-DD")}
           day={day}
@@ -408,15 +435,20 @@ export const MiniCalendar: React.FC<{
         onNext={handleNextMonth}
       />
 
-      <Grid templateColumns="repeat(8, 1fr)" gap={1} w="100%" textAlign="center" fontSize="sm">
+      <Grid
+        templateColumns="repeat(8, 1fr)"
+        gap={1}
+        w="100%"
+        textAlign="center"
+        fontSize="sm"
+      >
         {/* 曜日ヘッダー */}
         <Box /> {/* 週番号列のスペーサー */}
-        {WEEK_DAY_LABELS.map(label => (
+        {WEEK_DAY_LABELS.map((label) => (
           <Box key={label} color="var(--text-muted)" fontSize="xs" py={1.5}>
             {label}
           </Box>
         ))}
-
         {/* 週ごとの行 */}
         {weeks.map((week, wIdx) => (
           <WeekRow

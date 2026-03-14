@@ -14,10 +14,11 @@ import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
 import { useViewSync } from "src/ui/hooks/useViewSync";
-import { initializeEditorStore, useEditorStore } from "src/ui/store/editorStore";
+import { initializeAppStore } from "src/ui/store/appStore";
+import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
-import { initializePostsStore, usePostsStore } from "src/ui/store/postsStore";
-import { initializeSettingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
 import { MFDIView } from "src/ui/view/MFDIView";
 import { useShallow } from "zustand/shallow";
@@ -51,9 +52,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Initialize store once
   React.useMemo(() => {
-    initializeSettingsStore(settings, storage);
-    initializeEditorStore(storage);
-    initializePostsStore(app, appHelper);
+    initializeAppStore({ app, appHelper, settings, storage });
   }, [settings, storage, app, appHelper]);
 
   const { inputRef, currentDailyNote } = useMFDIApp();
@@ -61,9 +60,11 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Sync state/handlers with Obsidian View
   useViewSync(view);
 
-  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
-    scrollContainerRef: s.scrollContainerRef,
-  })));
+  const { scrollContainerRef } = useEditorStore(
+    useShallow((s) => ({
+      scrollContainerRef: s.scrollContainerRef,
+    })),
+  );
 
   // Handle focus requested from View
   React.useEffect(() => {
@@ -89,41 +90,52 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const ReactViewContent = () => {
   const { view } = useAppContext();
-  const settings = useSettingsStore(useShallow(s => ({
-    granularity: s.granularity,
-    asTask: s.asTask,
-    dateFilter: s.dateFilter,
-    sidebarOpen: s.sidebarOpen,
-    setSidebarOpen: s.setSidebarOpen,
-    timeFilter: s.timeFilter,
-    displayMode: s.displayMode,
-  })));
+  const settings = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      asTask: s.asTask,
+      dateFilter: s.dateFilter,
+      sidebarOpen: s.sidebarOpen,
+      setSidebarOpen: s.setSidebarOpen,
+      timeFilter: s.timeFilter,
+      displayMode: s.displayMode,
+    })),
+  );
 
-  const { tasks, posts } = usePostsStore(useShallow(s => ({
-    tasks: s.tasks,
-    posts: s.posts,
-  })));
+  const { tasks, posts } = usePostsStore(
+    useShallow((s) => ({
+      tasks: s.tasks,
+      posts: s.posts,
+    })),
+  );
 
-  const { currentDailyNote } = useNoteStore(useShallow(s => ({
-    currentDailyNote: s.currentDailyNote,
-  })));
+  const { currentDailyNote } = useNoteStore(
+    useShallow((s) => ({
+      currentDailyNote: s.currentDailyNote,
+    })),
+  );
 
-  const { scrollContainerRef } = useEditorStore(useShallow(s => ({
-    scrollContainerRef: s.scrollContainerRef,
-  })));
+  const { scrollContainerRef } = useEditorStore(
+    useShallow((s) => ({
+      scrollContainerRef: s.scrollContainerRef,
+    })),
+  );
 
   const filteredPosts = useFilteredPosts({
     posts,
     ...settings,
   });
 
-  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } = settings;
+  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
+    settings;
 
   const [containerWidth, setContainerWidth] = React.useState(1000);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const lastWidthRef = React.useRef(containerWidth);
 
-  const [sideBarViewDate, setSideBarViewDate] = React.useState(() => window.moment());
+  const [sideBarViewDate, setSideBarViewDate] = React.useState(() =>
+    window.moment(),
+  );
 
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -149,13 +161,18 @@ const ReactViewContent = () => {
   const effectivelyOpen = sidebarOpen;
 
   const isEmpty =
-    settings.displayMode !== "timeline" && (
-      (dateFilter === "today" && !currentDailyNote) ||
-      (asTask ? tasks.length === 0 : filteredPosts.length === 0)
-    );
+    settings.displayMode !== "timeline" &&
+    ((dateFilter === "today" && !currentDailyNote) ||
+      (asTask ? tasks.length === 0 : filteredPosts.length === 0));
 
   return (
-    <Flex h="100%" position="relative" w="100%" overflow="hidden" ref={containerRef}>
+    <Flex
+      h="100%"
+      position="relative"
+      w="100%"
+      overflow="hidden"
+      ref={containerRef}
+    >
       {/* Main Content */}
       <Flex
         flexDirection="column"
@@ -191,12 +208,12 @@ const ReactViewContent = () => {
       </Flex>
 
       {/* Sidebar: MiniCalendar (Moved to Right) */}
-      <Box 
+      <Box
         w={effectivelyOpen ? "260px" : "0px"}
         minW={effectivelyOpen ? "260px" : "0px"}
-        h="100%" 
+        h="100%"
         display={effectivelyOpen ? "flex" : "none"}
-        flexDirection="column" 
+        flexDirection="column"
         py="var(--size-4-2)"
         px={0}
         ml={effectivelyOpen ? "var(--size-4-2)" : 0}
@@ -210,4 +227,3 @@ const ReactViewContent = () => {
     </Flex>
   );
 };
-

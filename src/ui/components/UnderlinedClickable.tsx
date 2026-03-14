@@ -1,8 +1,7 @@
 import { Box, BoxProps } from "@chakra-ui/react";
 import * as React from "react";
 
-interface UnderlinedClickableProps extends BoxProps {
-}
+interface UnderlinedClickableProps extends BoxProps {}
 
 export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
   children,

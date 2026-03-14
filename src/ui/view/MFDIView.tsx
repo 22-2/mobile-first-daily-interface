@@ -42,11 +42,15 @@ export class MFDIView extends ItemView {
             : "フォーカス表示に切替",
         )
         .setIcon(
-          this.state.displayMode === DISPLAY_MODE.FOCUS ? "list-minus" : "calendar-range",
+          this.state.displayMode === DISPLAY_MODE.FOCUS
+            ? "list-minus"
+            : "calendar-range",
         )
         .onClick(() => {
           this.handlers.onChangeDisplayMode?.(
-            this.state.displayMode === DISPLAY_MODE.FOCUS ? DISPLAY_MODE.TIMELINE : DISPLAY_MODE.FOCUS,
+            this.state.displayMode === DISPLAY_MODE.FOCUS
+              ? DISPLAY_MODE.TIMELINE
+              : DISPLAY_MODE.FOCUS,
           );
         });
     });

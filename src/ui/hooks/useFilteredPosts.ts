@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
+import {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  Post,
+  TimeFilter,
+} from "src/ui/types";
 
 interface UseFilteredPostsProps {
   posts: Post[];
@@ -37,6 +43,8 @@ export const useFilteredPosts = ({
     if (isNaN(hours)) return postsWithoutHidden;
 
     const now = window.moment();
-    return postsWithoutHidden.filter((p) => now.diff(p.timestamp, "hours") < hours);
+    return postsWithoutHidden.filter(
+      (p) => now.diff(p.timestamp, "hours") < hours,
+    );
   }, [posts, timeFilter, dateFilter, asTask, granularity, displayMode]);
 };

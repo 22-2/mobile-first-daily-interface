@@ -3,7 +3,11 @@ import { Menu } from "obsidian";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
-import { DISPLAY_MODE, PLACEHOLDER_TEXT, READONLY_PLACEHOLDER_TEXT } from "src/ui/config/consntants";
+import {
+  DISPLAY_MODE,
+  PLACEHOLDER_TEXT,
+  READONLY_PLACEHOLDER_TEXT,
+} from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -54,26 +58,28 @@ const InputAreaControl: React.FC = React.memo(() => {
     displayMode,
     setDisplayMode,
     getMoveStep,
-  } = useSettingsStore(useShallow(s => ({
-    date: s.date,
-    granularity: s.granularity,
-    isToday: s.isToday(),
-    isReadOnly: s.isReadOnly(),
-    handleClickMovePrevious: s.handleClickMovePrevious,
-    handleClickMoveNext: s.handleClickMoveNext,
-    handleClickToday: s.handleClickToday,
-    handleClickHome: s.handleClickHome,
-    handleChangeCalendarDateAction: s.handleChangeCalendarDate,
-    displayMode: s.displayMode,
-    setDisplayMode: s.setDisplayMode,
-    getMoveStep: s.getMoveStep,
-  })));
+  } = useSettingsStore(
+    useShallow((s) => ({
+      date: s.date,
+      granularity: s.granularity,
+      isToday: s.isToday(),
+      isReadOnly: s.isReadOnly(),
+      handleClickMovePrevious: s.handleClickMovePrevious,
+      handleClickMoveNext: s.handleClickMoveNext,
+      handleClickToday: s.handleClickToday,
+      handleClickHome: s.handleClickHome,
+      handleChangeCalendarDateAction: s.handleChangeCalendarDate,
+      displayMode: s.displayMode,
+      setDisplayMode: s.setDisplayMode,
+      getMoveStep: s.getMoveStep,
+    })),
+  );
 
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       handleChangeCalendarDateAction(event.target.value);
     },
-    [handleChangeCalendarDateAction]
+    [handleChangeCalendarDateAction],
   );
 
   const step = getMoveStep();
@@ -91,7 +97,12 @@ const InputAreaControl: React.FC = React.memo(() => {
       };
 
   return (
-    <Flex align="center" paddingX="1em" marginY="var(--size-4-4)" className="mfdi-input-area-control">
+    <Flex
+      align="center"
+      paddingX="1em"
+      marginY="var(--size-4-4)"
+      className="mfdi-input-area-control"
+    >
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         {displayMode === DISPLAY_MODE.FOCUS ? (
@@ -139,9 +150,9 @@ const InputAreaControl: React.FC = React.memo(() => {
             />
           </>
         ) : (
-          <Box 
-            fontSize="var(--font-ui-smaller)" 
-            fontWeight="bold" 
+          <Box
+            fontSize="var(--font-ui-smaller)"
+            fontWeight="bold"
             color="var(--text-accent)"
             cursor="pointer"
             onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
@@ -191,19 +202,25 @@ const InputAreaControl: React.FC = React.memo(() => {
 });
 
 const InputAreaFooter: React.FC = React.memo(() => {
-  const { asTask, isReadOnly, setAsTask } = useSettingsStore(useShallow(s => ({
-    asTask: s.asTask,
-    isReadOnly: s.isReadOnly(),
-    setAsTask: s.setAsTask,
-  })));
+  const { asTask, isReadOnly, setAsTask } = useSettingsStore(
+    useShallow((s) => ({
+      asTask: s.asTask,
+      isReadOnly: s.isReadOnly(),
+      setAsTask: s.setAsTask,
+    })),
+  );
 
-  const { editingPostOffset, canSubmit, cancelEdit } = useEditorStore(useShallow(s => ({
-    editingPostOffset: s.editingPostOffset,
-    canSubmit: s.canSubmit(postsStore.getState().posts),
-    cancelEdit: s.cancelEdit,
-  })));
+  const { editingPostOffset, canSubmit, cancelEdit } = useEditorStore(
+    useShallow((s) => ({
+      editingPostOffset: s.editingPostOffset,
+      canSubmit: s.canSubmit(postsStore.getState().posts),
+      cancelEdit: s.cancelEdit,
+    })),
+  );
 
-  const editingPost = useEditorStore(s => s.getEditingPost(postsStore.getState().posts));
+  const editingPost = useEditorStore((s) =>
+    s.getEditingPost(postsStore.getState().posts),
+  );
 
   const { handleSubmit } = usePostActions();
 
@@ -267,14 +284,18 @@ const InputAreaFooter: React.FC = React.memo(() => {
 
 export const InputArea: React.FC = React.memo(() => {
   const { app, view } = useAppContext();
-  const { input, setInput, inputRef } = useEditorStore(useShallow(s => ({
-    input: s.input,
-    setInput: s.setInput,
-    inputRef: s.inputRef,
-  })));
-  const { isReadOnly } = useSettingsStore(useShallow(s => ({
-    isReadOnly: s.isReadOnly(),
-  })));
+  const { input, setInput, inputRef } = useEditorStore(
+    useShallow((s) => ({
+      input: s.input,
+      setInput: s.setInput,
+      inputRef: s.inputRef,
+    })),
+  );
+  const { isReadOnly } = useSettingsStore(
+    useShallow((s) => ({
+      isReadOnly: s.isReadOnly(),
+    })),
+  );
   const { handleSubmit } = usePostActions();
 
   return (

@@ -6,10 +6,10 @@ const TOPIC_ID_REGEX = /^[a-z0-9][a-z0-9-]*$/;
 export const useTopicManager = (
   initialTopics: Topic[],
   initialActiveTopic: string,
-  onSave: (topics: Topic[], activeTopic: string) => Promise<void>
+  onSave: (topics: Topic[], activeTopic: string) => Promise<void>,
 ) => {
   const [topics, setTopics] = useState<Topic[]>(
-    initialTopics.length > 0 ? initialTopics : [DEFAULT_TOPIC]
+    initialTopics.length > 0 ? initialTopics : [DEFAULT_TOPIC],
   );
   const [activeTopic, setActiveTopic] = useState<string>(initialActiveTopic);
 
@@ -26,22 +26,25 @@ export const useTopicManager = (
 
   const isSaving = useRef(false);
 
-  const handleSwitch = useCallback(async (topicId: string) => {
-    if (isSaving.current) return;
-    isSaving.current = true;
-    try {
-      const updatedTopics = topics.map((t) =>
-        t.id === topicId ? { ...t, archived: false } : t
-      );
-      await onSave(updatedTopics, topicId);
-    } finally {
-      isSaving.current = false;
-    }
-  }, [topics, onSave]);
+  const handleSwitch = useCallback(
+    async (topicId: string) => {
+      if (isSaving.current) return;
+      isSaving.current = true;
+      try {
+        const updatedTopics = topics.map((t) =>
+          t.id === topicId ? { ...t, archived: false } : t,
+        );
+        await onSave(updatedTopics, topicId);
+      } finally {
+        isSaving.current = false;
+      }
+    },
+    [topics, onSave],
+  );
 
   const handleToggleArchive = useCallback((topicId: string) => {
     setTopics((prev) =>
-      prev.map((t) => (t.id === topicId ? { ...t, archived: !t.archived } : t))
+      prev.map((t) => (t.id === topicId ? { ...t, archived: !t.archived } : t)),
     );
   }, []);
 
@@ -53,7 +56,7 @@ export const useTopicManager = (
       return;
     }
     setTopics((prev) =>
-      prev.map((t) => (t.id === editingId ? { ...t, title: trimmed } : t))
+      prev.map((t) => (t.id === editingId ? { ...t, title: trimmed } : t)),
     );
     setEditingId(null);
   }, [editingId, editingTitle]);

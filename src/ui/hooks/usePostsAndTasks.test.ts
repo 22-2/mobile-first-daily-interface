@@ -74,14 +74,32 @@ describe("Sorting with posted metadata", () => {
 
     mockAppHelper.loadFile.mockResolvedValue("content");
     vi.spyOn(thino, "parseThinoEntries").mockReturnValue([
-      { time: "09:00:00", message: "earlier", metadata: { posted: isoEarlier }, offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 },
-      { time: "08:00:00", message: "later", metadata: { posted: isoLater }, offset: 20, startOffset: 20, endOffset: 30, bodyStartOffset: 22 },
+      {
+        time: "09:00:00",
+        message: "earlier",
+        metadata: { posted: isoEarlier },
+        offset: 0,
+        startOffset: 0,
+        endOffset: 10,
+        bodyStartOffset: 2,
+      },
+      {
+        time: "08:00:00",
+        message: "later",
+        metadata: { posted: isoLater },
+        offset: 20,
+        startOffset: 20,
+        endOffset: 30,
+        bodyStartOffset: 22,
+      },
     ] as any);
 
-    const { result } = renderHook(() => usePostsAndTasks({
-      date: moment("2026-03-10T00:00:00.000Z") as any,
-      granularity: "day"
-    }));
+    const { result } = renderHook(() =>
+      usePostsAndTasks({
+        date: moment("2026-03-10T00:00:00.000Z") as any,
+        granularity: "day",
+      }),
+    );
 
     await act(async () => {
       await result.current.updatePosts(note);
@@ -98,15 +116,41 @@ describe("Sorting with posted metadata", () => {
     const note = { path: "2026-03-10.md" } as any;
     mockAppHelper.loadFile.mockResolvedValue("content");
     vi.spyOn(thino, "parseThinoEntries").mockReturnValue([
-      { time: "09:00:00", message: "visible", metadata: {}, offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 },
-      { time: "09:01:00", message: "ignored1", metadata: { archived: "true" }, offset: 20, startOffset: 20, endOffset: 30, bodyStartOffset: 22 },
-      { time: "09:02:00", message: "ignored2", metadata: { deleted: "20260310000000" }, offset: 40, startOffset: 40, endOffset: 50, bodyStartOffset: 42 },
+      {
+        time: "09:00:00",
+        message: "visible",
+        metadata: {},
+        offset: 0,
+        startOffset: 0,
+        endOffset: 10,
+        bodyStartOffset: 2,
+      },
+      {
+        time: "09:01:00",
+        message: "ignored1",
+        metadata: { archived: "true" },
+        offset: 20,
+        startOffset: 20,
+        endOffset: 30,
+        bodyStartOffset: 22,
+      },
+      {
+        time: "09:02:00",
+        message: "ignored2",
+        metadata: { deleted: "20260310000000" },
+        offset: 40,
+        startOffset: 40,
+        endOffset: 50,
+        bodyStartOffset: 42,
+      },
     ] as any);
 
-    const { result } = renderHook(() => usePostsAndTasks({
-      date: moment("2026-03-10T00:00:00.000Z") as any,
-      granularity: "day"
-    }));
+    const { result } = renderHook(() =>
+      usePostsAndTasks({
+        date: moment("2026-03-10T00:00:00.000Z") as any,
+        granularity: "day",
+      }),
+    );
 
     await act(async () => {
       await result.current.updatePosts(note);
@@ -114,8 +158,14 @@ describe("Sorting with posted metadata", () => {
 
     // parse 自体は全部するが、metadata が入っていることを確認
     expect(result.current.posts.length).toBe(3);
-    expect(result.current.posts.find(p => p.message === "ignored1")?.metadata.archived).toBe("true");
-    expect(result.current.posts.find(p => p.message === "ignored2")?.metadata.deleted).toBe("20260310000000");
+    expect(
+      result.current.posts.find((p) => p.message === "ignored1")?.metadata
+        .archived,
+    ).toBe("true");
+    expect(
+      result.current.posts.find((p) => p.message === "ignored2")?.metadata
+        .deleted,
+    ).toBe("20260310000000");
   });
 });
 
@@ -139,7 +189,7 @@ describe("updatePostsForDays with Topics", () => {
   it("トピック指定時に正しく複数日の投稿を取得できること", async () => {
     const mockFileTopic1 = { path: "topic-2026-03-09.md" } as any;
     const mockFileTopic2 = { path: "topic-2026-03-08.md" } as any;
-    
+
     const date0 = moment("2026-03-09T12:00:00.000Z").startOf("day");
     const date1 = date0.clone().subtract(1, "days");
 
@@ -149,21 +199,45 @@ describe("updatePostsForDays with Topics", () => {
     });
 
     vi.spyOn(thino, "parseThinoEntries").mockImplementation((content) => {
-      if (content === "topic-content1") return [{ time: "10:00:00", message: "topic-post1", offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 }] as any;
-      if (content === "topic-content2") return [{ time: "11:00:00", message: "topic-post2", offset: 0, startOffset: 0, endOffset: 10, bodyStartOffset: 2 }] as any;
+      if (content === "topic-content1")
+        return [
+          {
+            time: "10:00:00",
+            message: "topic-post1",
+            offset: 0,
+            startOffset: 0,
+            endOffset: 10,
+            bodyStartOffset: 2,
+          },
+        ] as any;
+      if (content === "topic-content2")
+        return [
+          {
+            time: "11:00:00",
+            message: "topic-post2",
+            offset: 0,
+            startOffset: 0,
+            endOffset: 10,
+            bodyStartOffset: 2,
+          },
+        ] as any;
       return [];
     });
 
     mockAppHelper.cachedReadFile.mockImplementation((file: any) => {
-      if (file.path === "topic-2026-03-09.md") return Promise.resolve("topic-content1");
-      if (file.path === "topic-2026-03-08.md") return Promise.resolve("topic-content2");
+      if (file.path === "topic-2026-03-09.md")
+        return Promise.resolve("topic-content1");
+      if (file.path === "topic-2026-03-08.md")
+        return Promise.resolve("topic-content2");
       return Promise.resolve("");
     });
 
-    const { result } = renderHook(() => usePostsAndTasks({
-      date: moment("2026-03-09T12:00:00.000Z") as any,
-      granularity: "day"
-    }));
+    const { result } = renderHook(() =>
+      usePostsAndTasks({
+        date: moment("2026-03-09T12:00:00.000Z") as any,
+        granularity: "day",
+      }),
+    );
 
     await act(async () => {
       await result.current.updatePostsForDays("topic", 2);

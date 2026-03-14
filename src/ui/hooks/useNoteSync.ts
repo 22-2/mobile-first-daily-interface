@@ -15,7 +15,10 @@ type CurrentDayFileParams = {
   activeTopic: string | null;
 };
 
-function isCurrentDayFile(filePath: string, { date, granularity, activeTopic }: CurrentDayFileParams): boolean {
+function isCurrentDayFile(
+  filePath: string,
+  { date, granularity, activeTopic }: CurrentDayFileParams,
+): boolean {
   const ds = getPeriodicSettings(granularity);
   const dir = ds.folder ? `${ds.folder}/` : "";
   const prefix = activeTopic ? `${activeTopic}-` : "";
@@ -30,35 +33,37 @@ export function useNoteSync() {
   const { app } = useAppContext();
   const refreshPosts = useRefreshPosts();
 
-  const { date, granularity, activeTopic, dateFilter, displayMode, setDate } = useSettingsStore(
-    useShallow(s => ({
-      date: s.date,
-      granularity: s.granularity,
-      activeTopic: s.activeTopic,
-      dateFilter: s.dateFilter,
-      displayMode: s.displayMode,
-      setDate: s.setDate,
-    }))
-  );
+  const { date, granularity, activeTopic, dateFilter, displayMode, setDate } =
+    useSettingsStore(
+      useShallow((s) => ({
+        date: s.date,
+        granularity: s.granularity,
+        activeTopic: s.activeTopic,
+        dateFilter: s.dateFilter,
+        displayMode: s.displayMode,
+        setDate: s.setDate,
+      })),
+    );
 
   const { currentDailyNote, weekNotePaths } = useNoteStore(
-    useShallow(s => ({
+    useShallow((s) => ({
       currentDailyNote: s.currentDailyNote,
       weekNotePaths: s.weekNotePaths,
-    }))
+    })),
   );
 
   const { setTasks, setPosts, updatePosts, updateTasks } = usePostsStore(
-    useShallow(s => ({
+    useShallow((s) => ({
       setTasks: s.setTasks,
       setPosts: s.setPosts,
       updatePosts: s.updatePosts,
       updateTasks: s.updateTasks,
-    }))
+    })),
   );
 
   useEffect(() => {
-    const isMultiDayOrTimeline = dateFilter !== "today" || displayMode === "timeline";
+    const isMultiDayOrTimeline =
+      dateFilter !== "today" || displayMode === "timeline";
 
     const handleChanged = async (file: TFile) => {
       if (isMultiDayOrTimeline) {
@@ -69,8 +74,13 @@ export function useNoteSync() {
       }
 
       // 通常モード: 対象ファイルかどうかチェック
-      if (currentDailyNote != null && file.path !== currentDailyNote.path) return;
-      if (currentDailyNote == null && !isCurrentDayFile(file.path, { date, granularity, activeTopic })) return;
+      if (currentDailyNote != null && file.path !== currentDailyNote.path)
+        return;
+      if (
+        currentDailyNote == null &&
+        !isCurrentDayFile(file.path, { date, granularity, activeTopic })
+      )
+        return;
 
       noteStore.getState().updateCurrentDailyNote(app);
       await Promise.all([updatePosts(file), updateTasks(file)]);
@@ -100,9 +110,18 @@ export function useNoteSync() {
     };
   }, [
     app,
-    date, granularity, activeTopic, dateFilter, displayMode, setDate,
-    currentDailyNote, weekNotePaths,
-    setTasks, setPosts, updatePosts, updateTasks,
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    displayMode,
+    setDate,
+    currentDailyNote,
+    weekNotePaths,
+    setTasks,
+    setPosts,
+    updatePosts,
+    updateTasks,
     refreshPosts,
   ]);
 }

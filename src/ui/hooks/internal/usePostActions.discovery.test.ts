@@ -20,11 +20,11 @@ Added some text here that shifts everything down.
 - 10:00:00 post1
 - 11:00:00 post2
 `;
-    
+
     // 3. Try to find post2 in shifted content using the same logic as in usePostActions.ts
     const latestEntries = parseThinoEntries(shiftedContent);
     const targetTime = "11:00:00"; // from post2.timestamp.format("HH:mm:ss")
-    const latestPost = latestEntries.find(e => {
+    const latestPost = latestEntries.find((e) => {
       return e.time.endsWith(targetTime) && e.message === post2.message;
     });
 
@@ -43,8 +43,8 @@ Added some text here that shifts everything down.
     const post = entries[0];
 
     // Re-discovery logic
-    const latestPost = entries.find(e => {
-        return e.time.endsWith("19:17:58") && e.message === post.message;
+    const latestPost = entries.find((e) => {
+      return e.time.endsWith("19:17:58") && e.message === post.message;
     });
 
     expect(latestPost).toBeDefined();

@@ -15,26 +15,32 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const PostListView: React.FC = React.memo(() => {
-  const settings = useSettingsStore(useShallow(s => ({
-    granularity: s.granularity,
-    displayMode: s.displayMode,
-    dateFilter: s.dateFilter,
-    isReadOnly: s.isReadOnly(),
-    setDate: s.setDate,
-    setDisplayMode: s.setDisplayMode,
-    asTask: s.asTask,
-    timeFilter: s.timeFilter,
-  })));
+  const settings = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      displayMode: s.displayMode,
+      dateFilter: s.dateFilter,
+      isReadOnly: s.isReadOnly(),
+      setDate: s.setDate,
+      setDisplayMode: s.setDisplayMode,
+      asTask: s.asTask,
+      timeFilter: s.timeFilter,
+    })),
+  );
 
-  const { posts } = usePostsStore(useShallow(s => ({
-    posts: s.posts,
-  })));
+  const { posts } = usePostsStore(
+    useShallow((s) => ({
+      posts: s.posts,
+    })),
+  );
 
-  const { editingPostOffset, startEdit, scrollContainerRef } = useEditorStore(useShallow(s => ({
-    editingPostOffset: s.editingPostOffset,
-    startEdit: s.startEdit,
-    scrollContainerRef: s.scrollContainerRef,
-  })));
+  const { editingPostOffset, startEdit, scrollContainerRef } = useEditorStore(
+    useShallow((s) => ({
+      editingPostOffset: s.editingPostOffset,
+      startEdit: s.startEdit,
+      scrollContainerRef: s.scrollContainerRef,
+    })),
+  );
 
   const { loadMore, hasMore } = useInfiniteTimeline();
   const { handleClickTime, deletePost, movePostToTomorrow } = usePostActions();
@@ -52,7 +58,7 @@ export const PostListView: React.FC = React.memo(() => {
     editingPostOffset,
     granularity,
     displayMode,
-    dateFilter
+    dateFilter,
   );
 
   const parentRef = scrollContainerRef;
@@ -171,4 +177,3 @@ export const PostListView: React.FC = React.memo(() => {
     </Box>
   );
 });
-

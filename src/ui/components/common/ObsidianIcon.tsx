@@ -13,10 +13,10 @@ export const ObsidianIcon = ({ name, size, ...props }: ObsidianIconProps) => {
 
   useEffect(() => {
     if (ref.current) {
-      if (typeof ref.current.empty === 'function') {
+      if (typeof ref.current.empty === "function") {
         ref.current.empty();
       } else {
-        ref.current.innerHTML = '';
+        ref.current.innerHTML = "";
       }
       try {
         setIcon(ref.current, name);

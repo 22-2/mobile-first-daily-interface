@@ -1,7 +1,13 @@
 import { useMemo } from "react";
-import { DateFilter, DisplayMode, Granularity, MomentLike, Post } from "src/ui/types";
+import {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  MomentLike,
+  Post,
+} from "src/ui/types";
 
-export type TimelineItem = 
+export type TimelineItem =
   | { type: "post"; post: Post; key: string }
   | { type: "divider"; date: MomentLike; key: string };
 
@@ -10,18 +16,23 @@ export const useTimelineItems = (
   editingPostOffset: number | null,
   granularity: Granularity,
   displayMode: DisplayMode,
-  dateFilter: DateFilter
+  dateFilter: DateFilter,
 ) => {
   return useMemo(() => {
     const list: TimelineItem[] = [];
     let lastDate: string | null = null;
 
-    const posts = filteredPosts.filter((x) => x.startOffset !== editingPostOffset);
+    const posts = filteredPosts.filter(
+      (x) => x.startOffset !== editingPostOffset,
+    );
 
     posts.forEach((post) => {
       const currentDate = post.timestamp.format("YYYY-MM-DD");
       // タイムラインモードなら常に区分けを出す。フォーカスモード（単一閲覧）なら今日以外のみ。
-      const isTodayOnly = displayMode !== "timeline" && granularity === "day" && dateFilter === "today";
+      const isTodayOnly =
+        displayMode !== "timeline" &&
+        granularity === "day" &&
+        dateFilter === "today";
       const showDivider = !isTodayOnly && lastDate !== currentDate;
 
       if (showDivider) {
@@ -31,7 +42,11 @@ export const useTimelineItems = (
           key: `divider-${currentDate}`,
         });
       }
-      list.push({ type: "post", post, key: `post-${post.timestamp.valueOf()}-${post.offset}` });
+      list.push({
+        type: "post",
+        post,
+        key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+      });
       lastDate = currentDate;
     });
 

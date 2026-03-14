@@ -19,7 +19,7 @@ export function useRefreshPosts() {
       activeTopic: s.activeTopic,
       dateFilter: s.dateFilter,
       displayMode: s.displayMode,
-    }))
+    })),
   );
 
   const { updatePosts, updatePostsForWeek, updatePostsForDays } = usePostsStore(
@@ -27,7 +27,7 @@ export function useRefreshPosts() {
       updatePosts: s.updatePosts,
       updatePostsForWeek: s.updatePostsForWeek,
       updatePostsForDays: s.updatePostsForDays,
-    }))
+    })),
   );
 
   const replacePaths = useNoteStore((s) => s.replacePaths);
@@ -70,6 +70,6 @@ export function useRefreshPosts() {
       updatePostsForWeek,
       updatePostsForDays,
       replacePaths,
-    ]
+    ],
   );
 }

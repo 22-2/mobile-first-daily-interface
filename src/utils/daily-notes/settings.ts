@@ -8,12 +8,14 @@ export interface PeriodicNoteSettings {
 
 interface PeriodicNotesPlugin {
   settings: {
-    [key: string]: {
-      enabled: boolean;
-      format?: string;
-      folder?: string;
-      template?: string;
-    } | undefined;
+    [key: string]:
+      | {
+          enabled: boolean;
+          format?: string;
+          folder?: string;
+          template?: string;
+        }
+      | undefined;
   };
 }
 
@@ -42,9 +44,9 @@ const DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
 const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
 
 function shouldUsePeriodicNotesSettings(periodicity: string): boolean {
-  const periodicNotes = (window as any).app.plugins.getPlugin("periodic-notes") as
-    | PeriodicNotesPlugin
-    | undefined;
+  const periodicNotes = (window as any).app.plugins.getPlugin(
+    "periodic-notes",
+  ) as PeriodicNotesPlugin | undefined;
   return !!(periodicNotes && periodicNotes.settings?.[periodicity]?.enabled);
 }
 
@@ -52,16 +54,20 @@ export function getDailyNoteSettings(): PeriodicNoteSettings {
   try {
     const { internalPlugins, plugins } = (window as any).app;
     if (shouldUsePeriodicNotesSettings("daily")) {
-      const daily = (plugins.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)
-        ?.settings?.daily;
+      const daily = (
+        plugins.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined
+      )?.settings?.daily;
       return {
         format: daily?.format || DEFAULT_DAILY_NOTE_FORMAT,
         folder: daily?.folder?.trim() || "",
         template: daily?.template?.trim() || "",
       };
     }
-    const dailyOptions = (internalPlugins.getPluginById("daily-notes") as DailyNotesPlugin | undefined)
-      ?.instance?.options;
+    const dailyOptions = (
+      internalPlugins.getPluginById("daily-notes") as
+        | DailyNotesPlugin
+        | undefined
+    )?.instance?.options;
     return {
       format: dailyOptions?.format || DEFAULT_DAILY_NOTE_FORMAT,
       folder: dailyOptions?.folder?.trim() || "",
@@ -76,9 +82,7 @@ export function getWeeklyNoteSettings(): PeriodicNoteSettings {
   try {
     const pluginManager = (window as any).app.plugins;
     const calendarSettings = (
-      pluginManager.getPlugin("calendar") as
-        | CalendarPlugin
-        | undefined
+      pluginManager.getPlugin("calendar") as CalendarPlugin | undefined
     )?.options;
     const periodicNotesSettings = (
       pluginManager.getPlugin("periodic-notes") as
@@ -105,8 +109,12 @@ export function getWeeklyNoteSettings(): PeriodicNoteSettings {
 export function getMonthlyNoteSettings(): PeriodicNoteSettings {
   try {
     const pluginManager = (window as any).app.plugins;
-    const periodic = shouldUsePeriodicNotesSettings("monthly") 
-      ? (pluginManager.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)?.settings?.monthly 
+    const periodic = shouldUsePeriodicNotesSettings("monthly")
+      ? (
+          pluginManager.getPlugin("periodic-notes") as
+            | PeriodicNotesPlugin
+            | undefined
+        )?.settings?.monthly
       : undefined;
     return {
       format: periodic?.format || DEFAULT_MONTHLY_NOTE_FORMAT,
@@ -122,7 +130,11 @@ export function getYearlyNoteSettings(): PeriodicNoteSettings {
   try {
     const pluginManager = (window as any).app.plugins;
     const periodic = shouldUsePeriodicNotesSettings("yearly")
-      ? (pluginManager.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined)?.settings?.yearly
+      ? (
+          pluginManager.getPlugin("periodic-notes") as
+            | PeriodicNotesPlugin
+            | undefined
+        )?.settings?.yearly
       : undefined;
     return {
       format: periodic?.format || DEFAULT_YEARLY_NOTE_FORMAT,

@@ -97,12 +97,13 @@ describe("timeline note resolution", () => {
         current: {
           getValue: () => "timeline post",
           setContent: mockSetContent,
+          focus: vi.fn(),
         },
       },
       scrollContainerRef: {
         current: {
           scrollTo: mockScrollTo,
-        },
+        } as unknown as HTMLDivElement,
       },
     });
 

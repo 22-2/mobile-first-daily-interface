@@ -42,7 +42,9 @@ describe("toText", () => {
       posted: "2026-03-10T19:00:00.00Z",
     });
     // archived and deleted should NOT be hidden
-    expect(result).toBe("- 16:00:00 test [archived::true] [deleted::20260101000000] [posted::2026-03-10T19:00:00.00Z]\n");
+    expect(result).toBe(
+      "- 16:00:00 test [archived::true] [deleted::20260101000000] [posted::2026-03-10T19:00:00.00Z]\n",
+    );
   });
 
   test("thino format - trims redundant empty lines", () => {
@@ -54,14 +56,24 @@ describe("toText", () => {
     const result = toText("ggg (from 2026-03-10)", false, "day", undefined, {
       posted: "2026-03-10T10:18:13.546Z",
     });
-    expect(result).toBe("- 16:00:00 ggg (from 2026-03-10) [posted::2026-03-10T10:18:13.546Z]\n");
+    expect(result).toBe(
+      "- 16:00:00 ggg (from 2026-03-10) [posted::2026-03-10T10:18:13.546Z]\n",
+    );
   });
 
   test("thino format - multi-line with metadata", () => {
-    const result = toText("zustandを始めて使ったときは衝撃だったな\nむかしはcontextproviderの順番でやきもきしてたから", false, "day", undefined, {
-      key1: "val1",
-    });
-    expect(result).toBe("- 16:00:00 zustandを始めて使ったときは衝撃だったな [key1::val1]\n    むかしはcontextproviderの順番でやきもきしてたから\n");
+    const result = toText(
+      "zustandを始めて使ったときは衝撃だったな\nむかしはcontextproviderの順番でやきもきしてたから",
+      false,
+      "day",
+      undefined,
+      {
+        key1: "val1",
+      },
+    );
+    expect(result).toBe(
+      "- 16:00:00 zustandを始めて使ったときは衝撃だったな [key1::val1]\n    むかしはcontextproviderの順番でやきもきしてたから\n",
+    );
   });
 
   test("thino format - should NOT filter archived and deleted metadata", () => {

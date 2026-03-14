@@ -13,13 +13,13 @@ export const usePostContextMenu = () => {
       setDate: s.setDate,
       setDisplayMode: s.setDisplayMode,
       isReadOnly: s.isReadOnly(),
-    }))
+    })),
   );
 
   const { startEdit } = useEditorStore(
     useShallow((s) => ({
       startEdit: s.startEdit,
-    }))
+    })),
   );
 
   const { handleClickTime, movePostToTomorrow, deletePost, archivePost } =

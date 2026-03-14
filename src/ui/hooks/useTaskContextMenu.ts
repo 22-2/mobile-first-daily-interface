@@ -8,7 +8,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 
 export const useTaskContextMenu = () => {
   const { app } = useAppContext();
-  const isReadOnly = useSettingsStore(s => s.isReadOnly());
+  const isReadOnly = useSettingsStore((s) => s.isReadOnly());
   const { openTaskInEditor, deleteTask } = useTaskActions();
 
   const showTaskContextMenu = useCallback(

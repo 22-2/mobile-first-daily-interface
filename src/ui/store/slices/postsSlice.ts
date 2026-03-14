@@ -1,0 +1,198 @@
+import { App, TFile } from "obsidian";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
+import { MomentLike, Post } from "src/ui/types";
+import { resolveTimestamp } from "src/ui/utils/post-utils";
+import { sorter } from "src/utils/collections";
+import {
+  getAllTopicNotes,
+  getDateUID,
+  getTopicNote,
+} from "src/utils/daily-notes";
+import { parseThinoEntries } from "src/utils/thino";
+import { StateCreator } from "zustand/vanilla";
+import { MFDIStore, PostsSlice } from "./types";
+
+function buildPostsFromContent(
+  content: string,
+  path: string,
+  date: MomentLike,
+): Post[] {
+  return parseThinoEntries(content).map((entry) => ({
+    timestamp: resolveTimestamp(entry.time, date, entry.metadata),
+    message: entry.message,
+    metadata: entry.metadata,
+    offset: entry.offset,
+    startOffset: entry.startOffset,
+    endOffset: entry.endOffset,
+    bodyStartOffset: entry.bodyStartOffset,
+    kind: "thino" as const,
+    path,
+  }));
+}
+
+export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
+  set,
+  get,
+) => ({
+  posts: [],
+  tasks: [],
+
+  setPosts: (posts) => {
+    set({ posts: posts.sort(sorter((post) => post.timestamp.unix(), "desc")) });
+  },
+
+  setTasks: (tasks) => {
+    set({ tasks });
+  },
+
+  updatePosts: async (note) => {
+    const { appHelper, date, setPosts } = get();
+    if (!appHelper) return;
+    const content = await appHelper.loadFile(note.path);
+    setPosts(buildPostsFromContent(content, note.path, date));
+  },
+
+  updateTasks: async (note) => {
+    const { appHelper } = get();
+    if (!appHelper) return;
+    set({ tasks: (await appHelper.getTasks(note)) ?? [] });
+  },
+
+  updatePostsForWeek: async (topicId, date) => {
+    const { app, appHelper, setPosts } = get();
+    if (!app || !appHelper) return new Set();
+
+    const weekStart = date.clone().startOf("isoWeek");
+    const weekDates = Array.from({ length: 7 }, (_, index) =>
+      weekStart.clone().add(index, "days"),
+    );
+    const entries = weekDates
+      .map((dayDate) => ({
+        file: getTopicNote(app, dayDate, "day", topicId),
+        dayDate,
+      }))
+      .filter(
+        (entry): entry is { file: TFile; dayDate: MomentLike } =>
+          entry.file !== null,
+      );
+
+    const posts = (
+      await Promise.all(
+        entries.map(async ({ file, dayDate }) => {
+          const content = await appHelper.cachedReadFile(file);
+          return buildPostsFromContent(content, file.path, dayDate);
+        }),
+      )
+    ).flat();
+
+    setPosts(posts);
+    return new Set(entries.map((entry) => entry.file.path));
+  },
+
+  updatePostsForDays: async (topicId, date, days) => {
+    const { app, appHelper, setPosts } = get();
+    if (!app || !appHelper) {
+      return {
+        paths: new Set<string>(),
+        hasMore: false,
+        lastSearchedDate: date,
+      };
+    }
+
+    const getPostsRecursive = async (
+      baseDate: MomentLike,
+    ): Promise<{
+      posts: Post[];
+      paths: Set<string>;
+      hasMore: boolean;
+      lastSearchedDate: MomentLike;
+    }> => {
+      const allTopicNotes = getAllTopicNotes(app as App, "day", topicId);
+      const uids = Object.keys(allTopicNotes).toSorted();
+      if (uids.length === 0) {
+        return {
+          posts: [],
+          paths: new Set<string>(),
+          hasMore: false,
+          lastSearchedDate: baseDate,
+        };
+      }
+
+      const oldestPossibleDate = window.moment(
+        uids[0].substring("day-".length),
+      );
+      const start = baseDate.clone().startOf("day");
+      const dates = Array.from({ length: days }, (_, index) =>
+        start.clone().subtract(index, "days"),
+      );
+      const lastInWindow = dates[dates.length - 1];
+
+      const entries = dates
+        .map((dayDate) => ({
+          file: allTopicNotes[getDateUID(dayDate, "day")] ?? null,
+          dayDate,
+        }))
+        .filter(
+          (entry): entry is { file: TFile; dayDate: MomentLike } =>
+            entry.file !== null,
+        );
+
+      if (entries.length === 0 && lastInWindow.isAfter(oldestPossibleDate)) {
+        const lastUid = getDateUID(lastInWindow, "day");
+        const nextUid = uids
+          .slice()
+          .reverse()
+          .find((uid) => uid < lastUid);
+        if (nextUid) {
+          return getPostsRecursive(
+            window.moment(nextUid.substring("day-".length)),
+          );
+        }
+      }
+
+      const posts = (
+        await Promise.all(
+          entries.map(async ({ file, dayDate }) => {
+            const content = await appHelper.cachedReadFile(file);
+            return buildPostsFromContent(content, file.path, dayDate);
+          }),
+        )
+      ).flat();
+
+      return {
+        posts,
+        paths: new Set(entries.map((entry) => entry.file.path)),
+        hasMore: lastInWindow.isAfter(oldestPossibleDate),
+        lastSearchedDate: lastInWindow,
+      };
+    };
+
+    const result = await getPostsRecursive(date);
+    setPosts(result.posts);
+    return result;
+  },
+
+  getFilteredPosts: () => {
+    const { posts, timeFilter, dateFilter, asTask, granularity, displayMode } =
+      get();
+    const visiblePosts = posts.filter(
+      (post) => !post.metadata.archived && !post.metadata.deleted,
+    );
+
+    if (displayMode === DISPLAY_MODE.TIMELINE) return visiblePosts;
+    if (dateFilter !== DATE_FILTER_IDS.TODAY) return visiblePosts;
+    if (timeFilter === TIME_FILTER_IDS.ALL || asTask || granularity !== "day")
+      return visiblePosts;
+    if (timeFilter === TIME_FILTER_IDS.LATEST)
+      return visiblePosts.length > 0 ? [visiblePosts[0]] : [];
+
+    const hours = Number.parseInt(timeFilter as string, 10);
+    if (Number.isNaN(hours)) return visiblePosts;
+
+    const now = window.moment();
+    return visiblePosts.filter(
+      (post) => now.diff(post.timestamp, "hours") < hours,
+    );
+  },
+});

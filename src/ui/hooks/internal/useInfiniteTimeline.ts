@@ -31,15 +31,15 @@ async function parsePostsFromFile(
 ): Promise<Post[]> {
   const content = await readFile(file);
   return parseThinoEntries(content).map((x) => ({
-    timestamp:       resolveTimestamp(x.time, dayDate, x.metadata),
-    message:         x.message,
-    metadata:        x.metadata,
-    offset:          x.offset,
-    startOffset:     x.startOffset,
-    endOffset:       x.endOffset,
+    timestamp: resolveTimestamp(x.time, dayDate, x.metadata),
+    message: x.message,
+    metadata: x.metadata,
+    offset: x.offset,
+    startOffset: x.startOffset,
+    endOffset: x.endOffset,
     bodyStartOffset: x.bodyStartOffset,
-    kind:            "thino" as const,
-    path:            file.path,
+    kind: "thino" as const,
+    path: file.path,
   }));
 }
 
@@ -49,64 +49,98 @@ async function parsePostsFromFile(
 export const useInfiniteTimeline = () => {
   const { app, appHelper } = useAppContext();
 
-  const { activeTopic, displayMode, date } = useSettingsStore(useShallow(s => ({
-    activeTopic:  s.activeTopic,
-    displayMode:  s.displayMode,
-    date:         s.date,
-  })));
+  const { activeTopic, displayMode, date } = useSettingsStore(
+    useShallow((s) => ({
+      activeTopic: s.activeTopic,
+      displayMode: s.displayMode,
+      date: s.date,
+    })),
+  );
 
-  const { setPosts }  = usePostsStore(useShallow(s => ({ setPosts: s.setPosts })));
-  const { addPaths }  = useNoteStore(useShallow(s => ({ addPaths: s.addPaths })));
+  const { setPosts } = usePostsStore(
+    useShallow((s) => ({ setPosts: s.setPosts })),
+  );
+  const { addPaths } = useNoteStore(
+    useShallow((s) => ({ addPaths: s.addPaths })),
+  );
 
   // ---------------------------------------------------------------------------
   // ページ単位のデータ取得（再帰で「有効なデータが存在する最初のウィンドウ」を探す）
   // ---------------------------------------------------------------------------
-  const fetchPage = useCallback(async (
-    topicId:  string,
-    baseDate: MomentLike,
-    days:     number,
-  ): Promise<PostsPage> => {
-    const allTopicNotes = getAllTopicNotes(app, "day", topicId);
-    const uids = Object.keys(allTopicNotes).toSorted();
+  const fetchPage = useCallback(
+    async (
+      topicId: string,
+      baseDate: MomentLike,
+      days: number,
+    ): Promise<PostsPage> => {
+      const allTopicNotes = getAllTopicNotes(app, "day", topicId);
+      const uids = Object.keys(allTopicNotes).toSorted();
 
-    if (uids.length === 0) {
-      return { posts: [], paths: new Set(), hasMore: false, lastSearchedDate: baseDate };
-    }
-
-    const oldestDate    = window.moment(uids[0].substring("day-".length));
-    const windowStart   = baseDate.clone().startOf("day");
-    const windowDates   = Array.from({ length: days }, (_, i) => windowStart.clone().subtract(i, "days"));
-    const windowEnd     = windowDates[windowDates.length - 1];
-
-    // ウィンドウ内に実際にノートが存在する日だけ絞り込む
-    const entries = windowDates
-      .map((d) => ({ file: allTopicNotes[getDateUID(d, "day")] ?? null, dayDate: d }))
-      .filter((x): x is { file: TFile; dayDate: MomentLike } => x.file !== null);
-
-    // ウィンドウ内にノートがなく、まだ古いデータが残っている場合は次ウィンドウへ再帰
-    // ただし、baseDate が今日の場合は、今日より先のデータ（未来）はないので、
-    // ウィンドウ内にデータがなくてもすぐには諦めず、oldestDate まで探索を続ける
-    if (entries.length === 0 && windowEnd.isAfter(oldestDate)) {
-      const windowEndUid = getDateUID(windowEnd, "day");
-      const nextUid      = uids.slice().reverse().find(u => u < windowEndUid);
-      if (nextUid) {
-        return fetchPage(topicId, window.moment(nextUid.substring("day-".length)), days);
+      if (uids.length === 0) {
+        return {
+          posts: [],
+          paths: new Set(),
+          hasMore: false,
+          lastSearchedDate: baseDate,
+        };
       }
-    }
 
-    const posts = (
-      await Promise.all(
-        entries.map(({ file, dayDate }) => parsePostsFromFile(file, dayDate, appHelper.cachedReadFile.bind(appHelper))),
-      )
-    ).flat();
+      const oldestDate = window.moment(uids[0].substring("day-".length));
+      const windowStart = baseDate.clone().startOf("day");
+      const windowDates = Array.from({ length: days }, (_, i) =>
+        windowStart.clone().subtract(i, "days"),
+      );
+      const windowEnd = windowDates[windowDates.length - 1];
 
-    return {
-      posts,
-      paths:           new Set(entries.map((e) => e.file.path)),
-      hasMore:         windowEnd.isAfter(oldestDate),
-      lastSearchedDate: windowEnd,
-    };
-  }, [app, appHelper]);
+      // ウィンドウ内に実際にノートが存在する日だけ絞り込む
+      const entries = windowDates
+        .map((d) => ({
+          file: allTopicNotes[getDateUID(d, "day")] ?? null,
+          dayDate: d,
+        }))
+        .filter(
+          (x): x is { file: TFile; dayDate: MomentLike } => x.file !== null,
+        );
+
+      // ウィンドウ内にノートがなく、まだ古いデータが残っている場合は次ウィンドウへ再帰
+      // ただし、baseDate が今日の場合は、今日より先のデータ（未来）はないので、
+      // ウィンドウ内にデータがなくてもすぐには諦めず、oldestDate まで探索を続ける
+      if (entries.length === 0 && windowEnd.isAfter(oldestDate)) {
+        const windowEndUid = getDateUID(windowEnd, "day");
+        const nextUid = uids
+          .slice()
+          .reverse()
+          .find((u) => u < windowEndUid);
+        if (nextUid) {
+          return fetchPage(
+            topicId,
+            window.moment(nextUid.substring("day-".length)),
+            days,
+          );
+        }
+      }
+
+      const posts = (
+        await Promise.all(
+          entries.map(({ file, dayDate }) =>
+            parsePostsFromFile(
+              file,
+              dayDate,
+              appHelper.cachedReadFile.bind(appHelper),
+            ),
+          ),
+        )
+      ).flat();
+
+      return {
+        posts,
+        paths: new Set(entries.map((e) => e.file.path)),
+        hasMore: windowEnd.isAfter(oldestDate),
+        lastSearchedDate: windowEnd,
+      };
+    },
+    [app, appHelper],
+  );
 
   // ---------------------------------------------------------------------------
   // 無限クエリ
@@ -116,14 +150,20 @@ export const useInfiniteTimeline = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery<PostsPage, Error, { pages: PostsPage[]; pageParams: (string | null)[] }, string[], string | null>({
-    queryKey:   ["posts", activeTopic, displayMode, date.format("YYYY-MM-DD")],
-    enabled:    displayMode === DISPLAY_MODE.TIMELINE,
+  } = useInfiniteQuery<
+    PostsPage,
+    Error,
+    { pages: PostsPage[]; pageParams: (string | null)[] },
+    string[],
+    string | null
+  >({
+    queryKey: ["posts", activeTopic, displayMode, date.format("YYYY-MM-DD")],
+    enabled: displayMode === DISPLAY_MODE.TIMELINE,
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {
       const baseDate = pageParam ? window.moment(pageParam) : date.clone();
-      const result   = await fetchPage(activeTopic, baseDate, PAGE_SIZE_DAYS);
+      const result = await fetchPage(activeTopic, baseDate, PAGE_SIZE_DAYS);
       addPaths(result.paths);
       return result;
     },

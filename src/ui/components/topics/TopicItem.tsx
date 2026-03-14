@@ -1,11 +1,4 @@
-import {
-    Badge,
-    Box,
-    Flex,
-    HStack,
-    Input,
-    Text
-} from "@chakra-ui/react";
+import { Badge, Box, Flex, HStack, Input, Text } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
 import { Topic } from "src/topic";
@@ -48,7 +41,7 @@ export const TopicItem = ({
           item
             .setTitle("このトピックに切り替え")
             .setIcon("check")
-            .onClick(() => onSwitch(topic.id))
+            .onClick(() => onSwitch(topic.id)),
         );
       }
 
@@ -59,21 +52,21 @@ export const TopicItem = ({
           .onClick(() => {
             onStartEdit(topic.id, topic.title);
             setTimeout(() => editInputRef.current?.focus(), 50);
-          })
+          }),
       );
 
       menu.addItem((item) =>
         item
           .setTitle(topic.archived ? "アーカイブ解除" : "アーカイブ")
           .setIcon(topic.archived ? "unarchive" : "archive")
-          .onClick(() => onToggleArchive(topic.id))
+          .onClick(() => onToggleArchive(topic.id)),
       );
     } else if (!isActive) {
       menu.addItem((item) =>
         item
           .setTitle("このトピックに切り替え")
           .setIcon("check")
-          .onClick(() => onSwitch(topic.id))
+          .onClick(() => onSwitch(topic.id)),
       );
     }
 

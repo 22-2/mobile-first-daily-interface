@@ -25,13 +25,11 @@ export const usePostMetadata = (message: string, enabled: boolean) => {
       const results = (await Promise.all(urls.map(createMeta))).filter(
         isPresent,
       );
-      
+
       if (!isMounted) return;
 
       setHtmlMetas(results.filter((x): x is HTMLMeta => x.type === "html"));
-      setImageMetas(
-        results.filter((x): x is ImageMeta => x.type === "image"),
-      );
+      setImageMetas(results.filter((x): x is ImageMeta => x.type === "image"));
       setTwitterMetas(
         results.filter((x): x is TwitterMeta => x.type === "twitter"),
       );

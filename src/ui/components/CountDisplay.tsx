@@ -13,12 +13,14 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, dateFilter, displayMode } = useSettingsStore(useShallow(s => ({
-    date: s.date,
-    granularity: s.granularity,
-    dateFilter: s.dateFilter,
-    displayMode: s.displayMode,
-  })));
+  const { date, granularity, dateFilter, displayMode } = useSettingsStore(
+    useShallow((s) => ({
+      date: s.date,
+      granularity: s.granularity,
+      dateFilter: s.dateFilter,
+      displayMode: s.displayMode,
+    })),
+  );
   const onClick = useFilterMenu();
 
   if (displayMode === "timeline") return null;
@@ -46,18 +48,18 @@ const DateSection: React.FC = () => {
 
   return (
     <Box>
-      <UnderlinedClickable onClick={onClick}>
-        {dateLabel}
-      </UnderlinedClickable>
+      <UnderlinedClickable onClick={onClick}>{dateLabel}</UnderlinedClickable>
     </Box>
   );
 };
 
 const usePostModeMenu = () => {
-  const { asTask, setAsTask: onAsTaskChange } = useSettingsStore(useShallow(s => ({
-    asTask: s.asTask,
-    setAsTask: s.setAsTask
-  })));
+  const { asTask, setAsTask: onAsTaskChange } = useSettingsStore(
+    useShallow((s) => ({
+      asTask: s.asTask,
+      setAsTask: s.setAsTask,
+    })),
+  );
 
   return (e: React.MouseEvent) => {
     if (!onAsTaskChange) return;
@@ -69,17 +71,19 @@ const usePostModeMenu = () => {
 };
 
 const useFilterMenu = () => {
-  const state = useSettingsStore(useShallow(s => ({
-    granularity: s.granularity,
-    date: s.date,
-    timeFilter: s.timeFilter,
-    dateFilter: s.dateFilter,
-    displayMode: s.displayMode,
-    asTask: s.asTask,
-    activeTopic: s.activeTopic,
-    setTimeFilter: s.setTimeFilter,
-    setDateFilter: s.setDateFilter,
-  })));
+  const state = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      date: s.date,
+      timeFilter: s.timeFilter,
+      dateFilter: s.dateFilter,
+      displayMode: s.displayMode,
+      asTask: s.asTask,
+      activeTopic: s.activeTopic,
+      setTimeFilter: s.setTimeFilter,
+      setDateFilter: s.setDateFilter,
+    })),
+  );
   const { setTimeFilter, setDateFilter } = state;
 
   return (e: React.MouseEvent) => {
@@ -94,17 +98,21 @@ const useFilterMenu = () => {
 };
 
 const CountSection: React.FC = () => {
-  const settings = useSettingsStore(useShallow(s => ({
-    granularity: s.granularity,
-    asTask: s.asTask,
-    dateFilter: s.dateFilter,
-    timeFilter: s.timeFilter,
-    displayMode: s.displayMode,
-  })));
-  const postsState = usePostsStore(useShallow(s => ({
-    posts: s.posts,
-    tasks: s.tasks,
-  })));
+  const settings = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      asTask: s.asTask,
+      dateFilter: s.dateFilter,
+      timeFilter: s.timeFilter,
+      displayMode: s.displayMode,
+    })),
+  );
+  const postsState = usePostsStore(
+    useShallow((s) => ({
+      posts: s.posts,
+      tasks: s.tasks,
+    })),
+  );
   const filteredPosts = useFilteredPosts({
     posts: postsState.posts,
     ...settings,
@@ -118,22 +126,27 @@ const CountSection: React.FC = () => {
   const allPostsCount = posts.length;
 
   const showTotal =
-    (dateFilter === "today" && timeFilter !== "all" && granularity === "day") || displayMode === "timeline";
+    (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
+    displayMode === "timeline";
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
   return (
     <UnderlinedClickable onClick={onClick}>
-      {asTask ? `${tasksCount} tasks` : `${filteredPostsCount}${totalPart} posts`}
+      {asTask
+        ? `${tasksCount} tasks`
+        : `${filteredPostsCount}${totalPart} posts`}
     </UnderlinedClickable>
   );
 };
 
 const TopicSection: React.FC = () => {
   const { settings } = useAppContext();
-  const { activeTopic, setActiveTopic: onTopicChange } = useSettingsStore(useShallow(s => ({
-    activeTopic: s.activeTopic,
-    setActiveTopic: s.setActiveTopic,
-  })));
+  const { activeTopic, setActiveTopic: onTopicChange } = useSettingsStore(
+    useShallow((s) => ({
+      activeTopic: s.activeTopic,
+      setActiveTopic: s.setActiveTopic,
+    })),
+  );
 
   const activeTopicName = settings.topics.find(
     (t) => t.id === activeTopic,
@@ -192,4 +205,3 @@ export const CountDisplay: React.FC = () => {
     </HStack>
   );
 };
-

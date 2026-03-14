@@ -16,7 +16,12 @@ export const DateDivider: React.FC<DateDividerProps> = ({ date }) => {
       px="var(--size-4-4)"
       gap="var(--size-4-4)"
     >
-      <Box flex="1" height="1px" bg="var(--background-modifier-border)" opacity={0.5} />
+      <Box
+        flex="1"
+        height="1px"
+        bg="var(--background-modifier-border)"
+        opacity={0.5}
+      />
       <Text
         fontSize="var(--font-smallest)"
         fontWeight="600"
@@ -27,7 +32,12 @@ export const DateDivider: React.FC<DateDividerProps> = ({ date }) => {
       >
         {replaceDayToJa(date.format("YYYY-MM-DD (ddd)"))}
       </Text>
-      <Box flex="1" height="1px" bg="var(--background-modifier-border)" opacity={0.5} />
+      <Box
+        flex="1"
+        height="1px"
+        bg="var(--background-modifier-border)"
+        opacity={0.5}
+      />
     </Flex>
   );
 };

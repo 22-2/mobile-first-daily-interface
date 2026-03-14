@@ -9,23 +9,30 @@ import { useShallow } from "zustand/shallow";
  */
 export const useNoteManager = () => {
   const { app, settings } = useAppContext();
-  const date = useSettingsStore(s => s.date);
-  const granularity = useSettingsStore(s => s.granularity);
-  const activeTopic = useSettingsStore(s => s.activeTopic);
+  const date = useSettingsStore((s) => s.date);
+  const granularity = useSettingsStore((s) => s.granularity);
+  const activeTopic = useSettingsStore((s) => s.activeTopic);
 
-  const state = useNoteStore(useShallow((s) => ({
-    currentDailyNote: s.currentDailyNote,
-    setCurrentDailyNote: s.setCurrentDailyNote,
-    handleChangeTopic: s.handleChangeTopic,
-  })));
+  const state = useNoteStore(
+    useShallow((s) => ({
+      currentDailyNote: s.currentDailyNote,
+      setCurrentDailyNote: s.setCurrentDailyNote,
+      handleChangeTopic: s.handleChangeTopic,
+    })),
+  );
 
   const updateCurrentDailyNote = useCallback(() => {
     noteStore.getState().updateCurrentDailyNote(app);
   }, [app]);
 
-  const createNoteWithInsertAfter = useCallback((targetDate?: any) => {
-    return noteStore.getState().createNoteWithInsertAfter(app, settings, targetDate);
-  }, [app, settings]);
+  const createNoteWithInsertAfter = useCallback(
+    (targetDate?: any) => {
+      return noteStore
+        .getState()
+        .createNoteWithInsertAfter(app, settings, targetDate);
+    },
+    [app, settings],
+  );
 
   const handleClickOpenDailyNote = useCallback(() => {
     return noteStore.getState().handleClickOpenDailyNote(app, settings);

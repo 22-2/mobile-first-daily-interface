@@ -7,32 +7,34 @@ import { useShallow } from "zustand/shallow";
  * 値の永続化とカレンダー操作のハンドラを提供します。
  */
 export function useMFDISettings() {
-  const state = useSettingsStore(useShallow((s) => ({
-    activeTopic: s.activeTopic,
-    setActiveTopic: s.setActiveTopic,
-    granularity: s.granularity,
-    setGranularity: s.setGranularity,
-    date: s.date,
-    setDate: s.setDate,
-    timeFilter: s.timeFilter,
-    setTimeFilter: s.setTimeFilter,
-    dateFilter: s.dateFilter,
-    setDateFilter: s.setDateFilter,
-    sidebarOpen: s.sidebarOpen,
-    setSidebarOpen: s.setSidebarOpen,
-    displayMode: s.displayMode,
-    setDisplayMode: s.setDisplayMode,
-    asTask: s.asTask,
-    setAsTask: s.setAsTask,
-    handleChangeCalendarDateAction: s.handleChangeCalendarDate,
-    handleClickMovePrevious: s.handleClickMovePrevious,
-    handleClickMoveNext: s.handleClickMoveNext,
-    handleClickToday: s.handleClickToday,
-    handleClickHome: s.handleClickHome,
-    isToday: s.isToday(),
-    isReadOnly: s.isReadOnly(),
-    getMoveStep: s.getMoveStep,
-  })));
+  const state = useSettingsStore(
+    useShallow((s) => ({
+      activeTopic: s.activeTopic,
+      setActiveTopic: s.setActiveTopic,
+      granularity: s.granularity,
+      setGranularity: s.setGranularity,
+      date: s.date,
+      setDate: s.setDate,
+      timeFilter: s.timeFilter,
+      setTimeFilter: s.setTimeFilter,
+      dateFilter: s.dateFilter,
+      setDateFilter: s.setDateFilter,
+      sidebarOpen: s.sidebarOpen,
+      setSidebarOpen: s.setSidebarOpen,
+      displayMode: s.displayMode,
+      setDisplayMode: s.setDisplayMode,
+      asTask: s.asTask,
+      setAsTask: s.setAsTask,
+      handleChangeCalendarDateAction: s.handleChangeCalendarDate,
+      handleClickMovePrevious: s.handleClickMovePrevious,
+      handleClickMoveNext: s.handleClickMoveNext,
+      handleClickToday: s.handleClickToday,
+      handleClickHome: s.handleClickHome,
+      isToday: s.isToday(),
+      isReadOnly: s.isReadOnly(),
+      getMoveStep: s.getMoveStep,
+    })),
+  );
 
   const handleChangeCalendarDate = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {

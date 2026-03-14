@@ -32,11 +32,11 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
-    const isReadOnly = useSettingsStore(s => s.isReadOnly());
+    const isReadOnly = useSettingsStore((s) => s.isReadOnly());
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,
-      settings.enabledCardView
+      settings.enabledCardView,
     );
 
     const { unit } = GRANULARITY_CONFIG[granularity];
