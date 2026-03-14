@@ -31,8 +31,8 @@ export const noteStore = createStore<NoteState>((set, get) => ({
   setCurrentDailyNote: (note) => set({ currentDailyNote: note }),
 
   updateCurrentDailyNote: (app) => {
-    const { date, granularity, activeTopic } = settingsStore.getState();
-    const note = getTopicNote(app, date, granularity, activeTopic);
+    const { granularity, activeTopic, getEffectiveDate } = settingsStore.getState();
+    const note = getTopicNote(app, getEffectiveDate(), granularity, activeTopic);
     if (note?.path !== get().currentDailyNote?.path) {
       set({ currentDailyNote: note });
     }
@@ -47,10 +47,16 @@ export const noteStore = createStore<NoteState>((set, get) => ({
   clearPaths: () => set({ weekNotePaths: new Set() }),
 
   createNoteWithInsertAfter: async (app, settings, targetDate) => {
-    const { date, granularity, activeTopic } = settingsStore.getState();
-    const d = targetDate ?? date;
+    const { granularity, activeTopic, getEffectiveDate } = settingsStore.getState();
+    const d = targetDate ?? getEffectiveDate();
+    const existing = getTopicNote(app, d, granularity, activeTopic);
+    if (existing) {
+      set({ currentDailyNote: existing });
+      return existing;
+    }
+
     const created = await createTopicNote(app, d, granularity, activeTopic);
-    if (created && settings.insertAfter) {
+    if (settings.insertAfter) {
       const content = await app.vault.read(created);
       if (!content.includes(settings.insertAfter)) {
         await app.vault.modify(
@@ -59,19 +65,22 @@ export const noteStore = createStore<NoteState>((set, get) => ({
         );
       }
     }
+    set({ currentDailyNote: created });
     return created;
   },
 
   handleClickOpenDailyNote: async (app, settings) => {
-    const { date, granularity, activeTopic, setDate } = settingsStore.getState();
-    const currentNote = get().currentDailyNote;
-    if (!currentNote) {
+    const { granularity, activeTopic, getEffectiveDate } = settingsStore.getState();
+    const targetDate = getEffectiveDate();
+    let note = getTopicNote(app, targetDate, granularity, activeTopic);
+
+    if (!note) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      await get().createNoteWithInsertAfter(app, settings);
-      setDate(date.clone());
+      note = await get().createNoteWithInsertAfter(app, settings, targetDate);
     }
-    const note = getTopicNote(app, date, granularity, activeTopic);
+
     if (note) {
+      set({ currentDailyNote: note });
       await app.workspace.getLeaf(true).openFile(note);
     }
   },

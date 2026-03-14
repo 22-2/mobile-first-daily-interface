@@ -122,21 +122,18 @@ export const usePostActions = () => {
       return;
     }
 
-    if (!noteState.currentDailyNote) {
+    let note = getTopicNote(app, targetDate, settingsState.granularity, settingsState.activeTopic);
+    if (!note) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      await noteStore.getState().createNoteWithInsertAfter(app, settings, undefined);
-
-      if (settingsState.dateFilter !== "today") {
-        await refreshPosts();
-      }
-
-      settingsState.setDate(settingsState.date.clone());
+      note = await noteStore.getState().createNoteWithInsertAfter(app, settings, targetDate);
     }
 
-    const note = getTopicNote(app, targetDate, settingsState.granularity, settingsState.activeTopic);
     if (note) {
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
       await refreshPosts(note.path);
+    } else {
+      new Notice("投稿先ノートを解決できませんでした");
+      return;
     }
 
     editorState.setInput("");
