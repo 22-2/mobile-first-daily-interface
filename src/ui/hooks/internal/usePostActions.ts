@@ -163,14 +163,21 @@ export const usePostActions = () => {
       settingsState.granularity,
       settingsState.activeTopic,
     );
+
     if (!note) {
-      new Notice("ノートが存在しなかったので新しく作成しました");
       note = await noteStore
         .getState()
         .createNoteWithInsertAfter(app, settings, targetDate);
     }
 
     if (note) {
+      // ensure insertAfter marker exists in note; if missing, append it so we can
+      // reliably insert after that marker
+      const content = await appHelper.loadFile(note.path);
+      if (settings.insertAfter && !content.includes(settings.insertAfter)) {
+        await appHelper.insertTextAfter(note, `\n${settings.insertAfter}`, "");
+      }
+
       await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
       await refreshPosts(note.path);
     } else {

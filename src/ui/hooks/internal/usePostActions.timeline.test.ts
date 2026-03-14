@@ -68,6 +68,7 @@ describe("timeline note resolution", () => {
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: vi.fn(),
+        loadFile: vi.fn(async () => ""),
       },
       settings: {
         insertAfter: "## Thino",
