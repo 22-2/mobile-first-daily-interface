@@ -5,7 +5,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useSettingsStore } from "src/ui/store/settingsStore";
+import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { getAllTopicNotes, getDateUID } from "src/utils/daily-notes";
@@ -20,6 +20,12 @@ type PostsPage = {
   hasMore: boolean;
   lastSearchedDate: MomentLike;
 };
+
+export function resolveTimelineBaseDate(pageParam: string | null): MomentLike {
+  return pageParam
+    ? window.moment(pageParam)
+    : settingsStore.getState().getEffectiveDate().clone();
+}
 
 // ---------------------------------------------------------------------------
 // ヘルパー: ファイル内容 → Post[] に変換
@@ -49,11 +55,10 @@ async function parsePostsFromFile(
 export const useInfiniteTimeline = () => {
   const { app, appHelper } = useAppContext();
 
-  const { activeTopic, displayMode, date } = useSettingsStore(
+  const { activeTopic, displayMode } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       displayMode: s.displayMode,
-      date: s.date,
     })),
   );
 
@@ -157,12 +162,12 @@ export const useInfiniteTimeline = () => {
     string[],
     string | null
   >({
-    queryKey: ["posts", activeTopic, displayMode, date.format("YYYY-MM-DD")],
+    queryKey: ["posts", activeTopic, displayMode],
     enabled: displayMode === DISPLAY_MODE.TIMELINE,
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {
-      const baseDate = pageParam ? window.moment(pageParam) : date.clone();
+      const baseDate = resolveTimelineBaseDate(pageParam);
       const result = await fetchPage(activeTopic, baseDate, PAGE_SIZE_DAYS);
       addPaths(result.paths);
       return result;
