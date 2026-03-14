@@ -28,12 +28,20 @@ export const useTimelineItems = (
 
     posts.forEach((post) => {
       const currentDate = post.timestamp.format("YYYY-MM-DD");
+
       // タイムラインモードなら常に区分けを出す。フォーカスモード（単一閲覧）なら今日以外のみ。
-      const isTodayOnly =
-        displayMode !== "timeline" &&
-        granularity === "day" &&
-        dateFilter === "today";
-      const showDivider = !isTodayOnly && lastDate !== currentDate;
+      const shouldShowDividers =
+        displayMode === "timeline" ||
+        granularity !== "day" ||
+        dateFilter !== "today";
+      const isDateChanged = lastDate !== currentDate;
+      const isFirstItem = lastDate === null;
+      const isDateInPast = post.timestamp.isBefore(new Date(), "day");
+
+      const showDivider =
+        shouldShowDividers &&
+        isDateChanged &&
+        (!isFirstItem || isDateInPast);
 
       if (showDivider) {
         list.push({
