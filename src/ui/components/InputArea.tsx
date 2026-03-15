@@ -43,6 +43,24 @@ const NavButton: React.FC<{
   );
 };
 
+const DisplayModeIndicator: React.FC<{
+  threadFocusRootId: string | null;
+  onClick: () => void;
+}> = React.memo(({ threadFocusRootId, onClick }) => {
+  const text = threadFocusRootId ? "スレッド表示中" : "タイムライン表示中";
+  return (
+    <Box
+      fontSize="var(--font-ui-smaller)"
+      fontWeight="bold"
+      color="var(--text-accent)"
+      cursor="pointer"
+      onClick={onClick}
+    >
+      {text}
+    </Box>
+  );
+});
+
 const InputAreaControl: React.FC = React.memo(() => {
   const { view } = useAppContext();
   const {
@@ -127,41 +145,43 @@ const InputAreaControl: React.FC = React.memo(() => {
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         {displayMode === DISPLAY_MODE.FOCUS ? (
-          <>
-            <NavButton
-              direction="left"
-              onClick={handleClickMovePrevious}
-              step={step}
+          threadFocusRootId ? (
+            <DisplayModeIndicator
+              threadFocusRootId={threadFocusRootId}
+              onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
             />
-            <HStack spacing="0.2em" className="mfdi-date-controls">
-              <Input
-                className="mfdi-date-input"
-                size="sm"
-                height="28px"
-                fontSize="90%"
-                type={GRANULARITY_CONFIG[granularity].inputType}
-                value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
-                onChange={handleChangeCalendarDate}
-                width={granularity === "year" ? "6.5em" : "10em"}
-                paddingX="0.5em"
+          ) : (
+            <>
+              <NavButton
+                direction="left"
+                onClick={handleClickMovePrevious}
+                step={step}
               />
-            </HStack>
-            <NavButton
-              direction="right"
-              onClick={handleClickMoveNext}
-              step={step}
-            />
-          </>
+              <HStack spacing="0.2em" className="mfdi-date-controls">
+                <Input
+                  className="mfdi-date-input"
+                  size="sm"
+                  height="28px"
+                  fontSize="90%"
+                  type={GRANULARITY_CONFIG[granularity].inputType}
+                  value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
+                  onChange={handleChangeCalendarDate}
+                  width={granularity === "year" ? "6.5em" : "10em"}
+                  paddingX="0.5em"
+                />
+              </HStack>
+              <NavButton
+                direction="right"
+                onClick={handleClickMoveNext}
+                step={step}
+              />
+            </>
+          )
         ) : (
-          <Box
-            fontSize="var(--font-ui-smaller)"
-            fontWeight="bold"
-            color="var(--text-accent)"
-            cursor="pointer"
+          <DisplayModeIndicator
+            threadFocusRootId={threadFocusRootId}
             onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
-          >
-            タイムライン表示中
-          </Box>
+          />
         )}
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
