@@ -4,6 +4,36 @@ import { MomentLike } from "src/ui/types";
 import { parseMarkdownList } from "src/utils/strings";
 import { parseTaskTimestamp } from "src/utils/task-parser";
 
+function trimLeadingLineBreaks(text: string): string {
+  return text.replace(/^(?:\r\n|\r|\n)+/, "");
+}
+
+function joinWithSingleBoundaryNewline(content: string, text: string): string {
+  const normalizedText = trimLeadingLineBreaks(text);
+
+  if (normalizedText.length === 0) {
+    return content;
+  }
+
+  if (content.length === 0 || content.endsWith("\n")) {
+    return content + normalizedText;
+  }
+
+  return `${content}\n${normalizedText}`;
+}
+
+function skipImmediateLineBreak(content: string, index: number): number {
+  if (content.slice(index, index + 2) === "\r\n") {
+    return index + 2;
+  }
+
+  if (content[index] === "\n" || content[index] === "\r") {
+    return index + 1;
+  }
+
+  return index;
+}
+
 export interface Task {
   mark: " " | string;
   name: string;
@@ -84,19 +114,29 @@ export class AppHelper {
   }
 
   async insertTextAfter(file: TFile, text: string, after: string) {
+    const content = await this.loadFile(file.path);
+
     if (!after) {
-      return this.insertTextToEnd(file, text);
+      await this.unsafeApp.vault.adapter.write(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
     }
 
-    const content = await this.loadFile(file.path);
     const index = content.indexOf(after);
     if (index === -1) {
-      return this.insertTextToEnd(file, text);
+      await this.unsafeApp.vault.adapter.write(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
     }
 
-    const insertIndex = index + after.length;
+    const insertIndex = skipImmediateLineBreak(content, index + after.length);
     const newContent =
-      content.slice(0, insertIndex) + "\n" + text + content.slice(insertIndex);
+      joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
+      content.slice(insertIndex);
     await this.unsafeApp.vault.adapter.write(file.path, newContent);
   }
 

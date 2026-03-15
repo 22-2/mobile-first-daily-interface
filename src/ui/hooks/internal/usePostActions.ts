@@ -226,7 +226,7 @@ export const usePostActions = () => {
         return;
       }
 
-      await appHelper.insertTextAfter(noteFile, `\n${text}`, settings.insertAfter);
+      await appHelper.insertTextAfter(noteFile, text, settings.insertAfter);
       await refreshPosts(rootPost.path);
 
       editorState.setInput("");
@@ -272,10 +272,10 @@ export const usePostActions = () => {
       // reliably insert after that marker
       const content = await appHelper.loadFile(note.path);
       if (settings.insertAfter && !content.includes(settings.insertAfter)) {
-        await appHelper.insertTextAfter(note, `\n${settings.insertAfter}`, "");
+        await appHelper.insertTextAfter(note, settings.insertAfter, "");
       }
 
-      await appHelper.insertTextAfter(note, `\n${text}`, settings.insertAfter);
+      await appHelper.insertTextAfter(note, text, settings.insertAfter);
       await refreshPosts(note.path);
     } else {
       new Notice("投稿先ノートを解決できませんでした");
@@ -372,7 +372,7 @@ export const usePostActions = () => {
 
       await appHelper.insertTextAfter(
         nextNote,
-        `\n${text}`,
+        text,
         settings.insertAfter,
       );
       await deletePost(post);
