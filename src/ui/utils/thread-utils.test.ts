@@ -52,7 +52,7 @@ describe("thread-utils", () => {
     expect(isThreadReply(posts[1])).toBe(true);
   });
 
-  test("extracts and sorts thread posts with root first", () => {
+  test("extracts and sorts thread posts in descending order", () => {
     const root = createPost({
       id: "root-1",
       threadRootId: "root-1",
@@ -73,9 +73,9 @@ describe("thread-utils", () => {
 
     const threadPosts = getThreadPosts([laterReply, root, earlierReply], "root-1");
     expect(sortThreadPosts(threadPosts, "root-1").map((post) => post.id)).toEqual([
-      "root-1",
       "reply-2",
       "reply-1",
+      "root-1",
     ]);
   });
 });
