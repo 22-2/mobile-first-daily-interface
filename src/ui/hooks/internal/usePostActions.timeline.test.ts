@@ -69,7 +69,7 @@ describe("timeline note resolution", () => {
             ? todayNote
             : path === yesterdayNote.path
               ? yesterdayNote
-            : null,
+              : null,
         ),
       },
     };
@@ -257,7 +257,9 @@ describe("timeline note resolution", () => {
       expect.stringContaining("    [parentId::root-1]"),
       "## Thino",
     );
-    expect(mockInsertTextAfter.mock.calls[0][1]).toContain("- 23:59:59 timeline post");
+    expect(mockInsertTextAfter.mock.calls[0][1]).toContain(
+      "- 23:59:59 timeline post",
+    );
     expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("[mfdiId::");
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
@@ -299,7 +301,9 @@ describe("timeline note resolution", () => {
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain(
       `- ${today.format("HH:mm:ss")} timeline post`,
     );
-    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("- 23:59:59 timeline post");
+    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain(
+      "- 23:59:59 timeline post",
+    );
   });
 
   it("スレッド作成では自動でスレッド表示へ切り替える", async () => {
@@ -349,9 +353,13 @@ describe("timeline note resolution", () => {
     expect(typeof fid).toBe("string");
     expect(fid).toMatch(/^[a-f0-9]{8}$/);
     expect(mockReplaceRange.mock.calls[0][3]).toContain("- 12:00:00 parent");
-    expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
+    expect(mockReplaceRange.mock.calls[0][3]).not.toContain(
+      "- 23:59:59 parent",
+    );
     // 置換されたテキストに実際の mfdiId が含まれていることを確認
-    expect(mockReplaceRange.mock.calls[0][3]).toContain(`[${THREAD_METADATA_KEYS.ID}::${fid}]`);
+    expect(mockReplaceRange.mock.calls[0][3]).toContain(
+      `[${THREAD_METADATA_KEYS.ID}::${fid}]`,
+    );
   });
 
   it("スレッド作成は mfdiId がなくても最新オフセットを再発見して置換する", async () => {
@@ -396,7 +404,9 @@ note header
     });
 
     expect(mockReplaceRange).toHaveBeenCalledOnce();
-    expect(mockReplaceRange.mock.calls[0][1]).toBe(shiftedContent.indexOf("- 12:00:00 parent"));
+    expect(mockReplaceRange.mock.calls[0][1]).toBe(
+      shiftedContent.indexOf("- 12:00:00 parent"),
+    );
     expect(mockReplaceRange.mock.calls[0][2]).toBeGreaterThan(
       mockReplaceRange.mock.calls[0][1],
     );
@@ -572,8 +582,12 @@ prefix
     });
 
     expect(mockReplaceRange).toHaveBeenCalledTimes(2);
-    expect(mockReplaceRange.mock.calls[0][1]).toBeGreaterThan(rootPost.startOffset);
-    expect(mockReplaceRange.mock.calls[1][1]).toBeGreaterThan(rootPost.startOffset);
+    expect(mockReplaceRange.mock.calls[0][1]).toBeGreaterThan(
+      rootPost.startOffset,
+    );
+    expect(mockReplaceRange.mock.calls[1][1]).toBeGreaterThan(
+      rootPost.startOffset,
+    );
     expect(settingsStore.getState().threadFocusRootId).toBeNull();
   });
 });

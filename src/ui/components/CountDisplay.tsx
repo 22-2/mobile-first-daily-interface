@@ -1,14 +1,13 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
+import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";

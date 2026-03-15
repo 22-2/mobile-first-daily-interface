@@ -18,7 +18,9 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
       if (typeof forwardedRef === "function") {
         forwardedRef(node);
       } else if (forwardedRef && typeof forwardedRef === "object") {
-        (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        (
+          forwardedRef as React.MutableRefObject<HTMLDivElement | null>
+        ).current = node;
       }
     }, [forwardedRef]);
 
@@ -36,7 +38,10 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
         const svg = refEl.querySelector("svg");
         if (svg) {
           const s =
-            size ?? (props as any).boxSize ?? (props as any).width ?? (props as any).height;
+            size ??
+            (props as any).boxSize ??
+            (props as any).width ??
+            (props as any).height;
           if (s) {
             const ss = typeof s === "number" ? `${s}px` : String(s);
             (svg as any).setCssStyles?.({ width: ss, height: ss });
@@ -48,7 +53,13 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
     }, [name, size, props]);
 
     return (
-      <Box ref={innerRef} display="inline-flex" alignItems="center" justifyContent="center" {...props} />
+      <Box
+        ref={innerRef}
+        display="inline-flex"
+        alignItems="center"
+        justifyContent="center"
+        {...props}
+      />
     );
   },
 );

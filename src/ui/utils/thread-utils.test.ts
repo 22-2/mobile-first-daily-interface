@@ -1,9 +1,8 @@
 import moment from "moment";
-import { describe, expect, test } from "vitest";
 import { Post } from "src/ui/types";
 import {
-  createThreadId,
   countVisibleRootPosts,
+  createThreadId,
   getThreadPosts,
   isThreadReply,
   isThreadRoot,
@@ -11,6 +10,7 @@ import {
   resolveThreadRootId,
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
+import { describe, expect, test } from "vitest";
 
 function createPost(overrides: Partial<Post>): Post {
   const timestamp = overrides.timestamp ?? moment("2026-03-15T10:00:00.000Z");
@@ -77,11 +77,12 @@ describe("thread-utils", () => {
       startOffset: 20,
     });
 
-    const threadPosts = getThreadPosts([laterReply, root, earlierReply], "root-1");
-    expect(sortThreadPosts(threadPosts, "root-1").map((post) => post.id)).toEqual([
-      "reply-2",
-      "reply-1",
+    const threadPosts = getThreadPosts(
+      [laterReply, root, earlierReply],
       "root-1",
-    ]);
+    );
+    expect(
+      sortThreadPosts(threadPosts, "root-1").map((post) => post.id),
+    ).toEqual(["reply-2", "reply-1", "root-1"]);
   });
 });

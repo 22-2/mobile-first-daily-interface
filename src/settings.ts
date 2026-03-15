@@ -62,12 +62,10 @@ export class MFDISettingTab extends PluginSettingTab {
       .setName(name)
       .setDesc(desc)
       .addToggle((tc) =>
-        tc
-          .setValue(this.plugin.settings[key])
-          .onChange(async (value) => {
-            await this.updateSetting(key, value);
-            if (rerenderOnChange) this.plugin.rerenderView();
-          }),
+        tc.setValue(this.plugin.settings[key]).onChange(async (value) => {
+          await this.updateSetting(key, value);
+          if (rerenderOnChange) this.plugin.rerenderView();
+        }),
       );
   }
 

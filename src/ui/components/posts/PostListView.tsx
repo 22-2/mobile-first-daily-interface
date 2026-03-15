@@ -3,7 +3,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import * as React from "react";
 import { useEffect } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -53,7 +52,13 @@ export const PostListView: React.FC = React.memo(() => {
     includeThreadReplies: true,
   });
 
-  const { granularity, displayMode, dateFilter, threadFocusRootId, setThreadFocusRootId } = settings;
+  const {
+    granularity,
+    displayMode,
+    dateFilter,
+    threadFocusRootId,
+    setThreadFocusRootId,
+  } = settings;
   const timelineView = isTimelineView(displayMode);
   const threadView = isThreadView({ displayMode, threadFocusRootId });
 

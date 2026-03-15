@@ -1,7 +1,6 @@
-import { VStack, Box } from "@chakra-ui/react";
-import React, { useEffect, useRef } from "react";
+import { Box, VStack } from "@chakra-ui/react";
 import { setTooltip } from "obsidian";
-import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
+import React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
@@ -50,7 +49,9 @@ export const PostCardView = React.memo(
       granularity,
       allowEditingPastNotes: settings.allowEditingPastNotes,
     });
-    const threadToggleLabel = isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示";
+    const threadToggleLabel = isThreadFocused
+      ? "スレッド表示を閉じる"
+      : "スレッドを表示";
 
     return (
       <Card className={className} style={style}>
@@ -64,7 +65,9 @@ export const PostCardView = React.memo(
           footerRightAddon={
             isThreadRoot(post) ? (
               <ObsidianIcon
-                ref={(ref) => {ref && setTooltip(ref, threadToggleLabel)}}
+                ref={(ref) => {
+                  ref && setTooltip(ref, threadToggleLabel);
+                }}
                 name="spool"
                 aria-label={threadToggleLabel}
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {
@@ -77,7 +80,9 @@ export const PostCardView = React.memo(
                 display="inline-flex"
                 alignItems="center"
                 justifyContent="center"
-                color={isThreadFocused ? "var(--text-normal)" : "var(--text-muted)"}
+                color={
+                  isThreadFocused ? "var(--text-normal)" : "var(--text-muted)"
+                }
                 _hover={{
                   color: "var(--text-normal)",
                 }}

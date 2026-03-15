@@ -6,7 +6,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
 import { useShallow } from "zustand/shallow";
 import { DISPLAY_MODE } from "../config/consntants";
-import { isThreadRoot, isThreadReply } from "../utils/thread-utils";
+import { isThreadReply, isThreadRoot } from "../utils/thread-utils";
 
 export const usePostContextMenu = () => {
   const { setDate, setDisplayMode, isReadOnly } = useSettingsStore(
@@ -23,8 +23,13 @@ export const usePostContextMenu = () => {
     })),
   );
 
-  const { handleClickTime, movePostToTomorrow, deletePost, archivePost, createThread } =
-    usePostActions();
+  const {
+    handleClickTime,
+    movePostToTomorrow,
+    deletePost,
+    archivePost,
+    createThread,
+  } = usePostActions();
 
   const showPostContextMenu = useCallback(
     (post: Post, e: React.MouseEvent) => {

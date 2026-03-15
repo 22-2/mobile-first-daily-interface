@@ -1,14 +1,16 @@
 import { App, TFile } from "obsidian";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
-import { buildPostFromEntry, sortPostsDescending } from "src/ui/utils/thread-utils";
+import {
+  buildPostFromEntry,
+  sortPostsDescending,
+} from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import {
-    getAllTopicNotes,
-    getDateUID,
-    getTopicNote
+  getAllTopicNotes,
+  getDateUID,
+  getTopicNote,
 } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";

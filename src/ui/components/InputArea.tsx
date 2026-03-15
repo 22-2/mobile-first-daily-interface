@@ -11,7 +11,6 @@ import {
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -93,14 +92,15 @@ const InputAreaControl: React.FC = React.memo(() => {
     })),
   );
 
-  const { dateFilter, timeFilter, asTask, threadFocusRootId } = useSettingsStore(
-    useShallow((s) => ({
-      dateFilter: s.dateFilter,
-      timeFilter: s.timeFilter,
-      asTask: s.asTask,
-      threadFocusRootId: s.threadFocusRootId,
-    })),
-  );
+  const { dateFilter, timeFilter, asTask, threadFocusRootId } =
+    useSettingsStore(
+      useShallow((s) => ({
+        dateFilter: s.dateFilter,
+        timeFilter: s.timeFilter,
+        asTask: s.asTask,
+        threadFocusRootId: s.threadFocusRootId,
+      })),
+    );
 
   const isViewDefault =
     displayMode === DEFAULT_VIEW_STATE.displayMode &&
@@ -110,7 +110,9 @@ const InputAreaControl: React.FC = React.memo(() => {
     asTask === DEFAULT_VIEW_STATE.asTask &&
     threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId;
 
-  const homeIconColor = isViewDefault ? "var(--text-muted)" : "var(--text-accent)";
+  const homeIconColor = isViewDefault
+    ? "var(--text-muted)"
+    : "var(--text-accent)";
 
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,7 +166,9 @@ const InputAreaControl: React.FC = React.memo(() => {
                   height="28px"
                   fontSize="90%"
                   type={GRANULARITY_CONFIG[granularity].inputType}
-                  value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
+                  value={date.format(
+                    GRANULARITY_CONFIG[granularity].inputFormat,
+                  )}
                   onChange={handleChangeCalendarDate}
                   width={granularity === "year" ? "6.5em" : "10em"}
                   paddingX="0.5em"

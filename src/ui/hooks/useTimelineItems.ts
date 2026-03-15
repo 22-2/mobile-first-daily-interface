@@ -1,13 +1,12 @@
 import { useMemo } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
-    DateFilter,
-    DisplayMode,
-    Granularity,
-    MomentLike,
-    Post
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  MomentLike,
+  Post,
 } from "src/ui/types";
-  import { isTimelineView } from "src/ui/utils/view-mode";
+import { isTimelineView } from "src/ui/utils/view-mode";
 
 export type TimelineItem =
   | { type: "post"; post: Post; key: string }
@@ -41,9 +40,7 @@ export const useTimelineItems = (
       const isDateInPast = post.timestamp.isBefore(new Date(), "day");
 
       const showDivider =
-        shouldShowDividers &&
-        isDateChanged &&
-        (!isFirstItem || isDateInPast);
+        shouldShowDividers && isDateChanged && (!isFirstItem || isDateInPast);
 
       if (showDivider) {
         list.push({

@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
-    DateFilter,
-    DisplayMode,
-    Granularity,
-    Post,
-    TimeFilter
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  Post,
+  TimeFilter,
 } from "src/ui/types";
 import {
   countVisibleRootPosts,
@@ -71,9 +70,7 @@ export const useFilteredPosts = ({
     if (isNaN(hours)) return visibleRoots;
 
     const now = window.moment();
-    return visibleRoots.filter(
-      (p) => now.diff(p.timestamp, "hours") < hours,
-    );
+    return visibleRoots.filter((p) => now.diff(p.timestamp, "hours") < hours);
   }, [
     posts,
     timeFilter,

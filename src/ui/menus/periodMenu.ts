@@ -1,5 +1,4 @@
 import { Menu } from "obsidian";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DATE_FILTER_OPTIONS } from "src/ui/config/filter-config";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";

@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useCallback } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";

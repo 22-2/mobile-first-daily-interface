@@ -1,9 +1,9 @@
 import { renderHook } from "@testing-library/react";
 import moment from "moment";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { describe, expect, test } from "vitest";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { Post } from "src/ui/types";
+import { describe, expect, test } from "vitest";
 
 function createPost(overrides: Partial<Post>): Post {
   const timestamp = overrides.timestamp ?? moment("2026-03-15T10:00:00.000Z");
@@ -43,7 +43,10 @@ describe("useFilteredPosts", () => {
       }),
     );
 
-    expect(result.current.map((post) => post.id)).toEqual(["root-1", "plain-1"]);
+    expect(result.current.map((post) => post.id)).toEqual([
+      "root-1",
+      "plain-1",
+    ]);
   });
 
   test("スレッド表示では親と子だけを返す", () => {

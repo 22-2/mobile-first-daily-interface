@@ -1,6 +1,5 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";

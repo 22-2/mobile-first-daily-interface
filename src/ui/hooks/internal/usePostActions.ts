@@ -22,11 +22,14 @@ export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
   const refreshPosts = useRefreshPosts();
 
-  const getSerializedTimestamp = useCallback((timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
-    return timestamp.isSame(noteDate, "day")
-      ? timestamp
-      : noteDate.clone().endOf("day");
-  }, []);
+  const getSerializedTimestamp = useCallback(
+    (timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
+      return timestamp.isSame(noteDate, "day")
+        ? timestamp
+        : noteDate.clone().endOf("day");
+    },
+    [],
+  );
 
   const settingsState = useSettingsStore(
     useShallow((s) => ({
@@ -91,7 +94,9 @@ export const usePostActions = () => {
     async (post: Post): Promise<Post | null> => {
       const latestPosts = await getLatestPostsForPath(post.path, post.noteDate);
 
-      const latestById = latestPosts.find((candidate) => candidate.id === post.id);
+      const latestById = latestPosts.find(
+        (candidate) => candidate.id === post.id,
+      );
       if (latestById) {
         return latestById;
       }
@@ -109,7 +114,10 @@ export const usePostActions = () => {
 
   const findLatestThreadPosts = useCallback(
     async (rootPost: Post): Promise<Post[]> => {
-      const latestPosts = await getLatestPostsForPath(rootPost.path, rootPost.noteDate);
+      const latestPosts = await getLatestPostsForPath(
+        rootPost.path,
+        rootPost.noteDate,
+      );
       return latestPosts.filter(
         (candidate) => candidate.threadRootId === rootPost.threadRootId,
       );
@@ -157,7 +165,13 @@ export const usePostActions = () => {
 
       await refreshPosts(latestPost.path);
     },
-    [appHelper, settingsState.granularity, editorState, findLatestPost, refreshPosts],
+    [
+      appHelper,
+      settingsState.granularity,
+      editorState,
+      findLatestPost,
+      refreshPosts,
+    ],
   );
 
   const updateManyPosts = useCallback(
@@ -212,7 +226,13 @@ export const usePostActions = () => {
         await refreshPosts(firstPath);
       }
     },
-    [appHelper, editorState, findLatestPost, refreshPosts, settingsState.granularity],
+    [
+      appHelper,
+      editorState,
+      findLatestPost,
+      refreshPosts,
+      settingsState.granularity,
+    ],
   );
 
   // ---------------------------------------------------------------------------
@@ -277,7 +297,8 @@ export const usePostActions = () => {
         return;
       }
 
-      metadata[THREAD_METADATA_KEYS.PARENT_ID] = settingsState.threadFocusRootId;
+      metadata[THREAD_METADATA_KEYS.PARENT_ID] =
+        settingsState.threadFocusRootId;
       // Attach `posted` only when replying across dates (keep same-day replies timestamped normally)
       if (!now.isSame(rootPost.noteDate, "day")) {
         metadata.posted = now.toISOString();
@@ -387,10 +408,9 @@ export const usePostActions = () => {
           return;
         }
 
-        await updateManyPosts(
-          latestThreadPosts,
-          () => ({ deleted: now.format("YYYYMMDDHHmmss") }),
-        );
+        await updateManyPosts(latestThreadPosts, () => ({
+          deleted: now.format("YYYYMMDDHHmmss"),
+        }));
 
         if (settingsState.threadFocusRootId === post.threadRootId) {
           settingsState.setThreadFocusRootId(null);
@@ -458,11 +478,7 @@ export const usePostActions = () => {
         metadata,
       );
 
-      await appHelper.insertTextAfter(
-        nextNote,
-        text,
-        settings.insertAfter,
-      );
+      await appHelper.insertTextAfter(nextNote, text, settings.insertAfter);
       await deletePost(latestPost);
 
       new Notice("明日に送りました");
@@ -520,7 +536,14 @@ export const usePostActions = () => {
       settingsState.setThreadFocusRootId(rootId, latestPost.noteDate);
       new Notice("スレッドを作成しました");
     },
-    [appHelper, editorState, findLatestPost, getSerializedTimestamp, refreshPosts, settingsState],
+    [
+      appHelper,
+      editorState,
+      findLatestPost,
+      getSerializedTimestamp,
+      refreshPosts,
+      settingsState,
+    ],
   );
 
   // ---------------------------------------------------------------------------

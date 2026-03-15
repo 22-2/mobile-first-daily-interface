@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { settingsStore } from "src/ui/store/settingsStore";
 import {
   isPastDateReadOnly,
   isViewReadOnly,
 } from "src/ui/store/slices/settingsSlice";
-import { settingsStore } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("settingsSlice", () => {

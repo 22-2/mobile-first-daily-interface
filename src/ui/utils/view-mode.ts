@@ -18,5 +18,8 @@ export function isThreadView({
 }
 
 export function isPlainFocusView(viewState: ViewState): boolean {
-  return !isTimelineView(viewState.displayMode) && viewState.threadFocusRootId === null;
+  return (
+    !isTimelineView(viewState.displayMode) &&
+    viewState.threadFocusRootId === null
+  );
 }

@@ -4,12 +4,12 @@ import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
 import {
-    DateFilter,
-    DisplayMode,
-    Granularity,
-    MomentLike,
-    Post,
-    TimeFilter
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  MomentLike,
+  Post,
+  TimeFilter,
 } from "src/ui/types";
 import { MFDIStorage } from "src/utils/storage";
 
@@ -47,10 +47,7 @@ export interface SettingsSlice {
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;
-  setThreadFocusRootId: (
-    rootId: string | null,
-    focusDate?: MomentLike,
-  ) => void;
+  setThreadFocusRootId: (rootId: string | null, focusDate?: MomentLike) => void;
   handleClickHome: () => void;
   handleClickToday: () => void;
   handleClickMovePrevious: () => void;
