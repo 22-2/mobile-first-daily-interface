@@ -304,10 +304,14 @@ describe("timeline note resolution", () => {
     });
 
     expect(mockReplaceRange).toHaveBeenCalledOnce();
-    expect(settingsStore.getState().threadFocusRootId).toBeNull();
+    // スレッド作成後は自動でそのスレッドに切り替わる（root id が設定される）
+    const fid = settingsStore.getState().threadFocusRootId;
+    expect(typeof fid).toBe("string");
+    expect(fid).toMatch(/^[a-f0-9]{8}$/);
     expect(mockReplaceRange.mock.calls[0][3]).toContain("- 12:00:00 parent");
     expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
-    expect(mockReplaceRange.mock.calls[0][3]).toContain("    [mfdiId::");
+    // 置換されたテキストに実際の mfdiId が含まれていることを確認
+    expect(mockReplaceRange.mock.calls[0][3]).toContain(`    [${THREAD_METADATA_KEYS.ID}::${fid}]`);
   });
 
   it("スレッド親を削除すると子もまとめて削除する", async () => {

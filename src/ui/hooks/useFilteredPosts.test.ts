@@ -78,8 +78,8 @@ describe("useFilteredPosts", () => {
 
     expect(result.current.map((post) => post.id)).toEqual([
       "root-1",
-      "reply-1",
       "reply-2",
+      "reply-1",
     ]);
   });
 });

@@ -62,12 +62,13 @@ export function sortThreadPosts(posts: Post[], rootId: string): Post[] {
   const root = posts.find((post) => post.id === rootId) ?? null;
   const replies = posts
     .filter((post) => post.id !== rootId)
+    // 新しい投稿が上に積まれるように降順（新しいものが先頭）でソートする
     .sort((left, right) => {
-      const byTimestamp = left.timestamp.valueOf() - right.timestamp.valueOf();
+      const byTimestamp = right.timestamp.valueOf() - left.timestamp.valueOf();
       if (byTimestamp !== 0) {
         return byTimestamp;
       }
-      return left.startOffset - right.startOffset;
+      return right.startOffset - left.startOffset;
     });
 
   return root ? [root, ...replies] : replies;

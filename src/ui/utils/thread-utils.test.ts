@@ -74,8 +74,8 @@ describe("thread-utils", () => {
     const threadPosts = getThreadPosts([laterReply, root, earlierReply], "root-1");
     expect(sortThreadPosts(threadPosts, "root-1").map((post) => post.id)).toEqual([
       "root-1",
-      "reply-1",
       "reply-2",
+      "reply-1",
     ]);
   });
 });
