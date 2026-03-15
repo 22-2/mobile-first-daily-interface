@@ -3,7 +3,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
-import { sorter } from "src/utils/collections";
+import { buildPostFromEntry, sortPostsDescending } from "src/ui/utils/thread-utils";
 import {
     getAllTopicNotes,
     getDateUID,
@@ -18,17 +18,14 @@ function buildPostsFromContent(
   path: string,
   date: MomentLike,
 ): Post[] {
-  return parseThinoEntries(content).map((entry) => ({
-    timestamp: resolveTimestamp(entry.time, date, entry.metadata),
-    message: entry.message,
-    metadata: entry.metadata,
-    offset: entry.offset,
-    startOffset: entry.startOffset,
-    endOffset: entry.endOffset,
-    bodyStartOffset: entry.bodyStartOffset,
-    kind: "thino" as const,
-    path,
-  }));
+  return parseThinoEntries(content).map((entry) =>
+    buildPostFromEntry({
+      ...entry,
+      path,
+      noteDate: date,
+      resolveTimestamp,
+    }),
+  );
 }
 
 export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
@@ -39,7 +36,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   tasks: [],
 
   setPosts: (posts) => {
-    set({ posts: posts.sort(sorter((post) => post.timestamp.unix(), "desc")) });
+    set({ posts: sortPostsDescending(posts) });
   },
 
   setTasks: (tasks) => {

@@ -59,6 +59,9 @@ function resolveInitialSettingsState(
         DISPLAY_MODE.FOCUS,
       ) ?? (DISPLAY_MODE.FOCUS as DisplayMode),
     asTask: storage?.get<boolean>(STORAGE_KEYS.AS_TASK, false) ?? false,
+    threadFocusRootId:
+      storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
+      null,
   };
 }
 
@@ -76,14 +79,17 @@ export const createSettingsSlice: StateCreator<
   sidebarOpen: true,
   displayMode: DISPLAY_MODE.FOCUS as DisplayMode,
   asTask: false,
+  threadFocusRootId: null,
 
   setActiveTopic: (activeTopic) => {
-    set({ activeTopic });
+    set({ activeTopic, threadFocusRootId: null });
+    persistValue(get(), STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   setGranularity: (granularity) => {
     set((state) => ({
       granularity,
+      threadFocusRootId: null,
       displayMode:
         granularity !== GRANULARITY_CONFIG.day.unit
           ? DISPLAY_MODE.FOCUS
@@ -92,11 +98,14 @@ export const createSettingsSlice: StateCreator<
     const state = get();
     persistValue(state, STORAGE_KEYS.GRANULARITY, granularity);
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, state.displayMode);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   setDate: (date) => {
-    set({ date });
-    persistValue(get(), STORAGE_KEYS.DATE, date.toISOString());
+    set({ date, threadFocusRootId: null });
+    const state = get();
+    persistValue(state, STORAGE_KEYS.DATE, date.toISOString());
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   setTimeFilter: (timeFilter) => {
@@ -105,10 +114,11 @@ export const createSettingsSlice: StateCreator<
   },
 
   setDateFilter: (dateFilter) => {
-    set({ dateFilter, displayMode: DISPLAY_MODE.FOCUS });
+    set({ dateFilter, displayMode: DISPLAY_MODE.FOCUS, threadFocusRootId: null });
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE_FILTER, dateFilter);
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   setSidebarOpen: (sidebarOpen) => {
@@ -117,13 +127,20 @@ export const createSettingsSlice: StateCreator<
   },
 
   setDisplayMode: (displayMode) => {
-    set({ displayMode });
-    persistValue(get(), STORAGE_KEYS.DISPLAY_MODE, displayMode);
+    set({ displayMode, threadFocusRootId: null });
+    const state = get();
+    persistValue(state, STORAGE_KEYS.DISPLAY_MODE, displayMode);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   setAsTask: (asTask) => {
     set({ asTask });
     persistValue(get(), STORAGE_KEYS.AS_TASK, asTask);
+  },
+
+  setThreadFocusRootId: (threadFocusRootId) => {
+    set({ threadFocusRootId });
+    persistValue(get(), STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, threadFocusRootId);
   },
 
   handleClickHome: () => {
@@ -134,6 +151,7 @@ export const createSettingsSlice: StateCreator<
       dateFilter: DATE_FILTER_IDS.TODAY,
       timeFilter: TIME_FILTER_IDS.ALL,
       asTask: false,
+      threadFocusRootId: null,
       date: now,
     });
     const state = get();
@@ -143,14 +161,16 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.TIME_FILTER, TIME_FILTER_IDS.ALL);
     persistValue(state, STORAGE_KEYS.AS_TASK, false);
     persistValue(state, STORAGE_KEYS.DATE, now.toISOString());
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   handleClickToday: () => {
     const now = window.moment();
-    set({ date: now, displayMode: DISPLAY_MODE.TIMELINE });
+    set({ date: now, displayMode: DISPLAY_MODE.TIMELINE, threadFocusRootId: null });
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE, now.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.TIMELINE);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   getMoveStep: () => {
@@ -168,10 +188,11 @@ export const createSettingsSlice: StateCreator<
     const nextDate = date
       .clone()
       .subtract(step, GRANULARITY_CONFIG[granularity].unit);
-    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS, threadFocusRootId: null });
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   handleClickMoveNext: () => {
@@ -180,19 +201,21 @@ export const createSettingsSlice: StateCreator<
     const nextDate = date
       .clone()
       .add(step, GRANULARITY_CONFIG[granularity].unit);
-    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS, threadFocusRootId: null });
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   handleChangeCalendarDate: (value) => {
     const { granularity } = get();
     const nextDate = GRANULARITY_CONFIG[granularity].parseInput(value);
-    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS });
+    set({ date: nextDate, displayMode: DISPLAY_MODE.FOCUS, threadFocusRootId: null });
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
   },
 
   isToday: () => {

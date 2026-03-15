@@ -18,7 +18,10 @@ export type DateFilter = (typeof DATE_FILTER_OPTIONS)[number]["id"];
 export type DisplayMode = (typeof DISPLAY_MODE)[keyof typeof DISPLAY_MODE];
 
 export interface Post {
+  id: string;
+  threadRootId: string | null;
   timestamp: MomentLike;
+  noteDate: MomentLike;
   message: string;
   metadata: Record<string, string>;
   offset: number;

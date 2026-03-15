@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   EDITING_POST_GRANULARITY: "editingPostGranularity",
   EDITING_POST_OFFSET: "editingPostOffset",
   EDITING_POST_DATE: "editingPostDate",
+  THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
 } as const;
 
 export const MOVE_STEP = {

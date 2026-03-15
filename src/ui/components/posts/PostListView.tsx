@@ -23,8 +23,10 @@ export const PostListView: React.FC = React.memo(() => {
       isReadOnly: s.isReadOnly(),
       setDate: s.setDate,
       setDisplayMode: s.setDisplayMode,
+      setThreadFocusRootId: s.setThreadFocusRootId,
       asTask: s.asTask,
       timeFilter: s.timeFilter,
+      threadFocusRootId: s.threadFocusRootId,
     })),
   );
 
@@ -48,9 +50,10 @@ export const PostListView: React.FC = React.memo(() => {
   const filteredPosts = useFilteredPosts({
     posts,
     ...settings,
+    includeThreadReplies: true,
   });
 
-  const { granularity, displayMode, dateFilter } = settings;
+  const { granularity, displayMode, dateFilter, threadFocusRootId, setThreadFocusRootId } = settings;
 
   const { showPostContextMenu } = usePostContextMenu();
   const displayedPostsWithDividers = useTimelineItems(
@@ -77,6 +80,7 @@ export const PostListView: React.FC = React.memo(() => {
 
   // 無限スクロールのトリガー
   useEffect(() => {
+    if (threadFocusRootId) return;
     if (displayMode !== "timeline" || !hasMore) return;
 
     // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
@@ -98,6 +102,7 @@ export const PostListView: React.FC = React.memo(() => {
     displayedPostsWithDividers.length,
     virtualItems.length,
     virtualItems[virtualItems.length - 1]?.index,
+    threadFocusRootId,
   ]);
 
   return (
@@ -135,12 +140,18 @@ export const PostListView: React.FC = React.memo(() => {
                 dateFilter={dateFilter}
                 onEdit={startEdit}
                 onContextMenu={showPostContextMenu}
+                isThreadFocused={item.post.id === threadFocusRootId}
+                onToggleThreadFocus={(post) => {
+                  setThreadFocusRootId(
+                    threadFocusRootId === post.id ? null : post.id,
+                  );
+                }}
               />
             )}
           </Box>
         );
       })}
-      {displayMode === "timeline" && hasMore && (
+      {displayMode === "timeline" && hasMore && !threadFocusRootId && (
         <Box
           style={{
             position: "absolute",
@@ -157,7 +168,7 @@ export const PostListView: React.FC = React.memo(() => {
           読み込み中...
         </Box>
       )}
-      {displayMode === "timeline" && !hasMore && (
+      {displayMode === "timeline" && !hasMore && !threadFocusRootId && (
         <Box
           style={{
             position: "absolute",

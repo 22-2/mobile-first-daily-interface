@@ -99,6 +99,7 @@ const ReactViewContent = () => {
       setSidebarOpen: s.setSidebarOpen,
       timeFilter: s.timeFilter,
       displayMode: s.displayMode,
+      threadFocusRootId: s.threadFocusRootId,
     })),
   );
 

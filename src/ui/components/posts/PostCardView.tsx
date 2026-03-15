@@ -1,6 +1,7 @@
 import { Box, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DateFilter, Granularity, Post } from "src/ui/types";
@@ -12,6 +13,7 @@ import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { usePostMetadata } from "src/ui/hooks/usePostMetadata";
+import { isThreadRoot } from "src/ui/utils/thread-utils";
 
 export const PostCardView = React.memo(
   ({
@@ -20,6 +22,8 @@ export const PostCardView = React.memo(
     dateFilter,
     onContextMenu,
     onEdit,
+    isThreadFocused = false,
+    onToggleThreadFocus,
     className,
     style,
   }: {
@@ -28,6 +32,8 @@ export const PostCardView = React.memo(
     dateFilter?: DateFilter;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
+    isThreadFocused?: boolean;
+    onToggleThreadFocus?: (post: Post) => void;
     className?: string;
     style?: React.CSSProperties;
   }) => {
@@ -53,6 +59,32 @@ export const PostCardView = React.memo(
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={(e) => !isDimmed && onEdit?.(post)}
+          footerAddon={
+            isThreadRoot(post) ? (
+              <Box
+                as="button"
+                type="button"
+                aria-label={isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"}
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                borderRadius="full"
+                padding={1}
+                color={isThreadFocused ? "var(--color-accent)" : "var(--text-muted)"}
+                backgroundColor={
+                  isThreadFocused
+                    ? "color-mix(in srgb, var(--color-accent), transparent 82%)"
+                    : "transparent"
+                }
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                  e.stopPropagation();
+                  onToggleThreadFocus?.(post);
+                }}
+              >
+                <ObsidianIcon name="spool" boxSize="1.1em" />
+              </Box>
+            ) : undefined
+          }
         >
           <VStack align="stretch" gap={3}>
             {/* Message Body */}

@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
+import { TFile } from "obsidian";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { editorStore } from "src/ui/store/editorStore";
 import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
+import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import * as dailyNotes from "src/utils/daily-notes";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useRefreshPosts } from "./useRefreshPosts";
@@ -32,16 +34,16 @@ vi.mock("./useRefreshPosts", () => ({
 describe("timeline note resolution", () => {
   const today = window.moment("2026-03-15T09:00:00.000Z");
   const yesterday = today.clone().subtract(1, "day");
-  const todayNote = {
+  const todayNote = Object.assign(new TFile(), {
     path: "2026-03-15.md",
     basename: "2026-03-15",
     extension: "md",
-  } as any;
-  const yesterdayNote = {
+  }) as any;
+  const yesterdayNote = Object.assign(new TFile(), {
     path: "2026-03-14.md",
     basename: "2026-03-14",
     extension: "md",
-  } as any;
+  }) as any;
   let mockApp: any;
 
   const mockInsertTextAfter = vi.fn();
@@ -60,7 +62,15 @@ describe("timeline note resolution", () => {
       workspace: {
         getLeaf: vi.fn(() => ({ openFile: mockOpenFile })),
       },
-      vault: {},
+      vault: {
+        getAbstractFileByPath: vi.fn((path: string) =>
+          path === todayNote.path
+            ? todayNote
+            : path === yesterdayNote.path
+              ? yesterdayNote
+            : null,
+        ),
+      },
     };
 
     (useAppContext as any).mockReturnValue({
@@ -169,5 +179,113 @@ describe("timeline note resolution", () => {
       mockCreateNoteWithInsertAfter.mock.calls[0][2].isSame(today, "day"),
     ).toBe(true);
     expect(mockOpenFile).toHaveBeenCalledWith(todayNote);
+  });
+
+  it("スレッド表示中の投稿は親ノートへ返信として保存する", async () => {
+    const threadRoot = {
+      id: "root-1",
+      threadRootId: "root-1",
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    settingsStore.setState({
+      threadFocusRootId: "root-1",
+      displayMode: "focus",
+      date: today.clone(),
+    });
+    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockRefreshPosts.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+      expect.objectContaining({ path: yesterdayNote.path }),
+      expect.stringContaining("[mfdiThreadRootId::root-1]"),
+      "## Thino",
+    );
+    expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
+
+  it("スレッド親を削除すると子もまとめて削除する", async () => {
+    const rootPost = {
+      id: "root-1",
+      threadRootId: "root-1",
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+    const replyPost = {
+      id: "reply-1",
+      threadRootId: "root-1",
+      timestamp: today.clone().hour(1),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "reply",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "reply-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+        posted: today.toISOString(),
+      },
+      offset: 20,
+      startOffset: 20,
+      endOffset: 40,
+      bodyStartOffset: 22,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    settingsStore.setState({ threadFocusRootId: "root-1" });
+
+    const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: vi.fn(async () => ""),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.deletePost(rootPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledTimes(2);
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+    expect(settingsStore.getState().threadFocusRootId).toBeNull();
   });
 });

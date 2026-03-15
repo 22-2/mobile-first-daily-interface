@@ -7,6 +7,11 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
 import { toText } from "src/ui/utils/post-utils";
+import {
+  createThreadId,
+  isThreadRoot,
+  THREAD_METADATA_KEYS,
+} from "src/ui/utils/thread-utils";
 import { getTopicNote } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
 import { useRefreshPosts } from "./useRefreshPosts";
@@ -23,9 +28,11 @@ export const usePostActions = () => {
       dateFilter: s.dateFilter,
       asTask: s.asTask,
       setDate: s.setDate,
+      setThreadFocusRootId: s.setThreadFocusRootId,
       isReadOnly: s.isReadOnly(),
       displayMode: s.displayMode,
       getEffectiveDate: s.getEffectiveDate,
+      threadFocusRootId: s.threadFocusRootId,
     })),
   );
 
@@ -93,6 +100,53 @@ export const usePostActions = () => {
     [appHelper, settingsState.granularity, editorState, refreshPosts],
   );
 
+  const updateManyPosts = useCallback(
+    async (
+      posts: Post[],
+      buildMetadata: (post: Post) => Record<string, string>,
+    ) => {
+      const sortedPosts = [...posts].sort(
+        (left, right) => right.startOffset - left.startOffset,
+      );
+
+      for (const post of sortedPosts) {
+        const text = toText(
+          post.message,
+          false,
+          settingsState.granularity,
+          post.noteDate,
+          {
+            ...post.metadata,
+            ...buildMetadata(post),
+          },
+        );
+
+        await appHelper.replaceRange(
+          post.path,
+          post.startOffset,
+          post.endOffset,
+          text,
+        );
+      }
+
+      if (
+        sortedPosts.some(
+          (post) =>
+            editorState.editingPost?.startOffset === post.startOffset &&
+            editorState.editingPost?.path === post.path,
+        )
+      ) {
+        editorState.cancelEdit();
+      }
+
+      const firstPath = sortedPosts[0]?.path;
+      if (firstPath) {
+        await refreshPosts(firstPath);
+      }
+    },
+    [appHelper, editorState, refreshPosts, settingsState.granularity],
+  );
+
   // ---------------------------------------------------------------------------
   // 新規投稿 / 編集の確定
   // ---------------------------------------------------------------------------
@@ -138,6 +192,49 @@ export const usePostActions = () => {
     // --- 新規投稿 ---
     const now = window.moment();
     const metadata: Record<string, string> = {};
+
+    if (settingsState.threadFocusRootId) {
+      const rootPost = postsState.posts.find(
+        (post) => post.id === settingsState.threadFocusRootId,
+      );
+      if (!rootPost) {
+        new Notice("スレッドの親投稿が見つかりませんでした");
+        settingsState.setThreadFocusRootId(null);
+        return;
+      }
+
+      metadata[THREAD_METADATA_KEYS.ID] = createThreadId();
+      metadata[THREAD_METADATA_KEYS.ROOT_ID] = settingsState.threadFocusRootId;
+      metadata.posted = now.toISOString();
+
+      const text = toText(
+        currentInput,
+        false,
+        settingsState.granularity,
+        rootPost.noteDate.clone().startOf("day"),
+        metadata,
+      );
+      if (!text) {
+        editorState.setInput("");
+        editorState.inputRef.current?.setContent("");
+        return;
+      }
+
+      const noteFile = app.vault.getAbstractFileByPath(rootPost.path);
+      if (!(noteFile instanceof TFile)) {
+        new Notice("スレッドの投稿先ノートを解決できませんでした");
+        return;
+      }
+
+      await appHelper.insertTextAfter(noteFile, `\n${text}`, settings.insertAfter);
+      await refreshPosts(rootPost.path);
+
+      editorState.setInput("");
+      editorState.inputRef.current?.setContent("");
+      editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+
     // タイムライン表示時は常に今日のノートに投稿
     const targetDate = settingsState.getEffectiveDate();
     if (!targetDate.isSame(now, "day")) {
@@ -205,9 +302,24 @@ export const usePostActions = () => {
   const deletePost = useCallback(
     async (post: Post) => {
       const now = window.moment();
+
+      if (isThreadRoot(post)) {
+        await updateManyPosts(
+          postsState.posts.filter(
+            (candidate) => candidate.threadRootId === post.threadRootId,
+          ),
+          () => ({ deleted: now.format("YYYYMMDDHHmmss") }),
+        );
+
+        if (settingsState.threadFocusRootId === post.threadRootId) {
+          settingsState.setThreadFocusRootId(null);
+        }
+        return;
+      }
+
       await replaceAndRefresh(post, { deleted: now.format("YYYYMMDDHHmmss") });
     },
-    [replaceAndRefresh],
+    [postsState.posts, replaceAndRefresh, settingsState, updateManyPosts],
   );
 
   // ---------------------------------------------------------------------------
@@ -226,6 +338,11 @@ export const usePostActions = () => {
   // ---------------------------------------------------------------------------
   const movePostToTomorrow = useCallback(
     async (post: Post) => {
+      if (post.threadRootId) {
+        new Notice("スレッド投稿は明日に送れません");
+        return;
+      }
+
       if (settingsState.isReadOnly) {
         new Notice("過去のノートの投稿は移動できません");
         return;
@@ -265,6 +382,41 @@ export const usePostActions = () => {
     [app, appHelper, settings, settingsState, deletePost],
   );
 
+  const createThread = useCallback(
+    async (post: Post) => {
+      if (post.threadRootId === post.id) {
+        settingsState.setThreadFocusRootId(post.id);
+        return;
+      }
+
+      if (post.threadRootId && post.threadRootId !== post.id) {
+        new Notice("返信からはスレッドを作成できません");
+        return;
+      }
+
+      const rootId = createThreadId();
+      const text = toText(post.message, false, settingsState.granularity, post.noteDate, {
+        ...post.metadata,
+        [THREAD_METADATA_KEYS.ID]: rootId,
+        [THREAD_METADATA_KEYS.ROOT_ID]: rootId,
+      });
+
+      await appHelper.replaceRange(post.path, post.startOffset, post.endOffset, text);
+
+      if (
+        editorState.editingPost?.startOffset === post.startOffset &&
+        editorState.editingPost?.path === post.path
+      ) {
+        editorState.cancelEdit();
+      }
+
+      settingsState.setThreadFocusRootId(rootId);
+      await refreshPosts(post.path);
+      new Notice("スレッドを作成しました");
+    },
+    [appHelper, editorState, refreshPosts, settingsState],
+  );
+
   // ---------------------------------------------------------------------------
   // 投稿をクリックしてエディタで該当箇所をハイライト
   // ---------------------------------------------------------------------------
@@ -299,6 +451,7 @@ export const usePostActions = () => {
 
   return {
     handleSubmit,
+    createThread,
     deletePost,
     archivePost,
     movePostToTomorrow,

@@ -8,6 +8,7 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
+import { buildPostFromEntry } from "src/ui/utils/thread-utils";
 import { getAllTopicNotes, getDateUID } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
@@ -36,17 +37,14 @@ async function parsePostsFromFile(
   readFile: (f: TFile) => Promise<string>,
 ): Promise<Post[]> {
   const content = await readFile(file);
-  return parseThinoEntries(content).map((x) => ({
-    timestamp: resolveTimestamp(x.time, dayDate, x.metadata),
-    message: x.message,
-    metadata: x.metadata,
-    offset: x.offset,
-    startOffset: x.startOffset,
-    endOffset: x.endOffset,
-    bodyStartOffset: x.bodyStartOffset,
-    kind: "thino" as const,
-    path: file.path,
-  }));
+  return parseThinoEntries(content).map((entry) =>
+    buildPostFromEntry({
+      ...entry,
+      path: file.path,
+      noteDate: dayDate,
+      resolveTimestamp,
+    }),
+  );
 }
 
 /**

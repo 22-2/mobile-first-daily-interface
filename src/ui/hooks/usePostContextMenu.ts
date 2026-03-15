@@ -4,6 +4,7 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
+import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { useShallow } from "zustand/shallow";
 import { DISPLAY_MODE } from "../config/consntants";
 
@@ -22,7 +23,7 @@ export const usePostContextMenu = () => {
     })),
   );
 
-  const { handleClickTime, movePostToTomorrow, deletePost, archivePost } =
+  const { handleClickTime, movePostToTomorrow, deletePost, archivePost, createThread } =
     usePostActions();
 
   const showPostContextMenu = useCallback(
@@ -55,9 +56,19 @@ export const usePostContextMenu = () => {
         item
           .setTitle("明日に送る")
           .setIcon("fast-forward")
-          .setDisabled(isReadOnly)
+          .setDisabled(isReadOnly || post.threadRootId != null)
           .onClick(() => {
             movePostToTomorrow(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
+          .setIcon("spool")
+          .setDisabled(isReadOnly || isThreadReply(post))
+          .onClick(() => {
+            createThread(post);
           }),
       );
 
@@ -115,6 +126,7 @@ export const usePostContextMenu = () => {
       startEdit,
       isReadOnly,
       movePostToTomorrow,
+      createThread,
       deletePost,
       archivePost,
     ],

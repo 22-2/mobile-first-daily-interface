@@ -38,6 +38,7 @@ export interface SettingsSlice {
   sidebarOpen: boolean;
   displayMode: DisplayMode;
   asTask: boolean;
+  threadFocusRootId: string | null;
   setActiveTopic: (topicId: string) => void;
   setGranularity: (g: Granularity) => void;
   setDate: (d: MomentLike) => void;
@@ -46,6 +47,7 @@ export interface SettingsSlice {
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;
+  setThreadFocusRootId: (rootId: string | null) => void;
   handleClickHome: () => void;
   handleClickToday: () => void;
   handleClickMovePrevious: () => void;

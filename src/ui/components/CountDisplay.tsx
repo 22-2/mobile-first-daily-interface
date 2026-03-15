@@ -10,6 +10,7 @@ import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
@@ -105,6 +106,7 @@ const CountSection: React.FC = () => {
       dateFilter: s.dateFilter,
       timeFilter: s.timeFilter,
       displayMode: s.displayMode,
+      threadFocusRootId: s.threadFocusRootId,
     })),
   );
   const postsState = usePostsStore(
@@ -123,7 +125,9 @@ const CountSection: React.FC = () => {
 
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
-  const allPostsCount = posts.length;
+  const allPostsCount = countVisibleRootPosts(
+    posts.filter((post) => !post.metadata.archived && !post.metadata.deleted),
+  );
 
   const showTotal =
     (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
