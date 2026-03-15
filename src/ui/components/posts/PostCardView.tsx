@@ -1,5 +1,6 @@
-import { IconButton, Tooltip, VStack, Box } from "@chakra-ui/react";
-import * as React from "react";
+import { VStack, Box } from "@chakra-ui/react";
+import React, { useEffect, useRef } from "react";
+import { setTooltip } from "obsidian";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -46,9 +47,9 @@ export const PostCardView = React.memo(
     );
 
     const { unit } = GRANULARITY_CONFIG[granularity];
-    const isToday = post.timestamp.isSame(window.moment(), unit);
     // 過去の投稿は薄くする
     const isDimmed = post.timestamp.isBefore(window.moment(), unit);
+    const threadToggleLabel = isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示";
 
     return (
       <Card className={className} style={style}>
@@ -61,41 +62,25 @@ export const PostCardView = React.memo(
           onDoubleClick={(e) => !isDimmed && onEdit?.(post)}
           footerRightAddon={
             isThreadRoot(post) ? (
-              <Tooltip
-                label={isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"}
-                openDelay={250}
-              >
-                <IconButton
-                  aria-label={
-                    isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"
-                  }
-                  icon={<ObsidianIcon name="spool" boxSize="1.05em" />}
-                  size="xs"
-                  minW="auto"
-                  h="1.8rem"
-                  w="1.8rem"
-                  borderRadius="full"
-                  variant="ghost"
-                  color={
-                    isThreadFocused
-                      ? "var(--color-accent)"
-                      : "var(--text-muted)"
-                  }
-                  backgroundColor={
-                    isThreadFocused
-                      ? "color-mix(in srgb, var(--color-accent), transparent 84%)"
-                      : "transparent"
-                  }
-                  _hover={{
-                    backgroundColor:
-                      "color-mix(in srgb, var(--color-accent), transparent 88%)",
-                  }}
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    onToggleThreadFocus?.(post);
-                  }}
-                />
-              </Tooltip>
+              <ObsidianIcon
+                ref={(ref) => {ref && setTooltip(ref, threadToggleLabel)}}
+                name="spool"
+                aria-label={threadToggleLabel}
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                  e.stopPropagation();
+                  onToggleThreadFocus?.(post);
+                }}
+                padding="4px"
+                cursor="pointer"
+                size="1.1em"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                color={isThreadFocused ? "var(--text-normal)" : "var(--text-muted)"}
+                _hover={{
+                  color: "var(--text-normal)",
+                }}
+              />
             ) : undefined
           }
         >

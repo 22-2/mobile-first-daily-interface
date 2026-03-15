@@ -1,51 +1,56 @@
 import { Box, BoxProps } from "@chakra-ui/react";
 import { setIcon } from "obsidian";
-import * as React from "react";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface ObsidianIconProps extends BoxProps {
   name: string;
   size?: number | string;
 }
 
-export const ObsidianIcon = ({ name, size, ...props }: ObsidianIconProps) => {
-  const ref = useRef<HTMLDivElement>(null);
+export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
+  ({ name, size, ...props }, forwardedRef) => {
+    const innerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (ref.current) {
-      if (typeof ref.current.empty === "function") {
-        ref.current.empty();
-      } else {
-        ref.current.innerHTML = "";
+    // keep forwarded ref in sync
+    useEffect(() => {
+      if (!forwardedRef) return;
+      const node = innerRef.current;
+      if (typeof forwardedRef === "function") {
+        forwardedRef(node);
+      } else if (forwardedRef && typeof forwardedRef === "object") {
+        (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
       }
-      try {
-        setIcon(ref.current, name);
-      } catch (e) {}
-      const svg = ref.current.querySelector("svg");
-      if (svg) {
-        if (size) {
-          const s = typeof size === "number" ? `${size}px` : size;
-          svg.setCssStyles({
-            width: s,
-            height: s,
-          });
+    }, [forwardedRef]);
+
+    useEffect(() => {
+      const refEl = innerRef.current;
+      if (refEl) {
+        if (typeof (refEl as any).empty === "function") {
+          (refEl as any).empty();
         } else {
-          svg.setCssStyles({
-            width: "100%",
-            height: "100%",
-          });
+          refEl.innerHTML = "";
+        }
+        try {
+          setIcon(refEl, name);
+        } catch (e) {}
+        const svg = refEl.querySelector("svg");
+        if (svg) {
+          const s =
+            size ?? (props as any).boxSize ?? (props as any).width ?? (props as any).height;
+          if (s) {
+            const ss = typeof s === "number" ? `${s}px` : String(s);
+            (svg as any).setCssStyles?.({ width: ss, height: ss });
+          } else {
+            (svg as any).setCssStyles?.({ width: "100%", height: "100%" });
+          }
         }
       }
-    }
-  }, [name, size]);
+    }, [name, size, props]);
 
-  return (
-    <Box
-      ref={ref}
-      display="inline-flex"
-      alignItems="center"
-      justifyContent="center"
-      {...props}
-    />
-  );
-};
+    return (
+      <Box ref={innerRef} display="inline-flex" alignItems="center" justifyContent="center" {...props} />
+    );
+  },
+);
+
+ObsidianIcon.displayName = "ObsidianIcon";
