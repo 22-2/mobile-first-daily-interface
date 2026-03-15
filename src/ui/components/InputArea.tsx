@@ -30,7 +30,6 @@ const NavButton: React.FC<{
       cursor="pointer"
       onClick={onClick}
       spacing={0}
-      paddingX="0.5em"
       flexDirection={direction === "left" ? "row" : "row-reverse"}
     >
       <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />
@@ -126,24 +125,6 @@ const InputAreaControl: React.FC = React.memo(() => {
               step={step}
             />
             <HStack spacing="0.2em" className="mfdi-date-controls">
-              <Button
-                className="mfdi-today-button"
-                fontSize={"80%"}
-                width="3.5em"
-                height="28px"
-                cursor="pointer"
-                onClick={handleClickToday}
-                onContextMenu={(e) => {
-                  const menu = new Menu();
-                  addGranularityMenuItems(menu, view.state.granularity, (g) => {
-                    view.handlers.onChangeGranularity?.(g);
-                  });
-                  menu.showAtMouseEvent(e.nativeEvent);
-                }}
-                {...todayButtonProps}
-              >
-                {GRANULARITY_CONFIG[granularity].todayLabel}
-              </Button>
               <Input
                 className="mfdi-date-input"
                 size="sm"

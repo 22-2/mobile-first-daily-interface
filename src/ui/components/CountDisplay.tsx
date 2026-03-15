@@ -8,6 +8,7 @@ import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
+import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -25,6 +26,7 @@ const DateSection: React.FC = () => {
     })),
   );
   const onClick = useFilterMenu();
+  const onContextMenu = useGranularityMenu();
 
   if (isTimelineView(displayMode)) return null;
 
@@ -51,7 +53,9 @@ const DateSection: React.FC = () => {
 
   return (
     <Box>
-      <UnderlinedClickable onClick={onClick}>{dateLabel}</UnderlinedClickable>
+      <UnderlinedClickable onClick={onClick} onContextMenu={onContextMenu}>
+        {dateLabel}
+      </UnderlinedClickable>
     </Box>
   );
 };
@@ -69,6 +73,23 @@ const usePostModeMenu = () => {
     e.preventDefault();
     const menu = new Menu();
     addPostModeMenuItems(menu, asTask, onAsTaskChange);
+    menu.showAtMouseEvent(e as unknown as MouseEvent);
+  };
+};
+
+const useGranularityMenu = () => {
+  const { granularity, setGranularity } = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      setGranularity: s.setGranularity,
+    })),
+  );
+
+  return (e: React.MouseEvent) => {
+    if (!setGranularity) return;
+    e.preventDefault();
+    const menu = new Menu();
+    addGranularityMenuItems(menu, granularity, (g) => setGranularity(g));
     menu.showAtMouseEvent(e as unknown as MouseEvent);
   };
 };
