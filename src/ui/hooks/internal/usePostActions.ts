@@ -20,6 +20,12 @@ export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
   const refreshPosts = useRefreshPosts();
 
+  const getSerializedTimestamp = useCallback((timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
+    return timestamp.isSame(noteDate, "day")
+      ? timestamp
+      : noteDate.clone().startOf("day");
+  }, []);
+
   const settingsState = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -203,7 +209,6 @@ export const usePostActions = () => {
         return;
       }
 
-      metadata[THREAD_METADATA_KEYS.ID] = createThreadId();
       metadata[THREAD_METADATA_KEYS.ROOT_ID] = settingsState.threadFocusRootId;
       metadata.posted = now.toISOString();
 
@@ -211,7 +216,7 @@ export const usePostActions = () => {
         currentInput,
         false,
         settingsState.granularity,
-        rootPost.noteDate.clone().startOf("day"),
+        getSerializedTimestamp(now, rootPost.noteDate),
         metadata,
       );
       if (!text) {
@@ -395,11 +400,17 @@ export const usePostActions = () => {
       }
 
       const rootId = createThreadId();
-      const text = toText(post.message, false, settingsState.granularity, post.noteDate, {
-        ...post.metadata,
-        [THREAD_METADATA_KEYS.ID]: rootId,
-        [THREAD_METADATA_KEYS.ROOT_ID]: rootId,
-      });
+      const text = toText(
+        post.message,
+        false,
+        settingsState.granularity,
+        getSerializedTimestamp(post.timestamp, post.noteDate),
+        {
+          ...post.metadata,
+          [THREAD_METADATA_KEYS.ID]: rootId,
+          [THREAD_METADATA_KEYS.ROOT_ID]: rootId,
+        },
+      );
 
       await appHelper.replaceRange(post.path, post.startOffset, post.endOffset, text);
 
@@ -413,7 +424,7 @@ export const usePostActions = () => {
       await refreshPosts(post.path);
       new Notice("スレッドを作成しました");
     },
-    [appHelper, editorState, refreshPosts, settingsState],
+    [appHelper, editorState, getSerializedTimestamp, refreshPosts, settingsState],
   );
 
   // ---------------------------------------------------------------------------

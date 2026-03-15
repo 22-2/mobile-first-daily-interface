@@ -78,12 +78,12 @@ describe("toText", () => {
 
   test("thino format - multiple metadata are written on separate lines", () => {
     const result = toText("test", false, "day", undefined, {
-      mfdiId: "cc73160c",
       mfdiThreadRootId: "cc73160c",
+      posted: "2026-03-10T10:18:13.546Z",
     });
 
     expect(result).toBe(
-      "- 16:00:00 test\n    [mfdiId::cc73160c]\n    [mfdiThreadRootId::cc73160c]\n",
+      "- 16:00:00 test\n    [mfdiThreadRootId::cc73160c]\n    [posted::2026-03-10T10:18:13.546Z]\n",
     );
   });
 

@@ -7,6 +7,7 @@ import {
   getThreadPosts,
   isThreadReply,
   isThreadRoot,
+  resolvePostId,
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 
@@ -31,6 +32,12 @@ function createPost(overrides: Partial<Post>): Post {
 describe("thread-utils", () => {
   test("creates short thread ids", () => {
     expect(createThreadId()).toMatch(/^[a-f0-9]{8}$/);
+  });
+
+  test("falls back to path and offset when reply has no mfdiId", () => {
+    expect(resolvePostId({ mfdiThreadRootId: "root-1" }, "daily.md", 20)).toBe(
+      "daily.md:20",
+    );
   });
 
   test("counts only root-visible posts", () => {

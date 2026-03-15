@@ -220,8 +220,50 @@ describe("timeline note resolution", () => {
       expect.stringContaining("    [mfdiThreadRootId::root-1]"),
       "## Thino",
     );
+    expect(mockInsertTextAfter.mock.calls[0][1]).toContain("- 00:00:00 timeline post");
+    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("[mfdiId::");
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
+
+  it("同日の親ノートへの返信は実時刻で保存する", async () => {
+    const todayThreadRoot = {
+      id: "root-today-1",
+      threadRootId: "root-today-1",
+      timestamp: today.clone().hour(8),
+      noteDate: today.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-today-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-today-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: todayNote.path,
+    } as any;
+
+    postsStore.setState({ posts: [todayThreadRoot], tasks: [] });
+    settingsStore.setState({
+      threadFocusRootId: "root-today-1",
+      displayMode: "focus",
+      date: today.clone(),
+    });
+    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockRefreshPosts.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(mockInsertTextAfter.mock.calls[0][1]).toContain(
+      `- ${today.format("HH:mm:ss")} timeline post`,
+    );
+    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("- 00:00:00 timeline post");
   });
 
   it("スレッド作成では自動でスレッド表示へ切り替えない", async () => {
@@ -263,6 +305,8 @@ describe("timeline note resolution", () => {
 
     expect(mockReplaceRange).toHaveBeenCalledOnce();
     expect(settingsStore.getState().threadFocusRootId).toBeNull();
+    expect(mockReplaceRange.mock.calls[0][3]).toContain("- 12:00:00 parent");
+    expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 00:00:00 parent");
     expect(mockReplaceRange.mock.calls[0][3]).toContain("    [mfdiId::");
   });
 
@@ -285,13 +329,12 @@ describe("timeline note resolution", () => {
       path: yesterdayNote.path,
     } as any;
     const replyPost = {
-      id: "reply-1",
+      id: `${yesterdayNote.path}:20`,
       threadRootId: "root-1",
       timestamp: today.clone().hour(1),
       noteDate: yesterday.clone().startOf("day"),
       message: "reply",
       metadata: {
-        [THREAD_METADATA_KEYS.ID]: "reply-1",
         [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
         posted: today.toISOString(),
       },
