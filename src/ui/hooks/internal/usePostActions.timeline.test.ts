@@ -154,6 +154,43 @@ describe("timeline note resolution", () => {
     expect(mockSetContent).toHaveBeenCalledWith("");
   });
 
+  it("フェンスコードブロック投稿は thino 互換の改行位置で保存する", async () => {
+    vi.mocked(dailyNotes.getTopicNote).mockImplementation((_app, date) =>
+      date.isSame(today, "day") ? todayNote : null,
+    );
+    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockRefreshPosts.mockResolvedValue(undefined);
+
+    editorStore.setState({
+      input: "```\nconsole.log('hello')\n```",
+      inputRef: {
+        current: {
+          getValue: () => "```\nconsole.log('hello')\n```",
+          setContent: mockSetContent,
+          focus: vi.fn(),
+        },
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+      todayNote,
+      [
+        `- ${today.format("HH:mm:ss")}`,
+        "    ```",
+        "    console.log('hello')",
+        "    ```",
+        "",
+      ].join("\n"),
+      "## Thino",
+    );
+  });
+
   it("タイムラインで現在のノートを開くは常に今日のノートを開く", async () => {
     vi.mocked(dailyNotes.getTopicNote).mockImplementation((_app, date) =>
       date.isSame(today, "day") ? todayNote : null,

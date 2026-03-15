@@ -6,6 +6,10 @@ import {
 import { Granularity, MomentLike } from "src/ui/types";
 import { formatTaskText } from "src/utils/task-text";
 
+function isFencedCodeBlockStart(line: string): boolean {
+  return /^[ \t]*(```|~~~)/.test(line);
+}
+
 export function toText(
   input: string,
   asTask: boolean,
@@ -30,16 +34,20 @@ export function toText(
   const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   const lines = normalized.split("\n");
   const firstLine = lines[0];
-  const restLines = lines.slice(1);
+  const shouldMoveFirstLineToBody = isFencedCodeBlockStart(firstLine);
+  const inlineFirstLine = shouldMoveFirstLineToBody ? "" : firstLine;
+  const restLines = shouldMoveFirstLineToBody ? lines : lines.slice(1);
   const metadataEntries = Object.entries(metadata);
 
-  const inlineMetaStr = metadataEntries.length <= 1
+  const inlineMetaStr = inlineFirstLine.length > 0 && metadataEntries.length <= 1
     ? metadataEntries
     .map(([k, v]) => ` [${k}::${v}]`)
     .join("")
     : "";
 
-  const head = `- ${timeStr} ${firstLine}${inlineMetaStr}`;
+  const head = inlineFirstLine.length > 0
+    ? `- ${timeStr} ${inlineFirstLine}${inlineMetaStr}`
+    : `- ${timeStr}`;
 
   const bodyLines = restLines
     .map((x) => (x.length === 0 ? "" : `    ${x}`))
@@ -50,7 +58,7 @@ export function toText(
       return index < array.length - 1;
     });
 
-  const metadataLines = metadataEntries.length > 1
+  const metadataLines = metadataEntries.length > 1 || inlineFirstLine.length === 0
     ? metadataEntries.map(([k, v]) => `    [${k}::${v}]`)
     : [];
 

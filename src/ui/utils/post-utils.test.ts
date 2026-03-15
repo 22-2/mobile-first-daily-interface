@@ -52,6 +52,28 @@ describe("toText", () => {
     expect(result).toBe("- 16:00:00 test\n");
   });
 
+  test("thino format - fenced code block starts on next indented line", () => {
+    const result = toText(
+      "```\nどす黒い作家性\n  ↓ 「これを人に伝えるには何の器が最適か」\n売れる公式（乗り物）を選ぶ\n  ↓\n作家性が公式の中で爆発する\n\n```",
+      false,
+      "day",
+    );
+
+    expect(result).toBe(
+      "- 16:00:00\n    ```\n    どす黒い作家性\n      ↓ 「これを人に伝えるには何の器が最適か」\n    売れる公式（乗り物）を選ぶ\n      ↓\n    作家性が公式の中で爆発する\n\n    ```\n",
+    );
+  });
+
+  test("thino format - fenced code block keeps metadata out of the head line", () => {
+    const result = toText("```\ncode\n```", false, "day", undefined, {
+      posted: "2026-03-10T10:18:13.546Z",
+    });
+
+    expect(result).toBe(
+      "- 16:00:00\n    ```\n    code\n    ```\n    [posted::2026-03-10T10:18:13.546Z]\n",
+    );
+  });
+
   test("thino format - with metadata at the end of first line", () => {
     const result = toText("ggg (from 2026-03-10)", false, "day", undefined, {
       posted: "2026-03-10T10:18:13.546Z",
