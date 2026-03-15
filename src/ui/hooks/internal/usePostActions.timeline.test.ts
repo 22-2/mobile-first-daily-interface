@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { TFile } from "obsidian";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { editorStore } from "src/ui/store/editorStore";
@@ -95,7 +96,7 @@ describe("timeline note resolution", () => {
       timeFilter: "all",
       dateFilter: "today",
       sidebarOpen: true,
-      displayMode: "timeline",
+      displayMode: DISPLAY_MODE.TIMELINE,
       asTask: false,
     });
 
@@ -203,7 +204,7 @@ describe("timeline note resolution", () => {
     postsStore.setState({ posts: [threadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-1",
-      displayMode: "focus",
+      displayMode: DISPLAY_MODE.FOCUS,
       date: today.clone(),
     });
     mockInsertTextAfter.mockResolvedValue(undefined);
@@ -248,7 +249,7 @@ describe("timeline note resolution", () => {
     postsStore.setState({ posts: [todayThreadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-today-1",
-      displayMode: "focus",
+      displayMode: DISPLAY_MODE.FOCUS,
       date: today.clone(),
     });
     mockInsertTextAfter.mockResolvedValue(undefined);
@@ -266,7 +267,7 @@ describe("timeline note resolution", () => {
     expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("- 23:59:59 timeline post");
   });
 
-  it("スレッド作成では自動でスレッド表示へ切り替えない", async () => {
+  it("スレッド作成では自動でスレッド表示へ切り替える", async () => {
     const plainPost = {
       id: `${yesterdayNote.path}:0`,
       threadRootId: null,

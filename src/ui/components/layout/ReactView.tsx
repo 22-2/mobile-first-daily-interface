@@ -10,6 +10,7 @@ import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
@@ -162,7 +163,7 @@ const ReactViewContent = () => {
   const effectivelyOpen = sidebarOpen;
 
   const isEmpty =
-    settings.displayMode !== "timeline" &&
+    settings.displayMode !== DISPLAY_MODE.TIMELINE &&
     ((dateFilter === "today" && !currentDailyNote) ||
       (asTask ? tasks.length === 0 : filteredPosts.length === 0));
 

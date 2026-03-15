@@ -3,6 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import * as React from "react";
 import { useEffect } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -81,7 +82,7 @@ export const PostListView: React.FC = React.memo(() => {
   // 無限スクロールのトリガー
   useEffect(() => {
     if (threadFocusRootId) return;
-    if (displayMode !== "timeline" || !hasMore) return;
+    if (displayMode !== DISPLAY_MODE.TIMELINE || !hasMore) return;
 
     // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
     if (displayedPostsWithDividers.length === 0) {
@@ -151,7 +152,7 @@ export const PostListView: React.FC = React.memo(() => {
           </Box>
         );
       })}
-      {displayMode === "timeline" && hasMore && !threadFocusRootId && (
+      {displayMode === DISPLAY_MODE.TIMELINE && hasMore && !threadFocusRootId && (
         <Box
           style={{
             position: "absolute",
@@ -168,7 +169,7 @@ export const PostListView: React.FC = React.memo(() => {
           読み込み中...
         </Box>
       )}
-      {displayMode === "timeline" && !hasMore && !threadFocusRootId && (
+      {displayMode === DISPLAY_MODE.TIMELINE && !hasMore && !threadFocusRootId && (
         <Box
           style={{
             position: "absolute",

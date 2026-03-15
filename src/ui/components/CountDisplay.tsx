@@ -1,6 +1,7 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import * as React from "react";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
@@ -24,7 +25,7 @@ const DateSection: React.FC = () => {
   );
   const onClick = useFilterMenu();
 
-  if (displayMode === "timeline") return null;
+  if (displayMode === DISPLAY_MODE.TIMELINE) return null;
 
   const dateLabel = React.useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
@@ -131,7 +132,7 @@ const CountSection: React.FC = () => {
 
   const showTotal =
     (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
-    displayMode === "timeline";
+    displayMode === DISPLAY_MODE.TIMELINE;
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
   return (

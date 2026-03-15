@@ -1,5 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import moment from "moment";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { describe, expect, test } from "vitest";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { Post } from "src/ui/types";
@@ -37,7 +38,7 @@ describe("useFilteredPosts", () => {
         dateFilter: "today",
         asTask: false,
         granularity: "day",
-        displayMode: "focus",
+        displayMode: DISPLAY_MODE.FOCUS,
         threadFocusRootId: null,
       }),
     );
@@ -70,7 +71,7 @@ describe("useFilteredPosts", () => {
         dateFilter: "today",
         asTask: false,
         granularity: "day",
-        displayMode: "focus",
+        displayMode: DISPLAY_MODE.FOCUS,
         threadFocusRootId: "root-1",
         includeThreadReplies: true,
       }),

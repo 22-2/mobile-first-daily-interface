@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
     DateFilter,
     DisplayMode,
@@ -31,7 +32,7 @@ export const useTimelineItems = (
 
       // タイムラインモードなら常に区分けを出す。フォーカスモード（単一閲覧）なら今日以外のみ。
       const shouldShowDividers =
-        displayMode === "timeline" ||
+        displayMode === DISPLAY_MODE.TIMELINE ||
         granularity !== "day" ||
         dateFilter !== "today";
       const isDateChanged = lastDate !== currentDate;

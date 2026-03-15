@@ -1,4 +1,5 @@
 import { Menu } from "obsidian";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DATE_FILTER_OPTIONS } from "src/ui/config/filter-config";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 
@@ -19,7 +20,7 @@ export function addPeriodMenuItems(
   const showFilter =
     state.granularity === "day" &&
     !state.asTask &&
-    state.displayMode !== "timeline";
+    state.displayMode !== DISPLAY_MODE.TIMELINE;
 
   // --- 表示期間（日） ---
   menu.addSeparator();

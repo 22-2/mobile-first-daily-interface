@@ -1,5 +1,6 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
@@ -63,11 +64,11 @@ export function useNoteSync() {
 
   useEffect(() => {
     const isMultiDayOrTimeline =
-      dateFilter !== "today" || displayMode === "timeline";
+      dateFilter !== "today" || displayMode === DISPLAY_MODE.TIMELINE;
 
     const handleChanged = async (file: TFile) => {
       if (isMultiDayOrTimeline) {
-        if (displayMode === "timeline" || weekNotePaths.has(file.path)) {
+        if (displayMode === DISPLAY_MODE.TIMELINE || weekNotePaths.has(file.path)) {
           await refreshPosts(file.path);
         }
         return;
@@ -87,7 +88,7 @@ export function useNoteSync() {
     };
 
     const handleDelete = async (file: { path: string }) => {
-      if (displayMode === "timeline" || weekNotePaths.has(file.path)) {
+      if (displayMode === DISPLAY_MODE.TIMELINE || weekNotePaths.has(file.path)) {
         await refreshPosts(file.path);
       }
 

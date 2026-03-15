@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { resolveTimelineBaseDate } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -17,7 +18,7 @@ describe("useInfiniteTimeline", () => {
       timeFilter: "all",
       dateFilter: "today",
       sidebarOpen: true,
-      displayMode: "timeline",
+      displayMode: DISPLAY_MODE.TIMELINE,
       asTask: false,
       getEffectiveDate: () => today.clone(),
     });

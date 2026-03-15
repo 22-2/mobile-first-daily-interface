@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
     DateFilter,
     DisplayMode,
@@ -52,7 +53,7 @@ export const useFilteredPosts = ({
     const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
 
     // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
-    if (displayMode === "timeline") return visibleRoots;
+    if (displayMode === DISPLAY_MODE.TIMELINE) return visibleRoots;
 
     if (dateFilter !== "today") return visibleRoots;
     if (timeFilter === "all" || asTask || granularity !== "day")
