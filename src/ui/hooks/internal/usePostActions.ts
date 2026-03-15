@@ -210,7 +210,10 @@ export const usePostActions = () => {
       }
 
       metadata[THREAD_METADATA_KEYS.ROOT_ID] = settingsState.threadFocusRootId;
-      metadata.posted = now.toISOString();
+      // Attach `posted` only when replying across dates (keep same-day replies timestamped normally)
+      if (!now.isSame(rootPost.noteDate, "day")) {
+        metadata.posted = now.toISOString();
+      }
 
       const text = toText(
         currentInput,
