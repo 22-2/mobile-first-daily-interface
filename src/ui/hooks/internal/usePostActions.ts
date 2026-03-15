@@ -6,13 +6,15 @@ import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
-import { toText } from "src/ui/utils/post-utils";
+import { resolveTimestamp, toText } from "src/ui/utils/post-utils";
 import {
+  buildPostFromEntry,
   createThreadId,
   isThreadRoot,
   THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { getTopicNote } from "src/utils/daily-notes";
+import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
 import { useRefreshPosts } from "./useRefreshPosts";
 
@@ -70,40 +72,92 @@ export const usePostActions = () => {
     })),
   );
 
+  const getLatestPostsForPath = useCallback(
+    async (path: string, noteDate: Post["noteDate"]) => {
+      const content = await appHelper.loadFile(path);
+      return parseThinoEntries(content).map((entry) =>
+        buildPostFromEntry({
+          ...entry,
+          path,
+          noteDate,
+          resolveTimestamp,
+        }),
+      );
+    },
+    [appHelper],
+  );
+
+  const findLatestPost = useCallback(
+    async (post: Post): Promise<Post | null> => {
+      const latestPosts = await getLatestPostsForPath(post.path, post.noteDate);
+
+      const latestById = latestPosts.find((candidate) => candidate.id === post.id);
+      if (latestById) {
+        return latestById;
+      }
+
+      return (
+        latestPosts.find(
+          (candidate) =>
+            candidate.message === post.message &&
+            candidate.timestamp.valueOf() === post.timestamp.valueOf(),
+        ) ?? null
+      );
+    },
+    [getLatestPostsForPath],
+  );
+
+  const findLatestThreadPosts = useCallback(
+    async (rootPost: Post): Promise<Post[]> => {
+      const latestPosts = await getLatestPostsForPath(rootPost.path, rootPost.noteDate);
+      return latestPosts.filter(
+        (candidate) => candidate.threadRootId === rootPost.threadRootId,
+      );
+    },
+    [getLatestPostsForPath],
+  );
+
   // ---------------------------------------------------------------------------
   // 共通ヘルパー: 投稿を上書きして画面を更新する（削除・アーカイブ共通）
   // ---------------------------------------------------------------------------
   const replaceAndRefresh = useCallback(
     async (post: Post, extraMetadata: Record<string, string>) => {
+      const latestPost = await findLatestPost(post);
+      if (!latestPost) {
+        new Notice("投稿の位置を再特定できませんでした");
+        await refreshPosts(post.path);
+        return;
+      }
+
       const metadata = {
-        ...post.metadata,
+        ...latestPost.metadata,
         ...extraMetadata,
       };
       const text = toText(
-        post.message,
+        latestPost.message,
         false,
         settingsState.granularity,
-        post.timestamp,
+        latestPost.timestamp,
         metadata,
       );
 
       await appHelper.replaceRange(
-        post.path,
-        post.startOffset,
-        post.endOffset,
+        latestPost.path,
+        latestPost.startOffset,
+        latestPost.endOffset,
         text,
       );
 
       if (
-        editorState.editingPost?.startOffset === post.startOffset &&
-        editorState.editingPost?.path === post.path
+        editorState.editingPost?.id === latestPost.id &&
+        editorState.editingPost?.path === latestPost.path
       ) {
         editorState.cancelEdit();
       }
 
-      await refreshPosts(post.path);
+      await refreshPosts(latestPost.path);
     },
-    [appHelper, settingsState.granularity, editorState, refreshPosts],
+    [appHelper, settingsState.granularity, editorState, findLatestPost, refreshPosts],
   );
 
   const updateManyPosts = useCallback(
@@ -111,7 +165,15 @@ export const usePostActions = () => {
       posts: Post[],
       buildMetadata: (post: Post) => Record<string, string>,
     ) => {
-      const sortedPosts = [...posts].sort(
+      const latestPosts = (
+        await Promise.all(posts.map((post) => findLatestPost(post)))
+      ).filter((post): post is Post => post !== null);
+
+      if (latestPosts.length === 0) {
+        return;
+      }
+
+      const sortedPosts = [...latestPosts].sort(
         (left, right) => right.startOffset - left.startOffset,
       );
 
@@ -138,7 +200,7 @@ export const usePostActions = () => {
       if (
         sortedPosts.some(
           (post) =>
-            editorState.editingPost?.startOffset === post.startOffset &&
+            editorState.editingPost?.id === post.id &&
             editorState.editingPost?.path === post.path,
         )
       ) {
@@ -150,7 +212,7 @@ export const usePostActions = () => {
         await refreshPosts(firstPath);
       }
     },
-    [appHelper, editorState, refreshPosts, settingsState.granularity],
+    [appHelper, editorState, findLatestPost, refreshPosts, settingsState.granularity],
   );
 
   // ---------------------------------------------------------------------------
@@ -164,15 +226,21 @@ export const usePostActions = () => {
 
     // --- 編集中の投稿を上書き ---
     if (editorState.editingPost?.path) {
-      const { editingPost } = editorState;
+      const latestEditingPost = await findLatestPost(editorState.editingPost);
+      if (!latestEditingPost) {
+        new Notice("編集中の投稿を再特定できませんでした");
+        await refreshPosts(editorState.editingPost.path);
+        return;
+      }
+
       const now = window.moment();
 
-      let targetTs = editingPost.timestamp;
+      let targetTs = latestEditingPost.timestamp;
       if (settings.updateDateStrategy === "always") {
         targetTs = now;
       } else if (
         settings.updateDateStrategy === "same_day" &&
-        editingPost.timestamp.isSame(now, "day")
+        latestEditingPost.timestamp.isSame(now, "day")
       ) {
         targetTs = now;
       }
@@ -182,16 +250,16 @@ export const usePostActions = () => {
         false,
         settingsState.granularity,
         targetTs,
-        editingPost.metadata,
+        latestEditingPost.metadata,
       );
       await appHelper.replaceRange(
-        editingPost.path,
-        editingPost.startOffset,
-        editingPost.endOffset,
+        latestEditingPost.path,
+        latestEditingPost.startOffset,
+        latestEditingPost.endOffset,
         text,
       );
       editorState.cancelEdit();
-      await refreshPosts(editingPost.path);
+      await refreshPosts(latestEditingPost.path);
       return;
     }
 
@@ -312,10 +380,15 @@ export const usePostActions = () => {
       const now = window.moment();
 
       if (isThreadRoot(post)) {
+        const latestThreadPosts = await findLatestThreadPosts(post);
+        if (latestThreadPosts.length === 0) {
+          new Notice("スレッドの投稿を再特定できませんでした");
+          await refreshPosts(post.path);
+          return;
+        }
+
         await updateManyPosts(
-          postsState.posts.filter(
-            (candidate) => candidate.threadRootId === post.threadRootId,
-          ),
+          latestThreadPosts,
           () => ({ deleted: now.format("YYYYMMDDHHmmss") }),
         );
 
@@ -346,7 +419,14 @@ export const usePostActions = () => {
   // ---------------------------------------------------------------------------
   const movePostToTomorrow = useCallback(
     async (post: Post) => {
-      if (post.threadRootId) {
+      const latestPost = await findLatestPost(post);
+      if (!latestPost) {
+        new Notice("投稿の位置を再特定できませんでした");
+        await refreshPosts(post.path);
+        return;
+      }
+
+      if (latestPost.threadRootId) {
         new Notice("スレッド投稿は明日に送れません");
         return;
       }
@@ -356,7 +436,7 @@ export const usePostActions = () => {
         return;
       }
 
-      const nextDay = post.timestamp.clone().add(1, "day");
+      const nextDay = latestPost.timestamp.clone().add(1, "day");
       const nextNote = await noteStore
         .getState()
         .createNoteWithInsertAfter(app, settings, nextDay);
@@ -366,10 +446,10 @@ export const usePostActions = () => {
       }
 
       const now = window.moment();
-      const metadata = { ...post.metadata };
+      const metadata = { ...latestPost.metadata };
       if (!nextDay.isSame(now, "day")) metadata.posted = now.toISOString();
 
-      const messageWithFrom = `${post.message} (from ${post.timestamp.format("YYYY-MM-DD")})`;
+      const messageWithFrom = `${latestPost.message} (from ${latestPost.timestamp.format("YYYY-MM-DD")})`;
       const text = toText(
         messageWithFrom,
         false,
@@ -383,7 +463,7 @@ export const usePostActions = () => {
         text,
         settings.insertAfter,
       );
-      await deletePost(post);
+      await deletePost(latestPost);
 
       new Notice("明日に送りました");
     },
@@ -402,34 +482,46 @@ export const usePostActions = () => {
         return;
       }
 
+      const latestPost = await findLatestPost(post);
+      if (!latestPost) {
+        new Notice("投稿の位置を再特定できませんでした");
+        await refreshPosts(post.path);
+        return;
+      }
+
       const rootId = createThreadId();
       const text = toText(
-        post.message,
+        latestPost.message,
         false,
         settingsState.granularity,
-        getSerializedTimestamp(post.timestamp, post.noteDate),
+        getSerializedTimestamp(latestPost.timestamp, latestPost.noteDate),
         {
-          ...post.metadata,
+          ...latestPost.metadata,
           [THREAD_METADATA_KEYS.ID]: rootId,
           [THREAD_METADATA_KEYS.ROOT_ID]: rootId,
         },
       );
 
-      await appHelper.replaceRange(post.path, post.startOffset, post.endOffset, text);
+      await appHelper.replaceRange(
+        latestPost.path,
+        latestPost.startOffset,
+        latestPost.endOffset,
+        text,
+      );
 
       if (
-        editorState.editingPost?.startOffset === post.startOffset &&
-        editorState.editingPost?.path === post.path
+        editorState.editingPost?.id === latestPost.id &&
+        editorState.editingPost?.path === latestPost.path
       ) {
         editorState.cancelEdit();
       }
 
-      await refreshPosts(post.path);
+      await refreshPosts(latestPost.path);
       // 新しく作成したスレッドに切り替える
       settingsState.setThreadFocusRootId(rootId);
       new Notice("スレッドを作成しました");
     },
-    [appHelper, editorState, getSerializedTimestamp, refreshPosts, settingsState],
+    [appHelper, editorState, findLatestPost, getSerializedTimestamp, refreshPosts, settingsState],
   );
 
   // ---------------------------------------------------------------------------
@@ -438,7 +530,14 @@ export const usePostActions = () => {
   const handleClickTime = useCallback(
     (post: Post) => {
       (async () => {
-        const noteFile = app.vault.getAbstractFileByPath(post.path);
+        const latestPost = await findLatestPost(post);
+        if (!latestPost) {
+          new Notice("投稿の位置を再特定できませんでした");
+          await refreshPosts(post.path);
+          return;
+        }
+
+        const noteFile = app.vault.getAbstractFileByPath(latestPost.path);
         if (!(noteFile instanceof TFile)) return;
 
         const leaf = app.workspace.getLeaf(true);
@@ -446,9 +545,9 @@ export const usePostActions = () => {
         await leaf.openFile(noteFile, { active: true });
 
         const editor = app.workspace.activeEditor as MarkdownView;
-        const startPos = editor.editor!.offsetToPos(post.bodyStartOffset);
+        const startPos = editor.editor!.offsetToPos(latestPost.bodyStartOffset);
         const endPos = editor.editor!.offsetToPos(
-          post.bodyStartOffset + post.message.length,
+          latestPost.bodyStartOffset + latestPost.message.length,
         );
 
         queueMicrotask(() => {
@@ -461,7 +560,7 @@ export const usePostActions = () => {
         });
       })();
     },
-    [app.vault, app.workspace],
+    [app.vault, app.workspace, findLatestPost, refreshPosts],
   );
 
   return {

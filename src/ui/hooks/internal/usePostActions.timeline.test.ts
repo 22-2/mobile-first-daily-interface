@@ -321,12 +321,15 @@ describe("timeline note resolution", () => {
     } as any;
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    const content = `## Thino
+- 12:00:00 parent
+`;
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
-        loadFile: vi.fn(async () => ""),
+        loadFile: vi.fn(async () => content),
       },
       settings: {
         insertAfter: "## Thino",
@@ -351,6 +354,54 @@ describe("timeline note resolution", () => {
     expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
     // 置換されたテキストに実際の mfdiId が含まれていることを確認
     expect(mockReplaceRange.mock.calls[0][3]).toContain(`    [${THREAD_METADATA_KEYS.ID}::${fid}]`);
+  });
+
+  it("スレッド作成は mfdiId がなくても最新オフセットを再発見して置換する", async () => {
+    const plainPost = {
+      id: `${yesterdayNote.path}:0`,
+      threadRootId: null,
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {},
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    const shiftedContent = `## Thino
+note header
+- 12:00:00 parent
+`;
+
+    const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: vi.fn(async () => shiftedContent),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.createThread(plainPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledOnce();
+    expect(mockReplaceRange.mock.calls[0][1]).toBe(shiftedContent.indexOf("- 12:00:00 parent"));
+    expect(mockReplaceRange.mock.calls[0][2]).toBeGreaterThan(
+      mockReplaceRange.mock.calls[0][1],
+    );
   });
 
   it("既存スレッドを表示するとフォーカス表示へ切り替わる", async () => {
@@ -427,12 +478,16 @@ describe("timeline note resolution", () => {
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    const content = `## Thino
+- 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1] [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
+- 23:59:59 reply [${THREAD_METADATA_KEYS.ROOT_ID}::root-1] [posted::${today.toISOString()}]
+`;
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
-        loadFile: vi.fn(async () => ""),
+        loadFile: vi.fn(async () => content),
       },
       settings: {
         insertAfter: "## Thino",
@@ -448,6 +503,82 @@ describe("timeline note resolution", () => {
 
     expect(mockReplaceRange).toHaveBeenCalledTimes(2);
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+    expect(settingsStore.getState().threadFocusRootId).toBeNull();
+  });
+
+  it("mfdiId がある投稿はオフセットがずれても最新位置で削除できる", async () => {
+    const rootPost = {
+      id: "root-1",
+      threadRootId: "root-1",
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    const replyPost = {
+      id: `${yesterdayNote.path}:20`,
+      threadRootId: "root-1",
+      timestamp: today.clone().hour(1),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "reply",
+      metadata: {
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+        posted: today.toISOString(),
+      },
+      offset: 20,
+      startOffset: 20,
+      endOffset: 40,
+      bodyStartOffset: 22,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    const shiftedContent = `## Thino
+prefix
+- 12:00:00 parent
+    [${THREAD_METADATA_KEYS.ID}::root-1]
+    [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
+- 23:59:59 reply
+    [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
+    [posted::${today.toISOString()}]
+`;
+
+    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    settingsStore.setState({ threadFocusRootId: "root-1" });
+
+    const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: vi.fn(async () => shiftedContent),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.deletePost(rootPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledTimes(2);
+    expect(mockReplaceRange.mock.calls[0][1]).toBeGreaterThan(rootPost.startOffset);
+    expect(mockReplaceRange.mock.calls[1][1]).toBeGreaterThan(rootPost.startOffset);
     expect(settingsStore.getState().threadFocusRootId).toBeNull();
   });
 });
