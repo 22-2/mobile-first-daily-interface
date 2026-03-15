@@ -11,6 +11,15 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, SettingsSlice } from "./types";
 
+export const DEFAULT_VIEW_STATE = {
+  displayMode: DISPLAY_MODE.TIMELINE,
+  granularity: GRANULARITY_CONFIG.day.unit,
+  dateFilter: DATE_FILTER_IDS.TODAY,
+  timeFilter: TIME_FILTER_IDS.ALL,
+  asTask: false,
+  threadFocusRootId: null,
+} as const;
+
 function persistValue(state: MFDIStore, key: string, value: unknown) {
   state.storage?.set(key, value);
 }
@@ -152,23 +161,15 @@ export const createSettingsSlice: StateCreator<
 
   handleClickHome: () => {
     const now = window.moment();
-    set({
-      displayMode: DISPLAY_MODE.TIMELINE,
-      granularity: GRANULARITY_CONFIG.day.unit,
-      dateFilter: DATE_FILTER_IDS.TODAY,
-      timeFilter: TIME_FILTER_IDS.ALL,
-      asTask: false,
-      threadFocusRootId: null,
-      date: now,
-    });
+    set({ ...(DEFAULT_VIEW_STATE as any), date: now });
     const state = get();
-    persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.TIMELINE);
-    persistValue(state, STORAGE_KEYS.GRANULARITY, GRANULARITY_CONFIG.day.unit);
-    persistValue(state, STORAGE_KEYS.DATE_FILTER, DATE_FILTER_IDS.TODAY);
-    persistValue(state, STORAGE_KEYS.TIME_FILTER, TIME_FILTER_IDS.ALL);
-    persistValue(state, STORAGE_KEYS.AS_TASK, false);
+    persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DEFAULT_VIEW_STATE.displayMode);
+    persistValue(state, STORAGE_KEYS.GRANULARITY, DEFAULT_VIEW_STATE.granularity);
+    persistValue(state, STORAGE_KEYS.DATE_FILTER, DEFAULT_VIEW_STATE.dateFilter);
+    persistValue(state, STORAGE_KEYS.TIME_FILTER, DEFAULT_VIEW_STATE.timeFilter);
+    persistValue(state, STORAGE_KEYS.AS_TASK, DEFAULT_VIEW_STATE.asTask);
     persistValue(state, STORAGE_KEYS.DATE, now.toISOString());
-    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, DEFAULT_VIEW_STATE.threadFocusRootId);
   },
 
   handleClickToday: () => {

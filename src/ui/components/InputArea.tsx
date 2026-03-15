@@ -15,6 +15,7 @@ import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { DEFAULT_VIEW_STATE } from "src/ui/store/slices/settingsSlice";
 import { useShallow } from "zustand/shallow";
 
 import { postsStore } from "src/ui/store/postsStore";
@@ -74,6 +75,25 @@ const InputAreaControl: React.FC = React.memo(() => {
     })),
   );
 
+  const { dateFilter, timeFilter, asTask, threadFocusRootId } = useSettingsStore(
+    useShallow((s) => ({
+      dateFilter: s.dateFilter,
+      timeFilter: s.timeFilter,
+      asTask: s.asTask,
+      threadFocusRootId: s.threadFocusRootId,
+    })),
+  );
+
+  const isViewDefault =
+    displayMode === DEFAULT_VIEW_STATE.displayMode &&
+    granularity === DEFAULT_VIEW_STATE.granularity &&
+    dateFilter === DEFAULT_VIEW_STATE.dateFilter &&
+    timeFilter === DEFAULT_VIEW_STATE.timeFilter &&
+    asTask === DEFAULT_VIEW_STATE.asTask &&
+    threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId;
+
+  const homeIconColor = isViewDefault ? "var(--text-muted)" : "var(--text-accent)";
+
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       handleChangeCalendarDateAction(event.target.value);
@@ -83,30 +103,19 @@ const InputAreaControl: React.FC = React.memo(() => {
 
   const step = getMoveStep();
 
-  const todayButtonProps = isToday
-    ? {
-        bg: "var(--background-modifier-border)",
-        color: "var(--text-normal)",
-        _hover: { bg: "var(--background-modifier-border)" },
-      }
-    : {
-        bg: "var(--color-accent)!important;",
-        color: "var(--text-on-accent)!important;",
-        _hover: { bg: "var(--color-accent-2)" },
-      };
-
   return (
     <Flex
       align="center"
       paddingX="1em"
       marginY="var(--size-4-4)"
       className="mfdi-input-area-control"
+      height="28px"
     >
       <ObsidianIcon
         name="home"
         size="1.1em"
         cursor="pointer"
-        color="var(--text-muted)"
+        color={homeIconColor}
         padding="4px"
         borderRadius="4px"
         _hover={{
