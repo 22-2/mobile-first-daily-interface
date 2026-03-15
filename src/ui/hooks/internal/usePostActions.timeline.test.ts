@@ -220,7 +220,7 @@ describe("timeline note resolution", () => {
       expect.stringContaining("    [mfdiThreadRootId::root-1]"),
       "## Thino",
     );
-    expect(mockInsertTextAfter.mock.calls[0][1]).toContain("- 00:00:00 timeline post");
+    expect(mockInsertTextAfter.mock.calls[0][1]).toContain("- 23:59:59 timeline post");
     expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("[mfdiId::");
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
@@ -263,7 +263,7 @@ describe("timeline note resolution", () => {
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain(
       `- ${today.format("HH:mm:ss")} timeline post`,
     );
-    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("- 00:00:00 timeline post");
+    expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("- 23:59:59 timeline post");
   });
 
   it("スレッド作成では自動でスレッド表示へ切り替えない", async () => {
@@ -306,7 +306,7 @@ describe("timeline note resolution", () => {
     expect(mockReplaceRange).toHaveBeenCalledOnce();
     expect(settingsStore.getState().threadFocusRootId).toBeNull();
     expect(mockReplaceRange.mock.calls[0][3]).toContain("- 12:00:00 parent");
-    expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 00:00:00 parent");
+    expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
     expect(mockReplaceRange.mock.calls[0][3]).toContain("    [mfdiId::");
   });
 

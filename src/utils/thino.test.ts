@@ -16,7 +16,7 @@ describe("parseThinoEntries", () => {
       '    [物語シリーズの"幸せの強制"](https://example.com)',
       "",
       "## Another",
-      "- 00:00:00",
+      "- 23:59:59",
       "    should not be parsed",
       "",
     ].join("\n");

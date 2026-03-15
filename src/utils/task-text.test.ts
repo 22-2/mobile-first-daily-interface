@@ -13,7 +13,7 @@ describe("formatTaskText", () => {
   });
 
   test("multi-line creates inline first line and indented rest", () => {
-    const out = formatTaskText("a\nb\n", "00:00:00");
-    expect(out).toBe(`- [ ] 00:00:00 a\n    b`);
+    const out = formatTaskText("a\nb\n", "23:59:59");
+    expect(out).toBe(`- [ ] 23:59:59 a\n    b`);
   });
 });

@@ -23,7 +23,7 @@ export const usePostActions = () => {
   const getSerializedTimestamp = useCallback((timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
     return timestamp.isSame(noteDate, "day")
       ? timestamp
-      : noteDate.clone().startOf("day");
+      : noteDate.clone().endOf("day");
   }, []);
 
   const settingsState = useSettingsStore(

@@ -4,7 +4,7 @@ export function formatTaskText(input: string, time?: string): string {
     time ??
     (typeof window !== "undefined"
       ? window.moment().format("HH:mm:ss")
-      : "00:00:00");
+      : "23:59:59");
 
   if (normalized.length === 0) {
     return `- [ ] ${t}`;
