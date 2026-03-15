@@ -41,6 +41,16 @@ export const usePostContextMenu = () => {
 
         sub.addItem((si) =>
           si
+            .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
+            .setIcon("spool")
+            .setDisabled(isReadOnly || isThreadReply(post))
+            .onClick(() => {
+              createThread(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
             .setTitle("この日にフォーカス")
             .setIcon("calendar-range")
             .onClick(() => {
@@ -56,16 +66,6 @@ export const usePostContextMenu = () => {
             .setDisabled(isReadOnly)
             .onClick(() => {
               movePostToTomorrow(post);
-            }),
-        );
-
-        sub.addItem((si) =>
-          si
-            .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
-            .setIcon("spool")
-            .setDisabled(isReadOnly || isThreadReply(post))
-            .onClick(() => {
-              createThread(post);
             }),
         );
       });
