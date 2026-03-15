@@ -132,3 +132,8 @@ If your plugin does not need CSS, delete this file.
 [data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
   display: none !important;
 }
+
+[data-type="mfdi-view"] .ͼ1 .cm-cursor, .ͼ1 .cm-dropCursor {
+  margin-left: initial !important;
+  width: 1px !important;
+}
