@@ -15,6 +15,7 @@ interface BaseCardProps {
   onDoubleClick?: (e: React.MouseEvent) => void;
   children: React.ReactNode;
   footerAddon?: React.ReactNode;
+  footerRightAddon?: React.ReactNode;
 }
 
 export const BaseCard: React.FC<BaseCardProps> = ({
@@ -26,6 +27,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   onDoubleClick,
   children,
   footerAddon,
+  footerRightAddon,
 }) => {
   return (
     <Flex
@@ -76,6 +78,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
         {footerAddon}
         <Spacer />
         <HStack gap={2}>
+          {footerRightAddon}
           <Tag
             size="sm"
             variant="subtle"

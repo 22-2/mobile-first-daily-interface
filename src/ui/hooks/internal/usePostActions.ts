@@ -410,7 +410,6 @@ export const usePostActions = () => {
         editorState.cancelEdit();
       }
 
-      settingsState.setThreadFocusRootId(rootId);
       await refreshPosts(post.path);
       new Notice("スレッドを作成しました");
     },

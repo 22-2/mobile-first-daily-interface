@@ -1,4 +1,4 @@
-import { Box, VStack } from "@chakra-ui/react";
+import { IconButton, Tooltip, VStack, Box } from "@chakra-ui/react";
 import * as React from "react";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
@@ -59,30 +59,43 @@ export const PostCardView = React.memo(
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={(e) => !isDimmed && onEdit?.(post)}
-          footerAddon={
+          footerRightAddon={
             isThreadRoot(post) ? (
-              <Box
-                as="button"
-                type="button"
-                aria-label={isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"}
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                borderRadius="full"
-                padding={1}
-                color={isThreadFocused ? "var(--color-accent)" : "var(--text-muted)"}
-                backgroundColor={
-                  isThreadFocused
-                    ? "color-mix(in srgb, var(--color-accent), transparent 82%)"
-                    : "transparent"
-                }
-                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-                  e.stopPropagation();
-                  onToggleThreadFocus?.(post);
-                }}
+              <Tooltip
+                label={isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"}
+                openDelay={250}
               >
-                <ObsidianIcon name="spool" boxSize="1.1em" />
-              </Box>
+                <IconButton
+                  aria-label={
+                    isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示"
+                  }
+                  icon={<ObsidianIcon name="spool" boxSize="1.05em" />}
+                  size="xs"
+                  minW="auto"
+                  h="1.8rem"
+                  w="1.8rem"
+                  borderRadius="full"
+                  variant="ghost"
+                  color={
+                    isThreadFocused
+                      ? "var(--color-accent)"
+                      : "var(--text-muted)"
+                  }
+                  backgroundColor={
+                    isThreadFocused
+                      ? "color-mix(in srgb, var(--color-accent), transparent 84%)"
+                      : "transparent"
+                  }
+                  _hover={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--color-accent), transparent 88%)",
+                  }}
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.stopPropagation();
+                    onToggleThreadFocus?.(post);
+                  }}
+                />
+              </Tooltip>
             ) : undefined
           }
         >

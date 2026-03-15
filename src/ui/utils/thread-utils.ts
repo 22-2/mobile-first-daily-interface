@@ -8,10 +8,10 @@ export const THREAD_METADATA_KEYS = {
 export function createThreadId(): string {
   const randomUuid = globalThis.crypto?.randomUUID?.();
   if (randomUuid) {
-    return randomUuid;
+    return randomUuid.replace(/-/g, "").slice(0, 8);
   }
 
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return Math.random().toString(16).slice(2, 10).padEnd(8, "0").slice(0, 8);
 }
 
 export function resolvePostId(

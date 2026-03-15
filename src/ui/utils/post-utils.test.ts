@@ -43,7 +43,7 @@ describe("toText", () => {
     });
     // archived and deleted should NOT be hidden
     expect(result).toBe(
-      "- 16:00:00 test [archived::true] [deleted::20260101000000] [posted::2026-03-10T19:00:00.00Z]\n",
+      "- 16:00:00 test\n    [archived::true]\n    [deleted::20260101000000]\n    [posted::2026-03-10T19:00:00.00Z]\n",
     );
   });
 
@@ -73,6 +73,17 @@ describe("toText", () => {
     );
     expect(result).toBe(
       "- 16:00:00 zustandを始めて使ったときは衝撃だったな [key1::val1]\n    むかしはcontextproviderの順番でやきもきしてたから\n",
+    );
+  });
+
+  test("thino format - multiple metadata are written on separate lines", () => {
+    const result = toText("test", false, "day", undefined, {
+      mfdiId: "cc73160c",
+      mfdiThreadRootId: "cc73160c",
+    });
+
+    expect(result).toBe(
+      "- 16:00:00 test\n    [mfdiId::cc73160c]\n    [mfdiThreadRootId::cc73160c]\n",
     );
   });
 

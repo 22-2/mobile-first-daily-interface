@@ -2,6 +2,7 @@ import moment from "moment";
 import { describe, expect, test } from "vitest";
 import { Post } from "src/ui/types";
 import {
+  createThreadId,
   countVisibleRootPosts,
   getThreadPosts,
   isThreadReply,
@@ -28,6 +29,10 @@ function createPost(overrides: Partial<Post>): Post {
 }
 
 describe("thread-utils", () => {
+  test("creates short thread ids", () => {
+    expect(createThreadId()).toMatch(/^[a-f0-9]{8}$/);
+  });
+
   test("counts only root-visible posts", () => {
     const posts = [
       createPost({ id: "root-1", threadRootId: "root-1" }),

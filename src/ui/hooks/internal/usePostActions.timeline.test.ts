@@ -217,11 +217,53 @@ describe("timeline note resolution", () => {
 
     expect(mockInsertTextAfter).toHaveBeenCalledWith(
       expect.objectContaining({ path: yesterdayNote.path }),
-      expect.stringContaining("[mfdiThreadRootId::root-1]"),
+      expect.stringContaining("    [mfdiThreadRootId::root-1]"),
       "## Thino",
     );
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
+
+  it("スレッド作成では自動でスレッド表示へ切り替えない", async () => {
+    const plainPost = {
+      id: `${yesterdayNote.path}:0`,
+      threadRootId: null,
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {},
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: vi.fn(async () => ""),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+    settingsStore.setState({ threadFocusRootId: null });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.createThread(plainPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledOnce();
+    expect(settingsStore.getState().threadFocusRootId).toBeNull();
+    expect(mockReplaceRange.mock.calls[0][3]).toContain("    [mfdiId::");
   });
 
   it("スレッド親を削除すると子もまとめて削除する", async () => {

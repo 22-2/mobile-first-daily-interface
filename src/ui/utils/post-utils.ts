@@ -31,21 +31,36 @@ export function toText(
   const lines = normalized.split("\n");
   const firstLine = lines[0];
   const restLines = lines.slice(1);
+  const metadataEntries = Object.entries(metadata);
 
-  const metaStr = Object.entries(metadata)
+  const inlineMetaStr = metadataEntries.length <= 1
+    ? metadataEntries
     .map(([k, v]) => ` [${k}::${v}]`)
-    .join("");
+    .join("")
+    : "";
 
-  const head = `- ${timeStr} ${firstLine}${metaStr}`;
-  if (restLines.length === 0) {
+  const head = `- ${timeStr} ${firstLine}${inlineMetaStr}`;
+
+  const bodyLines = restLines
+    .map((x) => (x.length === 0 ? "" : `    ${x}`))
+    .filter((x, index, array) => {
+      if (x.length > 0) {
+        return true;
+      }
+      return index < array.length - 1;
+    });
+
+  const metadataLines = metadataEntries.length > 1
+    ? metadataEntries.map(([k, v]) => `    [${k}::${v}]`)
+    : [];
+
+  const trailingLines = [...bodyLines, ...metadataLines];
+
+  if (trailingLines.length === 0) {
     return head + "\n";
   }
 
-  const body = restLines
-    .map((x) => (x.length === 0 ? "" : `    ${x}`))
-    .join("\n");
-
-  return `${head}\n${body}\n`;
+  return `${head}\n${trailingLines.join("\n")}\n`;
 }
 
 export function resolveTimestamp(
