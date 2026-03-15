@@ -38,11 +38,40 @@ export class MFDISettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
     containerEl.empty();
-
     containerEl.createEl("h3", { text: "🌍 全体" });
+    this.addGeneralSettings(containerEl);
+  }
 
+  private async updateSetting<K extends keyof Settings>(
+    key: K,
+    value: Settings[K],
+  ): Promise<void> {
+    this.plugin.settings = { ...this.plugin.settings, [key]: value };
+    await this.plugin.saveSettings();
+  }
+
+  private addToggleSetting(
+    containerEl: HTMLElement,
+    name: string,
+    desc: string,
+    key: keyof Pick<Settings, "enabledCardView" | "allowEditingPastNotes">,
+    rerenderOnChange = false,
+  ): void {
+    new Setting(containerEl)
+      .setName(name)
+      .setDesc(desc)
+      .addToggle((tc) =>
+        tc
+          .setValue(this.plugin.settings[key])
+          .onChange(async (value) => {
+            await this.updateSetting(key, value);
+            if (rerenderOnChange) this.plugin.rerenderView();
+          }),
+      );
+  }
+
+  private addGeneralSettings(containerEl: HTMLElement): void {
     new Setting(containerEl)
       .setName("挿入位置 (文字列の後ろ)")
       .setDesc(
@@ -53,38 +82,25 @@ export class MFDISettingTab extends PluginSettingTab {
           .setPlaceholder("## MFDI")
           .setValue(this.plugin.settings.insertAfter)
           .onChange(async (value) => {
-            this.plugin.settings.insertAfter = value;
-            await this.plugin.saveSettings();
+            await this.updateSetting("insertAfter", value);
           }),
       );
 
-    new Setting(containerEl)
-      .setName("リンクのカード表示")
-      .setDesc("有効にすると投稿内のリンクをリッチなカード形式で表示します。")
-      .addToggle((tc) => {
-        tc.setValue(this.plugin.settings.enabledCardView).onChange(
-          async (value) => {
-            this.plugin.settings.enabledCardView = value;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          },
-        );
-      });
+    this.addToggleSetting(
+      containerEl,
+      "リンクのカード表示",
+      "有効にすると投稿内のリンクをリッチなカード形式で表示します。",
+      "enabledCardView",
+      true,
+    );
 
-    new Setting(containerEl)
-      .setName("過去ノートの編集を許可")
-      .setDesc(
-        "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
-      )
-      .addToggle((tc) => {
-        tc.setValue(this.plugin.settings.allowEditingPastNotes).onChange(
-          async (value) => {
-            this.plugin.settings.allowEditingPastNotes = value;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          },
-        );
-      });
+    this.addToggleSetting(
+      containerEl,
+      "過去ノートの編集を許可",
+      "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
+      "allowEditingPastNotes",
+      true,
+    );
 
     new Setting(containerEl)
       .setName("更新時の日時更新ストラテジ")
@@ -98,9 +114,10 @@ export class MFDISettingTab extends PluginSettingTab {
           .addOption("same_day", "その日の間だけ更新する")
           .setValue(this.plugin.settings.updateDateStrategy)
           .onChange(async (value) => {
-            this.plugin.settings.updateDateStrategy =
-              value as Settings["updateDateStrategy"];
-            await this.plugin.saveSettings();
+            await this.updateSetting(
+              "updateDateStrategy",
+              value as Settings["updateDateStrategy"],
+            );
           }),
       );
   }
