@@ -12,6 +12,7 @@ import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
@@ -25,7 +26,7 @@ const DateSection: React.FC = () => {
   );
   const onClick = useFilterMenu();
 
-  if (displayMode === DISPLAY_MODE.TIMELINE) return null;
+  if (isTimelineView(displayMode)) return null;
 
   const dateLabel = React.useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
@@ -132,7 +133,7 @@ const CountSection: React.FC = () => {
 
   const showTotal =
     (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
-    displayMode === DISPLAY_MODE.TIMELINE;
+    isTimelineView(displayMode);
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
   return (

@@ -21,6 +21,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import { useShallow } from "zustand/shallow";
 
@@ -163,7 +164,7 @@ const ReactViewContent = () => {
   const effectivelyOpen = sidebarOpen;
 
   const isEmpty =
-    settings.displayMode !== DISPLAY_MODE.TIMELINE &&
+    !isTimelineView(settings.displayMode) &&
     ((dateFilter === "today" && !currentDailyNote) ||
       (asTask ? tasks.length === 0 : filteredPosts.length === 0));
 

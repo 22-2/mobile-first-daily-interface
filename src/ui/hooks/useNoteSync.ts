@@ -6,6 +6,7 @@ import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Granularity, MomentLike } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { getPeriodicSettings } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
 import { useRefreshPosts } from "./internal/useRefreshPosts";
@@ -64,11 +65,11 @@ export function useNoteSync() {
 
   useEffect(() => {
     const isMultiDayOrTimeline =
-      dateFilter !== "today" || displayMode === DISPLAY_MODE.TIMELINE;
+      dateFilter !== "today" || isTimelineView(displayMode);
 
     const handleChanged = async (file: TFile) => {
       if (isMultiDayOrTimeline) {
-        if (displayMode === DISPLAY_MODE.TIMELINE || weekNotePaths.has(file.path)) {
+        if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
           await refreshPosts(file.path);
         }
         return;
@@ -88,7 +89,7 @@ export function useNoteSync() {
     };
 
     const handleDelete = async (file: { path: string }) => {
-      if (displayMode === DISPLAY_MODE.TIMELINE || weekNotePaths.has(file.path)) {
+      if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
         await refreshPosts(file.path);
       }
 

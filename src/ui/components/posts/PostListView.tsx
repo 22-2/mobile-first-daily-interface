@@ -13,6 +13,7 @@ import { useTimelineItems } from "src/ui/hooks/useTimelineItems";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 
 export const PostListView: React.FC = React.memo(() => {
@@ -55,6 +56,8 @@ export const PostListView: React.FC = React.memo(() => {
   });
 
   const { granularity, displayMode, dateFilter, threadFocusRootId, setThreadFocusRootId } = settings;
+  const timelineView = isTimelineView(displayMode);
+  const threadView = isThreadView({ displayMode, threadFocusRootId });
 
   const { showPostContextMenu } = usePostContextMenu();
   const displayedPostsWithDividers = useTimelineItems(
@@ -81,8 +84,8 @@ export const PostListView: React.FC = React.memo(() => {
 
   // 無限スクロールのトリガー
   useEffect(() => {
-    if (threadFocusRootId) return;
-    if (displayMode !== DISPLAY_MODE.TIMELINE || !hasMore) return;
+    if (threadView) return;
+    if (!timelineView || !hasMore) return;
 
     // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
     if (displayedPostsWithDividers.length === 0) {
@@ -97,13 +100,13 @@ export const PostListView: React.FC = React.memo(() => {
       loadMore();
     }
   }, [
-    displayMode,
+    timelineView,
     hasMore,
     loadMore,
     displayedPostsWithDividers.length,
     virtualItems.length,
     virtualItems[virtualItems.length - 1]?.index,
-    threadFocusRootId,
+    threadView,
   ]);
 
   return (
@@ -152,7 +155,7 @@ export const PostListView: React.FC = React.memo(() => {
           </Box>
         );
       })}
-      {displayMode === DISPLAY_MODE.TIMELINE && hasMore && !threadFocusRootId && (
+      {timelineView && !threadView && hasMore && (
         <Box
           style={{
             position: "absolute",
@@ -169,7 +172,7 @@ export const PostListView: React.FC = React.memo(() => {
           読み込み中...
         </Box>
       )}
-      {displayMode === DISPLAY_MODE.TIMELINE && !hasMore && !threadFocusRootId && (
+      {timelineView && !threadView && !hasMore && (
         <Box
           style={{
             position: "absolute",

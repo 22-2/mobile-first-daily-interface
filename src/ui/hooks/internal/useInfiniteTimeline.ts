@@ -9,6 +9,7 @@ import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { buildPostFromEntry } from "src/ui/utils/thread-utils";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { getAllTopicNotes, getDateUID } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
@@ -161,7 +162,7 @@ export const useInfiniteTimeline = () => {
     string | null
   >({
     queryKey: ["posts", activeTopic, displayMode],
-    enabled: displayMode === DISPLAY_MODE.TIMELINE,
+    enabled: isTimelineView(displayMode),
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {
@@ -181,7 +182,7 @@ export const useInfiniteTimeline = () => {
   // ページデータを postsStore に同期
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (displayMode === DISPLAY_MODE.TIMELINE && infiniteData) {
+    if (isTimelineView(displayMode) && infiniteData) {
       setPosts(infiniteData.pages.flatMap((p) => p.posts));
     }
   }, [displayMode, infiniteData, setPosts]);

@@ -13,6 +13,7 @@ import {
   isVisibleRootPost,
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
+import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 
 interface UseFilteredPostsProps {
   posts: Post[];
@@ -39,11 +40,15 @@ export const useFilteredPosts = ({
     const postsWithoutHidden = posts.filter(
       (p) => !p.metadata.archived && !p.metadata.deleted,
     );
+    const activeThreadRootId = threadFocusRootId;
 
-    if (threadFocusRootId) {
+    if (
+      activeThreadRootId &&
+      isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
+    ) {
       const threadPosts = sortThreadPosts(
-        getThreadPosts(postsWithoutHidden, threadFocusRootId),
-        threadFocusRootId,
+        getThreadPosts(postsWithoutHidden, activeThreadRootId),
+        activeThreadRootId,
       );
       return includeThreadReplies
         ? threadPosts
@@ -53,7 +58,7 @@ export const useFilteredPosts = ({
     const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
 
     // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
-    if (displayMode === DISPLAY_MODE.TIMELINE) return visibleRoots;
+    if (isTimelineView(displayMode)) return visibleRoots;
 
     if (dateFilter !== "today") return visibleRoots;
     if (timeFilter === "all" || asTask || granularity !== "day")

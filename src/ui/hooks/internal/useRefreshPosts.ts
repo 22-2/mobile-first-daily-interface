@@ -7,6 +7,7 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 
 export function useRefreshPosts() {
@@ -35,7 +36,7 @@ export function useRefreshPosts() {
   return useCallback(
     async (path?: string) => {
       // タイムラインモード: TQ キャッシュを invalidate して再フェッチを促す
-      if (displayMode === DISPLAY_MODE.TIMELINE) {
+      if (isTimelineView(displayMode)) {
         await queryClient.invalidateQueries({
           queryKey: ["posts", activeTopic, displayMode],
         });

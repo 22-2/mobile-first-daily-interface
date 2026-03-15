@@ -7,6 +7,7 @@ import {
     MomentLike,
     Post
 } from "src/ui/types";
+  import { isTimelineView } from "src/ui/utils/view-mode";
 
 export type TimelineItem =
   | { type: "post"; post: Post; key: string }
@@ -32,7 +33,7 @@ export const useTimelineItems = (
 
       // タイムラインモードなら常に区分けを出す。フォーカスモード（単一閲覧）なら今日以外のみ。
       const shouldShowDividers =
-        displayMode === DISPLAY_MODE.TIMELINE ||
+        isTimelineView(displayMode) ||
         granularity !== "day" ||
         dateFilter !== "today";
       const isDateChanged = lastDate !== currentDate;

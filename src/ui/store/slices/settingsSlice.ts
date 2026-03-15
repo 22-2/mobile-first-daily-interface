@@ -7,6 +7,7 @@ import {
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, SettingsSlice } from "./types";
 
@@ -139,8 +140,14 @@ export const createSettingsSlice: StateCreator<
   },
 
   setThreadFocusRootId: (threadFocusRootId) => {
-    set({ threadFocusRootId });
-    persistValue(get(), STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, threadFocusRootId);
+    set((state) => ({
+      threadFocusRootId,
+      displayMode:
+        threadFocusRootId !== null ? DISPLAY_MODE.FOCUS : state.displayMode,
+    }));
+    const state = get();
+    persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, threadFocusRootId);
+    persistValue(state, STORAGE_KEYS.DISPLAY_MODE, state.displayMode);
   },
 
   handleClickHome: () => {
@@ -175,7 +182,7 @@ export const createSettingsSlice: StateCreator<
 
   getMoveStep: () => {
     const { displayMode, granularity, dateFilter } = get();
-    if (displayMode === DISPLAY_MODE.TIMELINE) return MOVE_STEP.DEFAULT;
+    if (isTimelineView(displayMode)) return MOVE_STEP.DEFAULT;
     if (granularity !== GRANULARITY_CONFIG.day.unit) return MOVE_STEP.DEFAULT;
     if (dateFilter === DATE_FILTER_IDS.THIS_WEEK) return MOVE_STEP.WEEK;
     const days = Number.parseInt(dateFilter, 10);
@@ -225,13 +232,13 @@ export const createSettingsSlice: StateCreator<
 
   isReadOnly: () => {
     const { date, granularity, displayMode } = get();
-    if (displayMode === DISPLAY_MODE.TIMELINE) return false;
+    if (isTimelineView(displayMode)) return false;
     return date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
   },
 
   getEffectiveDate: () => {
     const { date, displayMode } = get();
-    return displayMode === DISPLAY_MODE.TIMELINE ? window.moment() : date;
+    return isTimelineView(displayMode) ? window.moment() : date;
   },
 
   hydrateSettingsState: () => {

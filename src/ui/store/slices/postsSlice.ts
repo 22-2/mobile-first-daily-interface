@@ -4,6 +4,7 @@ import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { buildPostFromEntry, sortPostsDescending } from "src/ui/utils/thread-utils";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import {
     getAllTopicNotes,
     getDateUID,
@@ -177,7 +178,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       (post) => !post.metadata.archived && !post.metadata.deleted,
     );
 
-    if (displayMode === DISPLAY_MODE.TIMELINE) return visiblePosts;
+    if (isTimelineView(displayMode)) return visiblePosts;
     if (dateFilter !== DATE_FILTER_IDS.TODAY) return visiblePosts;
     if (timeFilter === TIME_FILTER_IDS.ALL || asTask || granularity !== "day")
       return visiblePosts;

@@ -305,6 +305,7 @@ describe("timeline note resolution", () => {
     });
 
     expect(mockReplaceRange).toHaveBeenCalledOnce();
+    expect(settingsStore.getState().displayMode).toBe(DISPLAY_MODE.FOCUS);
     // スレッド作成後は自動でそのスレッドに切り替わる（root id が設定される）
     const fid = settingsStore.getState().threadFocusRootId;
     expect(typeof fid).toBe("string");
@@ -313,6 +314,40 @@ describe("timeline note resolution", () => {
     expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
     // 置換されたテキストに実際の mfdiId が含まれていることを確認
     expect(mockReplaceRange.mock.calls[0][3]).toContain(`    [${THREAD_METADATA_KEYS.ID}::${fid}]`);
+  });
+
+  it("既存スレッドを表示するとフォーカス表示へ切り替わる", async () => {
+    const threadRoot = {
+      id: "root-1",
+      threadRootId: "root-1",
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-1",
+        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    settingsStore.setState({
+      displayMode: DISPLAY_MODE.TIMELINE,
+      threadFocusRootId: null,
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.createThread(threadRoot);
+    });
+
+    expect(settingsStore.getState().displayMode).toBe(DISPLAY_MODE.FOCUS);
+    expect(settingsStore.getState().threadFocusRootId).toBe("root-1");
   });
 
   it("スレッド親を削除すると子もまとめて削除する", async () => {
