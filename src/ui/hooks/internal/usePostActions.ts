@@ -422,6 +422,8 @@ export const usePostActions = () => {
       }
 
       await refreshPosts(post.path);
+      // 新しく作成したスレッドに切り替える
+      settingsState.setThreadFocusRootId(rootId);
       new Notice("スレッドを作成しました");
     },
     [appHelper, editorState, getSerializedTimestamp, refreshPosts, settingsState],
