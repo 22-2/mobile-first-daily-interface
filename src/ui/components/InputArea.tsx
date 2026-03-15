@@ -4,9 +4,9 @@ import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
 import {
-    DISPLAY_MODE,
-    PLACEHOLDER_TEXT,
-    READONLY_PLACEHOLDER_TEXT
+  DISPLAY_MODE,
+  PLACEHOLDER_TEXT,
+  READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -103,6 +103,19 @@ const InputAreaControl: React.FC = React.memo(() => {
       marginY="var(--size-4-4)"
       className="mfdi-input-area-control"
     >
+      <ObsidianIcon
+        name="home"
+        size="1.1em"
+        cursor="pointer"
+        color="var(--text-muted)"
+        padding="4px"
+        borderRadius="4px"
+        _hover={{
+          color: "var(--text-normal)",
+          bg: "var(--background-modifier-hover)",
+        }}
+        onClick={handleClickHome}
+      />
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         {displayMode === DISPLAY_MODE.FOCUS ? (
@@ -117,7 +130,7 @@ const InputAreaControl: React.FC = React.memo(() => {
                 className="mfdi-today-button"
                 fontSize={"80%"}
                 width="3.5em"
-                height="2.2em"
+                height="28px"
                 cursor="pointer"
                 onClick={handleClickToday}
                 onContextMenu={(e) => {
@@ -134,7 +147,7 @@ const InputAreaControl: React.FC = React.memo(() => {
               <Input
                 className="mfdi-date-input"
                 size="sm"
-                height="2.2em"
+                height="28px"
                 fontSize="90%"
                 type={GRANULARITY_CONFIG[granularity].inputType}
                 value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
@@ -162,19 +175,6 @@ const InputAreaControl: React.FC = React.memo(() => {
         )}
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
-        <ObsidianIcon
-          name="home"
-          size="1.1em"
-          cursor="pointer"
-          color="var(--text-muted)"
-          padding="4px"
-          borderRadius="4px"
-          _hover={{
-            color: "var(--text-normal)",
-            bg: "var(--background-modifier-hover)",
-          }}
-          onClick={handleClickHome}
-        />
         <ObsidianIcon
           name="maximize"
           size="1.1em"
@@ -244,7 +244,7 @@ const InputAreaFooter: React.FC = React.memo(() => {
       alignItems="center"
       paddingY={"0.5em"}
       paddingBottom={"1em"}
-      marginRight={"2.4em"}
+      marginRight={"1.2em"}
     >
       {editingPost && (
         <Button
