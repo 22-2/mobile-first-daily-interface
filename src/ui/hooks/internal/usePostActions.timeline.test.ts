@@ -228,7 +228,6 @@ describe("timeline note resolution", () => {
       message: "parent",
       metadata: {
         [THREAD_METADATA_KEYS.ID]: "root-1",
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
       },
       offset: 0,
       startOffset: 0,
@@ -255,7 +254,7 @@ describe("timeline note resolution", () => {
 
     expect(mockInsertTextAfter).toHaveBeenCalledWith(
       expect.objectContaining({ path: yesterdayNote.path }),
-      expect.stringContaining("    [mfdiThreadRootId::root-1]"),
+      expect.stringContaining("    [parentId::root-1]"),
       "## Thino",
     );
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("- 23:59:59 timeline post");
@@ -273,7 +272,6 @@ describe("timeline note resolution", () => {
       message: "parent",
       metadata: {
         [THREAD_METADATA_KEYS.ID]: "root-today-1",
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-today-1",
       },
       offset: 0,
       startOffset: 0,
@@ -353,7 +351,7 @@ describe("timeline note resolution", () => {
     expect(mockReplaceRange.mock.calls[0][3]).toContain("- 12:00:00 parent");
     expect(mockReplaceRange.mock.calls[0][3]).not.toContain("- 23:59:59 parent");
     // 置換されたテキストに実際の mfdiId が含まれていることを確認
-    expect(mockReplaceRange.mock.calls[0][3]).toContain(`    [${THREAD_METADATA_KEYS.ID}::${fid}]`);
+    expect(mockReplaceRange.mock.calls[0][3]).toContain(`[${THREAD_METADATA_KEYS.ID}::${fid}]`);
   });
 
   it("スレッド作成は mfdiId がなくても最新オフセットを再発見して置換する", async () => {
@@ -413,7 +411,6 @@ note header
       message: "parent",
       metadata: {
         [THREAD_METADATA_KEYS.ID]: "root-1",
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
       },
       offset: 0,
       startOffset: 0,
@@ -447,7 +444,6 @@ note header
       message: "parent",
       metadata: {
         [THREAD_METADATA_KEYS.ID]: "root-1",
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
       },
       offset: 0,
       startOffset: 0,
@@ -463,7 +459,7 @@ note header
       noteDate: yesterday.clone().startOf("day"),
       message: "reply",
       metadata: {
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+        [THREAD_METADATA_KEYS.PARENT_ID]: "root-1",
         posted: today.toISOString(),
       },
       offset: 20,
@@ -479,8 +475,8 @@ note header
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     const content = `## Thino
-- 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1] [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
-- 23:59:59 reply [${THREAD_METADATA_KEYS.ROOT_ID}::root-1] [posted::${today.toISOString()}]
+  - 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1]
+  - 23:59:59 reply [${THREAD_METADATA_KEYS.PARENT_ID}::root-1] [posted::${today.toISOString()}]
 `;
     (useAppContext as any).mockReturnValue({
       app: mockApp,
@@ -515,7 +511,6 @@ note header
       message: "parent",
       metadata: {
         [THREAD_METADATA_KEYS.ID]: "root-1",
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
       },
       offset: 0,
       startOffset: 0,
@@ -532,7 +527,7 @@ note header
       noteDate: yesterday.clone().startOf("day"),
       message: "reply",
       metadata: {
-        [THREAD_METADATA_KEYS.ROOT_ID]: "root-1",
+        [THREAD_METADATA_KEYS.PARENT_ID]: "root-1",
         posted: today.toISOString(),
       },
       offset: 20,
@@ -547,9 +542,9 @@ note header
 prefix
 - 12:00:00 parent
     [${THREAD_METADATA_KEYS.ID}::root-1]
-    [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
+    [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]
 - 23:59:59 reply
-    [${THREAD_METADATA_KEYS.ROOT_ID}::root-1]
+    [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]
     [posted::${today.toISOString()}]
 `;
 

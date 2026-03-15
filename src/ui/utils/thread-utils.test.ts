@@ -8,6 +8,7 @@ import {
   isThreadReply,
   isThreadRoot,
   resolvePostId,
+  resolveThreadRootId,
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 
@@ -35,9 +36,14 @@ describe("thread-utils", () => {
   });
 
   test("falls back to path and offset when reply has no mfdiId", () => {
-    expect(resolvePostId({ mfdiThreadRootId: "root-1" }, "daily.md", 20)).toBe(
+    expect(resolvePostId({ parentId: "root-1" }, "daily.md", 20)).toBe(
       "daily.md:20",
     );
+  });
+
+  test("resolves thread root id from parentId or mfdiId", () => {
+    expect(resolveThreadRootId({ parentId: "root-1" })).toBe("root-1");
+    expect(resolveThreadRootId({ mfdiId: "root-1" })).toBe("root-1");
   });
 
   test("counts only root-visible posts", () => {

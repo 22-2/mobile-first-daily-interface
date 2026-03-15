@@ -2,7 +2,7 @@ import { MomentLike, Post } from "src/ui/types";
 
 export const THREAD_METADATA_KEYS = {
   ID: "mfdiId",
-  ROOT_ID: "mfdiThreadRootId",
+  PARENT_ID: "parentId",
 } as const;
 
 export function createThreadId(): string {
@@ -25,7 +25,7 @@ export function resolvePostId(
 export function resolveThreadRootId(
   metadata: Record<string, string> | undefined,
 ): string | null {
-  return metadata?.[THREAD_METADATA_KEYS.ROOT_ID] ?? null;
+  return metadata?.[THREAD_METADATA_KEYS.PARENT_ID] ?? metadata?.[THREAD_METADATA_KEYS.ID] ?? null;
 }
 
 export function isThreadReply(post: Post): boolean {

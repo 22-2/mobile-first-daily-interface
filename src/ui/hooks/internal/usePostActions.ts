@@ -277,7 +277,7 @@ export const usePostActions = () => {
         return;
       }
 
-      metadata[THREAD_METADATA_KEYS.ROOT_ID] = settingsState.threadFocusRootId;
+      metadata[THREAD_METADATA_KEYS.PARENT_ID] = settingsState.threadFocusRootId;
       // Attach `posted` only when replying across dates (keep same-day replies timestamped normally)
       if (!now.isSame(rootPost.noteDate, "day")) {
         metadata.posted = now.toISOString();
@@ -498,7 +498,6 @@ export const usePostActions = () => {
         {
           ...latestPost.metadata,
           [THREAD_METADATA_KEYS.ID]: rootId,
-          [THREAD_METADATA_KEYS.ROOT_ID]: rootId,
         },
       );
 
