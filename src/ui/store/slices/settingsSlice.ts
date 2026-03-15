@@ -6,7 +6,13 @@ import {
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  MomentLike,
+  TimeFilter,
+} from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, SettingsSlice } from "./types";
@@ -22,6 +28,27 @@ export const DEFAULT_VIEW_STATE = {
 
 function persistValue(state: MFDIStore, key: string, value: unknown) {
   state.storage?.set(key, value);
+}
+
+export function isPastDateReadOnly(params: {
+  date: MomentLike;
+  granularity: Granularity;
+  allowEditingPastNotes: boolean;
+}) {
+  const { date, granularity, allowEditingPastNotes } = params;
+  if (allowEditingPastNotes) return false;
+  return date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
+}
+
+export function isViewReadOnly(params: {
+  date: MomentLike;
+  granularity: Granularity;
+  displayMode: DisplayMode;
+  allowEditingPastNotes: boolean;
+}) {
+  const { date, granularity, displayMode, allowEditingPastNotes } = params;
+  if (isTimelineView(displayMode)) return false;
+  return isPastDateReadOnly({ date, granularity, allowEditingPastNotes });
 }
 
 function resolveInitialSettingsState(
@@ -148,15 +175,22 @@ export const createSettingsSlice: StateCreator<
     persistValue(get(), STORAGE_KEYS.AS_TASK, asTask);
   },
 
-  setThreadFocusRootId: (threadFocusRootId) => {
+  setThreadFocusRootId: (threadFocusRootId, focusDate) => {
     set((state) => ({
       threadFocusRootId,
+      date:
+        threadFocusRootId !== null && focusDate != null
+          ? focusDate.clone()
+          : state.date,
       displayMode:
         threadFocusRootId !== null ? DISPLAY_MODE.FOCUS : state.displayMode,
     }));
     const state = get();
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, threadFocusRootId);
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, state.displayMode);
+    if (threadFocusRootId !== null && focusDate != null) {
+      persistValue(state, STORAGE_KEYS.DATE, state.date.toISOString());
+    }
   },
 
   handleClickHome: () => {
@@ -232,9 +266,22 @@ export const createSettingsSlice: StateCreator<
   },
 
   isReadOnly: () => {
-    const { date, granularity, displayMode } = get();
-    if (isTimelineView(displayMode)) return false;
-    return date.isBefore(window.moment(), GRANULARITY_CONFIG[granularity].unit);
+    const { date, granularity, displayMode, pluginSettings } = get();
+    return isViewReadOnly({
+      date,
+      granularity,
+      displayMode,
+      allowEditingPastNotes: pluginSettings?.allowEditingPastNotes ?? false,
+    });
+  },
+
+  isDateReadOnly: (date, granularity) => {
+    const { granularity: activeGranularity, pluginSettings } = get();
+    return isPastDateReadOnly({
+      date,
+      granularity: granularity ?? activeGranularity,
+      allowEditingPastNotes: pluginSettings?.allowEditingPastNotes ?? false,
+    });
   },
 
   getEffectiveDate: () => {

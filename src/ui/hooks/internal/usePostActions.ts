@@ -473,7 +473,7 @@ export const usePostActions = () => {
   const createThread = useCallback(
     async (post: Post) => {
       if (post.threadRootId === post.id) {
-        settingsState.setThreadFocusRootId(post.id);
+        settingsState.setThreadFocusRootId(post.id, post.noteDate);
         return;
       }
 
@@ -517,7 +517,7 @@ export const usePostActions = () => {
 
       await refreshPosts(latestPost.path);
       // 新しく作成したスレッドに切り替える
-      settingsState.setThreadFocusRootId(rootId);
+      settingsState.setThreadFocusRootId(rootId, latestPost.noteDate);
       new Notice("スレッドを作成しました");
     },
     [appHelper, editorState, findLatestPost, getSerializedTimestamp, refreshPosts, settingsState],

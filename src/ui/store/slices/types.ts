@@ -47,7 +47,10 @@ export interface SettingsSlice {
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;
-  setThreadFocusRootId: (rootId: string | null) => void;
+  setThreadFocusRootId: (
+    rootId: string | null,
+    focusDate?: MomentLike,
+  ) => void;
   handleClickHome: () => void;
   handleClickToday: () => void;
   handleClickMovePrevious: () => void;
@@ -55,6 +58,7 @@ export interface SettingsSlice {
   handleChangeCalendarDate: (value: string) => void;
   isToday: () => boolean;
   isReadOnly: () => boolean;
+  isDateReadOnly: (date: MomentLike, granularity?: Granularity) => boolean;
   getMoveStep: () => number;
   getEffectiveDate: () => MomentLike;
   hydrateSettingsState: () => void;

@@ -22,8 +22,6 @@ export const PostListView: React.FC = React.memo(() => {
       granularity: s.granularity,
       displayMode: s.displayMode,
       dateFilter: s.dateFilter,
-      isReadOnly: s.isReadOnly(),
-      setDate: s.setDate,
       setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
       asTask: s.asTask,
@@ -148,6 +146,7 @@ export const PostListView: React.FC = React.memo(() => {
                 onToggleThreadFocus={(post) => {
                   setThreadFocusRootId(
                     threadFocusRootId === post.id ? null : post.id,
+                    post.noteDate,
                   );
                 }}
               />

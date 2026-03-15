@@ -39,16 +39,14 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
-    const isReadOnly = useSettingsStore((s) => s.isReadOnly());
+    const isDateReadOnly = useSettingsStore((s) => s.isDateReadOnly);
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,
       settings.enabledCardView,
     );
 
-    const { unit } = GRANULARITY_CONFIG[granularity];
-    // 過去の投稿は薄くする
-    const isDimmed = post.timestamp.isBefore(window.moment(), unit);
+    const isDimmed = isDateReadOnly(post.noteDate, granularity);
     const threadToggleLabel = isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示";
 
     return (
@@ -59,7 +57,7 @@ export const PostCardView = React.memo(
           dateFilter={dateFilter}
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
-          onDoubleClick={(e) => !isDimmed && onEdit?.(post)}
+          onDoubleClick={() => !isDimmed && onEdit?.(post)}
           footerRightAddon={
             isThreadRoot(post) ? (
               <ObsidianIcon

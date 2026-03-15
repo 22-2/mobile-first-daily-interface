@@ -6,6 +6,7 @@ export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
+  allowEditingPastNotes: boolean;
   updateDateStrategy: "never" | "always" | "same_day";
   topics: Topic[];
   activeTopic: string;
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "Thino",
   insertAfter: "## Thino",
   enabledCardView: true,
+  allowEditingPastNotes: false,
   updateDateStrategy: "never",
   topics: [DEFAULT_TOPIC],
   activeTopic: "",
@@ -63,6 +65,21 @@ export class MFDISettingTab extends PluginSettingTab {
         tc.setValue(this.plugin.settings.enabledCardView).onChange(
           async (value) => {
             this.plugin.settings.enabledCardView = value;
+            await this.plugin.saveSettings();
+            this.plugin.rerenderView();
+          },
+        );
+      });
+
+    new Setting(containerEl)
+      .setName("過去ノートの編集を許可")
+      .setDesc(
+        "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
+      )
+      .addToggle((tc) => {
+        tc.setValue(this.plugin.settings.allowEditingPastNotes).onChange(
+          async (value) => {
+            this.plugin.settings.allowEditingPastNotes = value;
             await this.plugin.saveSettings();
             this.plugin.rerenderView();
           },
