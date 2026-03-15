@@ -4,7 +4,7 @@ import { setTooltip } from "obsidian";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useSettingsStore } from "src/ui/store/settingsStore";
+import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import { DateFilter, Granularity, Post } from "src/ui/types";
 
 import { BaseCard } from "src/ui/components/BaseCard";
@@ -39,14 +39,17 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
-    const isDateReadOnly = useSettingsStore((s) => s.isDateReadOnly);
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,
       settings.enabledCardView,
     );
 
-    const isDimmed = isDateReadOnly(post.noteDate, granularity);
+    const isDimmed = isPastDateReadOnly({
+      date: post.noteDate,
+      granularity,
+      allowEditingPastNotes: settings.allowEditingPastNotes,
+    });
     const threadToggleLabel = isThreadFocused ? "スレッド表示を閉じる" : "スレッドを表示";
 
     return (
