@@ -4,9 +4,9 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
-import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { useShallow } from "zustand/shallow";
 import { DISPLAY_MODE } from "../config/consntants";
+import { isThreadRoot, isThreadReply } from "../utils/thread-utils";
 
 export const usePostContextMenu = () => {
   const { setDate, setDisplayMode, isReadOnly } = useSettingsStore(
@@ -33,6 +33,45 @@ export const usePostContextMenu = () => {
 
       const menu = new Menu();
 
+      // 実験的機能はサブメニューにまとめる（addItem のコールバック内でサブメニューを作成し、
+      // その場で項目を追加するパターンに合わせる）
+      menu.addItem((item) => {
+        item.setTitle("実験的").setIcon("beaker");
+        const sub = item.setSubmenu();
+
+        sub.addItem((si) =>
+          si
+            .setTitle("この日にフォーカス")
+            .setIcon("calendar-range")
+            .onClick(() => {
+              setDate(post.timestamp.clone());
+              setDisplayMode(DISPLAY_MODE.FOCUS);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("明日に送る")
+            .setIcon("fast-forward")
+            .setDisabled(isReadOnly)
+            .onClick(() => {
+              movePostToTomorrow(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
+            .setIcon("spool")
+            .setDisabled(isReadOnly || isThreadReply(post))
+            .onClick(() => {
+              createThread(post);
+            }),
+        );
+      });
+
+      menu.addSeparator();
+
       menu.addItem((item) =>
         item
           .setTitle("投稿にジャンプ")
@@ -41,38 +80,6 @@ export const usePostContextMenu = () => {
             handleClickTime(post);
           }),
       );
-
-      menu.addItem((item) =>
-        item
-          .setTitle("この日にフォーカス")
-          .setIcon("calendar-range")
-          .onClick(() => {
-            setDate(post.timestamp.clone());
-            setDisplayMode(DISPLAY_MODE.FOCUS);
-          }),
-      );
-
-      menu.addItem((item) =>
-        item
-          .setTitle("明日に送る")
-          .setIcon("fast-forward")
-          .setDisabled(isReadOnly || post.threadRootId != null)
-          .onClick(() => {
-            movePostToTomorrow(post);
-          }),
-      );
-
-      menu.addItem((item) =>
-        item
-          .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
-          .setIcon("spool")
-          .setDisabled(isReadOnly || isThreadReply(post))
-          .onClick(() => {
-            createThread(post);
-          }),
-      );
-
-      menu.addSeparator();
 
       menu.addItem((item) =>
         item
@@ -126,7 +133,6 @@ export const usePostContextMenu = () => {
       startEdit,
       isReadOnly,
       movePostToTomorrow,
-      createThread,
       deletePost,
       archivePost,
     ],
