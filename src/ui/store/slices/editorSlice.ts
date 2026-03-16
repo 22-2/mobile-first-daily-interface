@@ -1,5 +1,4 @@
 import { STORAGE_KEYS } from "src/ui/config/consntants";
-import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { StateCreator } from "zustand/vanilla";
 import { EditorSlice, MFDIStore } from "./types";
 
@@ -62,13 +61,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   },
 
   canSubmit: (posts) => {
-    const { input, granularity, getEffectiveDate, getEditingPost } = get();
+    const { input, granularity, getEffectiveDate, getEditingPost, isDateReadOnly } =
+      get();
     const effectiveDate = getEffectiveDate();
-    const isPast = effectiveDate.isBefore(
-      window.moment(),
-      GRANULARITY_CONFIG[granularity].unit,
-    );
-    if (isPast) return false;
+    if (isDateReadOnly(effectiveDate, granularity)) return false;
 
     const editingPost = getEditingPost(posts);
     if (!editingPost) {

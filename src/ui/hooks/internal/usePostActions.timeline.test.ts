@@ -90,6 +90,15 @@ describe("timeline note resolution", () => {
     (useRefreshPosts as any).mockReturnValue(mockRefreshPosts);
 
     settingsStore.setState({
+      pluginSettings: {
+        postFormatOption: "Thino",
+        insertAfter: "## Thino",
+        enabledCardView: true,
+        allowEditingPastNotes: false,
+        updateDateStrategy: "never",
+        topics: [],
+        activeTopic: "",
+      },
       activeTopic: "",
       granularity: "day",
       date: yesterday.clone(),
@@ -262,6 +271,56 @@ describe("timeline note resolution", () => {
     );
     expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain("[mfdiId::");
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain("[posted::");
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
+
+  it("過去編集を許可していれば過去スレッドにも返信できる", async () => {
+    const threadRoot = {
+      id: "root-past-1",
+      threadRootId: "root-past-1",
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-past-1",
+      },
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    settingsStore.setState((state) => ({
+      ...state,
+      pluginSettings: {
+        ...state.pluginSettings!,
+        allowEditingPastNotes: true,
+      },
+      threadFocusRootId: "root-past-1",
+      displayMode: DISPLAY_MODE.FOCUS,
+      date: yesterday.clone(),
+    }));
+    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockRefreshPosts.mockResolvedValue(undefined);
+
+    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+      true,
+    );
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+      expect.objectContaining({ path: yesterdayNote.path }),
+      expect.stringContaining("    [parentId::root-past-1]"),
+      "## Thino",
+    );
     expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
   });
 
