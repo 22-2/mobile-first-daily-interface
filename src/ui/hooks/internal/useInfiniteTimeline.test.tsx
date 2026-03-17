@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { resolveTimelineBaseDate } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { resolveTimelineBaseDate } from "src/ui/hooks/internal/timelinePosts";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -25,7 +25,10 @@ describe("useInfiniteTimeline", () => {
   });
 
   it("タイムライン初回取得はフォーカス中の日付ではなく今日を基準にする", () => {
-    const result = resolveTimelineBaseDate(null);
+    const result = resolveTimelineBaseDate(
+      null,
+      settingsStore.getState().getEffectiveDate,
+    );
 
     expect(result.isSame(today, "day")).toBe(true);
     expect(result.isSame(yesterday, "day")).toBe(false);
@@ -33,7 +36,10 @@ describe("useInfiniteTimeline", () => {
 
   it("次ページ取得時は pageParam を優先する", () => {
     const pageParam = yesterday.clone().format();
-    const result = resolveTimelineBaseDate(pageParam);
+    const result = resolveTimelineBaseDate(
+      pageParam,
+      settingsStore.getState().getEffectiveDate,
+    );
 
     expect(result.isSame(yesterday, "day")).toBe(true);
   });
