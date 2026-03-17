@@ -1,14 +1,15 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
+import { postsStore, usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Granularity, MomentLike } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getPeriodicSettings } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
-import { useRefreshPosts } from "./internal/useRefreshPosts";
+import { createRefreshPosts } from "./internal/refreshPosts";
 
 type CurrentDayFileParams = {
   date: MomentLike;
@@ -32,7 +33,7 @@ function isCurrentDayFile(
  */
 export function useNoteSync() {
   const { app } = useAppContext();
-  const refreshPosts = useRefreshPosts();
+  const queryClient = useQueryClient();
 
   const { date, granularity, activeTopic, dateFilter, displayMode, setDate } =
     useSettingsStore(
@@ -60,6 +61,30 @@ export function useNoteSync() {
       updatePosts: s.updatePosts,
       updateTasks: s.updateTasks,
     })),
+  );
+
+  const refreshPosts = useCallback(
+    createRefreshPosts({
+      vault: app.vault,
+      queryClient,
+      dateFilter,
+      activeTopic,
+      date,
+      displayMode,
+      updatePosts,
+      updatePostsForWeek: postsStore.getState().updatePostsForWeek,
+      updatePostsForDays: postsStore.getState().updatePostsForDays,
+      replacePaths: noteStore.getState().replacePaths,
+    }),
+    [
+      app.vault,
+      queryClient,
+      dateFilter,
+      activeTopic,
+      date,
+      displayMode,
+      updatePosts,
+    ],
   );
 
   useEffect(() => {

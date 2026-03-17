@@ -11,7 +11,19 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import * as dailyNotes from "src/utils/daily-notes";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useRefreshPosts } from "./useRefreshPosts";
+import { createRefreshPosts } from "./refreshPosts";
+
+vi.mock("@tanstack/react-query", async () => {
+  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
+    "@tanstack/react-query",
+  );
+  return {
+    ...actual,
+    useQueryClient: vi.fn(() => ({
+      invalidateQueries: vi.fn(),
+    })),
+  };
+});
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(),
@@ -28,8 +40,8 @@ vi.mock("src/utils/daily-notes", async () => {
   };
 });
 
-vi.mock("./useRefreshPosts", () => ({
-  useRefreshPosts: vi.fn(),
+vi.mock("./refreshPosts", () => ({
+  createRefreshPosts: vi.fn(),
 }));
 
 describe("timeline note resolution", () => {
@@ -87,7 +99,7 @@ describe("timeline note resolution", () => {
       },
     });
 
-    (useRefreshPosts as any).mockReturnValue(mockRefreshPosts);
+    (createRefreshPosts as any).mockReturnValue(mockRefreshPosts);
 
     settingsStore.setState({
       pluginSettings: {

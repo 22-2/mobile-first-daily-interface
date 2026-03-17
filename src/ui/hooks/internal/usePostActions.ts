@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -16,11 +17,11 @@ import {
 import { getTopicNote } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
-import { useRefreshPosts } from "./useRefreshPosts";
+import { createRefreshPosts } from "./refreshPosts";
 
 export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
-  const refreshPosts = useRefreshPosts();
+  const queryClient = useQueryClient();
 
   const getSerializedTimestamp = useCallback(
     (timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
@@ -73,6 +74,33 @@ export const usePostActions = () => {
       currentDailyNote: s.currentDailyNote,
       replacePaths: s.replacePaths,
     })),
+  );
+
+  const refreshPosts = useCallback(
+    createRefreshPosts({
+      vault: app.vault,
+      queryClient,
+      dateFilter: settingsState.dateFilter,
+      activeTopic: settingsState.activeTopic,
+      date: settingsState.date,
+      displayMode: settingsState.displayMode,
+      updatePosts: postsState.updatePosts,
+      updatePostsForWeek: postsState.updatePostsForWeek,
+      updatePostsForDays: postsState.updatePostsForDays,
+      replacePaths: noteState.replacePaths,
+    }),
+    [
+      app.vault,
+      queryClient,
+      settingsState.dateFilter,
+      settingsState.activeTopic,
+      settingsState.date,
+      settingsState.displayMode,
+      postsState.updatePosts,
+      postsState.updatePostsForWeek,
+      postsState.updatePostsForDays,
+      noteState.replacePaths,
+    ],
   );
 
   const getLatestPostsForPath = useCallback(
