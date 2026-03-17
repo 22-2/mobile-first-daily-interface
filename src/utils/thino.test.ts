@@ -129,7 +129,8 @@ describe("parseThinoEntries", () => {
 
   test("parses metadata and message with (from date) correctly", () => {
     const content = `## Thino
-- 19:17:58 ggg (from 2026-03-10) [posted::2026-03-10T10:18:13.546Z]
+- 19:17:58 ggg (from 2026-03-10)
+    [posted::2026-03-10T10:18:13.546Z]
 `;
     const entries = parseThinoEntries(content);
     expect(entries).toHaveLength(1);
@@ -139,7 +140,7 @@ describe("parseThinoEntries", () => {
 
   test("resolves timestamp from posted metadata", () => {
     const iso = "2026-03-10T19:00:00.000Z";
-    const content = `## Thino\n- 10:00:00 test [posted::${iso}]`;
+    const content = `## Thino\n- 10:00:00 test\n    [posted::${iso}]`;
     const entries = parseThinoEntries(content);
     expect(entries[0].metadata.posted).toBe(iso);
   });

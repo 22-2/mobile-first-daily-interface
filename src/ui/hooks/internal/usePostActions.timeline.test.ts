@@ -615,7 +615,9 @@ note header
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     const content = `## Thino
   - 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1]
-  - 23:59:59 reply [${THREAD_METADATA_KEYS.PARENT_ID}::root-1] [posted::${today.toISOString()}]
+  - 23:59:59 reply
+      [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]
+      [posted::${today.toISOString()}]
 `;
     (useAppContext as any).mockReturnValue({
       app: mockApp,

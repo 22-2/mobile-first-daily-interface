@@ -32,7 +32,7 @@ describe("toText", () => {
     const result = toText("test", false, "day", undefined, {
       other: "value",
     });
-    expect(result).toBe("- 16:00:00 test [other::value]\n");
+    expect(result).toBe("- 16:00:00 test\n    [other::value]\n");
   });
 
   test("thino format - should NOT filter hidden metadata", () => {
@@ -74,12 +74,12 @@ describe("toText", () => {
     );
   });
 
-  test("thino format - with metadata at the end of first line", () => {
+  test("thino format - appends metadata at the end of the post", () => {
     const result = toText("ggg (from 2026-03-10)", false, "day", undefined, {
       posted: "2026-03-10T10:18:13.546Z",
     });
     expect(result).toBe(
-      "- 16:00:00 ggg (from 2026-03-10) [posted::2026-03-10T10:18:13.546Z]\n",
+      "- 16:00:00 ggg (from 2026-03-10)\n    [posted::2026-03-10T10:18:13.546Z]\n",
     );
   });
 
@@ -94,7 +94,7 @@ describe("toText", () => {
       },
     );
     expect(result).toBe(
-      "- 16:00:00 zustandを始めて使ったときは衝撃だったな [key1::val1]\n    むかしはcontextproviderの順番でやきもきしてたから\n",
+      "- 16:00:00 zustandを始めて使ったときは衝撃だったな\n    むかしはcontextproviderの順番でやきもきしてたから\n    [key1::val1]\n",
     );
   });
 

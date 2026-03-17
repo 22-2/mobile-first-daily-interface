@@ -39,14 +39,9 @@ export function toText(
   const restLines = shouldMoveFirstLineToBody ? lines : lines.slice(1);
   const metadataEntries = Object.entries(metadata);
 
-  const inlineMetaStr =
-    inlineFirstLine.length > 0 && metadataEntries.length <= 1
-      ? metadataEntries.map(([k, v]) => ` [${k}::${v}]`).join("")
-      : "";
-
   const head =
     inlineFirstLine.length > 0
-      ? `- ${timeStr} ${inlineFirstLine}${inlineMetaStr}`
+      ? `- ${timeStr} ${inlineFirstLine}`
       : `- ${timeStr}`;
 
   const bodyLines = restLines
@@ -58,10 +53,7 @@ export function toText(
       return index < array.length - 1;
     });
 
-  const metadataLines =
-    metadataEntries.length > 1 || inlineFirstLine.length === 0
-      ? metadataEntries.map(([k, v]) => `    [${k}::${v}]`)
-      : [];
+  const metadataLines = metadataEntries.map(([k, v]) => `    [${k}::${v}]`);
 
   const trailingLines = [...bodyLines, ...metadataLines];
 

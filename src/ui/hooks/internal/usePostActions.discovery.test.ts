@@ -35,9 +35,10 @@ Added some text here that shifts everything down.
 
   it("should handle multi-line messages and complex metadata correctly during re-discovery", () => {
     const content = `## Thino
-- 19:17:58 ggg (from 2026-03-10) [posted::2026-03-10T10:18:13.546Z]
+  - 19:17:58 ggg (from 2026-03-10)
     multi-line body
     with some text
+    [posted::2026-03-10T10:18:13.546Z]
 `;
     const entries = parseThinoEntries(content);
     const post = entries[0];
