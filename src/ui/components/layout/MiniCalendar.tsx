@@ -181,9 +181,9 @@ function useMiniCalendar() {
     if (!weekStart.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
-    // 週スケール（週ノート）に切り替える（SidebarScales と挙動を統一）
-    setGranularity("week");
-    setDateFilter("today");
+    // 週スケール（週ノート）に切り替える（SidebarScales とは挙動を分離）
+    setGranularity("day");
+    setDateFilter("this_week");
     setDate(weekStart.clone());
   };
 
@@ -239,8 +239,9 @@ const CalendarHeader: React.FC<{
   onPrev: (e: React.MouseEvent) => void;
   onNext: (e: React.MouseEvent) => void;
 }> = ({ viewDate, onPrev, onNext }) => (
-  <Flex w="100%" justify="space-between" align="center" px={1}>
+  <Flex className="mini-calendar__header" w="100%" justify="space-between" align="center" px={1}>
     <Text
+      className="mini-calendar__month-label"
       fontWeight="bold"
       fontSize="lg"
       color="var(--text-normal)"
@@ -248,9 +249,9 @@ const CalendarHeader: React.FC<{
     >
       {viewDate.format("YYYY年 M月")}
     </Text>
-    <HStack spacing={1}>
+    <HStack className="mini-calendar__nav" spacing={1}>
       {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
-        <Box
+        <Box className="mini-calendar__nav-button"
           key={icon}
           cursor="pointer"
           onClick={i === 0 ? onPrev : onNext}
@@ -308,6 +309,7 @@ const DayCell: React.FC<DayCellProps> = ({
 
   return (
     <Box
+      className="mini-calendar__day-cell"
       cursor="pointer"
       onClick={() => onClick(day)}
       py={1.5}
@@ -324,6 +326,7 @@ const DayCell: React.FC<DayCellProps> = ({
       {day.date()}
       {hasPost && (
         <Box
+          className="mini-calendar__dot"
           position="absolute"
           bottom="2px"
           left="50%"
@@ -359,6 +362,7 @@ const WeekRow: React.FC<WeekRowProps> = ({
     <React.Fragment>
       {/* 週番号 */}
       <Box
+        className="mini-calendar__week-number"
         cursor="pointer"
         onClick={() => onSelectWeek(week[0])}
         py={1.5}
@@ -422,6 +426,7 @@ export const MiniCalendar: React.FC<{
 
   return (
     <VStack
+      className="mini-calendar"
       w="100%"
       spacing={4}
       p={4}
@@ -436,6 +441,7 @@ export const MiniCalendar: React.FC<{
       />
 
       <Grid
+        className="mini-calendar__grid"
         templateColumns="repeat(8, 1fr)"
         gap={1}
         w="100%"
@@ -445,7 +451,7 @@ export const MiniCalendar: React.FC<{
         {/* 曜日ヘッダー */}
         <Box /> {/* 週番号列のスペーサー */}
         {WEEK_DAY_LABELS.map((label) => (
-          <Box key={label} color="var(--text-muted)" fontSize="xs" py={1.5}>
+          <Box key={label} className="mini-calendar__weekday-label" color="var(--text-muted)" fontSize="xs" py={1.5}>
             {label}
           </Box>
         ))}
