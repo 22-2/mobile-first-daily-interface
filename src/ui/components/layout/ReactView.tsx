@@ -12,8 +12,7 @@ import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
-import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
+import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
 import { initializeAppStore } from "src/ui/store/appStore";
@@ -58,16 +57,102 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     initializeAppStore({ app, appHelper, settings, storage });
   }, [settings, storage, app, appHelper]);
 
-  const { inputRef, currentDailyNote } = useMFDIApp();
+  const {
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    asTask,
+    isReadOnly,
+  } = useSettingsStore(
+    useShallow((state) => ({
+      date: state.date,
+      granularity: state.granularity,
+      activeTopic: state.activeTopic,
+      dateFilter: state.dateFilter,
+      asTask: state.asTask,
+      isReadOnly: state.isReadOnly(),
+    })),
+  );
+
+  const { currentDailyNote, replacePaths } = useNoteStore(
+    useShallow((state) => ({
+      currentDailyNote: state.currentDailyNote,
+      replacePaths: state.replacePaths,
+    })),
+  );
+
+  const { posts, updatePosts, updateTasks, updatePostsForWeek, updatePostsForDays } =
+    usePostsStore(
+      useShallow((state) => ({
+        posts: state.posts,
+        updatePosts: state.updatePosts,
+        updateTasks: state.updateTasks,
+        updatePostsForWeek: state.updatePostsForWeek,
+        updatePostsForDays: state.updatePostsForDays,
+      })),
+    );
+
+  const { inputRef, scrollContainerRef } = useEditorStore(
+    useShallow((state) => ({
+      inputRef: state.inputRef,
+      scrollContainerRef: state.scrollContainerRef,
+    })),
+  );
+
+  useNoteSync();
+
+  React.useEffect(() => {
+    noteStore.getState().updateCurrentDailyNote(app);
+  }, [app, date, granularity, activeTopic]);
+
+  React.useEffect(() => {
+    if (granularity !== "day" || asTask) return;
+
+    if (dateFilter === "this_week") {
+      updatePostsForWeek(activeTopic, date).then((paths) => {
+        replacePaths(paths);
+      });
+      return;
+    }
+
+    if (["3d", "5d", "7d"].includes(dateFilter)) {
+      const days = parseInt(dateFilter, 10);
+      if (!Number.isNaN(days)) {
+        updatePostsForDays(activeTopic, date, days).then(({ paths }) => {
+          replacePaths(paths);
+        });
+      }
+    }
+  }, [
+    date,
+    dateFilter,
+    granularity,
+    asTask,
+    activeTopic,
+    replacePaths,
+    updatePostsForWeek,
+    updatePostsForDays,
+  ]);
+
+  React.useEffect(() => {
+    if (!isReadOnly && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus());
+    }
+  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly, inputRef]);
+
+  React.useEffect(() => {
+    if (!currentDailyNote) return;
+
+    const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
+    if (dateFilter === "today") {
+      promises.push(updatePosts(currentDailyNote));
+    }
+    Promise.all(promises);
+  }, [currentDailyNote, dateFilter, updatePosts, updateTasks]);
 
   // Sync state/handlers with Obsidian View
   useViewSync(view);
-
-  const { scrollContainerRef } = useEditorStore(
-    useShallow((s) => ({
-      scrollContainerRef: s.scrollContainerRef,
-    })),
-  );
 
   // Handle focus requested from View
   React.useEffect(() => {
@@ -233,7 +318,7 @@ const ReactViewContent = () => {
 };
 
 function useViewSync(view: MFDIView) {
-  const { app } = useAppContext();
+  const { app, settings } = useAppContext();
 
   const {
     granularity,
@@ -280,7 +365,9 @@ function useViewSync(view: MFDIView) {
   const { setInput } = editorStore.getState();
 
   const { handleSubmit } = usePostActions();
-  const { handleClickOpenDailyNote } = useNoteManager();
+  const handleClickOpenDailyNote = React.useCallback(() => {
+    return noteStore.getState().handleClickOpenDailyNote(app, settings);
+  }, [app, settings]);
 
   const { setCurrentDailyNote } = noteStore.getState();
   const { setPosts, setTasks } = postsStore.getState();
