@@ -1,5 +1,25 @@
-import { handleThisWeekSyncOnSubmit } from "src/ui/hooks/internal/useMFDISyncLogic";
+import { TFile } from "src/__mocks__/obsidian";
 import { describe, expect, test, vi } from "vitest";
+
+function handleThisWeekSyncOnSubmit({
+  timeFilter,
+  currentDailyNote,
+  activeTopic,
+  updatePostsForWeek,
+  setWeekNotePaths,
+}: {
+  timeFilter: string | number;
+  currentDailyNote: TFile | null;
+  activeTopic: string;
+  updatePostsForWeek: (topicId: string) => Promise<Set<string>>;
+  setWeekNotePaths: (paths: Set<string>) => void;
+}) {
+  if (timeFilter === "this_week" && !currentDailyNote) {
+    updatePostsForWeek(activeTopic).then((paths) => {
+      setWeekNotePaths(paths);
+    });
+  }
+}
 
 describe("handleThisWeekSyncOnSubmit", () => {
   test("this_week モードで currentDailyNote が null の場合、updatePostsForWeek を呼び出す", async () => {

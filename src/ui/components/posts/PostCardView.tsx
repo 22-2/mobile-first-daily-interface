@@ -1,6 +1,7 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { setTooltip } from "obsidian";
 import React from "react";
+import { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
@@ -12,8 +13,10 @@ import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
-import { usePostMetadata } from "src/ui/hooks/usePostMetadata";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
+import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/utils/meta";
+import { pickUrls } from "src/utils/strings";
+import { isPresent } from "src/utils/types";
 
 export const PostCardView = React.memo(
   ({
@@ -115,3 +118,44 @@ export const PostCardView = React.memo(
     );
   },
 );
+
+const usePostMetadata = (message: string, enabled: boolean) => {
+  const [htmlMetas, setHtmlMetas] = useState<HTMLMeta[]>([]);
+  const [imageMetas, setImageMetas] = useState<ImageMeta[]>([]);
+  const [twitterMetas, setTwitterMetas] = useState<TwitterMeta[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) {
+      setHtmlMetas([]);
+      setImageMetas([]);
+      setTwitterMetas([]);
+      return;
+    }
+
+    let isMounted = true;
+
+    (async function () {
+      setIsLoading(true);
+      const urls = pickUrls(message);
+      const results = (await Promise.all(urls.map(createMeta))).filter(
+        isPresent,
+      );
+
+      if (!isMounted) return;
+
+      setHtmlMetas(results.filter((result): result is HTMLMeta => result.type === "html"));
+      setImageMetas(results.filter((result): result is ImageMeta => result.type === "image"));
+      setTwitterMetas(
+        results.filter((result): result is TwitterMeta => result.type === "twitter"),
+      );
+      setIsLoading(false);
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [message, enabled]);
+
+  return { htmlMetas, imageMetas, twitterMetas, isLoading };
+};

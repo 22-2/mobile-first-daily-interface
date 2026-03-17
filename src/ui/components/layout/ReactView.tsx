@@ -13,13 +13,15 @@ import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIApp } from "src/ui/hooks/useMFDIApp";
-import { useViewSync } from "src/ui/hooks/useViewSync";
+import { useNoteManager } from "src/ui/hooks/internal/useNoteManager";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { MFDIModal } from "src/ui/modals/MFDIModal";
 import { initializeAppStore } from "src/ui/store/appStore";
-import { useEditorStore } from "src/ui/store/editorStore";
-import { useNoteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
+import { editorStore, useEditorStore } from "src/ui/store/editorStore";
+import { noteStore, useNoteStore } from "src/ui/store/noteStore";
+import { postsStore, usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { Post } from "src/ui/types";
+import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import { useShallow } from "zustand/shallow";
@@ -229,3 +231,221 @@ const ReactViewContent = () => {
     </Flex>
   );
 };
+
+function useViewSync(view: MFDIView) {
+  const { app } = useAppContext();
+
+  const {
+    granularity,
+    activeTopic,
+    asTask,
+    timeFilter,
+    dateFilter,
+    displayMode,
+    isReadOnly,
+    sidebarOpen,
+    setGranularity,
+    setTimeFilter,
+    setDateFilter,
+    setActiveTopic,
+    setAsTask,
+    setDisplayMode,
+    setSidebarOpen,
+  } = useSettingsStore(
+    useShallow((state) => ({
+      granularity: state.granularity,
+      activeTopic: state.activeTopic,
+      asTask: state.asTask,
+      timeFilter: state.timeFilter,
+      dateFilter: state.dateFilter,
+      displayMode: state.displayMode,
+      isReadOnly: state.isReadOnly(),
+      sidebarOpen: state.sidebarOpen,
+      setGranularity: state.setGranularity,
+      setTimeFilter: state.setTimeFilter,
+      setDateFilter: state.setDateFilter,
+      setActiveTopic: state.setActiveTopic,
+      setAsTask: state.setAsTask,
+      setDisplayMode: state.setDisplayMode,
+      setSidebarOpen: state.setSidebarOpen,
+    })),
+  );
+
+  const { input, inputRef } = useEditorStore(
+    useShallow((state) => ({
+      input: state.input,
+      inputRef: state.inputRef,
+    })),
+  );
+  const { setInput } = editorStore.getState();
+
+  const { handleSubmit } = usePostActions();
+  const { handleClickOpenDailyNote } = useNoteManager();
+
+  const { setCurrentDailyNote } = noteStore.getState();
+  const { setPosts, setTasks } = postsStore.getState();
+
+  const inputRefVal = React.useRef(input);
+  const inputRefObj = React.useRef(inputRef);
+  const sidebarOpenRef = React.useRef(sidebarOpen);
+  const setSidebarOpenRef = React.useRef(setSidebarOpen);
+
+  React.useEffect(() => {
+    sidebarOpenRef.current = sidebarOpen;
+  }, [sidebarOpen]);
+
+  React.useEffect(() => {
+    setSidebarOpenRef.current = setSidebarOpen;
+  }, [setSidebarOpen]);
+
+  React.useEffect(() => {
+    inputRefVal.current = input;
+  }, [input]);
+
+  React.useEffect(() => {
+    inputRefObj.current = inputRef;
+  }, [inputRef]);
+
+  React.useEffect(() => {
+    view.state.granularity = granularity;
+  }, [view, granularity]);
+
+  React.useEffect(() => {
+    view.state.asTask = asTask;
+  }, [view, asTask]);
+
+  React.useEffect(() => {
+    view.state.timeFilter = timeFilter;
+  }, [view, timeFilter]);
+
+  React.useEffect(() => {
+    view.state.dateFilter = dateFilter;
+  }, [view, dateFilter]);
+
+  React.useEffect(() => {
+    view.state.displayMode = displayMode;
+  }, [view, displayMode]);
+
+  React.useEffect(() => {
+    view.state.activeTopic = activeTopic;
+  }, [view, activeTopic]);
+
+  React.useEffect(() => {
+    view.handlers.onSubmit = handleSubmit;
+    return () => {
+      view.handlers.onSubmit = undefined;
+    };
+  }, [view, handleSubmit]);
+
+  React.useEffect(() => {
+    view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
+    return () => {
+      view.handlers.onOpenDailyNoteAction = undefined;
+    };
+  }, [view, handleClickOpenDailyNote]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeGranularity = (nextGranularity: Granularity) => {
+      setGranularity(nextGranularity);
+      if (nextGranularity !== "day") {
+        setTimeFilter("all");
+        setDateFilter("today");
+      }
+      setCurrentDailyNote(null);
+      setPosts([]);
+      setTasks([]);
+    };
+    return () => {
+      view.handlers.onChangeGranularity = undefined;
+    };
+  }, [
+    view,
+    setGranularity,
+    setTimeFilter,
+    setDateFilter,
+    setCurrentDailyNote,
+    setPosts,
+    setTasks,
+  ]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeTopic = setActiveTopic;
+    return () => {
+      view.handlers.onChangeTopic = undefined;
+    };
+  }, [view, setActiveTopic]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeAsTask = (nextAsTask: boolean) => {
+      setAsTask(nextAsTask);
+    };
+    return () => {
+      view.handlers.onChangeAsTask = undefined;
+    };
+  }, [view, setAsTask]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeTimeFilter = (nextTimeFilter: TimeFilter) => {
+      setTimeFilter(nextTimeFilter);
+    };
+    return () => {
+      view.handlers.onChangeTimeFilter = undefined;
+    };
+  }, [view, setTimeFilter]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeDateFilter = (nextDateFilter: DateFilter) => {
+      setDateFilter(nextDateFilter);
+    };
+    return () => {
+      view.handlers.onChangeDateFilter = undefined;
+    };
+  }, [view, setDateFilter]);
+
+  React.useEffect(() => {
+    view.handlers.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
+      setDisplayMode(nextDisplayMode);
+    };
+    return () => {
+      view.handlers.onChangeDisplayMode = undefined;
+    };
+  }, [view, setDisplayMode]);
+
+  React.useEffect(() => {
+    if (isReadOnly) {
+      view.handlers.onOpenModalEditor = undefined;
+      return;
+    }
+
+    view.handlers.onOpenModalEditor = () => {
+      const modal = new MFDIModal(app, {
+        initialContent: inputRefVal.current,
+        onChange: (content) => {
+          setInput(content);
+          setTimeout(() => {
+            inputRefObj.current.current?.setContent(content);
+          });
+        },
+        onClose: (content) => {
+          setInput(content);
+          setTimeout(() => {
+            inputRefObj.current.current?.setContent(content);
+          });
+        },
+      });
+      modal.open();
+    };
+    return () => {
+      view.handlers.onOpenModalEditor = undefined;
+    };
+  }, [view, app, setInput, isReadOnly]);
+
+  React.useEffect(() => {
+    view.handlers.onToggleSidebar = () => {
+      setSidebarOpenRef.current(!sidebarOpenRef.current);
+    };
+    return () => {
+      view.handlers.onToggleSidebar = undefined;
+    };
+  }, [view]);
+}

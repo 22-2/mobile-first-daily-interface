@@ -1,10 +1,12 @@
 import { Box, Button, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
 import * as React from "react";
-import { Topic } from "src/topic";
+import { useCallback, useRef, useState } from "react";
+import { DEFAULT_TOPIC, Topic } from "src/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { TopicAddForm } from "src/ui/components/topics/TopicAddForm";
 import { TopicItem } from "src/ui/components/topics/TopicItem";
-import { useTopicManager } from "src/ui/hooks/useTopicManager";
+
+const TOPIC_ID_REGEX = /^[a-z0-9][a-z0-9-]*$/;
 
 interface TopicManagerViewProps {
   topics: Topic[];
@@ -39,7 +41,11 @@ export const TopicManagerView = ({
     handleAddSubmit,
     handleCancelAdd,
     onSave,
-  } = useTopicManager(initialTopics, initialActiveTopic, externalOnSave);
+  } = useTopicManagerViewState(
+    initialTopics,
+    initialActiveTopic,
+    externalOnSave,
+  );
 
   const activeTopics = topics.filter((t) => !t.archived);
   const archivedTopics = topics.filter((t) => t.archived);
@@ -162,4 +168,122 @@ export const TopicManagerView = ({
       </Box>
     </VStack>
   );
+};
+
+const useTopicManagerViewState = (
+  initialTopics: Topic[],
+  initialActiveTopic: string,
+  onSave: (topics: Topic[], activeTopic: string) => Promise<void>,
+) => {
+  const [topics, setTopics] = useState<Topic[]>(
+    initialTopics.length > 0 ? initialTopics : [DEFAULT_TOPIC],
+  );
+  const [activeTopic] = useState<string>(initialActiveTopic);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newId, setNewId] = useState("");
+  const [idError, setIdError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
+  const isSaving = useRef(false);
+
+  const handleSwitch = useCallback(
+    async (topicId: string) => {
+      if (isSaving.current) return;
+      isSaving.current = true;
+      try {
+        const updatedTopics = topics.map((topic) =>
+          topic.id === topicId ? { ...topic, archived: false } : topic,
+        );
+        await onSave(updatedTopics, topicId);
+      } finally {
+        isSaving.current = false;
+      }
+    },
+    [topics, onSave],
+  );
+
+  const handleToggleArchive = useCallback((topicId: string) => {
+    setTopics((prev) =>
+      prev.map((topic) =>
+        topic.id === topicId
+          ? { ...topic, archived: !topic.archived }
+          : topic,
+      ),
+    );
+  }, []);
+
+  const commitTitleEdit = useCallback(() => {
+    if (editingId === null) return;
+    const trimmed = editingTitle.trim();
+    if (!trimmed) {
+      setEditingId(null);
+      return;
+    }
+    setTopics((prev) =>
+      prev.map((topic) =>
+        topic.id === editingId ? { ...topic, title: trimmed } : topic,
+      ),
+    );
+    setEditingId(null);
+  }, [editingId, editingTitle]);
+
+  const handleAddSubmit = useCallback(() => {
+    const trimmedId = newId.trim();
+    const trimmedTitle = newTitle.trim();
+
+    if (!trimmedId) {
+      setIdError("IDを入力してください");
+      return;
+    }
+    if (!TOPIC_ID_REGEX.test(trimmedId)) {
+      setIdError("英小文字・数字・ハイフンのみ使用可（先頭は英数字）");
+      return;
+    }
+    if (topics.some((topic) => topic.id === trimmedId)) {
+      setIdError("このIDはすでに使用されています");
+      return;
+    }
+
+    const newTopic: Topic = {
+      id: trimmedId,
+      title: trimmedTitle || trimmedId,
+    };
+    setTopics((prev) => [...prev, newTopic]);
+    setNewTitle("");
+    setNewId("");
+    setIdError("");
+    setShowAddForm(false);
+  }, [newId, newTitle, topics]);
+
+  const handleCancelAdd = useCallback(() => {
+    setNewTitle("");
+    setNewId("");
+    setIdError("");
+    setShowAddForm(false);
+  }, []);
+
+  return {
+    topics,
+    activeTopic,
+    showAddForm,
+    setShowAddForm,
+    newTitle,
+    setNewTitle,
+    newId,
+    setNewId,
+    idError,
+    editingId,
+    setEditingId,
+    editingTitle,
+    setEditingTitle,
+    editInputRef,
+    handleSwitch,
+    handleToggleArchive,
+    commitTitleEdit,
+    handleAddSubmit,
+    handleCancelAdd,
+    onSave: () => onSave(topics, activeTopic),
+  };
 };

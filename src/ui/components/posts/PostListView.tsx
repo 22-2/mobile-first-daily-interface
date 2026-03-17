@@ -1,19 +1,25 @@
 import { Box } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Menu, Notice } from "obsidian";
 import * as React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { usePostContextMenu } from "src/ui/hooks/usePostContextMenu";
-import { useTimelineItems } from "src/ui/hooks/useTimelineItems";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { DateFilter, DisplayMode, Granularity, MomentLike, Post } from "src/ui/types";
+import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
+
+type TimelineItem =
+  | { type: "post"; post: Post; key: string }
+  | { type: "divider"; date: MomentLike; key: string };
 
 export const PostListView: React.FC = React.memo(() => {
   const settings = useSettingsStore(
@@ -21,9 +27,11 @@ export const PostListView: React.FC = React.memo(() => {
       granularity: s.granularity,
       displayMode: s.displayMode,
       dateFilter: s.dateFilter,
+      setDate: s.setDate,
       setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
       asTask: s.asTask,
+      isReadOnly: s.isReadOnly(),
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
     })),
@@ -44,7 +52,13 @@ export const PostListView: React.FC = React.memo(() => {
   );
 
   const { loadMore, hasMore } = useInfiniteTimeline();
-  const { handleClickTime, deletePost, movePostToTomorrow } = usePostActions();
+  const {
+    handleClickTime,
+    deletePost,
+    movePostToTomorrow,
+    archivePost,
+    createThread,
+  } = usePostActions();
 
   const filteredPosts = useFilteredPosts({
     posts,
@@ -56,20 +70,165 @@ export const PostListView: React.FC = React.memo(() => {
     granularity,
     displayMode,
     dateFilter,
+    isReadOnly,
+    setDate,
+    setDisplayMode,
     threadFocusRootId,
     setThreadFocusRootId,
   } = settings;
   const timelineView = isTimelineView(displayMode);
   const threadView = isThreadView({ displayMode, threadFocusRootId });
 
-  const { showPostContextMenu } = usePostContextMenu();
-  const displayedPostsWithDividers = useTimelineItems(
-    filteredPosts,
-    editingPostOffset,
-    granularity,
-    displayMode,
-    dateFilter,
+  const showPostContextMenu = useCallback(
+    (post: Post, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const menu = new Menu();
+
+      menu.addItem((item) => {
+        item.setTitle("実験的").setIcon("beaker");
+        const sub = item.setSubmenu();
+
+        sub.addItem((si) =>
+          si
+            .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
+            .setIcon("spool")
+            .setDisabled(isReadOnly || isThreadReply(post))
+            .onClick(() => {
+              createThread(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("この日にフォーカス")
+            .setIcon("calendar-range")
+            .onClick(() => {
+              setDate(post.timestamp.clone());
+              setDisplayMode(DISPLAY_MODE.FOCUS);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("明日に送る")
+            .setIcon("fast-forward")
+            .setDisabled(isReadOnly)
+            .onClick(() => {
+              movePostToTomorrow(post);
+            }),
+        );
+      });
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("投稿にジャンプ")
+          .setIcon("clock")
+          .onClick(() => {
+            handleClickTime(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("編集")
+          .setIcon("pencil")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            startEdit(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("コピー")
+          .setIcon("copy")
+          .onClick(async () => {
+            await navigator.clipboard.writeText(post.message);
+            new Notice("copied");
+          }),
+      );
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("アーカイブ")
+          .setIcon("archive")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            archivePost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("削除")
+          .setIcon("trash")
+          .setWarning(true)
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            deletePost(post);
+          }),
+      );
+
+      menu.showAtMouseEvent(e as unknown as MouseEvent);
+    },
+    [
+      archivePost,
+      createThread,
+      deletePost,
+      handleClickTime,
+      isReadOnly,
+      movePostToTomorrow,
+      setDate,
+      setDisplayMode,
+      startEdit,
+    ],
   );
+
+  const displayedPostsWithDividers = useMemo(() => {
+    const list: TimelineItem[] = [];
+    let lastDate: string | null = null;
+
+    const postsToDisplay = filteredPosts.filter(
+      (post) => post.startOffset !== editingPostOffset,
+    );
+
+    postsToDisplay.forEach((post) => {
+      const currentDate = post.timestamp.format("YYYY-MM-DD");
+      const shouldShowDividers =
+        isTimelineView(displayMode) ||
+        granularity !== "day" ||
+        dateFilter !== "today";
+      const isDateChanged = lastDate !== currentDate;
+      const isFirstItem = lastDate === null;
+      const isDateInPast = post.timestamp.isBefore(new Date(), "day");
+      const showDivider =
+        shouldShowDividers && isDateChanged && (!isFirstItem || isDateInPast);
+
+      if (showDivider) {
+        list.push({
+          type: "divider",
+          date: post.timestamp,
+          key: `divider-${currentDate}`,
+        });
+      }
+
+      list.push({
+        type: "post",
+        post,
+        key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+      });
+
+      lastDate = currentDate;
+    });
+
+    return list;
+  }, [filteredPosts, editingPostOffset, granularity, displayMode, dateFilter]);
 
   const parentRef = scrollContainerRef;
 

@@ -1,15 +1,18 @@
 import { Box } from "@chakra-ui/react";
+import { Menu } from "obsidian";
 import * as React from "react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-import { useTaskContextMenu } from "src/ui/hooks/useTaskContextMenu";
+import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = React.memo(() => {
+  const { app } = useAppContext();
   const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -25,9 +28,32 @@ export const TaskListView: React.FC = React.memo(() => {
     })),
   );
 
-  const { updateTaskChecked } = useTaskActions();
+  const { updateTaskChecked, openTaskInEditor, deleteTask } = useTaskActions();
 
-  const { showTaskContextMenu } = useTaskContextMenu();
+  const showTaskContextMenu = useCallback(
+    (task: (typeof tasks)[number], e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const menu = new Menu();
+      menu.addItem((item) =>
+        item.setTitle("タスクにジャンプ").onClick(() => openTaskInEditor(task)),
+      );
+      menu.addItem((item) =>
+        item.setTitle("編集").onClick(() => openTaskInEditor(task)),
+      );
+      menu.addItem((item) =>
+        item
+          .setTitle("削除")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            new DeleteConfirmModal(app, () => deleteTask(task)).open();
+          }),
+      );
+      menu.showAtMouseEvent(e as unknown as MouseEvent);
+    },
+    [app, deleteTask, isReadOnly, openTaskInEditor, tasks],
+  );
 
   const incompleteTasks = useMemo(
     () => tasks.filter((x) => x.mark === " "),
