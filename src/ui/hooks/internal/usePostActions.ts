@@ -451,6 +451,60 @@ export const usePostActions = () => {
     [postsState.posts, replaceAndRefresh, settingsState, updateManyPosts],
   );
 
+    // ---------------------------------------------------------------------------
+    // 投稿を恒久削除（ファイル中の該当エントリを完全に取り除く）
+    // ---------------------------------------------------------------------------
+    const permanentlyDeletePost = useCallback(
+      async (post: Post) => {
+        const latestPost = await findLatestPost(post);
+        if (!latestPost) {
+          new Notice("投稿の位置を再特定できませんでした");
+          await refreshPosts(post.path);
+          return;
+        }
+
+        if (isThreadRoot(latestPost)) {
+          const latestThreadPosts = await findLatestThreadPosts(latestPost);
+          if (latestThreadPosts.length === 0) {
+            new Notice("スレッドの投稿を再特定できませんでした");
+            await refreshPosts(post.path);
+            return;
+          }
+
+          // 削除範囲が後ろから前に進むようソートして順に削除（オフセットズレ対策）
+          const sorted = latestThreadPosts
+            .slice()
+            .sort((a, b) => b.startOffset - a.startOffset);
+
+          for (const p of sorted) {
+            await appHelper.replaceRange(p.path, p.startOffset, p.endOffset, "");
+          }
+
+          // ファイル整形: 連続改行を適度に潰す
+          const filePath = sorted[0]?.path;
+          if (filePath) {
+            let newContent = await appHelper.loadFile(filePath);
+            newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
+            await app.vault.adapter.write(filePath, newContent);
+            await refreshPosts(filePath);
+          }
+
+          if (settingsState.threadFocusRootId === latestPost.threadRootId) {
+            settingsState.setThreadFocusRootId(null);
+          }
+          return;
+        }
+
+        // 単一投稿の削除
+        await appHelper.replaceRange(latestPost.path, latestPost.startOffset, latestPost.endOffset, "");
+        let newContent = await appHelper.loadFile(latestPost.path);
+        newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
+        await app.vault.adapter.write(latestPost.path, newContent);
+        await refreshPosts(latestPost.path);
+      },
+      [appHelper, findLatestPost, findLatestThreadPosts, refreshPosts, settingsState],
+    );
+
   // ---------------------------------------------------------------------------
   // 投稿をアーカイブ（アーカイブフラグを付与して上書き）
   // ---------------------------------------------------------------------------
@@ -616,6 +670,7 @@ export const usePostActions = () => {
     handleSubmit,
     createThread,
     deletePost,
+    permanentlyDeletePost,
     archivePost,
     movePostToTomorrow,
     handleClickTime,

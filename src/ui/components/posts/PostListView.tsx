@@ -4,6 +4,7 @@ import { Menu, Notice } from "obsidian";
 import * as React from "react";
 import { useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
+import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -55,6 +56,7 @@ export const PostListView: React.FC = React.memo(() => {
   const {
     handleClickTime,
     deletePost,
+    permanentlyDeletePost,
     movePostToTomorrow,
     archivePost,
     createThread,
@@ -172,6 +174,17 @@ export const PostListView: React.FC = React.memo(() => {
           .setDisabled(isReadOnly)
           .onClick(() => {
             deletePost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("永久に削除")
+          .setIcon("trash")
+          .setWarning(true)
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            new DeleteConfirmModal(app, () => permanentlyDeletePost(post)).open();
           }),
       );
 

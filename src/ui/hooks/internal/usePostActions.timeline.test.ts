@@ -733,4 +733,162 @@ prefix
     );
     expect(settingsStore.getState().threadFocusRootId).toBeNull();
   });
+
+  it("永久削除は対象投稿だけを消して前後のデータを壊さない", async () => {
+    const targetPost = {
+      id: `${yesterdayNote.path}:20`,
+      threadRootId: null,
+      timestamp: yesterday.clone().hour(10),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "remove me",
+      metadata: {},
+      offset: 20,
+      startOffset: 20,
+      endOffset: 40,
+      bodyStartOffset: 22,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    let storedContent = `## Thino
+- 09:00:00 keep before
+- 10:00:00 remove me
+- 11:00:00 keep after
+`;
+
+    const mockLoadFile = vi.fn(async () => storedContent);
+    const mockReplaceRange = vi.fn(
+      async (
+        _path: string,
+        startOffset: number,
+        endOffset: number,
+        replacement: string,
+      ) => {
+        storedContent =
+          storedContent.slice(0, startOffset) +
+          replacement +
+          storedContent.slice(endOffset);
+      },
+    );
+    const mockWrite = vi.fn(async (_path: string, content: string) => {
+      storedContent = content;
+    });
+
+    mockApp.vault.adapter = {
+      write: mockWrite,
+    };
+
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: mockLoadFile,
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.permanentlyDeletePost(targetPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledTimes(1);
+    expect(storedContent).toBe(`## Thino
+- 09:00:00 keep before
+- 11:00:00 keep after
+`);
+    expect(storedContent).not.toContain("remove me");
+    expect(storedContent).toContain("keep before");
+    expect(storedContent).toContain("keep after");
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
+
+  it("スレッドの永久削除は関連投稿だけを消して他の投稿を壊さない", async () => {
+    const rootPost = {
+      id: "root-1",
+      threadRootId: "root-1",
+      timestamp: yesterday.clone().hour(10),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "thread root",
+      metadata: {
+        [THREAD_METADATA_KEYS.ID]: "root-1",
+      },
+      offset: 20,
+      startOffset: 20,
+      endOffset: 60,
+      bodyStartOffset: 22,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    let storedContent = `## Thino
+- 09:00:00 keep before
+- 10:00:00 thread root
+    [${THREAD_METADATA_KEYS.ID}::root-1]
+- 10:30:00 thread reply
+    [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]
+    [posted::${today.toISOString()}]
+- 11:00:00 keep after
+`;
+
+    const mockLoadFile = vi.fn(async () => storedContent);
+    const mockReplaceRange = vi.fn(
+      async (
+        _path: string,
+        startOffset: number,
+        endOffset: number,
+        replacement: string,
+      ) => {
+        storedContent =
+          storedContent.slice(0, startOffset) +
+          replacement +
+          storedContent.slice(endOffset);
+      },
+    );
+    const mockWrite = vi.fn(async (_path: string, content: string) => {
+      storedContent = content;
+    });
+
+    mockApp.vault.adapter = {
+      write: mockWrite,
+    };
+
+    settingsStore.setState({ threadFocusRootId: "root-1" });
+
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: mockLoadFile,
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.permanentlyDeletePost(rootPost);
+    });
+
+    expect(mockReplaceRange).toHaveBeenCalledTimes(2);
+    expect(storedContent).toBe(`## Thino
+- 09:00:00 keep before
+- 11:00:00 keep after
+`);
+    expect(storedContent).not.toContain("thread root");
+    expect(storedContent).not.toContain("thread reply");
+    expect(storedContent).toContain("keep before");
+    expect(storedContent).toContain("keep after");
+    expect(settingsStore.getState().threadFocusRootId).toBeNull();
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+  });
 });
