@@ -471,6 +471,76 @@ note header
     );
   });
 
+  it("タイムラインからスレッド作成した時はフォーカス切替後に再読込する", async () => {
+    const plainPost = {
+      id: `${yesterdayNote.path}:0`,
+      threadRootId: null,
+      timestamp: yesterday.clone().hour(12),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "parent",
+      metadata: {},
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
+    const content = `## Thino
+- 12:00:00 parent
+`;
+    const refreshStateSnapshots: Array<{
+      displayMode: string;
+      threadFocusRootId: string | null;
+      dateIso: string;
+    }> = [];
+
+    mockRefreshPosts.mockImplementation(async () => {
+      const state = settingsStore.getState();
+      refreshStateSnapshots.push({
+        displayMode: state.displayMode,
+        threadFocusRootId: state.threadFocusRootId,
+        dateIso: state.date.toISOString(),
+      });
+    });
+
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      appHelper: {
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: mockReplaceRange,
+        loadFile: vi.fn(async () => content),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    settingsStore.setState({
+      displayMode: DISPLAY_MODE.TIMELINE,
+      date: today.clone(),
+      threadFocusRootId: null,
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.createThread(plainPost);
+    });
+
+    expect(mockRefreshPosts).toHaveBeenCalledWith(yesterdayNote.path);
+    expect(refreshStateSnapshots).toEqual([
+      {
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: expect.stringMatching(/^[a-f0-9]{8}$/),
+        dateIso: yesterday.clone().startOf("day").toISOString(),
+      },
+    ]);
+  });
+
   it("既存スレッドを表示するとフォーカス表示へ切り替わる", async () => {
     const threadRoot = {
       id: "root-1",
