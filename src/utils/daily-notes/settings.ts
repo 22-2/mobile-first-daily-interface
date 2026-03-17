@@ -19,6 +19,14 @@ interface PeriodicNotesPlugin {
   };
 }
 
+type Periodicity = "daily" | "weekly" | "monthly" | "yearly";
+type PeriodicNotesEntry = {
+  enabled: boolean;
+  format?: string;
+  folder?: string;
+  template?: string;
+};
+
 interface DailyNotesPlugin {
   instance: {
     options: {
@@ -48,6 +56,15 @@ function shouldUsePeriodicNotesSettings(periodicity: string): boolean {
     "periodic-notes",
   ) as PeriodicNotesPlugin | undefined;
   return !!(periodicNotes && periodicNotes.settings?.[periodicity]?.enabled);
+}
+
+function getPeriodicNotesSettings(periodicity: Periodicity) {
+  const periodicNotes = (window as any).app.plugins.getPlugin(
+    "periodic-notes",
+  ) as PeriodicNotesPlugin | undefined;
+  return periodicNotes?.settings?.[periodicity] as
+    | PeriodicNotesEntry
+    | undefined;
 }
 
 export function getDailyNoteSettings(): PeriodicNoteSettings {
@@ -108,14 +125,7 @@ export function getWeeklyNoteSettings(): PeriodicNoteSettings {
 
 export function getMonthlyNoteSettings(): PeriodicNoteSettings {
   try {
-    const pluginManager = (window as any).app.plugins;
-    const periodic = shouldUsePeriodicNotesSettings("monthly")
-      ? (
-          pluginManager.getPlugin("periodic-notes") as
-            | PeriodicNotesPlugin
-            | undefined
-        )?.settings?.monthly
-      : undefined;
+    const periodic = getPeriodicNotesSettings("monthly");
     return {
       format: periodic?.format || DEFAULT_MONTHLY_NOTE_FORMAT,
       folder: periodic?.folder?.trim() || "",
@@ -128,14 +138,7 @@ export function getMonthlyNoteSettings(): PeriodicNoteSettings {
 
 export function getYearlyNoteSettings(): PeriodicNoteSettings {
   try {
-    const pluginManager = (window as any).app.plugins;
-    const periodic = shouldUsePeriodicNotesSettings("yearly")
-      ? (
-          pluginManager.getPlugin("periodic-notes") as
-            | PeriodicNotesPlugin
-            | undefined
-        )?.settings?.yearly
-      : undefined;
+    const periodic = getPeriodicNotesSettings("yearly");
     return {
       format: periodic?.format || DEFAULT_YEARLY_NOTE_FORMAT,
       folder: periodic?.folder?.trim() || "",

@@ -2,8 +2,10 @@ import { TFile, Vault } from "obsidian";
 import {
   getAllTopicNotes,
   getDailyNoteSettings,
+  getMonthlyNoteSettings,
   getDateUID,
   getTopicNote,
+  getYearlyNoteSettings,
   resolveTopicNotePath,
 } from "src/utils/daily-notes/index";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -71,6 +73,54 @@ describe("daily-notes-interface utility", () => {
     });
   });
 
+  describe("periodic settings", () => {
+    it("monthly は enabled=false でも periodic-notes の設定を使う", () => {
+      (window as any).app.plugins.getPlugin = vi.fn((id: string) => {
+        if (id === "periodic-notes") {
+          return {
+            settings: {
+              monthly: {
+                enabled: false,
+                format: "YYYY-MM",
+                folder: "Periodic/Monthly",
+                template: "",
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const settings = getMonthlyNoteSettings();
+
+      expect(settings.folder).toBe("Periodic/Monthly");
+      expect(settings.format).toBe("YYYY-MM");
+    });
+
+    it("yearly は enabled=false でも periodic-notes の設定を使う", () => {
+      (window as any).app.plugins.getPlugin = vi.fn((id: string) => {
+        if (id === "periodic-notes") {
+          return {
+            settings: {
+              yearly: {
+                enabled: false,
+                format: "YYYY",
+                folder: "Periodic/Yearly",
+                template: "",
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const settings = getYearlyNoteSettings();
+
+      expect(settings.folder).toBe("Periodic/Yearly");
+      expect(settings.format).toBe("YYYY");
+    });
+  });
+
   describe("resolveTopicNotePath", () => {
     it("トピックなしのパスを生成する", () => {
       const date = window.moment("2026-03-04");
@@ -82,6 +132,29 @@ describe("daily-notes-interface utility", () => {
       const date = window.moment("2026-03-04");
       const path = resolveTopicNotePath(date, "day", "novel");
       expect(path).toBe("Daily/novel-2026-03-04.md");
+    });
+
+    it("month は periodic-notes の folder 設定を反映する", () => {
+      (window as any).app.plugins.getPlugin = vi.fn((id: string) => {
+        if (id === "periodic-notes") {
+          return {
+            settings: {
+              monthly: {
+                enabled: false,
+                format: "YYYY-MM",
+                folder: "Periodic/Monthly",
+                template: "",
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const date = window.moment("2026-03-04");
+      const path = resolveTopicNotePath(date, "month", "");
+
+      expect(path).toBe("Periodic/Monthly/2026-03.md");
     });
   });
 
