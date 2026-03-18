@@ -110,6 +110,7 @@ describe("timeline note resolution", () => {
         updateDateStrategy: "never",
         topics: [],
         activeTopic: "",
+        fixedNoteFiles: [],
       },
       activeTopic: "",
       granularity: "day",

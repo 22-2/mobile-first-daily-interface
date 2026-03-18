@@ -1,7 +1,8 @@
-import { App, normalizePath, TFile } from "obsidian";
+import { App, TFile, normalizePath } from "obsidian";
 import { Granularity, MomentLike } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { getTopicNote } from "src/utils/daily-notes";
+import { ensureExtension } from "./path";
 
 export function normalizeFixedNoteFolder(path: string): string {
   const trimmed = path.trim();
@@ -53,14 +54,24 @@ export async function ensureFixedNote(app: App, rawPath: string): Promise<TFile>
   return app.vault.create(path, "");
 }
 
-export function buildNewFixedNotePath(folder: string, now = window.moment()): string {
+export function buildFixedNotePathFromName(folder: string, name: string, app: App): string {
   const normalizedFolder = normalizeFixedNoteFolder(folder);
-  const filename = `MFDI-${now.format("YYYY-MM-DD-HHmmss")}.md`;
-  return normalizedFolder ? `${normalizedFolder}/${filename}` : filename;
+  const prefix = normalizedFolder ? `${normalizedFolder}/` : "";
+  const safeName = name.trim() || "Untitled";
+  const base = ensureExtension(`${prefix}${safeName}`, ".mfdi.md");
+  if (!app.vault.getAbstractFileByPath(base)) return base;
+  for (let i = 1; ; i++) {
+    const candidate = `${prefix}${safeName} ${i}.mfdi.md`;
+    if (!app.vault.getAbstractFileByPath(candidate)) return candidate;
+  }
+}
+
+export function buildUntitledFixedNotePath(folder: string, app: App): string {
+  return buildFixedNotePathFromName(folder, "Untitled", app);
 }
 
 export async function createNewFixedNote(app: App, folder: string): Promise<TFile> {
-  const path = buildNewFixedNotePath(folder);
+  const path = buildUntitledFixedNotePath(folder, app);
   return ensureFixedNote(app, path);
 }
 

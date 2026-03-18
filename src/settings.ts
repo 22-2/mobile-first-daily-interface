@@ -10,6 +10,7 @@ export interface Settings {
   updateDateStrategy: "never" | "always" | "same_day";
   topics: Topic[];
   activeTopic: string;
+  fixedNoteFiles: { path: string }[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
   updateDateStrategy: "never",
   topics: [DEFAULT_TOPIC],
   activeTopic: "",
+  fixedNoteFiles: [],
 };
 
 export const postFormatMap = {

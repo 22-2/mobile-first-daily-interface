@@ -23,6 +23,7 @@ describe("settingsSlice", () => {
         updateDateStrategy: "never",
         topics: [],
         activeTopic: "",
+        fixedNoteFiles: [],
       },
       granularity: "day",
       date: today.clone(),

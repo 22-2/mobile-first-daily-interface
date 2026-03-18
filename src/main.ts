@@ -2,6 +2,7 @@ import { Notice, Plugin, TFile } from "obsidian";
 import { AppHelper } from "src/app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
+import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
@@ -11,6 +12,8 @@ import {
 } from "src/ui/view/state";
 import {
   createNewFixedNote,
+  buildFixedNotePathFromName,
+  ensureFixedNote,
   normalizeFixedNotePath,
 } from "src/utils/fixed-note";
 
@@ -50,10 +53,25 @@ export default class MFDIPlugin extends Plugin {
       id: "mfdi-open-fixed-note-view",
       name: "Create New MFDI Fixed Note",
       callback: async () => {
-        const fixedNote = await createNewFixedNote(
-          this.app,
-          this.app.vault.config.newFileFolderPath || "/",
-        );
+        const folder = this.app.vault.config.newFileFolderPath || "/";
+        const name = await showInputModal(this.app, {
+          title: "固定ノートの名前を入力",
+          placeholder: "Untitled",
+        });
+        if (name === null) return;
+
+        const path = name.trim()
+          ? buildFixedNotePathFromName(folder, name, this.app)
+          : undefined;
+        const fixedNote = path
+          ? await ensureFixedNote(this.app, path)
+          : await createNewFixedNote(this.app, folder);
+
+        this.settings.fixedNoteFiles = [
+          ...this.settings.fixedNoteFiles,
+          { path: fixedNote.path },
+        ];
+        await this.saveSettings();
         const leaf = await this.attachMFDIView(
           createFixedNoteViewState(fixedNote.path),
         );
@@ -77,6 +95,48 @@ export default class MFDIPlugin extends Plugin {
         if (leaf) this.app.workspace.revealLeaf(leaf);
       },
     });
+
+    this.registerEvent(
+      this.app.workspace.on("file-open", (file) => {
+        if (
+          file instanceof TFile &&
+          file.path.endsWith(".mfdi.md") &&
+          this.settings.fixedNoteFiles.some((f) => f.path === file.path)
+        ) {
+          this.attachMFDIView(createFixedNoteViewState(file.path)).then(
+            (leaf) => {
+              if (leaf) this.app.workspace.revealLeaf(leaf);
+            },
+          );
+        }
+      }),
+    );
+
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        if (!(file instanceof TFile)) return;
+        const idx = this.settings.fixedNoteFiles.findIndex(
+          (f) => f.path === oldPath,
+        );
+        if (idx === -1) return;
+        this.settings.fixedNoteFiles = this.settings.fixedNoteFiles.map(
+          (f, i) => (i === idx ? { ...f, path: file.path } : f),
+        );
+        this.saveSettings();
+      }),
+    );
+
+    this.registerEvent(
+      this.app.vault.on("delete", (file) => {
+        if (!(file instanceof TFile)) return;
+        const filtered = this.settings.fixedNoteFiles.filter(
+          (f) => f.path !== file.path,
+        );
+        if (filtered.length === this.settings.fixedNoteFiles.length) return;
+        this.settings.fixedNoteFiles = filtered;
+        this.saveSettings();
+      }),
+    );
   }
 
   /**

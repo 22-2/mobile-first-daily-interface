@@ -1,6 +1,7 @@
 import { TFile } from "obsidian";
 import {
-  buildNewFixedNotePath,
+  buildFixedNotePathFromName,
+  buildUntitledFixedNotePath,
   createNewFixedNote,
   ensureFixedNote,
   normalizeFixedNoteFolder,
@@ -88,26 +89,64 @@ describe("fixed note utilities", () => {
     expect(result).toBe(created);
   });
 
-  it("新しい fixed note 用のパスを作成先フォルダ配下に生成する", () => {
-    const now = window.moment("2026-03-19 03:30:45", "YYYY-MM-DD HH:mm:ss");
+  it("Untitled スタイルで重複しないパスを生成する", () => {
+    const app = {
+      vault: {
+        getAbstractFileByPath: vi.fn((path: string) => {
+          if (path === "MFDI/Untitled.mfdi.md") return new TFile();
+          if (path === "MFDI/Untitled 1.mfdi.md") return new TFile();
+          return null;
+        }),
+      },
+    } as any;
 
-    expect(buildNewFixedNotePath("MFDI", now)).toBe(
-      "MFDI/MFDI-2026-03-19-033045.md",
+    expect(buildUntitledFixedNotePath("MFDI", app)).toBe(
+      "MFDI/Untitled 2.mfdi.md",
     );
-    expect(buildNewFixedNotePath("", now)).toBe(
-      "MFDI-2026-03-19-033045.md",
+  });
+
+  it("フォルダなしの場合はルートに Untitled.mfdi.md を生成する", () => {
+    const app = {
+      vault: { getAbstractFileByPath: vi.fn(() => null) },
+    } as any;
+
+    expect(buildUntitledFixedNotePath("", app)).toBe("Untitled.mfdi.md");
+  });
+
+  it("名前を指定してパスを生成し、重複時は連番を付ける", () => {
+    const app = {
+      vault: {
+        getAbstractFileByPath: vi.fn((path: string) => {
+          if (path === "MFDI/My Note.mfdi.md") return new TFile();
+          return null;
+        }),
+      },
+    } as any;
+
+    expect(buildFixedNotePathFromName("MFDI", "My Note", app)).toBe(
+      "MFDI/My Note 1.mfdi.md",
+    );
+    expect(buildFixedNotePathFromName("", "My Note", app)).toBe(
+      "My Note.mfdi.md",
+    );
+  });
+
+  it("名前が空文字のときは Untitled にフォールバックする", () => {
+    const app = {
+      vault: { getAbstractFileByPath: vi.fn(() => null) },
+    } as any;
+
+    expect(buildFixedNotePathFromName("MFDI", "", app)).toBe(
+      "MFDI/Untitled.mfdi.md",
     );
   });
 
   it("新しい fixed note を生成して作成する", async () => {
     const created = Object.assign(new TFile(), {
-      path: "MFDI/MFDI-2026-03-19-033045.md",
-      basename: "MFDI-2026-03-19-033045",
+      path: "MFDI/Untitled.mfdi.md",
+      basename: "Untitled",
       extension: "md",
     });
-
-    vi.useFakeTimers();
-  vi.setSystemTime(new Date("2026-03-19T03:30:45"));
 
     const createdFolders: string[] = [];
     const app = {
@@ -127,11 +166,9 @@ describe("fixed note utilities", () => {
 
     expect(app.vault.createFolder).toHaveBeenCalledWith("MFDI");
     expect(app.vault.create).toHaveBeenCalledWith(
-      "MFDI/MFDI-2026-03-19-033045.md",
+      "MFDI/Untitled.mfdi.md",
       "",
     );
     expect(result).toBe(created);
-
-    vi.useRealTimers();
   });
 });
