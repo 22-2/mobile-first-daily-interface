@@ -111,45 +111,14 @@ export class MFDIView extends ItemView {
   }
 
   async onOpen() {
-    // scope は renderNewView より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
-    this.scope = new Scope(this.app.scope);
-    this.scope.register(["Ctrl"], "Enter", () => {
-      return true;
-    });
-    this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
-      this.handlers.onOpenModalEditor?.();
-      return true;
-    });
-
-    this.addAction("columns-2", "サイドバーを切り替え", () => {
-      this.handlers.onToggleSidebar?.();
-    });
-
-    this.renderNewView();
-
-    this.app.workspace.on("active-leaf-change", (leaf) => {
-      if (leaf?.id === this.leaf.id) {
-        this.handlers.onFocusRequested?.();
-      }
-    });
+    this.setupHandlers();
+    // fixedノートを開いたときなど、すぐに render せずに少し待つ。
+    // これをしないと、Datenavigationが表示されてしまうなど、状態の反映が不完全なまま描画されてしまう。
+    window.setTimeout(() => this.setupView());
   }
 
   async onClose() {
     this.root?.unmount();
-  }
-
-  renderNewView() {
-    if (!this.root) {
-      this.root = createRoot(this.containerEl.children[1]);
-    }
-    this.root.render(
-      <ReactView app={this.app} settings={this.settings} view={this} />,
-    );
-  }
-
-  updateSettings(settings: Settings) {
-    this.settings = settings;
-    this.renderNewView();
   }
 
   getState(): MFDIViewState {
@@ -170,6 +139,46 @@ export class MFDIView extends ItemView {
       this.state.activeTopic = state.activeTopic as string;
       this.handlers.onChangeTopic?.(this.state.activeTopic);
     }
-    this.renderNewView();
+    this.render();
+  }
+
+  private setupHandlers() {
+    // scope は renderNewView より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
+    this.scope = new Scope(this.app.scope);
+    this.scope.register(["Ctrl"], "Enter", () => {
+      return true;
+    });
+    this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
+      this.handlers.onOpenModalEditor?.();
+      return true;
+    });
+    this.app.workspace.on("active-leaf-change", (leaf) => {
+      if (leaf?.id === this.leaf.id) {
+        this.handlers.onFocusRequested?.();
+      }
+    });
+  }
+
+  private setupView() {
+    if (getMFDIViewCapabilities(this.state).supportsSidebar) {
+      this.addAction("columns-2", "サイドバーを切り替え", () => {
+        this.handlers.onToggleSidebar?.();
+      });
+    }
+    this.render();
+  }
+
+  private render() {
+    if (!this.root) {
+      this.root = createRoot(this.containerEl.children[1]);
+    }
+    this.root.render(
+      <ReactView app={this.app} settings={this.settings} view={this} />,
+    );
+  }
+
+  public updateSettings(settings: Settings) {
+    this.settings = settings;
+    this.render();
   }
 }
