@@ -10,6 +10,7 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { getPeriodicSettings } from "src/utils/daily-notes";
 import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./internal/refreshPosts";
+import { normalizeFixedNotePath } from "src/utils/fixed-note";
 
 type CurrentDayFileParams = {
   date: MomentLike;
@@ -44,8 +45,17 @@ export function useNoteSync() {
         dateFilter: s.dateFilter,
         displayMode: s.displayMode,
         setDate: s.setDate,
+        viewNoteMode: s.viewNoteMode,
+        fixedNotePath: s.fixedNotePath,
       })),
     );
+
+  const { viewNoteMode, fixedNotePath } = useSettingsStore(
+    useShallow((s) => ({
+      viewNoteMode: s.viewNoteMode,
+      fixedNotePath: s.fixedNotePath,
+    })),
+  );
 
   const { currentDailyNote, weekNotePaths } = useNoteStore(
     useShallow((s) => ({
@@ -92,6 +102,16 @@ export function useNoteSync() {
       dateFilter !== "today" || isTimelineView(displayMode);
 
     const handleChanged = async (file: TFile) => {
+      if (viewNoteMode === "fixed") {
+        const targetPath =
+          currentDailyNote?.path ?? normalizeFixedNotePath(fixedNotePath ?? "");
+        if (!targetPath || file.path !== targetPath) return;
+
+        noteStore.getState().updateCurrentDailyNote(app);
+        await Promise.all([updatePosts(file), updateTasks(file)]);
+        return;
+      }
+
       if (isMultiDayOrTimeline) {
         if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
           await refreshPosts(file.path);
@@ -113,6 +133,16 @@ export function useNoteSync() {
     };
 
     const handleDelete = async (file: { path: string }) => {
+      if (viewNoteMode === "fixed") {
+        const targetPath =
+          currentDailyNote?.path ?? normalizeFixedNotePath(fixedNotePath ?? "");
+        if (file.path !== targetPath) return;
+        noteStore.getState().setCurrentDailyNote(null);
+        setTasks([]);
+        setPosts([]);
+        return;
+      }
+
       if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
         await refreshPosts(file.path);
       }
@@ -142,6 +172,8 @@ export function useNoteSync() {
     dateFilter,
     displayMode,
     setDate,
+    viewNoteMode,
+    fixedNotePath,
     currentDailyNote,
     weekNotePaths,
     setTasks,

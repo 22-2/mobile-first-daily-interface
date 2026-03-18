@@ -45,8 +45,16 @@ export function isViewReadOnly(params: {
   granularity: Granularity;
   displayMode: DisplayMode;
   allowEditingPastNotes: boolean;
+  noteMode?: "periodic" | "fixed";
 }) {
-  const { date, granularity, displayMode, allowEditingPastNotes } = params;
+  const {
+    date,
+    granularity,
+    displayMode,
+    allowEditingPastNotes,
+    noteMode = "periodic",
+  } = params;
+  if (noteMode === "fixed") return false;
   if (isTimelineView(displayMode)) return false;
   return isPastDateReadOnly({ date, granularity, allowEditingPastNotes });
 }
@@ -306,21 +314,30 @@ export const createSettingsSlice: StateCreator<
   },
 
   isReadOnly: () => {
-    const { date, granularity, displayMode, pluginSettings } = get();
+    const { date, granularity, displayMode, pluginSettings, viewNoteMode } =
+      get();
     return isViewReadOnly({
       date,
       granularity,
       displayMode,
       allowEditingPastNotes: pluginSettings?.allowEditingPastNotes ?? false,
+      noteMode: viewNoteMode,
     });
   },
 
   isDateReadOnly: (date, granularity) => {
-    const { granularity: activeGranularity, pluginSettings } = get();
-    return isPastDateReadOnly({
+    const {
+      granularity: activeGranularity,
+      pluginSettings,
+      displayMode,
+      viewNoteMode,
+    } = get();
+    return isViewReadOnly({
       date,
       granularity: granularity ?? activeGranularity,
+      displayMode,
       allowEditingPastNotes: pluginSettings?.allowEditingPastNotes ?? false,
+      noteMode: viewNoteMode,
     });
   },
 

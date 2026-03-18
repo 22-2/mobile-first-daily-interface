@@ -11,6 +11,8 @@ export const createEnvironmentSlice: StateCreator<
   appHelper: null,
   storage: null,
   pluginSettings: null,
+  viewNoteMode: "periodic",
+  fixedNotePath: null,
 
   setAppDependencies: (app, appHelper) => {
     set({ app, appHelper });
@@ -24,8 +26,19 @@ export const createEnvironmentSlice: StateCreator<
     set({ pluginSettings });
   },
 
+  setViewContext: ({ noteMode, fixedNotePath }) => {
+    set({ viewNoteMode: noteMode, fixedNotePath });
+  },
+
   initializeAppStore: ({ app, appHelper, settings, storage }) => {
-    set({ app, appHelper, pluginSettings: settings, storage });
+    set({
+      app,
+      appHelper,
+      pluginSettings: settings,
+      storage,
+      viewNoteMode: "periodic",
+      fixedNotePath: null,
+    });
     get().hydrateSettingsState();
     get().hydrateEditorState();
   },

@@ -1,9 +1,18 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin, TFile } from "obsidian";
 import { AppHelper } from "src/app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
+import {
+  createFixedNoteViewState,
+  DEFAULT_MFDI_VIEW_STATE,
+  MFDIViewState,
+} from "src/ui/view/state";
+import {
+  createNewFixedNote,
+  normalizeFixedNotePath,
+} from "src/utils/fixed-note";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -36,15 +45,69 @@ export default class MFDIPlugin extends Plugin {
         if (leaf) this.app.workspace.revealLeaf(leaf);
       },
     });
+
+    this.addCommand({
+      id: "mfdi-open-fixed-note-view",
+      name: "Create New MFDI Fixed Note",
+      callback: async () => {
+        const fixedNote = await createNewFixedNote(
+          this.app,
+          this.app.vault.config.newFileFolderPath || "/",
+        );
+        const leaf = await this.attachMFDIView(
+          createFixedNoteViewState(fixedNote.path),
+        );
+        if (leaf) this.app.workspace.revealLeaf(leaf);
+      },
+    });
+
+    this.addCommand({
+      id: "mfdi-open-current-note-in-fixed-view",
+      name: "Open Current Note in MFDI Fixed Mode",
+      callback: async () => {
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!(activeFile instanceof TFile) || activeFile.extension !== "md") {
+          new Notice("Markdown ノートを開いてから実行してください");
+          return;
+        }
+
+        const leaf = await this.attachMFDIView(
+          createFixedNoteViewState(activeFile.path),
+        );
+        if (leaf) this.app.workspace.revealLeaf(leaf);
+      },
+    });
   }
 
   /**
    * MFDIのViewをアタッチします
    */
-  async attachMFDIView() {
-    const existed = this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).at(0);
+  async attachMFDIView(state: Partial<MFDIViewState> = DEFAULT_MFDI_VIEW_STATE) {
+    const fixedPath = normalizeFixedNotePath(
+      typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
+    );
+    const existed = this.app.workspace
+      .getLeavesOfType(VIEW_TYPE_MFDI)
+      .find((leaf) => {
+        const view = leaf.view;
+        if (!(view instanceof MFDIView)) return false;
+        const currentState = view.getState();
+        if (state.noteMode === "fixed") {
+          return (
+            currentState.noteMode === "fixed" &&
+            normalizeFixedNotePath(currentState.fixedNotePath ?? "") ===
+              fixedPath
+          );
+        }
+        return currentState.noteMode !== "fixed";
+      });
+
     if (existed) {
-      existed.setViewState({ type: VIEW_TYPE_MFDI, active: true });
+      await existed.setViewState({
+        type: VIEW_TYPE_MFDI,
+        active: true,
+        state: { ...DEFAULT_MFDI_VIEW_STATE, ...state },
+      });
       return existed;
     }
 
@@ -53,6 +116,7 @@ export default class MFDIPlugin extends Plugin {
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
       active: true,
+      state: { ...DEFAULT_MFDI_VIEW_STATE, ...state },
     });
     return targetLeaf;
   }

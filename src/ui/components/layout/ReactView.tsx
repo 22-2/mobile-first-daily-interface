@@ -15,7 +15,7 @@ import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
-import { initializeAppStore } from "src/ui/store/appStore";
+import { appStore, initializeAppStore } from "src/ui/store/appStore";
 import { editorStore, useEditorStore } from "src/ui/store/editorStore";
 import { noteStore, useNoteStore } from "src/ui/store/noteStore";
 import { postsStore, usePostsStore } from "src/ui/store/postsStore";
@@ -23,6 +23,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,10 @@ export const ReactView = ({
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { view, settings, storage, app, appHelper } = useAppContext();
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities(view.state),
+    [view.state.noteMode],
+  );
 
   // Initialize store once
   React.useMemo(() => {
@@ -103,10 +108,25 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useNoteSync();
 
   React.useEffect(() => {
-    noteStore.getState().updateCurrentDailyNote(app);
-  }, [app, date, granularity, activeTopic]);
+    appStore.getState().setViewContext({
+      noteMode: view.state.noteMode,
+      fixedNotePath: view.state.fixedNotePath,
+    });
+  }, [view, view.state.noteMode, view.state.fixedNotePath]);
 
   React.useEffect(() => {
+    noteStore.getState().updateCurrentDailyNote(app);
+  }, [
+    app,
+    date,
+    granularity,
+    activeTopic,
+    view.state.noteMode,
+    view.state.fixedNotePath,
+  ]);
+
+  React.useEffect(() => {
+    if (!capabilities.supportsPeriodMenus) return;
     if (granularity !== "day" || asTask) return;
 
     if (dateFilter === "this_week") {
@@ -133,6 +153,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     replacePaths,
     updatePostsForWeek,
     updatePostsForDays,
+    capabilities.supportsPeriodMenus,
   ]);
 
   React.useEffect(() => {
@@ -178,6 +199,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const ReactViewContent = () => {
   const { view } = useAppContext();
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities(view.state),
+    [view.state.noteMode],
+  );
   const settings = useSettingsStore(
     useShallow((s) => ({
       granularity: s.granularity,
@@ -247,7 +272,7 @@ const ReactViewContent = () => {
     return () => observer.disconnect();
   }, [setSidebarOpen]);
 
-  const effectivelyOpen = sidebarOpen;
+  const effectivelyOpen = sidebarOpen && capabilities.supportsSidebar;
 
   const isEmpty =
     !isTimelineView(settings.displayMode) &&
@@ -297,22 +322,24 @@ const ReactViewContent = () => {
       </Flex>
 
       {/* Sidebar: MiniCalendar (Moved to Right) */}
-      <Box
-        w={effectivelyOpen ? "260px" : "0px"}
-        minW={effectivelyOpen ? "260px" : "0px"}
-        h="100%"
-        display={effectivelyOpen ? "flex" : "none"}
-        flexDirection="column"
-        py="var(--size-4-2)"
-        px={0}
-        ml={effectivelyOpen ? "var(--size-4-2)" : 0}
-        mr="var(--size-4-2)"
-        transition="all 0.2s ease-in-out"
-        overflow="hidden"
-      >
-        <MiniCalendar onViewDateChange={setSideBarViewDate} />
-        <SidebarScales viewedDate={sideBarViewDate} />
-      </Box>
+      {capabilities.supportsSidebar && (
+        <Box
+          w={effectivelyOpen ? "260px" : "0px"}
+          minW={effectivelyOpen ? "260px" : "0px"}
+          h="100%"
+          display={effectivelyOpen ? "flex" : "none"}
+          flexDirection="column"
+          py="var(--size-4-2)"
+          px={0}
+          ml={effectivelyOpen ? "var(--size-4-2)" : 0}
+          mr="var(--size-4-2)"
+          transition="all 0.2s ease-in-out"
+          overflow="hidden"
+        >
+          <MiniCalendar onViewDateChange={setSideBarViewDate} />
+          <SidebarScales viewedDate={sideBarViewDate} />
+        </Box>
+      )}
     </Flex>
   );
 };

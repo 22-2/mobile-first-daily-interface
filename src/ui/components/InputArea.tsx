@@ -15,6 +15,7 @@ import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DEFAULT_VIEW_STATE } from "src/ui/store/slices/settingsSlice";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 import { postsStore } from "src/ui/store/postsStore";
@@ -62,6 +63,10 @@ const DisplayModeIndicator: React.FC<{
 
 const InputAreaControl: React.FC = React.memo(() => {
   const { view } = useAppContext();
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities(view.state),
+    [view.state.noteMode],
+  );
   const {
     date,
     granularity,
@@ -131,22 +136,24 @@ const InputAreaControl: React.FC = React.memo(() => {
       className="mfdi-input-area-control"
       height="28px"
     >
-      <ObsidianIcon
-        name="home"
-        size="1.1em"
-        cursor="pointer"
-        color={homeIconColor}
-        padding="4px"
-        borderRadius="4px"
-        _hover={{
-          color: "var(--text-normal)",
-          bg: "var(--background-modifier-hover)",
-        }}
-        onClick={handleClickHome}
-      />
+      {capabilities.supportsDateNavigation && (
+        <ObsidianIcon
+          name="home"
+          size="1.1em"
+          cursor="pointer"
+          color={homeIconColor}
+          padding="4px"
+          borderRadius="4px"
+          _hover={{
+            color: "var(--text-normal)",
+            bg: "var(--background-modifier-hover)",
+          }}
+          onClick={handleClickHome}
+        />
+      )}
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
-        {displayMode === DISPLAY_MODE.FOCUS ? (
+        {!capabilities.supportsDateNavigation ? null : displayMode === DISPLAY_MODE.FOCUS ? (
           threadFocusRootId ? (
             <DisplayModeIndicator
               threadFocusRootId={threadFocusRootId}

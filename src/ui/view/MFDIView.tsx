@@ -3,11 +3,15 @@ import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { ReactView } from "src/ui/components/layout/ReactView";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
-import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import {
+  DEFAULT_MFDI_VIEW_STATE,
+  getFixedNoteTitle,
+  getMFDIViewCapabilities,
+  MFDIViewState,
+} from "src/ui/view/state";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -18,14 +22,7 @@ export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
   public readonly handlers = new MFDIViewHandler();
-  public state: MFDIViewState = {
-    displayMode: DISPLAY_MODE.FOCUS,
-    granularity: "day",
-    asTask: false,
-    timeFilter: "all",
-    dateFilter: "today",
-    activeTopic: "",
-  };
+  public state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -34,28 +31,30 @@ export class MFDIView extends ItemView {
   }
 
   onPaneMenu(menu: Menu, prev: string): void {
-    menu.addItem((item) => {
-      item
-        .setTitle(
-          this.state.displayMode === DISPLAY_MODE.FOCUS
-            ? "タイムライン表示に切替"
-            : "フォーカス表示に切替",
-        )
-        .setIcon(
-          this.state.displayMode === DISPLAY_MODE.FOCUS
-            ? "list-minus"
-            : "calendar-range",
-        )
-        .onClick(() => {
-          this.handlers.onChangeDisplayMode?.(
-            this.state.displayMode === DISPLAY_MODE.FOCUS
-              ? DISPLAY_MODE.TIMELINE
-              : DISPLAY_MODE.FOCUS,
-          );
-        });
-    });
+    const capabilities = getMFDIViewCapabilities(this.state);
 
-    menu.addSeparator();
+    if (capabilities.supportsDisplayModeSwitch) {
+      menu.addItem((item) => {
+        item
+          .setTitle(
+            this.state.displayMode === "focus"
+              ? "タイムライン表示に切替"
+              : "フォーカス表示に切替",
+          )
+          .setIcon(
+            this.state.displayMode === "focus"
+              ? "list-minus"
+              : "calendar-range",
+          )
+          .onClick(() => {
+            this.handlers.onChangeDisplayMode?.(
+              this.state.displayMode === "focus" ? "timeline" : "focus",
+            );
+          });
+      });
+
+      menu.addSeparator();
+    }
 
     menu.addItem((item) => {
       item
@@ -67,15 +66,17 @@ export class MFDIView extends ItemView {
     });
 
     // --- トピック ---
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item
-        .setTitle("トピックを管理...")
-        .setIcon("folder-open")
-        .onClick(() => {
-          this.handlers.onOpenTopicManager?.();
-        });
-    });
+    if (capabilities.supportsTopicSelection) {
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item
+          .setTitle("トピックを管理...")
+          .setIcon("folder-open")
+          .onClick(() => {
+            this.handlers.onOpenTopicManager?.();
+          });
+      });
+    }
 
     // --- 投稿モード ---
     menu.addSeparator();
@@ -84,10 +85,12 @@ export class MFDIView extends ItemView {
     });
 
     // --- 表示期間（日／時間） ---
-    addPeriodMenuItems(menu, this.state, {
-      onChangeTimeFilter: (f) => this.handlers.onChangeTimeFilter?.(f),
-      onChangeDateFilter: (f) => this.handlers.onChangeDateFilter?.(f),
-    });
+    if (capabilities.supportsPeriodMenus) {
+      addPeriodMenuItems(menu, this.state, {
+        onChangeTimeFilter: (f) => this.handlers.onChangeTimeFilter?.(f),
+        onChangeDateFilter: (f) => this.handlers.onChangeDateFilter?.(f),
+      });
+    }
 
     super.onPaneMenu(menu, prev);
   }
@@ -101,6 +104,9 @@ export class MFDIView extends ItemView {
   }
 
   getDisplayText() {
+    if (this.state.noteMode === "fixed") {
+      return `MFDI: ${getFixedNoteTitle(this.state.fixedNotePath)}`;
+    }
     return "Mobile First Daily Interface";
   }
 
@@ -151,29 +157,19 @@ export class MFDIView extends ItemView {
   }
 
   async setState(state: MFDIViewState) {
-    this.state.granularity =
-      (state.granularity as Granularity) ?? this.state.granularity;
-    this.state.asTask = (state.asTask as boolean) ?? this.state.asTask;
-    this.state.timeFilter =
-      (state.timeFilter as TimeFilter) ?? this.state.timeFilter;
-    this.state.dateFilter =
-      (state.dateFilter as DateFilter) ?? this.state.dateFilter;
-    if (state.displayMode !== undefined) {
-      this.state.displayMode = state.displayMode as DisplayMode;
-    }
+    this.state = {
+      ...this.state,
+      ...state,
+      noteMode: state.noteMode ?? this.state.noteMode,
+      fixedNotePath:
+        state.fixedNotePath !== undefined
+          ? (state.fixedNotePath as string | null)
+          : this.state.fixedNotePath,
+    };
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic as string;
       this.handlers.onChangeTopic?.(this.state.activeTopic);
     }
     this.renderNewView();
   }
-}
-
-interface MFDIViewState extends Record<string, unknown> {
-  displayMode: DisplayMode;
-  granularity: Granularity;
-  asTask: boolean;
-  timeFilter: TimeFilter;
-  dateFilter: DateFilter;
-  activeTopic: string;
 }

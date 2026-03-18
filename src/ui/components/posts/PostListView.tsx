@@ -16,6 +16,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DateFilter, DisplayMode, Granularity, MomentLike, Post } from "src/ui/types";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 type TimelineItem =
@@ -35,6 +36,7 @@ export const PostListView: React.FC = React.memo(() => {
       isReadOnly: s.isReadOnly(),
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
+      viewNoteMode: s.viewNoteMode,
     })),
   );
 
@@ -67,6 +69,11 @@ export const PostListView: React.FC = React.memo(() => {
     ...settings,
     includeThreadReplies: true,
   });
+
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
+    [settings.viewNoteMode],
+  );
 
   const {
     granularity,
@@ -106,6 +113,7 @@ export const PostListView: React.FC = React.memo(() => {
           si
             .setTitle("この日にフォーカス")
             .setIcon("calendar-range")
+            .setDisabled(!capabilities.supportsDateNavigation)
             .onClick(() => {
               setDate(post.timestamp.clone());
               setDisplayMode(DISPLAY_MODE.FOCUS);
@@ -116,7 +124,7 @@ export const PostListView: React.FC = React.memo(() => {
           si
             .setTitle("明日に送る")
             .setIcon("fast-forward")
-            .setDisabled(isReadOnly)
+            .setDisabled(isReadOnly || !capabilities.supportsMovePostBetweenDays)
             .onClick(() => {
               movePostToTomorrow(post);
             }),
@@ -200,6 +208,8 @@ export const PostListView: React.FC = React.memo(() => {
       setDate,
       setDisplayMode,
       startEdit,
+      capabilities.supportsDateNavigation,
+      capabilities.supportsMovePostBetweenDays,
     ],
   );
 

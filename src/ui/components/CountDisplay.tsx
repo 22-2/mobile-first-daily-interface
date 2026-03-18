@@ -13,21 +13,28 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { getFixedNoteTitle, getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, dateFilter, displayMode } = useSettingsStore(
+  const { date, granularity, dateFilter, displayMode, viewNoteMode } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
       granularity: s.granularity,
       dateFilter: s.dateFilter,
       displayMode: s.displayMode,
+      viewNoteMode: s.viewNoteMode,
     })),
   );
   const onClick = useFilterMenu();
   const onContextMenu = useGranularityMenu();
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+    [viewNoteMode],
+  );
 
-  if (isTimelineView(displayMode)) return null;
+  if (isTimelineView(displayMode) || !capabilities.supportsDateNavigation)
+    return null;
 
   const dateLabel = React.useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
@@ -129,6 +136,8 @@ const CountSection: React.FC = () => {
       timeFilter: s.timeFilter,
       displayMode: s.displayMode,
       threadFocusRootId: s.threadFocusRootId,
+      viewNoteMode: s.viewNoteMode,
+      fixedNotePath: s.fixedNotePath,
     })),
   );
   const postsState = usePostsStore(
@@ -141,7 +150,15 @@ const CountSection: React.FC = () => {
     posts: postsState.posts,
     ...settings,
   });
-  const { granularity, asTask, dateFilter, timeFilter, displayMode } = settings;
+  const {
+    granularity,
+    asTask,
+    dateFilter,
+    timeFilter,
+    displayMode,
+    viewNoteMode,
+    fixedNotePath,
+  } = settings;
   const { posts, tasks } = postsState;
   const onClick = usePostModeMenu();
 
@@ -156,6 +173,16 @@ const CountSection: React.FC = () => {
     isTimelineView(displayMode);
   const totalPart = showTotal ? `/${allPostsCount}` : "";
 
+  if (viewNoteMode === "fixed") {
+    return (
+      <UnderlinedClickable onClick={onClick}>
+        {asTask
+          ? `${tasksCount} tasks in ${getFixedNoteTitle(fixedNotePath)}`
+          : `${filteredPostsCount} posts in ${getFixedNoteTitle(fixedNotePath)}`}
+      </UnderlinedClickable>
+    );
+  }
+
   return (
     <UnderlinedClickable onClick={onClick}>
       {asTask
@@ -167,12 +194,15 @@ const CountSection: React.FC = () => {
 
 const TopicSection: React.FC = () => {
   const { settings } = useAppContext();
-  const { activeTopic, setActiveTopic: onTopicChange } = useSettingsStore(
+  const { activeTopic, setActiveTopic: onTopicChange, viewNoteMode } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       setActiveTopic: s.setActiveTopic,
+      viewNoteMode: s.viewNoteMode,
     })),
   );
+
+  if (viewNoteMode === "fixed") return null;
 
   const activeTopicName = settings.topics.find(
     (t) => t.id === activeTopic,

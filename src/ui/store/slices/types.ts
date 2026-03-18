@@ -3,6 +3,7 @@ import { RefObject } from "react";
 import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
+import { MFDINoteMode } from "src/ui/view/state";
 import {
   DateFilter,
   DisplayMode,
@@ -18,9 +19,15 @@ export interface EnvironmentSlice {
   appHelper: AppHelper | null;
   storage: MFDIStorage | null;
   pluginSettings: Settings | null;
+  viewNoteMode: MFDINoteMode;
+  fixedNotePath: string | null;
   setAppDependencies: (app: App, appHelper: AppHelper) => void;
   setStorage: (storage: MFDIStorage) => void;
   setPluginSettings: (settings: Settings) => void;
+  setViewContext: (params: {
+    noteMode: MFDINoteMode;
+    fixedNotePath: string | null;
+  }) => void;
   initializeAppStore: (params: {
     app: App;
     appHelper: AppHelper;

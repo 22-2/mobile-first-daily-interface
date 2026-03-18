@@ -13,6 +13,7 @@ import {
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
+import { MFDINoteMode } from "src/ui/view/state";
 
 interface UseFilteredPostsProps {
   posts: Post[];
@@ -22,6 +23,7 @@ interface UseFilteredPostsProps {
   granularity: Granularity;
   displayMode: DisplayMode;
   threadFocusRootId: string | null;
+  viewNoteMode?: MFDINoteMode;
   includeThreadReplies?: boolean;
 }
 
@@ -33,6 +35,7 @@ export const useFilteredPosts = ({
   granularity,
   displayMode,
   threadFocusRootId,
+  viewNoteMode = "periodic",
   includeThreadReplies = false,
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
@@ -55,6 +58,8 @@ export const useFilteredPosts = ({
     }
 
     const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
+
+    if (viewNoteMode === "fixed") return visibleRoots;
 
     // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
     if (isTimelineView(displayMode)) return visibleRoots;
@@ -79,6 +84,7 @@ export const useFilteredPosts = ({
     granularity,
     displayMode,
     threadFocusRootId,
+    viewNoteMode,
     includeThreadReplies,
   ]);
 };

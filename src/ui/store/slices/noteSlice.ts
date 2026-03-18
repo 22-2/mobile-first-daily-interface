@@ -1,5 +1,9 @@
 import { Notice } from "obsidian";
-import { createTopicNote, getTopicNote } from "src/utils/daily-notes";
+import { createTopicNote } from "src/utils/daily-notes";
+import {
+  ensureFixedNote,
+  resolveCurrentTargetNote,
+} from "src/utils/fixed-note";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, NoteSlice } from "./types";
 
@@ -15,14 +19,22 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   updateCurrentDailyNote: (app) => {
-    const { granularity, activeTopic, getEffectiveDate, currentDailyNote } =
-      get();
-    const note = getTopicNote(
-      app,
-      getEffectiveDate(),
+    const {
       granularity,
       activeTopic,
-    );
+      getEffectiveDate,
+      currentDailyNote,
+      viewNoteMode,
+      fixedNotePath,
+    } = get();
+    const note = resolveCurrentTargetNote({
+      app,
+      date: getEffectiveDate(),
+      granularity,
+      activeTopic,
+      noteMode: viewNoteMode,
+      fixedNotePath,
+    });
     if (note?.path !== currentDailyNote?.path) {
       set({ currentDailyNote: note });
     }
@@ -45,9 +57,30 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   createNoteWithInsertAfter: async (app, settings, targetDate) => {
-    const { granularity, activeTopic, getEffectiveDate } = get();
+    const {
+      granularity,
+      activeTopic,
+      getEffectiveDate,
+      viewNoteMode,
+      fixedNotePath,
+    } = get();
+
+    if (viewNoteMode === "fixed") {
+      if (!fixedNotePath) return null;
+      const fixedNote = await ensureFixedNote(app, fixedNotePath);
+      set({ currentDailyNote: fixedNote });
+      return fixedNote;
+    }
+
     const date = targetDate ?? getEffectiveDate();
-    const existing = getTopicNote(app, date, granularity, activeTopic);
+    const existing = resolveCurrentTargetNote({
+      app,
+      date,
+      granularity,
+      activeTopic,
+      noteMode: "periodic",
+      fixedNotePath: null,
+    });
     if (existing) {
       set({ currentDailyNote: existing });
       return existing;
@@ -71,9 +104,22 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   handleClickOpenDailyNote: async (app, settings) => {
-    const { granularity, activeTopic, getEffectiveDate } = get();
+    const {
+      granularity,
+      activeTopic,
+      getEffectiveDate,
+      viewNoteMode,
+      fixedNotePath,
+    } = get();
     const targetDate = getEffectiveDate();
-    let note = getTopicNote(app, targetDate, granularity, activeTopic);
+    let note = resolveCurrentTargetNote({
+      app,
+      date: targetDate,
+      granularity,
+      activeTopic,
+      noteMode: viewNoteMode,
+      fixedNotePath,
+    });
 
     if (!note) {
       new Notice("ノートが存在しなかったので新しく作成しました");

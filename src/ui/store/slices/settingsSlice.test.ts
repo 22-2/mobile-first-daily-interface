@@ -72,6 +72,17 @@ describe("settingsSlice", () => {
     expect(settingsStore.getState().isDateReadOnly(yesterday)).toBe(false);
   });
 
+  it("fixed mode では過去日でも読み取り専用にならない", () => {
+    settingsStore.setState({
+      date: yesterday.clone(),
+      viewNoteMode: "fixed",
+      fixedNotePath: "MFDI/fixed.md",
+    });
+
+    expect(settingsStore.getState().isReadOnly()).toBe(false);
+    expect(settingsStore.getState().isDateReadOnly(yesterday)).toBe(false);
+  });
+
   it("スレッドを開くと対象ノートの日付に同期する", () => {
     settingsStore.getState().setThreadFocusRootId("root-1", yesterday);
 

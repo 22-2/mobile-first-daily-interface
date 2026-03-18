@@ -45,6 +45,7 @@ export const usePostActions = () => {
       displayMode: s.displayMode,
       getEffectiveDate: s.getEffectiveDate,
       threadFocusRootId: s.threadFocusRootId,
+      viewNoteMode: s.viewNoteMode,
     })),
   );
 
@@ -362,7 +363,9 @@ export const usePostActions = () => {
 
     // タイムライン表示時は常に今日のノートに投稿
     const targetDate = settingsState.getEffectiveDate();
-    if (!targetDate.isSame(now, "day")) {
+    if (settingsState.viewNoteMode === "fixed") {
+      metadata.posted = now.toISOString();
+    } else if (!targetDate.isSame(now, "day")) {
       metadata.posted = now.toISOString();
     }
 
@@ -379,17 +382,23 @@ export const usePostActions = () => {
       return;
     }
 
-    let note = getTopicNote(
-      app,
-      targetDate,
-      settingsState.granularity,
-      settingsState.activeTopic,
-    );
+    let note = noteState.currentDailyNote;
+
+    if (settingsState.viewNoteMode !== "fixed") {
+      note = getTopicNote(
+        app,
+        targetDate,
+        settingsState.granularity,
+        settingsState.activeTopic,
+      );
+    }
 
     if (!note) {
-      note = await noteStore
-        .getState()
-        .createNoteWithInsertAfter(app, settings, targetDate);
+      note = await noteStore.getState().createNoteWithInsertAfter(
+        app,
+        settings,
+        settingsState.viewNoteMode === "fixed" ? undefined : targetDate,
+      );
     }
 
     if (note) {
@@ -535,6 +544,11 @@ export const usePostActions = () => {
 
       if (settingsState.isReadOnly) {
         new Notice("過去のノートの投稿は移動できません");
+        return;
+      }
+
+      if (settingsState.viewNoteMode === "fixed") {
+        new Notice("固定ノートモードでは利用できません");
         return;
       }
 

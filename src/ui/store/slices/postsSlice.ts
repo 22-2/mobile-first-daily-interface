@@ -47,10 +47,16 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePosts: async (note) => {
-    const { appHelper, date, setPosts } = get();
+    const { appHelper, date, setPosts, viewNoteMode } = get();
     if (!appHelper) return;
     const content = await appHelper.loadFile(note.path);
-    setPosts(buildPostsFromContent(content, note.path, date));
+    setPosts(
+      buildPostsFromContent(
+        content,
+        note.path,
+        viewNoteMode === "fixed" ? window.moment() : date,
+      ),
+    );
   },
 
   updateTasks: async (note) => {
@@ -174,12 +180,20 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   getFilteredPosts: () => {
-    const { posts, timeFilter, dateFilter, asTask, granularity, displayMode } =
-      get();
+    const {
+      posts,
+      timeFilter,
+      dateFilter,
+      asTask,
+      granularity,
+      displayMode,
+      viewNoteMode,
+    } = get();
     const visiblePosts = posts.filter(
       (post) => !post.metadata.archived && !post.metadata.deleted,
     );
 
+    if (viewNoteMode === "fixed") return visiblePosts;
     if (isTimelineView(displayMode)) return visiblePosts;
     if (dateFilter !== DATE_FILTER_IDS.TODAY) return visiblePosts;
     if (timeFilter === TIME_FILTER_IDS.ALL || asTask || granularity !== "day")
