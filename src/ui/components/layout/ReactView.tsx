@@ -52,9 +52,10 @@ export const ReactView = ({
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { view, settings, storage, app, appHelper } = useAppContext();
+  const viewState = view.getState();
   const capabilities = React.useMemo(
-    () => getMFDIViewCapabilities(view.state),
-    [view.state.noteMode],
+    () => getMFDIViewCapabilities(viewState),
+    [view, viewState.noteMode],
   );
 
   // Initialize store once
@@ -109,10 +110,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   React.useEffect(() => {
     appStore.getState().setViewContext({
-      noteMode: view.state.noteMode,
-      fixedNotePath: view.state.fixedNotePath,
+      noteMode: viewState.noteMode,
+      fixedNotePath: viewState.fixedNotePath,
     });
-  }, [view, view.state.noteMode, view.state.fixedNotePath]);
+  }, [view, viewState.noteMode, viewState.fixedNotePath]);
 
   React.useEffect(() => {
     noteStore.getState().updateCurrentDailyNote(app);
@@ -121,8 +122,8 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     date,
     granularity,
     activeTopic,
-    view.state.noteMode,
-    view.state.fixedNotePath,
+    viewState.noteMode,
+    viewState.fixedNotePath,
   ]);
 
   React.useEffect(() => {
@@ -199,9 +200,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const ReactViewContent = () => {
   const { view } = useAppContext();
+  const viewState = view.getState();
   const capabilities = React.useMemo(
-    () => getMFDIViewCapabilities(view.state),
-    [view.state.noteMode],
+    () => getMFDIViewCapabilities(viewState),
+    [view, viewState.noteMode],
   );
   const settings = useSettingsStore(
     useShallow((s) => ({
@@ -421,27 +423,27 @@ function useViewSync(view: MFDIView) {
   }, [inputRef]);
 
   React.useEffect(() => {
-    view.state.granularity = granularity;
+    view.setStatePartial({ granularity });
   }, [view, granularity]);
 
   React.useEffect(() => {
-    view.state.asTask = asTask;
+    view.setStatePartial({ asTask });
   }, [view, asTask]);
 
   React.useEffect(() => {
-    view.state.timeFilter = timeFilter;
+    view.setStatePartial({ timeFilter });
   }, [view, timeFilter]);
 
   React.useEffect(() => {
-    view.state.dateFilter = dateFilter;
+    view.setStatePartial({ dateFilter });
   }, [view, dateFilter]);
 
   React.useEffect(() => {
-    view.state.displayMode = displayMode;
+    view.setStatePartial({ displayMode });
   }, [view, displayMode]);
 
   React.useEffect(() => {
-    view.state.activeTopic = activeTopic;
+    view.setStatePartial({ activeTopic });
   }, [view, activeTopic]);
 
   React.useEffect(() => {

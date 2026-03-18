@@ -63,9 +63,10 @@ const DisplayModeIndicator: React.FC<{
 
 const InputAreaControl: React.FC = React.memo(() => {
   const { view } = useAppContext();
+  const viewState = view.getState();
   const capabilities = React.useMemo(
-    () => getMFDIViewCapabilities(view.state),
-    [view.state.noteMode],
+    () => getMFDIViewCapabilities(viewState),
+    [view, viewState.noteMode],
   );
   const {
     date,

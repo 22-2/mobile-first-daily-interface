@@ -22,7 +22,7 @@ export class MFDIView extends ItemView {
   private root: Root;
   private settings: Settings;
   public readonly handlers = new MFDIViewHandler();
-  public state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
+  private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -125,7 +125,7 @@ export class MFDIView extends ItemView {
     return this.state;
   }
 
-  async setState(state: MFDIViewState) {
+  setStatePartial(state: Partial<MFDIViewState>) {
     this.state = {
       ...this.state,
       ...state,
@@ -135,6 +135,10 @@ export class MFDIView extends ItemView {
           ? (state.fixedNotePath as string | null)
           : this.state.fixedNotePath,
     };
+  }
+
+  async setState(state: MFDIViewState) {
+    this.setStatePartial(state);
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic as string;
       this.handlers.onChangeTopic?.(this.state.activeTopic);
