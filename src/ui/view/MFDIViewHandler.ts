@@ -14,4 +14,5 @@ export class MFDIViewHandler {
   onOpenTopicManager?: () => void;
   onFocusRequested?: () => void;
   onToggleSidebar?: () => void;
+  onCopyAllPosts?: () => void;
 }

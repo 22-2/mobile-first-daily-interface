@@ -65,6 +65,15 @@ export class MFDIView extends ItemView {
         });
     });
 
+    menu.addItem((item) => {
+      item
+        .setTitle("表示中の投稿を一括コピー")
+        .setIcon("copy")
+        .onClick(() => {
+          this.handlers.onCopyAllPosts?.();
+        });
+    });
+
     // --- トピック ---
     if (capabilities.supportsTopicSelection) {
       menu.addSeparator();
@@ -164,6 +173,7 @@ export class MFDIView extends ItemView {
   }
 
   private setupView() {
+
     if (getMFDIViewCapabilities(this.state).supportsSidebar) {
       this.addAction("columns-2", "サイドバーを切り替え", () => {
         this.handlers.onToggleSidebar?.();

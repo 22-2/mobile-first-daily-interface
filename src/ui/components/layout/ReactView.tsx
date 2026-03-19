@@ -242,6 +242,18 @@ const ReactViewContent = () => {
     ...settings,
   });
 
+  React.useEffect(() => {
+    view.handlers.onCopyAllPosts = () => {
+      const text = filteredPosts
+        .map((p) => `${p.timestamp.format("YYYY-MM-DD HH:mm")}\n${p.message}`)
+        .join("\n\n");
+      navigator.clipboard.writeText(text);
+    };
+    return () => {
+      view.handlers.onCopyAllPosts = undefined;
+    };
+  }, [view, filteredPosts]);
+
   const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
     settings;
 
