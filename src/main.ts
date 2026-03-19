@@ -4,8 +4,8 @@ import {
   TAbstractFile,
   TFile,
   WorkspaceLeaf,
-  MarkdownView,
 } from "obsidian";
+import { around } from "monkey-around";
 import { AppHelper } from "src/app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
@@ -40,7 +40,10 @@ export default class MFDIPlugin extends Plugin {
     this.registerMFDIView();
     this.registerRibbonActions();
     this.registerCommands();
+    this.patchSetViewStateForFixedNotes();
     this.registerEventListeners();
+
+    void this.replaceOpenFixedMarkdownLeaves();
   }
 
   // ---------------------------------------------------------------------------
@@ -79,12 +82,6 @@ export default class MFDIPlugin extends Plugin {
   }
 
   private registerEventListeners() {
-    this.registerEvent(
-      this.app.workspace.on("file-open", (file) =>
-        this.handleFileOpen(file),
-      ),
-    );
-
     this.registerEvent(
       this.app.vault.on("rename", (file, oldPath) =>
         this.handleFileRename(file, oldPath),
@@ -133,19 +130,57 @@ export default class MFDIPlugin extends Plugin {
   // イベントハンドラ
   // ---------------------------------------------------------------------------
 
-  private handleFileOpen(file: TFile | null) {
-    if (!(file instanceof TFile)) return;
-    if (!file.path.endsWith(".mfdi.md")) return;
-    if (!this.settings.fixedNoteFiles.some((f) => f.path === file.path)) return;
+  private patchSetViewStateForFixedNotes() {
+    const sampleLeaf = this.app.workspace.getLeaf(false);
+    if (!sampleLeaf) return;
 
-    const activeLeaf = this.app.workspace.activeLeaf;
-    if (!activeLeaf) return;
-    if (!(activeLeaf.view instanceof MarkdownView)) return;
-    if (activeLeaf.view.file?.path !== file.path) return;
+    const leafPrototype = Object.getPrototypeOf(sampleLeaf);
+    const plugin = this;
 
-    this.attachMFDIView(createFixedNoteViewState(file.path), activeLeaf).then((leaf) => {
-      if (leaf) this.app.workspace.revealLeaf(leaf);
-    });
+    this.register(around(leafPrototype, {
+      setViewState(original: Function) {
+        return function (this: WorkspaceLeaf, viewState: any, ...args: any[]) {
+          const nextState = plugin.convertMarkdownViewStateForFixedNote(viewState);
+          return original.call(this, nextState, ...args);
+        };
+      },
+    }));
+  }
+
+  private convertMarkdownViewStateForFixedNote(viewState: any): any {
+    if (!viewState || viewState.type !== "markdown") return viewState;
+
+    const filePath =
+      typeof viewState.state?.file === "string" ? viewState.state.file : "";
+    if (!filePath.endsWith(".mfdi.md")) return viewState;
+
+    if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+      return viewState;
+    }
+
+    return {
+      ...viewState,
+      type: VIEW_TYPE_MFDI,
+      state: {
+        ...DEFAULT_MFDI_VIEW_STATE,
+        ...createFixedNoteViewState(filePath),
+      },
+    };
+  }
+
+  private async replaceOpenFixedMarkdownLeaves() {
+    const markdownLeaves = this.app.workspace.getLeavesOfType("markdown");
+
+    for (const leaf of markdownLeaves) {
+      const filePath = (leaf.view as any)?.file?.path;
+      if (typeof filePath !== "string") continue;
+      if (!filePath.endsWith(".mfdi.md")) continue;
+      if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+        continue;
+      }
+
+      await this.attachMFDIView(createFixedNoteViewState(filePath), leaf);
+    }
   }
 
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
@@ -189,7 +224,7 @@ export default class MFDIPlugin extends Plugin {
     const mergedState = { ...DEFAULT_MFDI_VIEW_STATE, ...state };
 
     const existingLeaf = this.findExistingLeaf(state);
-    const targetLeaf = existingLeaf ?? preferredLeaf ?? this.app.workspace.getLeaf(false);
+    const targetLeaf = preferredLeaf ?? existingLeaf ?? this.app.workspace.getLeaf(false);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,

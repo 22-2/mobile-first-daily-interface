@@ -26,6 +26,9 @@ importers:
       framer-motion:
         specifier: ^12.35.2
         version: 12.35.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      monkey-around:
+        specifier: ^3.0.0
+        version: 3.0.0
       obsidian-magical-editor:
         specifier: link:..\..\my-projects-02\obsidian-magical-editor
         version: link:../../my-projects-02/obsidian-magical-editor
@@ -2151,6 +2154,9 @@ packages:
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+
+  monkey-around@3.0.0:
+    resolution: {integrity: sha512-jL6uY2lEAoaHxZep1cNRkCZjoIWY4g5VYCjriEWmcyHU7w8NU1+JH57xE251UVTohK0lCxMjv0ZV4ByDLIXEpw==}
 
   motion-dom@12.35.2:
     resolution: {integrity: sha512-pWXFMTwvGDbx1Fe9YL5HZebv2NhvGBzRtiNUv58aoK7+XrsuaydQ0JGRKK2r+bTKlwgSWwWxHbP5249Qr/BNpg==}
@@ -4891,6 +4897,8 @@ snapshots:
   moment@2.29.4: {}
 
   moment@2.30.1: {}
+
+  monkey-around@3.0.0: {}
 
   motion-dom@12.35.2:
     dependencies:
