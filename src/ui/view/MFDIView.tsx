@@ -127,7 +127,6 @@ export class MFDIView extends ItemView {
   }
 
   async onClose() {
-    this.handlers.onViewClosed?.(this.state);
     this.root?.unmount();
   }
 

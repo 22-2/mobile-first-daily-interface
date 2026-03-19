@@ -10,6 +10,7 @@ export interface MFDIModalOptions {
 
 export class MFDIModal extends ModalEditor {
   constructor(app: App, options: MFDIModalOptions) {
+    // @ts-expect-error
     super(app, {
       initialContent: options.initialContent,
       onChange: options.onChange,
