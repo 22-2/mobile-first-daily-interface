@@ -27,8 +27,8 @@ importers:
         specifier: ^12.35.2
         version: 12.35.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       obsidian-magical-editor:
-        specifier: file:..\..\my-projects-02\obsidian-magical-editor
-        version: file:../../my-projects-02/obsidian-magical-editor
+        specifier: link:..\..\my-projects-02\obsidian-magical-editor
+        version: link:../../my-projects-02/obsidian-magical-editor
       preact:
         specifier: ^10.29.0
         version: 10.29.0
@@ -2184,9 +2184,6 @@ packages:
   object-keys@1.1.1:
     resolution: {integrity: sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==}
     engines: {node: '>= 0.4'}
-
-  obsidian-magical-editor@file:../../my-projects-02/obsidian-magical-editor:
-    resolution: {directory: ../../my-projects-02/obsidian-magical-editor, type: directory}
 
   obsidian-typings@5.5.0:
     resolution: {integrity: sha512-RhbUtovo2i4Z7Ra7jubP1hsAHl20ayWCmTcMVhKhzKpDEjDg1OiFRNgSAjrFzKL6QuLa9KqmPES0TOGX6+7fmA==}
@@ -4915,8 +4912,6 @@ snapshots:
 
   object-keys@1.1.1:
     optional: true
-
-  obsidian-magical-editor@file:../../my-projects-02/obsidian-magical-editor: {}
 
   obsidian-typings@5.5.0(@pixi/core@7.2.4)(@pixi/display@7.2.4(@pixi/core@7.2.4))(@pixi/utils@7.2.4)(typescript@5.9.3):
     dependencies:

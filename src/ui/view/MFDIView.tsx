@@ -160,7 +160,8 @@ export class MFDIView extends ItemView {
     // scope は renderNewView より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
     this.scope = new Scope(this.app.scope);
     this.scope.register(["Ctrl"], "Enter", () => {
-      return true;
+      this.handlers.onSubmit?.();
+      return false;
     });
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
       this.handlers.onOpenModalEditor?.();
