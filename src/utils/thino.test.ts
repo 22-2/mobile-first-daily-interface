@@ -144,4 +144,63 @@ describe("parseThinoEntries", () => {
     const entries = parseThinoEntries(content);
     expect(entries[0].metadata.posted).toBe(iso);
   });
+
+  test("does not split body lines that look like thino entries", () => {
+    const content = [
+      "## Thino",
+      "- 09:00:00 ```",
+      "    - 23:59:59 launcher以下の処理フローを大幅に簡素化したいっす",
+      "        処理の安定化",
+      "        レートリミット対策",
+      "        セットアップの簡素化",
+      "        [parentId::284bbb4e]",
+      "        [posted::2026-03-19T02:55:45.026Z]",
+      "    - 23:59:59 省略の閾値を設定可能に",
+      "        [parentId::284bbb4e]",
+      "        [posted::2026-03-19T02:09:17.340Z]",
+      "    - 23:59:59 セットアップが複雑",
+      "        レートリミットに引っかかりがち",
+      "",
+      "        受け入れ条件",
+      "        example/on-demand-pluings/以下のテストが動く",
+      "        [parentId::284bbb4e]",
+      "        [posted::2026-03-19T01:29:44.404Z]",
+      "    ```",
+      "    [posted::2026-03-19T09:00:00.000Z]",
+    ].join("\n");
+
+    const entries = parseThinoEntries(content);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].message).toContain(
+      "- 23:59:59 launcher以下の処理フローを大幅に簡素化したいっす",
+    );
+    expect(entries[0].message).toContain(
+      "- 23:59:59 省略の閾値を設定可能に",
+    );
+    expect(entries[0].message).toContain("[parentId::284bbb4e]");
+    expect(entries[0].metadata).toEqual({
+      posted: "2026-03-19T09:00:00.000Z",
+    });
+  });
+
+  test("keeps metadata-like tokens inside fenced code blocks as message text", () => {
+    const content = [
+      "## Thino",
+      "- 10:00:00 ```ts",
+      "    const sample = [",
+      "    \"[parentId::keep-me]\",",
+      "    \"[posted::keep-me-too]\",",
+      "    ];",
+      "    ```",
+      "    [posted::2026-03-19T10:00:00.000Z]",
+    ].join("\n");
+
+    const entries = parseThinoEntries(content);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].message).toContain("[parentId::keep-me]");
+    expect(entries[0].message).toContain("[posted::keep-me-too]");
+    expect(entries[0].metadata.posted).toBe("2026-03-19T10:00:00.000Z");
+  });
 });

@@ -22,16 +22,90 @@ function isThinoHeading(line: string): boolean {
   return /^#{1,6}\s+thino\s*$/i.test(line.trim());
 }
 
+function isFenceLine(line: string): boolean {
+  return /^(```|~~~)/.test(line.trim());
+}
+
+function stripTrailingMetadata(
+  line: string,
+  metadata: Record<string, string>,
+): string {
+  let nextLine = line;
+
+  while (true) {
+    const match = nextLine.match(/^(.*?)(?:\s+)?\[([^\]:]+)::([^\]]+)\]\s*$/);
+    if (!match) {
+      return nextLine;
+    }
+
+    const [, prefix, key, value] = match;
+    metadata[key.trim()] = value.trim();
+    nextLine = prefix.trimEnd();
+  }
+}
+
+function extractMessageAndMetadata(
+  bodyLines: string[],
+  hasInlineMessage: boolean,
+): { message: string; metadata: Record<string, string> } {
+  const metadata: Record<string, string> = {};
+  const lines = [...bodyLines];
+
+  if (hasInlineMessage && lines.length > 0) {
+    lines[0] = stripTrailingMetadata(lines[0], metadata);
+  }
+
+  const isOutsideFence: boolean[] = [];
+  let inFence = false;
+  for (const line of lines) {
+    isOutsideFence.push(!inFence);
+    if (isFenceLine(line)) {
+      inFence = !inFence;
+    }
+  }
+
+  let lastIndex = lines.length - 1;
+  while (lastIndex >= 0 && lines[lastIndex].trim().length === 0) {
+    lastIndex -= 1;
+  }
+
+  while (lastIndex >= 0) {
+    if (!isOutsideFence[lastIndex]) {
+      break;
+    }
+
+    const metadataOnlyMatch = lines[lastIndex].match(/^\[([^\]:]+)::([^\]]+)\]$/);
+    if (metadataOnlyMatch) {
+      metadata[metadataOnlyMatch[1].trim()] = metadataOnlyMatch[2].trim();
+      lines.splice(lastIndex, 1);
+      isOutsideFence.splice(lastIndex, 1);
+      lastIndex -= 1;
+      while (lastIndex >= 0 && lines[lastIndex].trim().length === 0) {
+        lastIndex -= 1;
+      }
+      continue;
+    }
+
+    lines[lastIndex] = stripTrailingMetadata(lines[lastIndex], metadata);
+    break;
+  }
+
+  return {
+    message: lines.join("\n").trimEnd(),
+    metadata,
+  };
+}
+
 function matchTimeBullet(line: string): {
   time: string;
   dashIndex: number;
   message?: string;
   messageIndex?: number;
 } | null {
-  // Allows leading spaces. Accept optional trailing text after the time.
+  // Only top-level bullets should start a new Thino entry.
   // Support both "HH:mm:ss" and "YYYY-MM-DD HH:mm:ss" formats.
   const m = line.match(
-    /^([ \t]*)-\s*((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/,
+    /^([ ]{0,3})-\s*((?:\d{4}-\d{2}-\d{2}\s+)?\d{2}:\d{2}:\d{2})(?:\s+(.*))?$/,
   );
   if (!m) {
     return null;
@@ -75,6 +149,7 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
     startOffset: number;
     bodyStartOffset: number;
     bodyLines: string[];
+    hasInlineMessage: boolean;
   } | null = null;
 
   const flush = (endOffset: number) => {
@@ -82,14 +157,10 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
       return;
     }
 
-    const rawMessage = current.bodyLines.join("\n").trimEnd();
-    const metadata: Record<string, string> = {};
-    const message = rawMessage
-      .replace(/\[([^\]:]+)::([^\]]+)\]/g, (match, key, value) => {
-        metadata[key.trim()] = value.trim();
-        return "";
-      })
-      .trim();
+    const { message, metadata } = extractMessageAndMetadata(
+      current.bodyLines,
+      current.hasInlineMessage,
+    );
 
     // Thino entries without body are allowed (empty message).
     entries.push({
@@ -130,7 +201,7 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
 
     const timeBullet = matchTimeBullet(line);
     // If this line is a markdown task (checkbox), treat it as not part of Thino body.
-    if (/^[ \t]*-\s*\[\s*[ xX]?\s*\]/.test(line)) {
+    if (/^[ ]{0,3}-\s*\[\s*[ xX]?\s*\]/.test(line)) {
       flush(offset);
       offset += rawLine.length + 1;
       continue;
@@ -152,6 +223,7 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
         startOffset: offset,
         bodyStartOffset,
         bodyLines,
+        hasInlineMessage: timeBullet.message != null,
       };
       offset += rawLine.length + 1;
       continue;
