@@ -1,4 +1,11 @@
-import { Notice, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import {
+  Notice,
+  Plugin,
+  TAbstractFile,
+  TFile,
+  WorkspaceLeaf,
+  MarkdownView,
+} from "obsidian";
 import { AppHelper } from "src/app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
@@ -22,9 +29,6 @@ export default class MFDIPlugin extends Plugin {
   settings: Settings;
   settingTab: MFDISettingTab;
   view?: MFDIView;
-  private recentlyClosedFixedPath?: string;
-  private recentlyClosedAt = 0;
-  private static readonly SUPPRESS_REOPEN_MS = 1500;
 
   async onload() {
     this.appHelper = new AppHelper(this.app);
@@ -133,32 +137,15 @@ export default class MFDIPlugin extends Plugin {
     if (!(file instanceof TFile)) return;
     if (!file.path.endsWith(".mfdi.md")) return;
     if (!this.settings.fixedNoteFiles.some((f) => f.path === file.path)) return;
-    if (this.shouldSuppressReopen(file.path)) return;
 
-    this.attachMFDIView(createFixedNoteViewState(file.path)).then((leaf) => {
+    const activeLeaf = this.app.workspace.activeLeaf;
+    if (!activeLeaf) return;
+    if (!(activeLeaf.view instanceof MarkdownView)) return;
+    if (activeLeaf.view.file?.path !== file.path) return;
+
+    this.attachMFDIView(createFixedNoteViewState(file.path), activeLeaf).then((leaf) => {
       if (leaf) this.app.workspace.revealLeaf(leaf);
     });
-  }
-
-  private shouldSuppressReopen(path: string): boolean {
-    if (!this.recentlyClosedFixedPath) return false;
-
-    const normalizedPath = normalizeFixedNotePath(path);
-    const isSamePath =
-      normalizeFixedNotePath(this.recentlyClosedFixedPath) === normalizedPath;
-    const withinSuppressWindow =
-      Date.now() - this.recentlyClosedAt <= MFDIPlugin.SUPPRESS_REOPEN_MS;
-
-    if (!isSamePath || !withinSuppressWindow) {
-      this.recentlyClosedFixedPath = undefined;
-      this.recentlyClosedAt = 0;
-      return false;
-    }
-
-    // Ignore only once right after close.
-    this.recentlyClosedFixedPath = undefined;
-    this.recentlyClosedAt = 0;
-    return true;
   }
 
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
@@ -197,11 +184,12 @@ export default class MFDIPlugin extends Plugin {
    */
   async attachMFDIView(
     state: Partial<MFDIViewState> = DEFAULT_MFDI_VIEW_STATE,
+    preferredLeaf?: WorkspaceLeaf,
   ): Promise<WorkspaceLeaf | undefined> {
     const mergedState = { ...DEFAULT_MFDI_VIEW_STATE, ...state };
 
     const existingLeaf = this.findExistingLeaf(state);
-    const targetLeaf = existingLeaf ?? this.app.workspace.getLeaf(false);
+    const targetLeaf = existingLeaf ?? preferredLeaf ?? this.app.workspace.getLeaf(false);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
@@ -258,14 +246,6 @@ export default class MFDIPlugin extends Plugin {
         },
       );
       modal.open();
-    };
-
-    view.handlers.onViewClosed = (state) => {
-      if (state.noteMode !== "fixed") return;
-      if (!state.fixedNotePath) return;
-
-      this.recentlyClosedFixedPath = state.fixedNotePath;
-      this.recentlyClosedAt = Date.now();
     };
   }
 
