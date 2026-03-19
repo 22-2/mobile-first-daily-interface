@@ -2,15 +2,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useCallback, useEffect } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
-import { noteStore, useNoteStore } from "src/ui/store/noteStore";
-import { postsStore, usePostsStore } from "src/ui/store/postsStore";
+import { useCurrentAppStore } from "src/ui/store/appStore";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Granularity, MomentLike } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getPeriodicSettings } from "src/utils/daily-notes";
+import { normalizeFixedNotePath } from "src/utils/fixed-note";
 import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./internal/refreshPosts";
-import { normalizeFixedNotePath } from "src/utils/fixed-note";
 
 type CurrentDayFileParams = {
   date: MomentLike;
@@ -34,6 +35,7 @@ function isCurrentDayFile(
  */
 export function useNoteSync() {
   const { app } = useAppContext();
+  const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
   const { date, granularity, activeTopic, dateFilter, displayMode, setDate } =
@@ -82,12 +84,13 @@ export function useNoteSync() {
       date,
       displayMode,
       updatePosts,
-      updatePostsForWeek: postsStore.getState().updatePostsForWeek,
-      updatePostsForDays: postsStore.getState().updatePostsForDays,
-      replacePaths: noteStore.getState().replacePaths,
+      updatePostsForWeek: store.getState().updatePostsForWeek,
+      updatePostsForDays: store.getState().updatePostsForDays,
+      replacePaths: store.getState().replacePaths,
     }),
     [
       app.vault,
+      store,
       queryClient,
       dateFilter,
       activeTopic,
@@ -107,7 +110,7 @@ export function useNoteSync() {
           currentDailyNote?.path ?? normalizeFixedNotePath(fixedNotePath ?? "");
         if (!targetPath || file.path !== targetPath) return;
 
-        noteStore.getState().updateCurrentDailyNote(app);
+        store.getState().updateCurrentDailyNote(app);
         await Promise.all([updatePosts(file), updateTasks(file)]);
         return;
       }
@@ -128,7 +131,7 @@ export function useNoteSync() {
       )
         return;
 
-      noteStore.getState().updateCurrentDailyNote(app);
+      store.getState().updateCurrentDailyNote(app);
       await Promise.all([updatePosts(file), updateTasks(file)]);
     };
 
@@ -137,7 +140,7 @@ export function useNoteSync() {
         const targetPath =
           currentDailyNote?.path ?? normalizeFixedNotePath(fixedNotePath ?? "");
         if (file.path !== targetPath) return;
-        noteStore.getState().setCurrentDailyNote(null);
+        store.getState().setCurrentDailyNote(null);
         setTasks([]);
         setPosts([]);
         return;
@@ -181,5 +184,6 @@ export function useNoteSync() {
     updatePosts,
     updateTasks,
     refreshPosts,
+    store,
   ]);
 }

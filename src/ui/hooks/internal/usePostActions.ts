@@ -2,8 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
+import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { noteStore, useNoteStore } from "src/ui/store/noteStore";
+import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
@@ -21,6 +22,7 @@ import { createRefreshPosts } from "./refreshPosts";
 
 export const usePostActions = () => {
   const { app, appHelper, settings } = useAppContext();
+  const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
   const getSerializedTimestamp = useCallback(
@@ -394,7 +396,7 @@ export const usePostActions = () => {
     }
 
     if (!note) {
-      note = await noteStore.getState().createNoteWithInsertAfter(
+      note = await store.getState().createNoteWithInsertAfter(
         app,
         settings,
         settingsState.viewNoteMode === "fixed" ? undefined : targetDate,
@@ -553,7 +555,7 @@ export const usePostActions = () => {
       }
 
       const nextDay = latestPost.timestamp.clone().add(1, "day");
-      const nextNote = await noteStore
+      const nextNote = await store
         .getState()
         .createNoteWithInsertAfter(app, settings, nextDay);
       if (!nextNote) {
@@ -579,7 +581,7 @@ export const usePostActions = () => {
 
       new Notice("明日に送りました");
     },
-    [app, appHelper, settings, settingsState, deletePost],
+    [app, appHelper, settings, settingsState, deletePost, store],
   );
 
   const createThread = useCallback(

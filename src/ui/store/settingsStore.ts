@@ -1,5 +1,9 @@
 import { Settings } from "src/settings";
-import { appStore } from "src/ui/store/appStore";
+import {
+  AppStoreApi,
+  appStore,
+  useCurrentAppStore,
+} from "src/ui/store/appStore";
 import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
 import { MFDIStorage } from "src/utils/storage";
 import { useStore } from "zustand";
@@ -9,8 +13,9 @@ export const settingsStore = appStore;
 export function initializeSettingsStore(
   settings: Settings,
   storage: MFDIStorage,
+  store: AppStoreApi = appStore,
 ) {
-  const state = appStore.getState();
+  const state = store.getState();
   state.setPluginSettings(settings);
   state.setStorage(storage);
   state.hydrateSettingsState();
@@ -19,5 +24,6 @@ export function initializeSettingsStore(
 export function useSettingsStore<T>(
   selector: (state: SettingsSlice & MFDIStore) => T,
 ): T {
-  return useStore(appStore, selector as (state: MFDIStore) => T);
+  const store = useCurrentAppStore();
+  return useStore(store, selector as (state: MFDIStore) => T);
 }

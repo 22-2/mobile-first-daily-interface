@@ -15,15 +15,21 @@ import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
-import { appStore, initializeAppStore } from "src/ui/store/appStore";
-import { editorStore, useEditorStore } from "src/ui/store/editorStore";
-import { noteStore, useNoteStore } from "src/ui/store/noteStore";
-import { postsStore, usePostsStore } from "src/ui/store/postsStore";
+import {
+  AppStoreApi,
+  AppStoreProvider,
+  createAppStore,
+  initializeAppStore,
+  useCurrentAppStore,
+} from "src/ui/store/appStore";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
-import { getMFDIViewCapabilities } from "src/ui/view/state";
+import { DEFAULT_MFDI_VIEW_STATE, getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
@@ -39,29 +45,36 @@ export const ReactView = ({
   settings: Settings;
   view: MFDIView;
 }) => {
+  const storeRef = React.useRef<AppStoreApi | null>(null);
+  if (!storeRef.current) {
+    storeRef.current = createAppStore();
+  }
+
   return (
     <AppContextProvider app={app} settings={settings} view={view}>
-      <QueryClientProvider client={queryClient}>
-        <MFDIAppRoot>
-          <ReactViewContent />
-        </MFDIAppRoot>
-      </QueryClientProvider>
+      <AppStoreProvider store={storeRef.current}>
+        <QueryClientProvider client={queryClient}>
+          <MFDIAppRoot>
+            <ReactViewContent />
+          </MFDIAppRoot>
+        </QueryClientProvider>
+      </AppStoreProvider>
     </AppContextProvider>
   );
 };
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { view, settings, storage, app, appHelper } = useAppContext();
+  const store = useCurrentAppStore();
   const viewState = view.getState();
   const capabilities = React.useMemo(
     () => getMFDIViewCapabilities(viewState),
     [view, viewState.noteMode],
   );
 
-  // Initialize store once
-  React.useMemo(() => {
-    initializeAppStore({ app, appHelper, settings, storage });
-  }, [settings, storage, app, appHelper]);
+  React.useEffect(() => {
+    initializeAppStore({ app, appHelper, settings, storage }, store);
+  }, [settings, storage, app, appHelper, store]);
 
   const {
     date,
@@ -109,15 +122,28 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useNoteSync();
 
   React.useEffect(() => {
-    appStore.getState().setViewContext({
+    store.getState().setViewContext({
       noteMode: viewState.noteMode,
       fixedNotePath: viewState.fixedNotePath,
     });
-  }, [view, viewState.noteMode, viewState.fixedNotePath]);
+
+    // fixedビューでは periodic 側の永続状態を引き継がない
+    if (viewState.noteMode === "fixed") {
+      store.setState({
+        displayMode: DEFAULT_MFDI_VIEW_STATE.displayMode,
+        granularity: DEFAULT_MFDI_VIEW_STATE.granularity,
+        dateFilter: DEFAULT_MFDI_VIEW_STATE.dateFilter,
+        timeFilter: DEFAULT_MFDI_VIEW_STATE.timeFilter,
+        asTask: DEFAULT_MFDI_VIEW_STATE.asTask,
+        threadFocusRootId: null,
+      });
+    }
+  }, [store, view, viewState.noteMode, viewState.fixedNotePath]);
 
   React.useEffect(() => {
-    noteStore.getState().updateCurrentDailyNote(app);
+    store.getState().updateCurrentDailyNote(app);
   }, [
+    store,
     app,
     date,
     granularity,
@@ -360,6 +386,7 @@ const ReactViewContent = () => {
 
 function useViewSync(view: MFDIView) {
   const { app, settings } = useAppContext();
+  const store = useCurrentAppStore();
 
   const {
     granularity,
@@ -403,15 +430,14 @@ function useViewSync(view: MFDIView) {
       inputRef: state.inputRef,
     })),
   );
-  const { setInput } = editorStore.getState();
+  const { setInput } = store.getState();
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = React.useCallback(() => {
-    return noteStore.getState().handleClickOpenDailyNote(app, settings);
-  }, [app, settings]);
+    return store.getState().handleClickOpenDailyNote(app, settings);
+  }, [store, app, settings]);
 
-  const { setCurrentDailyNote } = noteStore.getState();
-  const { setPosts, setTasks } = postsStore.getState();
+  const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
 
   const inputRefVal = React.useRef(input);
   const inputRefObj = React.useRef(inputRef);

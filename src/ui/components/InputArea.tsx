@@ -13,12 +13,11 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { DEFAULT_VIEW_STATE } from "src/ui/store/slices/settingsSlice";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
-
-import { postsStore } from "src/ui/store/postsStore";
 
 const NavButton: React.FC<{
   direction: "left" | "right";
@@ -224,6 +223,8 @@ const InputAreaControl: React.FC = React.memo(() => {
 });
 
 const InputAreaFooter: React.FC = React.memo(() => {
+  const posts = usePostsStore((s) => s.posts);
+
   const { asTask, isReadOnly, setAsTask } = useSettingsStore(
     useShallow((s) => ({
       asTask: s.asTask,
@@ -235,14 +236,12 @@ const InputAreaFooter: React.FC = React.memo(() => {
   const { editingPostOffset, canSubmit, cancelEdit } = useEditorStore(
     useShallow((s) => ({
       editingPostOffset: s.editingPostOffset,
-      canSubmit: s.canSubmit(postsStore.getState().posts),
+      canSubmit: s.canSubmit(posts),
       cancelEdit: s.cancelEdit,
     })),
   );
 
-  const editingPost = useEditorStore((s) =>
-    s.getEditingPost(postsStore.getState().posts),
-  );
+  const editingPost = useEditorStore((s) => s.getEditingPost(posts));
 
   const { handleSubmit } = usePostActions();
 
