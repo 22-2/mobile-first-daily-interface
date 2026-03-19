@@ -22,6 +22,9 @@ export default class MFDIPlugin extends Plugin {
   settings: Settings;
   settingTab: MFDISettingTab;
   view?: MFDIView;
+  private recentlyClosedFixedPath?: string;
+  private recentlyClosedAt = 0;
+  private static readonly SUPPRESS_REOPEN_MS = 1500;
 
   async onload() {
     this.appHelper = new AppHelper(this.app);
@@ -130,10 +133,32 @@ export default class MFDIPlugin extends Plugin {
     if (!(file instanceof TFile)) return;
     if (!file.path.endsWith(".mfdi.md")) return;
     if (!this.settings.fixedNoteFiles.some((f) => f.path === file.path)) return;
+    if (this.shouldSuppressReopen(file.path)) return;
 
     this.attachMFDIView(createFixedNoteViewState(file.path)).then((leaf) => {
       if (leaf) this.app.workspace.revealLeaf(leaf);
     });
+  }
+
+  private shouldSuppressReopen(path: string): boolean {
+    if (!this.recentlyClosedFixedPath) return false;
+
+    const normalizedPath = normalizeFixedNotePath(path);
+    const isSamePath =
+      normalizeFixedNotePath(this.recentlyClosedFixedPath) === normalizedPath;
+    const withinSuppressWindow =
+      Date.now() - this.recentlyClosedAt <= MFDIPlugin.SUPPRESS_REOPEN_MS;
+
+    if (!isSamePath || !withinSuppressWindow) {
+      this.recentlyClosedFixedPath = undefined;
+      this.recentlyClosedAt = 0;
+      return false;
+    }
+
+    // Ignore only once right after close.
+    this.recentlyClosedFixedPath = undefined;
+    this.recentlyClosedAt = 0;
+    return true;
   }
 
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
@@ -233,6 +258,14 @@ export default class MFDIPlugin extends Plugin {
         },
       );
       modal.open();
+    };
+
+    view.handlers.onViewClosed = (state) => {
+      if (state.noteMode !== "fixed") return;
+      if (!state.fixedNotePath) return;
+
+      this.recentlyClosedFixedPath = state.fixedNotePath;
+      this.recentlyClosedAt = Date.now();
     };
   }
 

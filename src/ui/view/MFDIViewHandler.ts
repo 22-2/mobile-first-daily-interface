@@ -1,4 +1,5 @@
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import { MFDIViewState } from "src/ui/view/state";
 
 export class MFDIViewHandler {
   onOpenDailyNoteAction?: () => void;
@@ -15,4 +16,5 @@ export class MFDIViewHandler {
   onFocusRequested?: () => void;
   onToggleSidebar?: () => void;
   onCopyAllPosts?: () => void;
+  onViewClosed?: (state: MFDIViewState) => void;
 }
