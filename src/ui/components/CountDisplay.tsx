@@ -17,15 +17,16 @@ import { getFixedNoteTitle, getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 const DateSection: React.FC = () => {
-  const { date, granularity, dateFilter, displayMode, viewNoteMode } = useSettingsStore(
-    useShallow((s) => ({
-      date: s.date,
-      granularity: s.granularity,
-      dateFilter: s.dateFilter,
-      displayMode: s.displayMode,
-      viewNoteMode: s.viewNoteMode,
-    })),
-  );
+  const { date, granularity, dateFilter, displayMode, viewNoteMode } =
+    useSettingsStore(
+      useShallow((s) => ({
+        date: s.date,
+        granularity: s.granularity,
+        dateFilter: s.dateFilter,
+        displayMode: s.displayMode,
+        viewNoteMode: s.viewNoteMode,
+      })),
+    );
   const onClick = useFilterMenu();
   const onContextMenu = useGranularityMenu();
   const capabilities = React.useMemo(
@@ -194,7 +195,11 @@ const CountSection: React.FC = () => {
 
 const TopicSection: React.FC = () => {
   const { settings } = useAppContext();
-  const { activeTopic, setActiveTopic: onTopicChange, viewNoteMode } = useSettingsStore(
+  const {
+    activeTopic,
+    setActiveTopic: onTopicChange,
+    viewNoteMode,
+  } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       setActiveTopic: s.setActiveTopic,

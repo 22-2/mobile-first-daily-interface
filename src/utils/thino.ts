@@ -74,7 +74,9 @@ function extractMessageAndMetadata(
       break;
     }
 
-    const metadataOnlyMatch = lines[lastIndex].match(/^\[([^\]:]+)::([^\]]+)\]$/);
+    const metadataOnlyMatch = lines[lastIndex].match(
+      /^\[([^\]:]+)::([^\]]+)\]$/,
+    );
     if (metadataOnlyMatch) {
       metadata[metadataOnlyMatch[1].trim()] = metadataOnlyMatch[2].trim();
       lines.splice(lastIndex, 1);

@@ -3,15 +3,15 @@ import { RefObject } from "react";
 import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
-import { MFDINoteMode } from "src/ui/view/state";
 import {
   DateFilter,
   DisplayMode,
   Granularity,
   MomentLike,
   Post,
-  TimeFilter,
+  TimeFilter
 } from "src/ui/types";
+import { MFDINoteMode } from "src/ui/view/state";
 import { MFDIStorage } from "src/utils/storage";
 
 export interface EnvironmentSlice {

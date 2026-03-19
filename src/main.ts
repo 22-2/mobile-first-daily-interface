@@ -1,11 +1,5 @@
-import {
-  Notice,
-  Plugin,
-  TAbstractFile,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
 import { around } from "monkey-around";
+import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 import { AppHelper } from "src/app-helper";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
@@ -15,13 +9,11 @@ import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState,
+  MFDIViewState
 } from "src/ui/view/state";
 import {
-  createNewFixedNote,
-  buildFixedNotePathFromName,
-  ensureFixedNote,
-  normalizeFixedNotePath,
+  buildFixedNotePathFromName, createNewFixedNote, ensureFixedNote,
+  normalizeFixedNotePath
 } from "src/utils/fixed-note";
 
 export default class MFDIPlugin extends Plugin {
@@ -137,14 +129,21 @@ export default class MFDIPlugin extends Plugin {
     const leafPrototype = Object.getPrototypeOf(sampleLeaf);
     const plugin = this;
 
-    this.register(around(leafPrototype, {
-      setViewState(original: Function) {
-        return function (this: WorkspaceLeaf, viewState: any, ...args: any[]) {
-          const nextState = plugin.convertMarkdownViewStateForFixedNote(viewState);
-          return original.call(this, nextState, ...args);
-        };
-      },
-    }));
+    this.register(
+      around(leafPrototype, {
+        setViewState(original: Function) {
+          return function (
+            this: WorkspaceLeaf,
+            viewState: any,
+            ...args: any[]
+          ) {
+            const nextState =
+              plugin.convertMarkdownViewStateForFixedNote(viewState);
+            return original.call(this, nextState, ...args);
+          };
+        },
+      }),
+    );
   }
 
   private convertMarkdownViewStateForFixedNote(viewState: any): any {
@@ -224,7 +223,8 @@ export default class MFDIPlugin extends Plugin {
     const mergedState = { ...DEFAULT_MFDI_VIEW_STATE, ...state };
 
     const existingLeaf = this.findExistingLeaf(state);
-    const targetLeaf = preferredLeaf ?? existingLeaf ?? this.app.workspace.getLeaf(false);
+    const targetLeaf =
+      preferredLeaf ?? existingLeaf ?? this.app.workspace.getLeaf(false);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
@@ -246,17 +246,16 @@ export default class MFDIPlugin extends Plugin {
     );
     const isFixedMode = state.noteMode === "fixed";
 
-    return this.app.workspace
-      .getLeavesOfType(VIEW_TYPE_MFDI)
-      .find((leaf) => {
-        if (!(leaf.view instanceof MFDIView)) return false;
+    return this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).find((leaf) => {
+      if (!(leaf.view instanceof MFDIView)) return false;
 
-        const currentState = leaf.view.getState();
-        return isFixedMode
-          ? currentState.noteMode === "fixed" &&
-              normalizeFixedNotePath(currentState.fixedNotePath ?? "") === fixedPath
-          : currentState.noteMode !== "fixed";
-      });
+      const currentState = leaf.view.getState();
+      return isFixedMode
+        ? currentState.noteMode === "fixed" &&
+            normalizeFixedNotePath(currentState.fixedNotePath ?? "") ===
+              fixedPath
+        : currentState.noteMode !== "fixed";
+    });
   }
 
   /**

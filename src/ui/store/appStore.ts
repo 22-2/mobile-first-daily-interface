@@ -31,19 +31,26 @@ export function AppStoreProvider({
   store: AppStoreApi;
   children: React.ReactNode;
 }) {
-  return React.createElement(AppStoreContext.Provider, { value: store }, children);
+  return React.createElement(
+    AppStoreContext.Provider,
+    { value: store },
+    children,
+  );
 }
 
 export function useCurrentAppStore(): AppStoreApi {
   return React.useContext(AppStoreContext) ?? appStore;
 }
 
-export function initializeAppStore(params: {
-  app: NonNullable<MFDIStore["app"]>;
-  appHelper: NonNullable<MFDIStore["appHelper"]>;
-  settings: NonNullable<MFDIStore["pluginSettings"]>;
-  storage: NonNullable<MFDIStore["storage"]>;
-}, store: AppStoreApi = appStore) {
+export function initializeAppStore(
+  params: {
+    app: NonNullable<MFDIStore["app"]>;
+    appHelper: NonNullable<MFDIStore["appHelper"]>;
+    settings: NonNullable<MFDIStore["pluginSettings"]>;
+    storage: NonNullable<MFDIStore["storage"]>;
+  },
+  store: AppStoreApi = appStore,
+) {
   store.getState().initializeAppStore(params);
 }
 

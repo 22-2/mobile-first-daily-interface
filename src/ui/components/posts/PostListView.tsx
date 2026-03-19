@@ -4,16 +4,19 @@ import { Menu, Notice } from "obsidian";
 import * as React from "react";
 import { useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
-import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { DateFilter, DisplayMode, Granularity, MomentLike, Post } from "src/ui/types";
+import {
+  MomentLike,
+  Post
+} from "src/ui/types";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
@@ -124,7 +127,9 @@ export const PostListView: React.FC = React.memo(() => {
           si
             .setTitle("明日に送る")
             .setIcon("fast-forward")
-            .setDisabled(isReadOnly || !capabilities.supportsMovePostBetweenDays)
+            .setDisabled(
+              isReadOnly || !capabilities.supportsMovePostBetweenDays,
+            )
             .onClick(() => {
               movePostToTomorrow(post);
             }),
@@ -192,7 +197,9 @@ export const PostListView: React.FC = React.memo(() => {
           .setWarning(true)
           .setDisabled(isReadOnly)
           .onClick(() => {
-            new DeleteConfirmModal(app, () => permanentlyDeletePost(post)).open();
+            new DeleteConfirmModal(app, () =>
+              permanentlyDeletePost(post),
+            ).open();
           }),
       );
 

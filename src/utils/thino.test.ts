@@ -175,9 +175,7 @@ describe("parseThinoEntries", () => {
     expect(entries[0].message).toContain(
       "- 23:59:59 launcher以下の処理フローを大幅に簡素化したいっす",
     );
-    expect(entries[0].message).toContain(
-      "- 23:59:59 省略の閾値を設定可能に",
-    );
+    expect(entries[0].message).toContain("- 23:59:59 省略の閾値を設定可能に");
     expect(entries[0].message).toContain("[parentId::284bbb4e]");
     expect(entries[0].metadata).toEqual({
       posted: "2026-03-19T09:00:00.000Z",
@@ -189,8 +187,8 @@ describe("parseThinoEntries", () => {
       "## Thino",
       "- 10:00:00 ```ts",
       "    const sample = [",
-      "    \"[parentId::keep-me]\",",
-      "    \"[posted::keep-me-too]\",",
+      '    "[parentId::keep-me]",',
+      '    "[posted::keep-me-too]",',
       "    ];",
       "    ```",
       "    [posted::2026-03-19T10:00:00.000Z]",

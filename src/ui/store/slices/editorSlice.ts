@@ -61,8 +61,13 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   },
 
   canSubmit: (posts) => {
-    const { input, granularity, getEffectiveDate, getEditingPost, isDateReadOnly } =
-      get();
+    const {
+      input,
+      granularity,
+      getEffectiveDate,
+      getEditingPost,
+      isDateReadOnly,
+    } = get();
     const effectiveDate = getEffectiveDate();
     if (isDateReadOnly(effectiveDate, granularity)) return false;
 

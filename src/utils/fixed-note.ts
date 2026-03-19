@@ -1,4 +1,4 @@
-import { App, TFile, normalizePath } from "obsidian";
+import { App, normalizePath, TFile } from "obsidian";
 import { Granularity, MomentLike } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { getTopicNote } from "src/utils/daily-notes";
@@ -19,7 +19,10 @@ export function normalizeFixedNotePath(path: string): string {
     : `${normalized}.md`;
 }
 
-export function resolveFixedNote(app: App, rawPath: string | null): TFile | null {
+export function resolveFixedNote(
+  app: App,
+  rawPath: string | null,
+): TFile | null {
   const path = normalizeFixedNotePath(rawPath ?? "");
   if (!path) return null;
   const file = app.vault.getAbstractFileByPath(path);
@@ -37,7 +40,10 @@ async function ensureFolderPath(app: App, path: string): Promise<void> {
   }
 }
 
-export async function ensureFixedNote(app: App, rawPath: string): Promise<TFile> {
+export async function ensureFixedNote(
+  app: App,
+  rawPath: string,
+): Promise<TFile> {
   const path = normalizeFixedNotePath(rawPath);
   if (!path) {
     throw new Error("fixed note path is empty");
@@ -54,7 +60,11 @@ export async function ensureFixedNote(app: App, rawPath: string): Promise<TFile>
   return app.vault.create(path, "");
 }
 
-export function buildFixedNotePathFromName(folder: string, name: string, app: App): string {
+export function buildFixedNotePathFromName(
+  folder: string,
+  name: string,
+  app: App,
+): string {
   const normalizedFolder = normalizeFixedNoteFolder(folder);
   const prefix = normalizedFolder ? `${normalizedFolder}/` : "";
   const safeName = name.trim() || "Untitled";
@@ -70,7 +80,10 @@ export function buildUntitledFixedNotePath(folder: string, app: App): string {
   return buildFixedNotePathFromName(folder, "Untitled", app);
 }
 
-export async function createNewFixedNote(app: App, folder: string): Promise<TFile> {
+export async function createNewFixedNote(
+  app: App,
+  folder: string,
+): Promise<TFile> {
   const path = buildUntitledFixedNotePath(folder, app);
   return ensureFixedNote(app, path);
 }

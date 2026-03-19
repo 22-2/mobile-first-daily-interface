@@ -2,7 +2,7 @@ import { Moment } from "moment";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
   DATE_FILTER_OPTIONS,
-  TIME_FILTER_OPTIONS,
+  TIME_FILTER_OPTIONS
 } from "src/ui/config/filter-config";
 
 export type MomentLike = Moment;

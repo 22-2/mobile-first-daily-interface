@@ -9,7 +9,7 @@ import { useShallow } from "zustand/shallow";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
-  TimelinePostsPage,
+  TimelinePostsPage
 } from "./timelinePosts";
 
 const PAGE_SIZE_DAYS = 14;

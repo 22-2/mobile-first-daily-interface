@@ -6,7 +6,7 @@ import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor"
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
-  READONLY_PLACEHOLDER_TEXT,
+  READONLY_PLACEHOLDER_TEXT
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -153,7 +153,8 @@ const InputAreaControl: React.FC = React.memo(() => {
       )}
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
-        {!capabilities.supportsDateNavigation ? null : displayMode === DISPLAY_MODE.FOCUS ? (
+        {!capabilities.supportsDateNavigation ? null : displayMode ===
+          DISPLAY_MODE.FOCUS ? (
           threadFocusRootId ? (
             <DisplayModeIndicator
               threadFocusRootId={threadFocusRootId}

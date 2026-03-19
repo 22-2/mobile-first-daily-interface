@@ -1,7 +1,6 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { setTooltip } from "obsidian";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
@@ -144,10 +143,18 @@ const usePostMetadata = (message: string, enabled: boolean) => {
 
       if (!isMounted) return;
 
-      setHtmlMetas(results.filter((result): result is HTMLMeta => result.type === "html"));
-      setImageMetas(results.filter((result): result is ImageMeta => result.type === "image"));
+      setHtmlMetas(
+        results.filter((result): result is HTMLMeta => result.type === "html"),
+      );
+      setImageMetas(
+        results.filter(
+          (result): result is ImageMeta => result.type === "image",
+        ),
+      );
       setTwitterMetas(
-        results.filter((result): result is TwitterMeta => result.type === "twitter"),
+        results.filter(
+          (result): result is TwitterMeta => result.type === "twitter",
+        ),
       );
       setIsLoading(false);
     })();

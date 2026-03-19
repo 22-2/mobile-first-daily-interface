@@ -239,7 +239,13 @@ const CalendarHeader: React.FC<{
   onPrev: (e: React.MouseEvent) => void;
   onNext: (e: React.MouseEvent) => void;
 }> = ({ viewDate, onPrev, onNext }) => (
-  <Flex className="mini-calendar__header" w="100%" justify="space-between" align="center" px={1}>
+  <Flex
+    className="mini-calendar__header"
+    w="100%"
+    justify="space-between"
+    align="center"
+    px={1}
+  >
     <Text
       className="mini-calendar__month-label"
       fontWeight="bold"
@@ -251,7 +257,8 @@ const CalendarHeader: React.FC<{
     </Text>
     <HStack className="mini-calendar__nav" spacing={1}>
       {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
-        <Box className="mini-calendar__nav-button"
+        <Box
+          className="mini-calendar__nav-button"
           key={icon}
           cursor="pointer"
           onClick={i === 0 ? onPrev : onNext}
@@ -451,7 +458,13 @@ export const MiniCalendar: React.FC<{
         {/* 曜日ヘッダー */}
         <Box /> {/* 週番号列のスペーサー */}
         {WEEK_DAY_LABELS.map((label) => (
-          <Box key={label} className="mini-calendar__weekday-label" color="var(--text-muted)" fontSize="xs" py={1.5}>
+          <Box
+            key={label}
+            className="mini-calendar__weekday-label"
+            color="var(--text-muted)"
+            fontSize="xs"
+            py={1.5}
+          >
             {label}
           </Box>
         ))}

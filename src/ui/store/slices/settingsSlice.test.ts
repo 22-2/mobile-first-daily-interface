@@ -3,7 +3,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { settingsStore } from "src/ui/store/settingsStore";
 import {
   isPastDateReadOnly,
-  isViewReadOnly,
+  isViewReadOnly
 } from "src/ui/store/slices/settingsSlice";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

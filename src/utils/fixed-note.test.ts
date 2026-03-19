@@ -6,7 +6,7 @@ import {
   ensureFixedNote,
   normalizeFixedNoteFolder,
   normalizeFixedNotePath,
-  resolveCurrentTargetNote,
+  resolveCurrentTargetNote
 } from "src/utils/fixed-note";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -71,7 +71,8 @@ describe("fixed note utilities", () => {
     const app = {
       vault: {
         getAbstractFileByPath: vi.fn((path: string) => {
-          if (path === "notes") return createdFolders.includes(path) ? {} : null;
+          if (path === "notes")
+            return createdFolders.includes(path) ? {} : null;
           if (path === "notes/fixed.md") return null;
           return null;
         }),
@@ -165,10 +166,7 @@ describe("fixed note utilities", () => {
     const result = await createNewFixedNote(app, "MFDI");
 
     expect(app.vault.createFolder).toHaveBeenCalledWith("MFDI");
-    expect(app.vault.create).toHaveBeenCalledWith(
-      "MFDI/Untitled.mfdi.md",
-      "",
-    );
+    expect(app.vault.create).toHaveBeenCalledWith("MFDI/Untitled.mfdi.md", "");
     expect(result).toBe(created);
   });
 });

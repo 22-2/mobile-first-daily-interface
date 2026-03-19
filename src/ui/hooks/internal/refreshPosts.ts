@@ -20,7 +20,10 @@ export interface RefreshPostsDeps {
   date: MomentLike;
   displayMode: DisplayMode;
   updatePosts: (note: TFile) => Promise<void>;
-  updatePostsForWeek: (topicId: string, date: MomentLike) => Promise<Set<string>>;
+  updatePostsForWeek: (
+    topicId: string,
+    date: MomentLike,
+  ) => Promise<Set<string>>;
   updatePostsForDays: (
     topicId: string,
     date: MomentLike,

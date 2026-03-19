@@ -207,9 +207,7 @@ const useTopicManagerViewState = (
   const handleToggleArchive = useCallback((topicId: string) => {
     setTopics((prev) =>
       prev.map((topic) =>
-        topic.id === topicId
-          ? { ...topic, archived: !topic.archived }
-          : topic,
+        topic.id === topicId ? { ...topic, archived: !topic.archived } : topic,
       ),
     );
   }, []);

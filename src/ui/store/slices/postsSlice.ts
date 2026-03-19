@@ -4,13 +4,13 @@ import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import {
   buildPostFromEntry,
-  sortPostsDescending,
+  sortPostsDescending
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import {
   getAllTopicNotes,
   getDateUID,
-  getTopicNote,
+  getTopicNote
 } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";

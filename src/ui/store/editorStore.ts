@@ -1,7 +1,5 @@
 import {
-  AppStoreApi,
-  appStore,
-  useCurrentAppStore,
+  appStore, AppStoreApi, useCurrentAppStore
 } from "src/ui/store/appStore";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
 import { MFDIStorage } from "src/utils/storage";

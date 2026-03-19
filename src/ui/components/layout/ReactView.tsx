@@ -11,25 +11,34 @@ import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
-import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
 import {
   AppStoreApi,
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
-  useCurrentAppStore,
+  useCurrentAppStore
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { DateFilter, DisplayMode, Granularity, Post, TimeFilter } from "src/ui/types";
+import {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  Post,
+  TimeFilter
+} from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
-import { DEFAULT_MFDI_VIEW_STATE, getMFDIViewCapabilities } from "src/ui/view/state";
+import {
+  DEFAULT_MFDI_VIEW_STATE,
+  getMFDIViewCapabilities
+} from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
@@ -76,23 +85,17 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     initializeAppStore({ app, appHelper, settings, storage }, store);
   }, [settings, storage, app, appHelper, store]);
 
-  const {
-    date,
-    granularity,
-    activeTopic,
-    dateFilter,
-    asTask,
-    isReadOnly,
-  } = useSettingsStore(
-    useShallow((state) => ({
-      date: state.date,
-      granularity: state.granularity,
-      activeTopic: state.activeTopic,
-      dateFilter: state.dateFilter,
-      asTask: state.asTask,
-      isReadOnly: state.isReadOnly(),
-    })),
-  );
+  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
+    useSettingsStore(
+      useShallow((state) => ({
+        date: state.date,
+        granularity: state.granularity,
+        activeTopic: state.activeTopic,
+        dateFilter: state.dateFilter,
+        asTask: state.asTask,
+        isReadOnly: state.isReadOnly(),
+      })),
+    );
 
   const { currentDailyNote, replacePaths } = useNoteStore(
     useShallow((state) => ({
@@ -101,16 +104,21 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })),
   );
 
-  const { posts, updatePosts, updateTasks, updatePostsForWeek, updatePostsForDays } =
-    usePostsStore(
-      useShallow((state) => ({
-        posts: state.posts,
-        updatePosts: state.updatePosts,
-        updateTasks: state.updateTasks,
-        updatePostsForWeek: state.updatePostsForWeek,
-        updatePostsForDays: state.updatePostsForDays,
-      })),
-    );
+  const {
+    posts,
+    updatePosts,
+    updateTasks,
+    updatePostsForWeek,
+    updatePostsForDays,
+  } = usePostsStore(
+    useShallow((state) => ({
+      posts: state.posts,
+      updatePosts: state.updatePosts,
+      updateTasks: state.updateTasks,
+      updatePostsForWeek: state.updatePostsForWeek,
+      updatePostsForDays: state.updatePostsForDays,
+    })),
+  );
 
   const { inputRef, scrollContainerRef } = useEditorStore(
     useShallow((state) => ({
@@ -187,7 +195,15 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!isReadOnly && inputRef.current) {
       setTimeout(() => inputRef.current?.focus());
     }
-  }, [date, granularity, activeTopic, dateFilter, asTask, isReadOnly, inputRef]);
+  }, [
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    asTask,
+    isReadOnly,
+    inputRef,
+  ]);
 
   React.useEffect(() => {
     if (!currentDailyNote) return;

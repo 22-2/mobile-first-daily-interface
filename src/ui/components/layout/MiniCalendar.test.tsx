@@ -6,7 +6,7 @@ import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { initializePostsStore } from "src/ui/store/postsStore";
 import {
   initializeSettingsStore,
-  settingsStore,
+  settingsStore
 } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

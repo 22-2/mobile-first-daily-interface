@@ -10,7 +10,7 @@ import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
-  MFDIViewState,
+  MFDIViewState
 } from "src/ui/view/state";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -174,7 +174,6 @@ export class MFDIView extends ItemView {
   }
 
   private setupView() {
-
     if (getMFDIViewCapabilities(this.state).supportsSidebar) {
       this.addAction("columns-2", "サイドバーを切り替え", () => {
         this.handlers.onToggleSidebar?.();
