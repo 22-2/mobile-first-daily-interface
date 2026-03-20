@@ -4,6 +4,7 @@ import {
   buildUntitledFixedNotePath,
   createNewFixedNote,
   ensureFixedNote,
+  isMFDIFixedNotePath,
   normalizeFixedNoteFolder,
   normalizeFixedNotePath,
   resolveCurrentTargetNote
@@ -31,6 +32,12 @@ describe("fixed note utilities", () => {
     expect(normalizeFixedNotePath("inbox/fixed-note.md")).toBe(
       "inbox/fixed-note.md",
     );
+  });
+
+  it("MFDI固定ノート拡張子を判定する", () => {
+    expect(isMFDIFixedNotePath("MFDI/Untitled.mfdi.md")).toBe(true);
+    expect(isMFDIFixedNotePath("MFDI/Untitled.MFDI.MD")).toBe(true);
+    expect(isMFDIFixedNotePath("MFDI/Untitled.md")).toBe(false);
   });
 
   it("fixed mode では固定ノートを優先して解決する", () => {

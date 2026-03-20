@@ -19,6 +19,10 @@ export function normalizeFixedNotePath(path: string): string {
     : `${normalized}.md`;
 }
 
+export function isMFDIFixedNotePath(path: string): boolean {
+  return normalizePath(path).toLowerCase().endsWith(".mfdi.md");
+}
+
 export function resolveFixedNote(
   app: App,
   rawPath: string | null,

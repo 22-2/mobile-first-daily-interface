@@ -13,7 +13,7 @@ import {
 } from "src/ui/view/state";
 import {
   buildFixedNotePathFromName, createNewFixedNote, ensureFixedNote,
-  normalizeFixedNotePath
+  isMFDIFixedNotePath, normalizeFixedNotePath
 } from "src/utils/fixed-note";
 
 export default class MFDIPlugin extends Plugin {
@@ -123,20 +123,17 @@ export default class MFDIPlugin extends Plugin {
   // ---------------------------------------------------------------------------
 
   private patchSetViewStateForFixedNotes() {
-    const sampleLeaf = this.app.workspace.getLeaf(false);
-    if (!sampleLeaf) return;
-
-    const leafPrototype = Object.getPrototypeOf(sampleLeaf);
     const plugin = this;
 
     this.register(
-      around(leafPrototype, {
+      around(WorkspaceLeaf.prototype, {
         setViewState(original: Function) {
           return function (
             this: WorkspaceLeaf,
             viewState: any,
             ...args: any[]
           ) {
+            console.log("setViewState called with", viewState);
             const nextState =
               plugin.convertMarkdownViewStateForFixedNote(viewState);
             return original.call(this, nextState, ...args);
@@ -151,7 +148,7 @@ export default class MFDIPlugin extends Plugin {
 
     const filePath =
       typeof viewState.state?.file === "string" ? viewState.state.file : "";
-    if (!filePath.endsWith(".mfdi.md")) return viewState;
+    if (!isMFDIFixedNotePath(filePath)) return viewState;
 
     if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
       return viewState;
@@ -173,7 +170,7 @@ export default class MFDIPlugin extends Plugin {
     for (const leaf of markdownLeaves) {
       const filePath = (leaf.view as any)?.file?.path;
       if (typeof filePath !== "string") continue;
-      if (!filePath.endsWith(".mfdi.md")) continue;
+      if (!isMFDIFixedNotePath(filePath)) continue;
       if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
         continue;
       }
