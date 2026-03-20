@@ -1,34 +1,31 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import MFDIPlugin from "./main";
-import { mirrorMap } from "./utils/collections";
-import { TextComponentEvent } from "./obsutils/settings";
+import MFDIPlugin from "src/main";
+import { DEFAULT_TOPIC, Topic } from "src/topic";
 
 export interface Settings {
-  leaf: string;
-  autoStartOnLaunch: boolean;
-  blueskyIdentifier: string;
-  blueskyAppPassword: string;
   postFormatOption: PostFormatOption;
+  insertAfter: string;
+  enabledCardView: boolean;
+  allowEditingPastNotes: boolean;
+  updateDateStrategy: "never" | "always" | "same_day";
+  topics: Topic[];
+  activeTopic: string;
+  fixedNoteFiles: { path: string }[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  leaf: "left",
-  autoStartOnLaunch: false,
-  blueskyIdentifier: "",
-  blueskyAppPassword: "",
-  postFormatOption: "コードブロック",
+  postFormatOption: "Thino",
+  insertAfter: "## Thino",
+  enabledCardView: true,
+  allowEditingPastNotes: false,
+  updateDateStrategy: "never",
+  topics: [DEFAULT_TOPIC],
+  activeTopic: "",
+  fixedNoteFiles: [],
 };
 
-const leafOptions = ["left", "current", "right"];
-
 export const postFormatMap = {
-  コードブロック: { type: "codeblock" },
-  見出し1: { type: "header", level: 1 },
-  見出し2: { type: "header", level: 2 },
-  見出し3: { type: "header", level: 3 },
-  見出し4: { type: "header", level: 4 },
-  見出し5: { type: "header", level: 5 },
-  見出し6: { type: "header", level: 6 },
+  Thino: { type: "thino" },
 } as const;
 export type PostFormatOption = keyof typeof postFormatMap;
 export type PostFormat = (typeof postFormatMap)[PostFormatOption];
@@ -43,76 +40,85 @@ export class MFDISettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
     containerEl.empty();
-
     containerEl.createEl("h3", { text: "🌍 全体" });
+    this.addGeneralSettings(containerEl);
+  }
 
+  private async updateSetting<K extends keyof Settings>(
+    key: K,
+    value: Settings[K],
+  ): Promise<void> {
+    this.plugin.settings = { ...this.plugin.settings, [key]: value };
+    await this.plugin.saveSettings();
+  }
+
+  private addToggleSetting(
+    containerEl: HTMLElement,
+    name: string,
+    desc: string,
+    key: keyof Pick<Settings, "enabledCardView" | "allowEditingPastNotes">,
+    rerenderOnChange = false,
+  ): void {
     new Setting(containerEl)
-      .setName("投稿形式")
-      .setDesc("MFDIの投稿形式を指定します。")
-      .addDropdown((tc) =>
-        tc
-          .addOptions(mirrorMap(Object.keys(postFormatMap), (x) => x))
-          .setValue(this.plugin.settings.postFormatOption)
-          .onChange(async (value) => {
-            this.plugin.settings.postFormatOption = value as PostFormatOption;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          })
+      .setName(name)
+      .setDesc(desc)
+      .addToggle((tc) =>
+        tc.setValue(this.plugin.settings[key]).onChange(async (value) => {
+          await this.updateSetting(key, value);
+          if (rerenderOnChange) this.plugin.rerenderView();
+        }),
       );
+  }
 
+  private addGeneralSettings(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("表示リーフ")
-      .setDesc("MFDI Viewを表示するリーフを指定します。")
-      .addDropdown((tc) =>
-        tc
-          .addOptions(mirrorMap(leafOptions, (x) => x))
-          .setValue(this.plugin.settings.leaf)
-          .onChange(async (value) => {
-            this.plugin.settings.leaf = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Obsidian起動時に自動起動・アクティブにする")
+      .setName("挿入位置 (文字列の後ろ)")
       .setDesc(
-        "有効にするとObsidian起動時にMFDIのViewが自動で起動し、アクティブになります。"
+        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。",
       )
-      .addToggle((tc) => {
-        tc.setValue(this.plugin.settings.autoStartOnLaunch).onChange(
-          async (value) => {
-            this.plugin.settings.autoStartOnLaunch = value;
-            await this.plugin.saveSettings();
-          }
-        );
-      });
+      .addText((tc) =>
+        tc
+          .setPlaceholder("## MFDI")
+          .setValue(this.plugin.settings.insertAfter)
+          .onChange(async (value) => {
+            await this.updateSetting("insertAfter", value);
+          }),
+      );
 
-    containerEl.createEl("h3", { text: "🦋 Bluesky" });
+    this.addToggleSetting(
+      containerEl,
+      "リンクのカード表示",
+      "有効にすると投稿内のリンクをリッチなカード形式で表示します。",
+      "enabledCardView",
+      true,
+    );
 
-    new Setting(containerEl).setName("Blueskyのidentifier").addText((cb) => {
-      TextComponentEvent.onChange(cb, async (value) => {
-        this.plugin.settings.blueskyIdentifier = value;
-        await this.plugin.saveSettings();
-        this.plugin.rerenderView();
-      })
-        .setValue(this.plugin.settings.blueskyIdentifier)
-        .setPlaceholder("例: mfdi.bsky.social");
-    });
+    this.addToggleSetting(
+      containerEl,
+      "過去ノートの編集を許可",
+      "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
+      "allowEditingPastNotes",
+      true,
+    );
 
     new Setting(containerEl)
-      .setName("Blueskyのアプリパスワード")
-      .addText((cb) => {
-        TextComponentEvent.onChange(
-          cb,
-          async (value) => {
-            this.plugin.settings.blueskyAppPassword = value;
-            await this.plugin.saveSettings();
-            this.plugin.rerenderView();
-          },
-          { secret: true }
-        ).setValue(this.plugin.settings.blueskyAppPassword);
-      });
+      .setName("更新時の日時更新ストラテジ")
+      .setDesc(
+        "編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）",
+      )
+      .addDropdown((tc) =>
+        tc
+          .addOption("never", "常に更新しない（デフォルト）")
+          .addOption("always", "常に更新する")
+          .addOption("same_day", "その日の間だけ更新する")
+          .setValue(this.plugin.settings.updateDateStrategy)
+          .onChange(async (value) => {
+            await this.updateSetting(
+              "updateDateStrategy",
+              value as Settings["updateDateStrategy"],
+            );
+          }),
+      );
   }
 }

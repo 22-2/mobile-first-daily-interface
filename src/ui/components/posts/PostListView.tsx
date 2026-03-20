@@ -1,0 +1,387 @@
+import { Box } from "@chakra-ui/react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Menu, Notice } from "obsidian";
+import * as React from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { DateDivider } from "src/ui/components/posts/DateDivider";
+import { PostCardView } from "src/ui/components/posts/PostCardView";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import {
+  MomentLike,
+  Post
+} from "src/ui/types";
+import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
+import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
+import { useShallow } from "zustand/shallow";
+
+type TimelineItem =
+  | { type: "post"; post: Post; key: string }
+  | { type: "divider"; date: MomentLike; key: string };
+
+export const PostListView: React.FC = React.memo(() => {
+  const settings = useSettingsStore(
+    useShallow((s) => ({
+      granularity: s.granularity,
+      displayMode: s.displayMode,
+      dateFilter: s.dateFilter,
+      setDate: s.setDate,
+      setDisplayMode: s.setDisplayMode,
+      setThreadFocusRootId: s.setThreadFocusRootId,
+      asTask: s.asTask,
+      isReadOnly: s.isReadOnly(),
+      timeFilter: s.timeFilter,
+      threadFocusRootId: s.threadFocusRootId,
+      viewNoteMode: s.viewNoteMode,
+    })),
+  );
+
+  const { posts } = usePostsStore(
+    useShallow((s) => ({
+      posts: s.posts,
+    })),
+  );
+
+  const { editingPostOffset, startEdit, scrollContainerRef } = useEditorStore(
+    useShallow((s) => ({
+      editingPostOffset: s.editingPostOffset,
+      startEdit: s.startEdit,
+      scrollContainerRef: s.scrollContainerRef,
+    })),
+  );
+
+  const { loadMore, hasMore } = useInfiniteTimeline();
+  const {
+    handleClickTime,
+    deletePost,
+    permanentlyDeletePost,
+    movePostToTomorrow,
+    archivePost,
+    createThread,
+  } = usePostActions();
+
+  const filteredPosts = useFilteredPosts({
+    posts,
+    ...settings,
+    includeThreadReplies: true,
+  });
+
+  const capabilities = React.useMemo(
+    () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
+    [settings.viewNoteMode],
+  );
+
+  const {
+    granularity,
+    displayMode,
+    dateFilter,
+    isReadOnly,
+    setDate,
+    setDisplayMode,
+    threadFocusRootId,
+    setThreadFocusRootId,
+  } = settings;
+  const timelineView = isTimelineView(displayMode);
+  const threadView = isThreadView({ displayMode, threadFocusRootId });
+
+  const showPostContextMenu = useCallback(
+    (post: Post, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const menu = new Menu();
+
+      menu.addItem((item) => {
+        item.setTitle("実験的").setIcon("beaker");
+        const sub = item.setSubmenu();
+
+        sub.addItem((si) =>
+          si
+            .setTitle(isThreadRoot(post) ? "スレッドを表示" : "スレッドを作成")
+            .setIcon("spool")
+            .setDisabled(isReadOnly || isThreadReply(post))
+            .onClick(() => {
+              createThread(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("この日にフォーカス")
+            .setIcon("calendar-range")
+            .setDisabled(!capabilities.supportsDateNavigation)
+            .onClick(() => {
+              setDate(post.timestamp.clone());
+              setDisplayMode(DISPLAY_MODE.FOCUS);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("明日に送る")
+            .setIcon("fast-forward")
+            .setDisabled(
+              isReadOnly || !capabilities.supportsMovePostBetweenDays,
+            )
+            .onClick(() => {
+              movePostToTomorrow(post);
+            }),
+        );
+      });
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("投稿にジャンプ")
+          .setIcon("clock")
+          .onClick(() => {
+            handleClickTime(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("編集")
+          .setIcon("pencil")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            startEdit(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("コピー")
+          .setIcon("copy")
+          .onClick(async () => {
+            await navigator.clipboard.writeText(post.message);
+            new Notice("copied");
+          }),
+      );
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("アーカイブ")
+          .setIcon("archive")
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            archivePost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("削除")
+          .setIcon("trash")
+          .setWarning(true)
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            deletePost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("永久に削除")
+          .setIcon("trash")
+          .setWarning(true)
+          .setDisabled(isReadOnly)
+          .onClick(() => {
+            new DeleteConfirmModal(app, () =>
+              permanentlyDeletePost(post),
+            ).open();
+          }),
+      );
+
+      menu.showAtMouseEvent(e as unknown as MouseEvent);
+    },
+    [
+      archivePost,
+      createThread,
+      deletePost,
+      handleClickTime,
+      isReadOnly,
+      movePostToTomorrow,
+      setDate,
+      setDisplayMode,
+      startEdit,
+      capabilities.supportsDateNavigation,
+      capabilities.supportsMovePostBetweenDays,
+    ],
+  );
+
+  const displayedPostsWithDividers = useMemo(() => {
+    const list: TimelineItem[] = [];
+    let lastDate: string | null = null;
+
+    const postsToDisplay = filteredPosts.filter(
+      (post) => post.startOffset !== editingPostOffset,
+    );
+
+    postsToDisplay.forEach((post) => {
+      const currentDate = post.timestamp.format("YYYY-MM-DD");
+      const shouldShowDividers =
+        isTimelineView(displayMode) ||
+        granularity !== "day" ||
+        dateFilter !== "today";
+      const isDateChanged = lastDate !== currentDate;
+      const isFirstItem = lastDate === null;
+      const isDateInPast = post.timestamp.isBefore(new Date(), "day");
+      const showDivider =
+        shouldShowDividers && isDateChanged && (!isFirstItem || isDateInPast);
+
+      if (showDivider) {
+        list.push({
+          type: "divider",
+          date: post.timestamp,
+          key: `divider-${currentDate}`,
+        });
+      }
+
+      list.push({
+        type: "post",
+        post,
+        key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+      });
+
+      lastDate = currentDate;
+    });
+
+    return list;
+  }, [filteredPosts, editingPostOffset, granularity, displayMode, dateFilter]);
+
+  const parentRef = scrollContainerRef;
+
+  const rowVirtualizer = useVirtualizer({
+    count: displayedPostsWithDividers.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => {
+      const item = displayedPostsWithDividers[index];
+      return item.type === "divider" ? 50 : 120; // 暫定の高さ
+    },
+    overscan: 10,
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  // 無限スクロールのトリガー
+  useEffect(() => {
+    if (threadView) return;
+    if (!timelineView || !hasMore) return;
+
+    // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
+    if (displayedPostsWithDividers.length === 0) {
+      loadMore();
+      return;
+    }
+
+    if (virtualItems.length === 0) return;
+
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (lastItem.index >= displayedPostsWithDividers.length - 1) {
+      loadMore();
+    }
+  }, [
+    timelineView,
+    hasMore,
+    loadMore,
+    displayedPostsWithDividers.length,
+    virtualItems.length,
+    virtualItems[virtualItems.length - 1]?.index,
+    threadView,
+  ]);
+
+  return (
+    <Box
+      className="list"
+      style={{
+        height: `${rowVirtualizer.getTotalSize()}px`,
+        width: "100%",
+        position: "relative",
+      }}
+    >
+      {virtualItems.map((virtualItem) => {
+        const item = displayedPostsWithDividers[virtualItem.index];
+
+        return (
+          <Box
+            key={virtualItem.key}
+            data-index={virtualItem.index}
+            ref={rowVirtualizer.measureElement}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              transform: `translateY(${virtualItem.start}px)`,
+              paddingBottom: "1px", // 境界線の重なり防止
+            }}
+          >
+            {item.type === "divider" ? (
+              <DateDivider date={item.date} />
+            ) : (
+              <PostCardView
+                post={item.post}
+                granularity={granularity}
+                dateFilter={dateFilter}
+                onEdit={startEdit}
+                onContextMenu={showPostContextMenu}
+                isThreadFocused={item.post.id === threadFocusRootId}
+                onToggleThreadFocus={(post) => {
+                  setThreadFocusRootId(
+                    threadFocusRootId === post.id ? null : post.id,
+                    post.noteDate,
+                  );
+                }}
+              />
+            )}
+          </Box>
+        );
+      })}
+      {timelineView && !threadView && hasMore && (
+        <Box
+          style={{
+            position: "absolute",
+            top: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--text-muted)",
+            fontSize: "var(--font-smallest)",
+          }}
+        >
+          読み込み中...
+        </Box>
+      )}
+      {timelineView && !threadView && !hasMore && (
+        <Box
+          style={{
+            position: "absolute",
+            top: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--text-muted)",
+            fontSize: "var(--font-smallest)",
+          }}
+        >
+          これ以上投稿はありません
+        </Box>
+      )}
+    </Box>
+  );
+});

@@ -1,0 +1,92 @@
+import { useMemo } from "react";
+import {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  Post,
+  TimeFilter
+} from "src/ui/types";
+import {
+  countVisibleRootPosts,
+  getThreadPosts,
+  isVisibleRootPost,
+  sortThreadPosts
+} from "src/ui/utils/thread-utils";
+import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
+import { MFDINoteMode } from "src/ui/view/state";
+
+interface UseFilteredPostsProps {
+  posts: Post[];
+  timeFilter: TimeFilter;
+  dateFilter: DateFilter;
+  asTask: boolean;
+  granularity: Granularity;
+  displayMode: DisplayMode;
+  threadFocusRootId: string | null;
+  viewNoteMode?: MFDINoteMode;
+  includeThreadReplies?: boolean;
+}
+
+export const useFilteredPosts = ({
+  posts,
+  timeFilter,
+  dateFilter,
+  asTask,
+  granularity,
+  displayMode,
+  threadFocusRootId,
+  viewNoteMode = "periodic",
+  includeThreadReplies = false,
+}: UseFilteredPostsProps) => {
+  return useMemo(() => {
+    const postsWithoutHidden = posts.filter(
+      (p) => !p.metadata.archived && !p.metadata.deleted,
+    );
+    const activeThreadRootId = threadFocusRootId;
+
+    if (
+      activeThreadRootId &&
+      isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
+    ) {
+      const threadPosts = sortThreadPosts(
+        getThreadPosts(postsWithoutHidden, activeThreadRootId),
+        activeThreadRootId,
+      );
+      return includeThreadReplies
+        ? threadPosts
+        : threadPosts.filter(isVisibleRootPost);
+    }
+
+    const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
+
+    if (viewNoteMode === "fixed") return visibleRoots;
+
+    // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
+    if (isTimelineView(displayMode)) return visibleRoots;
+
+    if (dateFilter !== "today") return visibleRoots;
+    if (timeFilter === "all" || asTask || granularity !== "day")
+      return visibleRoots;
+    if (timeFilter === "latest")
+      return visibleRoots.length > 0 ? [visibleRoots[0]] : [];
+
+    // "1h", "2h" などの文字列から数値を抽出
+    const hours = parseInt(timeFilter as string);
+    if (isNaN(hours)) return visibleRoots;
+
+    const now = window.moment();
+    return visibleRoots.filter((p) => now.diff(p.timestamp, "hours") < hours);
+  }, [
+    posts,
+    timeFilter,
+    dateFilter,
+    asTask,
+    granularity,
+    displayMode,
+    threadFocusRootId,
+    viewNoteMode,
+    includeThreadReplies,
+  ]);
+};
+
+export { countVisibleRootPosts };

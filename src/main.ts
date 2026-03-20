@@ -1,7 +1,20 @@
-import { Notice, Plugin, View } from "obsidian";
-import { AppHelper } from "./app-helper";
-import { MFDIView, VIEW_TYPE_MFDI } from "./ui/MDFIView";
-import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "./settings";
+import { around } from "monkey-around";
+import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import { AppHelper } from "src/app-helper";
+import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
+import { Topic } from "src/topic";
+import { showInputModal } from "src/ui/modals/InputModal";
+import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
+import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
+import {
+  createFixedNoteViewState,
+  DEFAULT_MFDI_VIEW_STATE,
+  MFDIViewState
+} from "src/ui/view/state";
+import {
+  buildFixedNotePathFromName, createNewFixedNote, ensureFixedNote,
+  isMFDIFixedNotePath, normalizeFixedNotePath
+} from "src/utils/fixed-note";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -11,58 +24,265 @@ export default class MFDIPlugin extends Plugin {
 
   async onload() {
     this.appHelper = new AppHelper(this.app);
-
     await this.loadSettings();
+
     this.settingTab = new MFDISettingTab(this.app, this);
     this.addSettingTab(this.settingTab);
 
+    this.registerMFDIView();
+    this.registerRibbonActions();
+    this.registerCommands();
+    this.patchSetViewStateForFixedNotes();
+    this.registerEventListeners();
+
+    void this.replaceOpenFixedMarkdownLeaves();
+  }
+
+  // ---------------------------------------------------------------------------
+  // 登録系メソッド
+  // ---------------------------------------------------------------------------
+
+  private registerMFDIView() {
     this.registerView(VIEW_TYPE_MFDI, (leaf) => {
       this.view = new MFDIView(leaf, this.settings);
+      this.setupViewCallbacks(this.view);
       return this.view;
     });
+  }
 
-    this.app.workspace.onLayoutReady(async () => {
-      if (this.settings.autoStartOnLaunch) {
-        await this.attachMFDIView();
+  private registerRibbonActions() {
+    this.addRibbonIcon("pencil", "Mobile First Daily Interface", () =>
+      this.attachMFDIView(),
+    );
+  }
+
+  private registerCommands() {
+    this.addCommand({
+      id: "mfdi-open-view",
+      name: "Open Mobile First Daily Interface",
+      callback: async () => {
+        const leaf = await this.attachMFDIView();
+        if (leaf) this.app.workspace.revealLeaf(leaf);
+      },
+    });
+
+    this.addCommand({
+      id: "mfdi-open-fixed-note-view",
+      name: "Create New MFDI Fixed Note",
+      callback: () => this.createAndOpenFixedNote(),
+    });
+  }
+
+  private registerEventListeners() {
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) =>
+        this.handleFileRename(file, oldPath),
+      ),
+    );
+
+    this.registerEvent(
+      this.app.vault.on("delete", (file) => this.handleFileDelete(file)),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // コマンド処理
+  // ---------------------------------------------------------------------------
+
+  private async createAndOpenFixedNote() {
+    const folder = this.app.vault.config.newFileFolderPath || "/";
+
+    const name = await showInputModal(this.app, {
+      title: "固定ノートの名前を入力",
+      placeholder: "Untitled",
+    });
+    if (name === null) return;
+
+    const path = name.trim()
+      ? buildFixedNotePathFromName(folder, name, this.app)
+      : undefined;
+
+    const fixedNote = path
+      ? await ensureFixedNote(this.app, path)
+      : await createNewFixedNote(this.app, folder);
+
+    this.settings.fixedNoteFiles = [
+      ...this.settings.fixedNoteFiles,
+      { path: fixedNote.path },
+    ];
+    await this.saveSettings();
+
+    const leaf = await this.attachMFDIView(
+      createFixedNoteViewState(fixedNote.path),
+    );
+    if (leaf) this.app.workspace.revealLeaf(leaf);
+  }
+
+  // ---------------------------------------------------------------------------
+  // イベントハンドラ
+  // ---------------------------------------------------------------------------
+
+  private patchSetViewStateForFixedNotes() {
+    const plugin = this;
+
+    this.register(
+      around(WorkspaceLeaf.prototype, {
+        setViewState(original: Function) {
+          return function (
+            this: WorkspaceLeaf,
+            viewState: any,
+            ...args: any[]
+          ) {
+            console.log("setViewState called with", viewState);
+            const nextState =
+              plugin.convertMarkdownViewStateForFixedNote(viewState);
+            return original.call(this, nextState, ...args);
+          };
+        },
+      }),
+    );
+  }
+
+  private convertMarkdownViewStateForFixedNote(viewState: any): any {
+    if (!viewState || viewState.type !== "markdown") return viewState;
+
+    const filePath =
+      typeof viewState.state?.file === "string" ? viewState.state.file : "";
+    if (!isMFDIFixedNotePath(filePath)) return viewState;
+
+    if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+      return viewState;
+    }
+
+    return {
+      ...viewState,
+      type: VIEW_TYPE_MFDI,
+      state: {
+        ...DEFAULT_MFDI_VIEW_STATE,
+        ...createFixedNoteViewState(filePath),
+      },
+    };
+  }
+
+  private async replaceOpenFixedMarkdownLeaves() {
+    const markdownLeaves = this.app.workspace.getLeavesOfType("markdown");
+
+    for (const leaf of markdownLeaves) {
+      const filePath = (leaf.view as any)?.file?.path;
+      if (typeof filePath !== "string") continue;
+      if (!isMFDIFixedNotePath(filePath)) continue;
+      if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+        continue;
       }
-    });
-    this.addRibbonIcon("pencil", "Mobile First Daily Interface", async () => {
-      await this.attachMFDIView();
-    });
+
+      await this.attachMFDIView(createFixedNoteViewState(filePath), leaf);
+    }
   }
 
-  async onunload() {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_MFDI);
+  private handleFileRename(file: TAbstractFile | null, oldPath: string) {
+    if (!(file instanceof TFile)) return;
+
+    const idx = this.settings.fixedNoteFiles.findIndex(
+      (f) => f.path === oldPath,
+    );
+    if (idx === -1) return;
+
+    this.settings.fixedNoteFiles = this.settings.fixedNoteFiles.map((f, i) =>
+      i === idx ? { ...f, path: file.path } : f,
+    );
+    this.saveSettings();
   }
+
+  private handleFileDelete(file: TAbstractFile | null) {
+    if (!(file instanceof TFile)) return;
+
+    const filtered = this.settings.fixedNoteFiles.filter(
+      (f) => f.path !== file.path,
+    );
+    if (filtered.length === this.settings.fixedNoteFiles.length) return;
+
+    this.settings.fixedNoteFiles = filtered;
+    this.saveSettings();
+  }
+
+  // ---------------------------------------------------------------------------
+  // ビュー管理
+  // ---------------------------------------------------------------------------
 
   /**
-   * MFDIのViewをアタッチします
+   * MFDIのViewをアタッチします。
+   * 同一条件のleafが既に存在する場合はそちらを再利用します。
    */
-  async attachMFDIView() {
-    const existed = this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).at(0);
-    if (existed) {
-      existed.setViewState({ type: VIEW_TYPE_MFDI, active: true });
-      return;
-    }
+  async attachMFDIView(
+    state: Partial<MFDIViewState> = DEFAULT_MFDI_VIEW_STATE,
+    preferredLeaf?: WorkspaceLeaf,
+  ): Promise<WorkspaceLeaf | undefined> {
+    const mergedState = { ...DEFAULT_MFDI_VIEW_STATE, ...state };
 
+    const existingLeaf = this.findExistingLeaf(state);
     const targetLeaf =
-      this.settings.leaf === "left"
-        ? this.app.workspace.getLeftLeaf(false)
-        : this.settings.leaf === "current"
-        ? this.app.workspace.getActiveViewOfType(View)?.leaf
-        : this.settings.leaf === "right"
-        ? this.app.workspace.getRightLeaf(false)
-        : undefined;
-    if (!targetLeaf) {
-      new Notice(`表示リーフの設定が不正です: ${this.settings.leaf}`);
-      return;
-    }
+      preferredLeaf ?? existingLeaf ?? this.app.workspace.getLeaf(false);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,
       active: true,
+      state: mergedState,
+    });
+
+    return targetLeaf;
+  }
+
+  /**
+   * 条件に合致する既存のMFDI leafを探します。
+   */
+  private findExistingLeaf(
+    state: Partial<MFDIViewState>,
+  ): WorkspaceLeaf | undefined {
+    const fixedPath = normalizeFixedNotePath(
+      typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
+    );
+    const isFixedMode = state.noteMode === "fixed";
+
+    return this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).find((leaf) => {
+      if (!(leaf.view instanceof MFDIView)) return false;
+
+      const currentState = leaf.view.getState();
+      return isFixedMode
+        ? currentState.noteMode === "fixed" &&
+            normalizeFixedNotePath(currentState.fixedNotePath ?? "") ===
+              fixedPath
+        : currentState.noteMode !== "fixed";
     });
   }
+
+  /**
+   * MFDIView のコールバックを設定する
+   */
+  private setupViewCallbacks(view: MFDIView) {
+    view.handlers.onTopicSaveRequested = async (topicId: string) => {
+      this.settings.activeTopic = topicId;
+      await this.saveSettings();
+    };
+
+    view.handlers.onOpenTopicManager = () => {
+      const modal = new TopicManagerModal(
+        this.app,
+        this.settings.topics,
+        this.settings.activeTopic,
+        async (topics: Topic[], activeTopic: string) => {
+          this.settings.topics = topics;
+          this.settings.activeTopic = activeTopic;
+          await this.saveSettings();
+          view.handlers.onChangeTopic?.(activeTopic);
+        },
+      );
+      modal.open();
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 設定管理
+  // ---------------------------------------------------------------------------
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);

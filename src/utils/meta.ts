@@ -1,15 +1,15 @@
 import { requestUrl } from "obsidian";
-import { defineUserAgent } from "./agent";
-import { forceLowerCaseKeys } from "./collections";
+import { defineUserAgent } from "src/utils/agent";
+import { forceLowerCaseKeys } from "src/utils/collections";
 import {
   getCharsetFromMeta,
   getCoverUrl,
   getFaviconUrl,
   getMetaByHttpEquiv,
   getMetaByName,
-  getMetaByProperty,
-} from "./meta-helper";
-import { eucJp2String, sjis2String } from "./strings";
+  getMetaByProperty
+} from "src/utils/meta-helper";
+import { eucJp2String, sjis2String } from "src/utils/strings";
 
 export type Meta = HTMLMeta | ImageMeta | TwitterMeta;
 export interface HTMLMeta {
@@ -33,10 +33,15 @@ export interface TwitterMeta {
   html: string;
 }
 
+interface TwitterOEmbedResponse {
+  author_name: string;
+  html: string;
+}
+
 async function getTwitterMeta(
   url: string,
-  type: "X" | "Twitter"
-): Promise<TwitterMeta | null> {
+  type: "X" | "Twitter",
+): Promise<TwitterOEmbedResponse | null> {
   const twitterEmbedUrl = `https://publish.${
     type === "X" ? "x" : "twitter"
   }.com/oembed?hide_media=true&hide_thread=true&omit_script=true&lang=ja&url=${url}`;
@@ -48,12 +53,12 @@ async function getTwitterMeta(
     console.debug(`twitter embed status is ${res.status}`);
     return null;
   }
-  return res.json;
+  return res.json as TwitterOEmbedResponse;
 }
 
 function htmlString2Document(
   htmlString: string,
-  htmlBuffer: ArrayBuffer
+  htmlBuffer: ArrayBuffer,
 ): Document {
   let html = new DOMParser().parseFromString(htmlString, "text/html");
 
@@ -71,13 +76,13 @@ function htmlString2Document(
     // HTMLのmetaデータにshift_jisと明記されている場合はbodyを作り直す
     html = new DOMParser().parseFromString(
       sjis2String(htmlBuffer),
-      "text/html"
+      "text/html",
     );
   } else if (infer("eucjp")) {
     // HTMLのmetaデータにeuc_jpと明記されている場合はbodyを作り直す
     html = new DOMParser().parseFromString(
       eucJp2String(htmlBuffer),
-      "text/html"
+      "text/html",
     );
   }
 
@@ -91,7 +96,7 @@ export async function createMeta(url: string): Promise<Meta | null> {
   ) {
     const res = await getTwitterMeta(
       url,
-      url.startsWith("https://x.com") ? "X" : "Twitter"
+      url.startsWith("https://x.com") ? "X" : "Twitter",
     );
     if (!res) {
       return null;

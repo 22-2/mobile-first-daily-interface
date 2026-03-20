@@ -4,7 +4,7 @@ export namespace TextComponentEvent {
   export function onChange(
     component: TextComponent,
     handler: (value: string) => void,
-    option?: { className?: string; secret?: boolean }
+    option?: { className?: string; secret?: boolean },
   ): TextComponent {
     component.inputEl.addEventListener("change", async (ev) => {
       if (!(ev.target instanceof HTMLInputElement)) {

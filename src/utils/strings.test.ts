@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from "vitest";
 
 import {
   excludeWikiLink,
@@ -6,8 +6,8 @@ import {
   pickTaskName,
   pickUrls,
   replaceDayToJa,
-  trimRedundantEmptyLines,
-} from "./strings";
+  trimRedundantEmptyLines
+} from "src/utils/strings";
 
 describe.each`
   text              | expected
@@ -54,11 +54,19 @@ test.each([
   ["* [x] hoge", { prefix: "* [x] ", content: "hoge" }],
   ["	- [ ] tab indent", { prefix: "	- [ ] ", content: "tab indent" }],
   ["	- [x] tab indent", { prefix: "	- [x] ", content: "tab indent" }],
+  [
+    "- [ ] 16:37:23 On-Demand Plugins提出\n    community-pluginsの編集戦略見直し\n    消極的干渉\n\n",
+    {
+      prefix: "- [ ] ",
+      content:
+        "16:37:23 On-Demand Plugins提出\n    community-pluginsの編集戦略見直し\n    消極的干渉\n\n",
+    },
+  ],
 ])(
   `parseMarkdownList("%s")`,
   (text: string, expected: ReturnType<typeof parseMarkdownList>) => {
     expect(parseMarkdownList(text)).toEqual(expected);
-  }
+  },
 );
 
 describe.each`
@@ -79,7 +87,7 @@ describe.each`
 // XXX: Markdownは一旦未対応にする
 // ${"[hoge](https://hoge.com)"}                    | ${["https://hoge.com"]}
 // ${"aa [hoge](https://hoge.com) aa"}              | ${["https://hoge.com"]}
-describe.each<{ text: string; expected: string }>`
+describe.each`
   text                                             | expected
   ${"https://hoge.com"}                            | ${["https://hoge.com"]}
   ${"  https://hoge.com"}                          | ${["https://hoge.com"]}

@@ -1,12 +1,13 @@
-import esbuild from "esbuild";
-import process from "process";
+import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
 import builtins from "builtin-modules";
-import fs from "fs";
+import esbuild from "esbuild";
 import path from "path";
-import chokidar from "chokidar";
+import process from "process";
+import fs from "fs";
+import babel from "esbuild-plugin-babel";
 
-const VAULT_DIR = "/mnt/c/Users/syoum/work/minerva";
-const FILES = ["main.js", "manifest.json", "styles.css"];
+const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
+const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
 
 // ---
 
@@ -38,42 +39,54 @@ const context = await esbuild.context({
     "@lezer/common",
     "@lezer/highlight",
     "@lezer/lr",
+    "moment",
     ...builtins,
   ],
+  alias: {
+    "react": "preact/compat",
+    "react-dom": "preact/compat",
+    "react-dom/client": "preact/compat/client",
+    "react-dom/test-utils": "preact/test-utils",
+    "react/jsx-runtime": "preact/jsx-runtime",
+  },
   format: "cjs",
-  target: "es2018",
+  target: "esnext",
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,
   outfile: "main.js",
+  minify: prod,
+  metafile: true,
+  plugins: [
+    babel({
+      filter: /\.[jt]sx?$/,
+      config: {
+        presets: [
+          ["@babel/preset-react", { runtime: "automatic" }],
+          "@babel/preset-typescript",
+        ],
+        plugins: [
+          ["babel-plugin-react-compiler", { target: "18" }],
+        ],
+      },
+    }),
+    obsidianCopyPlugin({
+      pluginsDir: [
+        PLUGINS_DIR,
+        "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+        "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
+        "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
+      ],
+      force: true,
+    }),
+  ],
 });
 
+
 if (prod) {
-  await context.rebuild();
+  const result = await context.rebuild();
+  fs.writeFileSync("metafile.json", JSON.stringify(result.metafile));
   process.exit(0);
 } else {
   await context.watch();
-
-  const pluginDir = path.join(
-    VAULT_DIR,
-    ".obsidian/plugins/mobile-first-daily-interface"
-  );
-
-  console.log(`📁 Creating ${pluginDir} (if not existed)`);
-  fs.mkdirSync(pluginDir, { recursive: true });
-
-  const hotreloadPath = path.join(pluginDir, ".hotreload", "");
-  console.log(`🌶️ Creating a ${hotreloadPath}`);
-  fs.writeFileSync(hotreloadPath, "");
-
-  const watcher = chokidar.watch(FILES, { persistent: true });
-  watcher
-    .on("add", (p) => {
-      console.log(`♨️  ${p} is added`);
-      fs.copyFileSync(p, path.join(pluginDir, p));
-    })
-    .on("change", (p) => {
-      console.log(`♨️  ${p} is changed`);
-      fs.copyFileSync(p, path.join(pluginDir, p));
-    });
 }

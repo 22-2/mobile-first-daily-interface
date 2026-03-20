@@ -6,94 +6,189 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.remove-btn {
-  margin-right: 0.5rem;
-}
 
 .item-enter {
-  opacity: 0;
+  opacity: 0 !important;
+  transform: translateY(-20px);
 }
+
 .item-enter-active {
-  opacity: 1;
-  transition: opacity 500ms ease-in;
+  opacity: 1 !important;
+  transform: translateY(0);
+  transition:
+    opacity var(--anim-duration-fast) ease-out,
+    transform var(--anim-duration-fast) ease-out;
 }
+
 .item-exit {
-  opacity: 1;
+  opacity: 1 !important;
 }
+
 .item-exit-active {
-  opacity: 0;
-  transition: opacity 500ms ease-in;
+  opacity: 0 !important;
+  transform: scale(0.95);
+  transition:
+    opacity var(--mfdi-app-transition-ms) ease-in,
+    transform var(--mfdi-app-transition-ms) ease-in;
 }
 
-/************************/
-/* card link
-/************************/
+[data-type="mfdi-view"] .view-content {
+  padding-bottom: 0;
+  background-color: transparent !important;
+}
 
-.mfdi-html-card {
+[data-type="mfdi-view"] [data-type="markdown"] .view-header {
+  display: none;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .cm-content {
+  padding-bottom: 0 !important;
+}
+
+[data-type="mfdi-view"]
+  :is(
+    .markdown-preview-view.is-readable-line-width .markdown-preview-sizer > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-contentContainer.cm-contentContainer
+      > .cm-content
+      > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .embedded-backlinks,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .inline-title,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .metadata-container
+  ) {
+  max-width: initial !important;
+  width: initial !important;
+  margin-inline: initial !important;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
+  margin: var(--size-4-2) var(--size-4-4) !important;
+  padding: 0 !important;
+  max-height: 50vh !important;
+}
+
+[data-type="mfdi-view"] .list .markdown-rendered {
+  user-select: text !important;
+}
+
+[data-type="mfdi-view"] .mfdi-date-input,
+[data-type="mfdi-view"] input[type="month"],
+[data-type="mfdi-view"] input[type="week"] {
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  padding: var(--input-padding);
+  font-size: var(--font-ui-small);
+  border-radius: var(--input-radius);
+  outline: none;
   position: relative;
-  z-index: 1;
-  border: 1px dotted #b5890077;
-  backdrop-filter: brightness(101%);
-  margin-bottom: 1em;
-  border-radius: 16px;
+  font-variant-numeric: tabular-nums;
+  padding-left: var(--size-4-6);
 }
 
-.mfdi-html-card-image {
-  width: 100% !important;
-  object-fit: contain !important;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+@media (hover: hover) {
+  [data-type="mfdi-view"] .mfdi-date-input:hover,
+  [data-type="mfdi-view"] input[type="month"]:hover,
+  [data-type="mfdi-view"] input[type="week"]:hover {
+    background-color: var(--background-modifier-form-field-hover);
+    border-color: var(--background-modifier-border-hover);
+    transition:
+      box-shadow var(--anim-duration-fast) ease-in-out,
+      border var(--anim-duration-fast) ease-in-out;
+  }
 }
 
-.mfdi-html-card a {
+[data-type="mfdi-view"] .mfdi-date-input:focus,
+[data-type="mfdi-view"] input[type="month"]:focus,
+[data-type="mfdi-view"] input[type="week"]:focus {
+  border-color: var(--background-modifier-border-focus);
+}
+
+/* Picker indicators and textsegments styling to match Obsidian */
+[data-type="mfdi-view"] .mfdi-date-input::-webkit-calendar-picker-indicator,
+[data-type="mfdi-view"] input[type="month"]::-webkit-calendar-picker-indicator,
+[data-type="mfdi-view"] input[type="week"]::-webkit-calendar-picker-indicator {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  text-indent: -999px;
-  z-index: 2;
-}
-
-.mfdi-html-card:hover {
+  left: var(--size-4-1);
+  right: auto;
+  opacity: 0.5;
   cursor: pointer;
-  border: 1px solid #b58900;
-  backdrop-filter: brightness(98%);
-  transition: backdrop-filter 0.2s;
 }
 
-.mfdi-html-card-content {
-  padding: 1em;
+[data-type="mfdi-view"] .mfdi-date-input::-webkit-datetime-edit-text,
+[data-type="mfdi-view"] input[type="month"]::-webkit-datetime-edit-text,
+[data-type="mfdi-view"] input[type="week"]::-webkit-datetime-edit-text {
+  color: var(--input-date-separator);
+  padding-inline-end: 0;
 }
 
-.mfdi-html-card-header {
-  margin-bottom: 0.5em;
-  /*noinspection CssUnresolvedCustomProperty*/
+[data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
+  display: none !important;
+}
+
+[data-type="mfdi-view"] .ͼ1 .cm-cursor, .ͼ1 .cm-dropCursor {
+  margin-left: initial !important;
+  width: 1px !important;
+}
+
+[data-type="mfdi-view"] :is(.HyperMD-codeblock-bg, .markdown-rendered pre) {
+  --code-background: var(--bg3) !important;
+}
+
+.mfdi-input-modal .modal-content {
+  padding-top: 0;
+}
+
+.mfdi-input-modal__body {
+  display: grid;
+  gap: var(--size-4-3);
+  margin-top: var(--size-4-2);
+}
+
+.mfdi-input-modal__input {
+  width: 100%;
+  min-height: 40px;
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: var(--input-radius);
+  background: var(--background-modifier-form-field);
+  padding: 0 var(--size-4-3);
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  transition:
+    border-color var(--anim-duration-fast) ease,
+    box-shadow var(--anim-duration-fast) ease,
+    background-color var(--anim-duration-fast) ease;
+}
+
+.mfdi-input-modal__input::placeholder {
   color: var(--text-muted);
 }
-.mfdi-html-card-site-icon {
-  object-fit: contain !important;
-  height: 1em !important;
-  margin-right: 0.3em;
-}
-.mfdi-html-card-site-name {
-  height: 1em !important;
+
+.mfdi-input-modal__input:hover {
+  border-color: var(--background-modifier-border-hover);
+  background: var(--background-modifier-form-field-hover);
 }
 
-.mfdi-html-card-body {
-  margin-bottom: 0.5em;
+.mfdi-input-modal__input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
-.mfdi-image-card {
-  position: relative;
-  z-index: 1;
-  backdrop-filter: brightness(101%);
-  margin-bottom: 1em;
+.mfdi-input-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  margin-top: var(--size-2-2);
 }
 
-.mfdi-image-card-image {
-  width: 100% !important;
-  object-fit: contain !important;
-  border-radius: 16px;
+.mfdi-input-modal__button {
+  min-width: 92px;
 }
-

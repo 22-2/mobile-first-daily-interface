@@ -1,5 +1,4 @@
-import { RegExpMatchedArray } from "./types";
-import * as Encoding from "encoding-japanese";
+import { RegExpMatchedArray } from "src/utils/types";
 
 export function excludeWikiLink(text: string): string {
   return text
@@ -15,9 +14,17 @@ export function parseMarkdownList(text: string): {
   prefix: string;
   content: string;
 } {
-  const { groups } = Array.from(
-    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/g)
-  ).at(0) as any;
+  const match = Array.from(
+    text.matchAll(/^(?<prefix>[ \t]*([-*] (\[.] |)|))(?<content>.*)$/gs),
+  ).at(0);
+
+  if (!match) {
+    return { prefix: "", content: text };
+  }
+
+  const { groups } = match as unknown as {
+    groups: { prefix: string; content: string };
+  };
 
   return { prefix: groups.prefix, content: groups.content };
 }
@@ -35,28 +42,20 @@ export function replaceDayToJa(text: string): string {
 
 export function pickUrls(str: string): string[] {
   const urlsMatches = Array.from(
-    str.matchAll(/(^| |\(|\n)(?<url>https?:\/\/[^ \n]+)/g)
+    str.matchAll(/(^| |\(|\n)(?<url>https?:\/\/[^ \n]+)/g),
   ) as RegExpMatchedArray[];
   return urlsMatches.map((x) => x.groups.url);
 }
 
 export function sjis2String(sjisBuffer: ArrayBuffer): string {
-  const unicodeArray = Encoding.convert(new Uint8Array(sjisBuffer), {
-    from: "SJIS",
-    to: "UNICODE",
-  });
-  return Encoding.codeToString(unicodeArray);
+  return new TextDecoder("shift_jis").decode(sjisBuffer);
 }
 
 /**
  * EUC-JPのbufferをstringに変換します
  */
 export function eucJp2String(eucJpBuffer: ArrayBuffer): string {
-  const unicodeArray = Encoding.convert(new Uint8Array(eucJpBuffer), {
-    from: "EUCJP",
-    to: "UNICODE",
-  });
-  return Encoding.codeToString(unicodeArray);
+  return new TextDecoder("euc-jp").decode(eucJpBuffer);
 }
 
 export function trimRedundantEmptyLines(text: string): string {

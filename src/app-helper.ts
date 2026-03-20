@@ -1,30 +1,50 @@
-import { App, Editor, MarkdownView, moment, TFile } from "obsidian";
-import { pickTaskName } from "./utils/strings";
+import { App, Editor, MarkdownView, TFile } from "obsidian";
+import { Commands } from "obsidian-typings";
+import { MomentLike } from "src/ui/types";
+import { parseMarkdownList } from "src/utils/strings";
+import { parseTaskTimestamp } from "src/utils/task-parser";
 
-export interface CodeBlock {
-  lang: string;
-  meta: string;
-  code: string;
-  offset: number;
+function trimLeadingLineBreaks(text: string): string {
+  return text.replace(/^(?:\r\n|\r|\n)+/, "");
 }
 
-export interface Header {
-  title: string;
-  body: string;
-  titleOffset: number;
+function joinWithSingleBoundaryNewline(content: string, text: string): string {
+  const normalizedText = trimLeadingLineBreaks(text);
+
+  if (normalizedText.length === 0) {
+    return content;
+  }
+
+  if (content.length === 0 || content.endsWith("\n")) {
+    return content + normalizedText;
+  }
+
+  return `${content}\n${normalizedText}`;
+}
+
+function skipImmediateLineBreak(content: string, index: number): number {
+  if (content.slice(index, index + 2) === "\r\n") {
+    return index + 2;
+  }
+
+  if (content[index] === "\n" || content[index] === "\r") {
+    return index + 1;
+  }
+
+  return index;
 }
 
 export interface Task {
   mark: " " | string;
   name: string;
   offset: number;
+  path: string;
+  timestamp: MomentLike;
 }
 
 interface UnsafeAppInterface {
-  commands: {
-    commands: { [commandId: string]: any };
-    executeCommandById(commandId: string): boolean;
-  };
+  appId: string;
+  commands: Commands;
 }
 
 export class AppHelper {
@@ -34,20 +54,45 @@ export class AppHelper {
     this.unsafeApp = app as any;
   }
 
+  getApp(): App {
+    return this.unsafeApp;
+  }
+
+  getAppId(): string {
+    return this.unsafeApp.appId;
+  }
+
   async loadFile(path: string): Promise<string> {
     return this.unsafeApp.vault.adapter.read(path);
+  }
+
+  async cachedReadFile(file: TFile): Promise<string> {
+    return this.unsafeApp.vault.cachedRead(file);
+  }
+
+  async replaceRange(
+    path: string,
+    startOffset: number,
+    endOffset: number,
+    replacement: string,
+  ): Promise<void> {
+    const origin = await this.loadFile(path);
+    await this.unsafeApp.vault.adapter.write(
+      path,
+      origin.slice(0, startOffset) + replacement + origin.slice(endOffset),
+    );
   }
 
   async setCheckMark(
     path: string,
     mark: "x" | " " | string,
-    offset: number
+    offset: number,
   ): Promise<void> {
     const origin = await this.loadFile(path);
     const markOffset = offset + origin.slice(offset).indexOf("[") + 1;
     await this.unsafeApp.vault.adapter.write(
       path,
-      `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`
+      `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`,
     );
   }
 
@@ -68,58 +113,31 @@ export class AppHelper {
     return this.unsafeApp.vault.adapter.append(file.path, text);
   }
 
-  async getCodeBlocks(file: TFile): Promise<CodeBlock[] | null> {
+  async insertTextAfter(file: TFile, text: string, after: string) {
     const content = await this.loadFile(file.path);
 
-    return (
-      this.unsafeApp.metadataCache
-        .getFileCache(file)
-        ?.sections?.filter((x) => x.type === "code")
-        .map((x) => {
-          const str = content.slice(
-            x.position.start.offset,
-            x.position.end.offset
-          );
-          const lines = str.split("\n");
-
-          const lang = lines[0].split(" ")[0].replace("````", "");
-          const meta = lines[0].split(" ")[1];
-          const offset = x.position.start.offset;
-
-          return {
-            lang,
-            meta,
-            code: lines.slice(1, -1).join("\n"),
-            offset,
-          };
-        }) ?? null
-    );
-  }
-
-  async getHeaders(file: TFile, level: number): Promise<Header[] | null> {
-    const content = await this.loadFile(file.path);
-
-    const headings = this.unsafeApp.metadataCache
-      .getFileCache(file)
-      ?.headings?.filter((x) => x.level === level);
-    if (!headings) {
-      return null;
+    if (!after) {
+      await this.unsafeApp.vault.adapter.write(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
     }
 
-    return (
-      headings.map((x, i) => {
-        return {
-          title: x.heading,
-          body: content.slice(
-            x.position.end.offset + 1,
-            i < headings.length - 1
-              ? headings[i + 1].position.start.offset - 1
-              : undefined
-          ),
-          titleOffset: x.position.start.offset,
-        };
-      }) ?? null
-    );
+    const index = content.indexOf(after);
+    if (index === -1) {
+      await this.unsafeApp.vault.adapter.write(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
+    }
+
+    const insertIndex = skipImmediateLineBreak(content, index + after.length);
+    const newContent =
+      joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
+      content.slice(insertIndex);
+    await this.unsafeApp.vault.adapter.write(file.path, newContent);
   }
 
   async getTasks(file: TFile): Promise<Task[] | null> {
@@ -131,12 +149,43 @@ export class AppHelper {
         .getFileCache(file)
         ?.listItems?.filter((x) => x.task != null)
         .map((x) => {
-          const text = lines.at(x.position.start.line)!;
-          const name = pickTaskName(text);
+          const startLine = x.position.start.line;
+          const endLine = x.position.end.line;
+
+          // Basic task text from the metadata cache (usually one line)
+          const firstLine = lines.at(startLine)!;
+
+          // Find the actual end of the task (including multi-line content)
+          // We look ahead until we find another list item at the same or higher level,
+          // or a heading, or EOF.
+          let lastLine = endLine;
+          for (let i = endLine + 1; i < lines.length; i++) {
+            const line = lines[i];
+            // If the line is not indented, it's likely the start of a new block
+            if (
+              line.trim().length > 0 &&
+              !line.startsWith(" ") &&
+              !line.startsWith("\t")
+            ) {
+              break;
+            }
+            lastLine = i;
+          }
+
+          const taskContent = lines.slice(startLine, lastLine + 1).join("\n");
+          const { prefix, content: rawName } = parseMarkdownList(taskContent);
+
+          const { displayName, timestamp } = parseTaskTimestamp(
+            rawName,
+            file.basename,
+          );
+
           return {
             mark: x.task!,
-            name,
+            name: displayName,
             offset: x.position.start.offset,
+            path: file.path,
+            timestamp,
           };
         }) ?? null
     );

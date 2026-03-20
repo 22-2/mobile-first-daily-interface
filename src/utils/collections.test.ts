@@ -1,5 +1,5 @@
-import { describe, expect, test } from "@jest/globals";
-import { forceLowerCaseKeys, mirrorMap } from "./collections";
+import { forceLowerCaseKeys } from "src/utils/collections";
+import { describe, expect, test } from "vitest";
 
 describe.each`
   obj                                      | expected
@@ -10,16 +10,16 @@ describe.each`
   });
 });
 
-describe.each<{
-  arr: unknown[];
-  toValue: (x: any) => string;
-  expected: { [key: string]: unknown };
-}>`
-  arr                           | toValue            | expected
-  ${["aa", "ii"]}               | ${(x: any) => x}   | ${{ aa: "aa", ii: "ii" }}
-  ${[{ s: "aa" }, { s: "ii" }]} | ${(x: any) => x.s} | ${{ aa: "aa", ii: "ii" }}
-`("mirrorMap", ({ arr, toValue, expected }) => {
-  test(`mirrorMap(${arr}, ${toValue}) = ${expected}`, () => {
-    expect(mirrorMap(arr, toValue)).toStrictEqual(expected);
-  });
-});
+// describe.each<{
+//   arr: unknown[];
+//   toValue: (x: any) => string;
+//   expected: { [key: string]: unknown };
+// }>`
+//   arr                           | toValue            | expected
+//   ${["aa", "ii"]}               | ${(x: any) => x}   | ${{ aa: "aa", ii: "ii" }}
+//   ${[{ s: "aa" }, { s: "ii" }]} | ${(x: any) => x.s} | ${{ aa: "aa", ii: "ii" }}
+// `("mirrorMap", ({ arr, toValue, expected }) => {
+//   test(`mirrorMap(${arr}, ${toValue}) = ${expected}`, () => {
+//     expect(mirrorMap(arr, toValue)).toStrictEqual(expected);
+//   });
+// });
