@@ -150,9 +150,9 @@ export default class MFDIPlugin extends Plugin {
       typeof viewState.state?.file === "string" ? viewState.state.file : "";
     if (!isMFDIFixedNotePath(filePath)) return viewState;
 
-    if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
-      return viewState;
-    }
+    // if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+    //   return viewState;
+    // }
 
     return {
       ...viewState,
@@ -171,9 +171,9 @@ export default class MFDIPlugin extends Plugin {
       const filePath = (leaf.view as any)?.file?.path;
       if (typeof filePath !== "string") continue;
       if (!isMFDIFixedNotePath(filePath)) continue;
-      if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
-        continue;
-      }
+      // if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
+      //   continue;
+      // }
 
       await this.attachMFDIView(createFixedNoteViewState(filePath), leaf);
     }
