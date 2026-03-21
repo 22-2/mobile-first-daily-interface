@@ -15,7 +15,7 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
-import { MFDIModal } from "src/ui/modals/MFDIModal";
+import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import {
   AppStoreApi,
   AppStoreProvider,
@@ -589,7 +589,7 @@ function useViewSync(view: MFDIView) {
     }
 
     view.handlers.onOpenModalEditor = () => {
-      const modal = new MFDIModal(app, {
+      const modal = new MFDIEditorModal(app, {
         initialContent: inputRefVal.current,
         onChange: (content) => {
           setInput(content);

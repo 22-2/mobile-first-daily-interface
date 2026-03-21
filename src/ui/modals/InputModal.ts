@@ -1,4 +1,5 @@
-import { App, Modal } from "obsidian";
+import { App } from "obsidian";
+import { MFDIBaseModal } from "./MFDIBaseModal";
 
 export async function showInputModal(
   app: App,
@@ -16,73 +17,47 @@ export async function showInputModal(
   ).show();
 }
 
-export class InputModal extends Modal {
+export class InputModal extends MFDIBaseModal<string | null> {
   private inputEl!: HTMLInputElement;
   private submitted = false;
-  private resolvePromise!: (value: string | null) => void;
 
   constructor(
     app: App,
-    private title: string,
+    titleText: string,
     private placeholder?: string,
     private defaultValue?: string,
   ) {
-    super(app);
+    super(app, titleText);
   }
 
-  show(): Promise<string | null> {
-    return new Promise<string | null>((resolve) => {
-      this.resolvePromise = resolve;
-      this.open();
-    });
-  }
-
-  onOpen(): void {
+  renderBody(bodyEl: HTMLElement): void {
     this.submitted = false;
-    this.modalEl.addClass("mfdi-input-modal");
-    this.contentEl.empty();
-    this.titleEl.setText(this.title);
-
-    const bodyEl = this.contentEl.createDiv({ cls: "mfdi-input-modal__body" });
-
-    this.inputEl = bodyEl.createEl("input", { cls: "mfdi-input-modal__input" });
+    this.inputEl = bodyEl.createEl("input", { cls: "mfdi-modal__input" });
     this.inputEl.type = "text";
     this.inputEl.placeholder = this.placeholder ?? "";
     if (this.defaultValue) this.inputEl.value = this.defaultValue;
 
-    const actionsEl = bodyEl.createDiv({ cls: "mfdi-input-modal__actions" });
-    const cancelButtonEl = actionsEl.createEl("button", {
-      cls: "mfdi-input-modal__button",
-      text: "キャンセル",
-      type: "button",
-    });
-    const submitButtonEl = actionsEl.createEl("button", {
-      cls: "mfdi-input-modal__button mod-cta",
-      text: "決定",
-      type: "button",
-    });
-
-    const submit = () => {
-      this.submitted = true;
-      this.close();
-    };
-
-    cancelButtonEl.addEventListener("click", () => this.close());
-    submitButtonEl.addEventListener("click", submit);
+    const actionsEl = this.createActions(bodyEl);
+    this.createButton(actionsEl, "キャンセル", () => this.close());
+    this.createButton(actionsEl, "決定", () => this.submit(), { cta: true });
 
     this.inputEl.addEventListener("keydown", (ev) => {
       if (ev.isComposing) return;
       if (ev.key === "Enter") {
         ev.preventDefault();
-        submit();
+        this.submit();
       }
     });
 
     queueMicrotask(() => this.inputEl.focus());
   }
 
+  private submit() {
+    this.submitted = true;
+    this.close();
+  }
+
   onClose(): void {
-    this.modalEl.removeClass("mfdi-input-modal");
     super.onClose();
     this.resolvePromise?.(this.submitted ? (this.inputEl?.value ?? "") : null);
   }

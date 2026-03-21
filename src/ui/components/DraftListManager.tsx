@@ -12,18 +12,22 @@ import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppStore } from "src/ui/store/appStore";
 import { Menu } from "obsidian";
 import { useShallow } from "zustand/shallow";
+import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 
 export interface DraftListManagerProps {
   onClose: () => void;
 }
 
-export const DraftListManager: React.FC<DraftListManagerProps> = ({ onClose }) => {
-  const { drafts, removeDraft, setInput, inputRef } = useAppStore(
+export const DraftListManager: React.FC<DraftListManagerProps> = ({
+  onClose,
+}) => {
+  const { drafts, removeDraft, setInput, inputRef, app } = useAppStore(
     useShallow((s) => ({
       drafts: s.drafts,
       removeDraft: s.removeDraft,
       setInput: s.setInput,
       inputRef: s.inputRef,
+      app: s.app!,
     })),
   );
 
@@ -102,65 +106,77 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({ onClose }) =
                 p="1.2em"
                 bg="var(--background-secondary)"
                 borderRadius="15px"
-                cursor="pointer"
                 transition="all 0.2s"
                 border="1px solid transparent"
                 _hover={{
                   bg: "var(--background-modifier-hover)",
                   borderColor: "var(--background-modifier-border)",
                 }}
-                onClick={() => {
-                  setInput(draft.content);
-                  inputRef.current?.setContent(draft.content);
-                  onClose();
-                }}
               >
-                  <HStack justify="space-between" mb="0.4em" align="center">
-                    <Text fontSize="xs" color="var(--text-muted)" fontWeight="bold">
-                      {formatTime(draft.createdAt)}
-                    </Text>
-                    <ObsidianIcon
-                      name="more-horizontal"
-                      size="1.2em"
-                      onClick={(e) => {
-                        const menu = new Menu();
-                        menu.addItem((item) => {
-                          item
-                            .setTitle("復元")
-                            .setIcon("refresh-cw")
-                            .onClick(() => {
-                              setInput(draft.content);
-                              inputRef.current?.setContent(draft.content);
-                              onClose();
-                            });
-                        });
-                        menu.addItem((item) => {
-                          item
-                            .setTitle("削除")
-                            .setIcon("trash")
-                            .setWarning(true)
-                            .onClick(() => {
-                              removeDraft(draft.id);
-                            });
-                        });
-                        menu.showAtPosition({
-                          x: e.clientX,
-                          y: e.clientY,
-                        });
-                        e.stopPropagation();
-                      }}
-                      color="var(--text-muted)"
-                      _hover={{ color: "var(--text-normal)", bg: "transparent" }}
-                    />
-                  </HStack>
+                <HStack justify="space-between" mb="0.4em" align="center">
                   <Text
-                    fontSize="sm"
-                    lineHeight="1.4"
-                    color="var(--text-normal)"
-                    noOfLines={3}
+                    fontSize="xs"
+                    color="var(--text-muted)"
+                    fontWeight="bold"
                   >
-                    {draft.content}
+                    {formatTime(draft.createdAt)}
                   </Text>
+                  <ObsidianIcon
+                    name="more-horizontal"
+                    size="1.2em"
+                    onClick={(e) => {
+                      const menu = new Menu();
+                      menu.addItem((item) => {
+                        item
+                          .setTitle("コピー")
+                          .setIcon("copy")
+                          .onClick(() => {
+                            navigator.clipboard.writeText(draft.content);
+                          });
+                      });
+
+                      menu.addSeparator();
+
+                      menu.addItem((item) => {
+                        item
+                          .setTitle("復元")
+                          .setIcon("refresh-cw")
+                          .onClick(() => {
+                            setInput(draft.content);
+                            inputRef.current?.setContent(draft.content);
+                            onClose();
+                          });
+                      });
+                      menu.addItem((item) => {
+                        item
+                          .setTitle("削除")
+                          .setIcon("trash")
+                          .setWarning(true)
+                          .onClick(() => {
+                            new DeleteConfirmModal(app, async () => {
+                              removeDraft(draft.id);
+                            }).open();
+                          });
+                      });
+                      menu.showAtPosition({
+                        x: e.clientX,
+                        y: e.clientY,
+                      });
+                      e.stopPropagation();
+                    }}
+                    color="var(--text-muted)"
+                    _hover={{ color: "var(--text-normal)", bg: "transparent" }}
+                  />
+                </HStack>
+                <Text
+                  fontSize="sm"
+                  lineHeight="1.4"
+                  userSelect="text"
+                  color="var(--text-normal)"
+                  noOfLines={3}
+                >
+                  {draft.content}
+                </Text>
               </Box>
             ))}
           </VStack>
