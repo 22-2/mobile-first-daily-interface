@@ -125,11 +125,14 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({ onClose }) =
                       onClick={(e) => {
                         const menu = new Menu();
                         menu.addItem((item) => {
-                          item.setTitle("復元").onClick(() => {
-                            setInput(draft.content);
-                            inputRef.current?.setContent(draft.content);
-                            onClose();
-                          });
+                          item
+                            .setTitle("復元")
+                            .setIcon("refresh-cw")
+                            .onClick(() => {
+                              setInput(draft.content);
+                              inputRef.current?.setContent(draft.content);
+                              onClose();
+                            });
                         });
                         menu.addItem((item) => {
                           item
