@@ -10,6 +10,7 @@ import {
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppStore } from "src/ui/store/appStore";
+import { Menu } from "obsidian";
 import { useShallow } from "zustand/shallow";
 
 export interface DraftListManagerProps {
@@ -122,10 +123,28 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({ onClose }) =
                       name="more-horizontal"
                       size="1.2em"
                       onClick={(e) => {
+                        const menu = new Menu();
+                        menu.addItem((item) => {
+                          item.setTitle("復元").onClick(() => {
+                            setInput(draft.content);
+                            inputRef.current?.setContent(draft.content);
+                            onClose();
+                          });
+                        });
+                        menu.addItem((item) => {
+                          item
+                            .setTitle("削除")
+                            .setIcon("trash")
+                            .setWarning(true)
+                            .onClick(() => {
+                              removeDraft(draft.id);
+                            });
+                        });
+                        menu.showAtPosition({
+                          x: e.clientX,
+                          y: e.clientY,
+                        });
                         e.stopPropagation();
-                        // For now we just show delete option by showing menu if possible
-                        // or just stick to trash if it was intended specifically for delete
-                        removeDraft(draft.id);
                       }}
                       color="var(--text-muted)"
                       _hover={{ color: "var(--text-normal)", bg: "transparent" }}
