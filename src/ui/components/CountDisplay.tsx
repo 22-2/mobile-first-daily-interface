@@ -8,7 +8,6 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
-import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
@@ -65,23 +64,6 @@ const DateSection: React.FC = () => {
       </UnderlinedClickable>
     </Box>
   );
-};
-
-const usePostModeMenu = () => {
-  const { asTask, setAsTask: onAsTaskChange } = useSettingsStore(
-    useShallow((s) => ({
-      asTask: s.asTask,
-      setAsTask: s.setAsTask,
-    })),
-  );
-
-  return (e: React.MouseEvent) => {
-    if (!onAsTaskChange) return;
-    e.preventDefault();
-    const menu = new Menu();
-    addPostModeMenuItems(menu, asTask, onAsTaskChange);
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
-  };
 };
 
 const useGranularityMenu = () => {
@@ -161,7 +143,7 @@ const CountSection: React.FC = () => {
     fixedNotePath,
   } = settings;
   const { posts, tasks } = postsState;
-  const onClick = usePostModeMenu();
+  // const onClick = usePostModeMenu();
 
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
@@ -176,20 +158,20 @@ const CountSection: React.FC = () => {
 
   if (viewNoteMode === "fixed") {
     return (
-      <UnderlinedClickable onClick={onClick}>
+      <>
         {asTask
           ? `${tasksCount} tasks in ${getFixedNoteTitle(fixedNotePath)}`
           : `${filteredPostsCount} posts in ${getFixedNoteTitle(fixedNotePath)}`}
-      </UnderlinedClickable>
+      </>
     );
   }
 
   return (
-    <UnderlinedClickable onClick={onClick}>
+    <>
       {asTask
         ? `${tasksCount} tasks`
         : `${filteredPostsCount}${totalPart} posts`}
-    </UnderlinedClickable>
+    </>
   );
 };
 

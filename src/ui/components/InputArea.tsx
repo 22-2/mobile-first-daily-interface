@@ -1,5 +1,4 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import { Menu } from "obsidian";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/common/ObsidianLiveEditor";
@@ -11,7 +10,6 @@ import {
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
@@ -329,13 +327,6 @@ const InputAreaFooter: React.FC = React.memo(() => {
         minHeight={"2.4em"}
         maxHeight={"2.4em"}
         onClick={handleSubmit}
-        onContextMenu={(e) => {
-          if (!setAsTask) return;
-          e.preventDefault();
-          const menu = new Menu();
-          addPostModeMenuItems(menu, asTask, setAsTask);
-          menu.showAtMouseEvent(e.nativeEvent);
-        }}
       >
         {isReadOnly
           ? "閲覧モード"

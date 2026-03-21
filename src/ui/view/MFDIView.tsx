@@ -1,16 +1,15 @@
 import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
-import { createRoot, Root } from "react-dom/client";
+import { Root, createRoot } from "react-dom/client";
 import { Settings } from "src/settings";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
-import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 import {
   DEFAULT_MFDI_VIEW_STATE,
+  MFDIViewState,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
-  MFDIViewState,
 } from "src/ui/view/state";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -67,42 +66,32 @@ export class MFDIView extends ItemView {
         });
     });
 
-    // if (capabilities.supportsDisplayModeSwitch) {
-    //   menu.addItem((item) => {
-    //     item
-    //       .setTitle(
-    //         this.state.displayMode === "focus"
-    //           ? "タイムライン表示に切替"
-    //           : "フォーカス表示に切替",
-    //       )
-    //       .setIcon(
-    //         this.state.displayMode === "focus"
-    //           ? "toggle-left"
-    //           : "toggle-right",
-    //       )
-    //       .onClick(() => {
-    //         this.handlers.onChangeDisplayMode?.(
-    //           this.state.displayMode === "focus" ? "timeline" : "focus",
-    //         );
-    //       });
-    //   });
-    // }
-
-    if (capabilities.supportsTopicSelection) {
+    if (capabilities.supportsDisplayModeSwitch) {
       menu.addItem((item) => {
         item
-          .setTitle("トピックを管理")
-          .setIcon("folder-open")
+          .setTitle(
+            this.state.displayMode === "focus"
+              ? "フォーカスモード"
+              : "タイムラインモード",
+          )
+          .setIcon(
+            this.state.displayMode === "focus" ? "toggle-left" : "toggle-right",
+          )
           .onClick(() => {
-            this.handlers.onOpenTopicManager?.();
+            this.handlers.onChangeDisplayMode?.(
+              this.state.displayMode === "focus" ? "timeline" : "focus",
+            );
           });
       });
     }
 
-    // --- 投稿モード ---
-    menu.addSeparator();
-    addPostModeMenuItems(menu, this.state.asTask, (asTask) => {
-      this.handlers.onChangeAsTask?.(asTask);
+    menu.addItem((item) => {
+      item
+        .setTitle(this.state.asTask ? "タスクモード" : "メッセージモード")
+        .setIcon(this.state.asTask ? "toggle-left" : "toggle-right")
+        .onClick(() => {
+          this.handlers.onChangeAsTask?.(!this.state.asTask);
+        });
     });
 
     // --- 表示期間（日／時間） ---
