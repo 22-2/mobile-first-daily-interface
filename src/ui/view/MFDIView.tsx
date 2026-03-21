@@ -10,7 +10,7 @@ import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
-  MFDIViewState
+  MFDIViewState,
 } from "src/ui/view/state";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
@@ -33,6 +33,40 @@ export class MFDIView extends ItemView {
   onPaneMenu(menu: Menu, prev: string): void {
     const capabilities = getMFDIViewCapabilities(this.state);
 
+    if (this.state.noteMode === "fixed") {
+      menu.addItem((item) => {
+        item
+          .setTitle("現在のノートを開く")
+          .setIcon("external-link")
+          .onClick(() => {
+            this.handlers.onOpenDailyNoteAction?.();
+          });
+      });
+    }
+
+    menu.addItem((item) => {
+      item
+        .setTitle("すべてのメッセージをコピー")
+        .setIcon("copy")
+        .onClick(() => {
+          this.handlers.onCopyAllPosts?.();
+        });
+    });
+
+    // --- 表示モード ---
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item.setTitle("ビュー").setIcon("panels-top-left").setDisabled(true);
+    });
+    menu.addItem((item) => {
+      item
+        .setTitle("下書きを管理")
+        .setIcon("library")
+        .onClick(() => {
+          this.handlers.onOpenDraftList?.();
+        });
+    });
+
     if (capabilities.supportsDisplayModeSwitch) {
       menu.addItem((item) => {
         item
@@ -43,8 +77,8 @@ export class MFDIView extends ItemView {
           )
           .setIcon(
             this.state.displayMode === "focus"
-              ? "list-minus"
-              : "calendar-range",
+              ? "toggle-left"
+              : "toggle-right",
           )
           .onClick(() => {
             this.handlers.onChangeDisplayMode?.(
@@ -52,34 +86,12 @@ export class MFDIView extends ItemView {
             );
           });
       });
-
-      menu.addSeparator();
     }
 
-    menu.addItem((item) => {
-      item
-        .setTitle("現在のノートを開く")
-        .setIcon("external-link")
-        .onClick(() => {
-          this.handlers.onOpenDailyNoteAction?.();
-        });
-    });
-
-    menu.addItem((item) => {
-      item
-        .setTitle("表示中の投稿を一括コピー")
-        .setIcon("copy")
-        .onClick(() => {
-          this.handlers.onCopyAllPosts?.();
-        });
-    });
-
-    // --- トピック ---
     if (capabilities.supportsTopicSelection) {
-      menu.addSeparator();
       menu.addItem((item) => {
         item
-          .setTitle("トピックを管理...")
+          .setTitle("トピックを管理")
           .setIcon("folder-open")
           .onClick(() => {
             this.handlers.onOpenTopicManager?.();
@@ -94,7 +106,10 @@ export class MFDIView extends ItemView {
     });
 
     // --- 表示期間（日／時間） ---
-    if (capabilities.supportsPeriodMenus) {
+    if (
+      capabilities.supportsPeriodMenus &&
+      this.state.displayMode === "focus"
+    ) {
       addPeriodMenuItems(menu, this.state, {
         onChangeTimeFilter: (f) => this.handlers.onChangeTimeFilter?.(f),
         onChangeDateFilter: (f) => this.handlers.onChangeDateFilter?.(f),

@@ -14,6 +14,7 @@ import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
+import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { MFDIModal } from "src/ui/modals/MFDIModal";
 import {
   AppStoreApi,
@@ -618,4 +619,13 @@ function useViewSync(view: MFDIView) {
       view.handlers.onToggleSidebar = undefined;
     };
   }, [view]);
+
+  React.useEffect(() => {
+    view.handlers.onOpenDraftList = () => {
+      new DraftListModal(app, store).open();
+    };
+    return () => {
+      view.handlers.onOpenDraftList = undefined;
+    };
+  }, [view, app, store]);
 }
