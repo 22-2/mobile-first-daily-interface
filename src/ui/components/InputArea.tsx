@@ -12,6 +12,8 @@ import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { addPostModeMenuItems } from "src/ui/menus/postModeMenu";
+import { DraftListModal } from "src/ui/modals/DraftListModal";
+import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -242,7 +244,38 @@ const InputAreaFooter: React.FC = React.memo(() => {
     })),
   );
 
-  const editingPost = useEditorStore((s) => s.getEditingPost(posts));
+  const { editingPost, input, setInput, inputRef } = useEditorStore(
+    useShallow((s) => ({
+      editingPost: s.getEditingPost(posts),
+      input: s.input,
+      setInput: s.setInput,
+      inputRef: s.inputRef,
+    })),
+  );
+
+  const { addDraft } = useAppStore(
+    useShallow((s) => ({
+      addDraft: s.addDraft,
+    })),
+  );
+
+  const { app } = useAppContext();
+  const store = useCurrentAppStore();
+
+  const handleOpenDrafts = React.useCallback(() => {
+    new DraftListModal(app, store).open();
+  }, [app, store]);
+
+  const handleCreateDraft = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!input.trim()) return;
+      addDraft(input);
+      setInput("");
+      inputRef.current?.setContent("");
+    },
+    [addDraft, input, setInput, inputRef],
+  );
 
   const { handleSubmit } = usePostActions();
 
@@ -276,6 +309,17 @@ const InputAreaFooter: React.FC = React.memo(() => {
           onClick={cancelEdit}
         >
           キャンセル
+        </Button>
+      )}
+      {!isReadOnly && !editingPost && (
+        <Button
+          minHeight={"2.4em"}
+          maxHeight={"2.4em"}
+          variant="ghost"
+          onClick={handleCreateDraft}
+          onContextMenu={handleOpenDrafts}
+        >
+          下書き
         </Button>
       )}
       <Button

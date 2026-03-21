@@ -41,5 +41,6 @@ export const createEnvironmentSlice: StateCreator<
     });
     get().hydrateSettingsState();
     get().hydrateEditorState();
+    get().hydrateDraftState();
   },
 });

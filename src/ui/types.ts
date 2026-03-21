@@ -31,3 +31,9 @@ export interface Post {
   kind: "thino";
   path: string;
 }
+
+export interface Draft {
+  id: string;
+  content: string;
+  createdAt: number;
+}

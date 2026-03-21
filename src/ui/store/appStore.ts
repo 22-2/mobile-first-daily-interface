@@ -6,6 +6,7 @@ import { createEnvironmentSlice } from "./slices/environmentSlice";
 import { createNoteSlice } from "./slices/noteSlice";
 import { createPostsSlice } from "./slices/postsSlice";
 import { createSettingsSlice } from "./slices/settingsSlice";
+import { createDraftSlice } from "./slices/draftSlice";
 import { MFDIStore } from "./slices/types";
 
 export function createAppStore() {
@@ -15,6 +16,7 @@ export function createAppStore() {
     ...createPostsSlice(set, get, store),
     ...createNoteSlice(set, get, store),
     ...createEditorSlice(set, get, store),
+    ...createDraftSlice(set, get, store),
   }));
 }
 

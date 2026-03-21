@@ -9,7 +9,8 @@ import {
   Granularity,
   MomentLike,
   Post,
-  TimeFilter
+  TimeFilter,
+  Draft,
 } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { MFDIStorage } from "src/utils/storage";
@@ -124,8 +125,17 @@ export interface EditorSlice {
   hydrateEditorState: () => void;
 }
 
+export interface DraftSlice {
+  drafts: Draft[];
+  addDraft: (content: string) => void;
+  removeDraft: (id: string) => void;
+  clearDrafts: () => void;
+  hydrateDraftState: () => void;
+}
+
 export type MFDIStore = EnvironmentSlice &
   SettingsSlice &
   PostsSlice &
   NoteSlice &
-  EditorSlice;
+  EditorSlice &
+  DraftSlice;
