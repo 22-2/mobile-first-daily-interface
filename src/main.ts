@@ -131,13 +131,12 @@ export default class MFDIPlugin extends Plugin {
         setViewState(original: Function) {
           return function (
             this: WorkspaceLeaf,
-            viewState: any,
-            ...args: any[]
+            viewState,
+            eState,
           ) {
-            console.log("setViewState called with", viewState);
             const nextState =
               plugin.convertMarkdownViewStateForFixedNote(viewState);
-            return original.call(this, nextState, ...args);
+            return original.call(this, nextState, eState);
           };
         },
       }),
