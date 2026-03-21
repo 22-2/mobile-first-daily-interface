@@ -1,3 +1,4 @@
+// @ts-check
 import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
 import builtins from "builtin-modules";
 import esbuild from "esbuild";
@@ -58,6 +59,7 @@ const context = await esbuild.context({
   minify: prod,
   metafile: true,
   plugins: [
+    // @ts-expect-error
     babel({
       filter: /\.[jt]sx?$/,
       config: {

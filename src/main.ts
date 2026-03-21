@@ -15,6 +15,7 @@ import {
   buildFixedNotePathFromName, createNewFixedNote, ensureFixedNote,
   isMFDIFixedNotePath, normalizeFixedNotePath
 } from "src/utils/fixed-note";
+import { unpatchToggleSourceCommand } from "obsidian-magical-editor";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -295,5 +296,9 @@ export default class MFDIPlugin extends Plugin {
 
   rerenderView() {
     this.view?.updateSettings(this.settings);
+  }
+
+  onunload(): void {
+    unpatchToggleSourceCommand();
   }
 }

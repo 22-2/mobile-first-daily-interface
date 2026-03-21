@@ -18,7 +18,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@22-2/esbuild-plugin-obsidian-copy": "git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git",
+    "@22-2/esbuild-plugin-obsidian-copy": "link:E:/Desktop/coding/my-projects-02/esbuild-plugin-obsidian-copy",
     "@babel/core": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
@@ -51,13 +51,13 @@
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-virtual": "^3.13.21",
     "framer-motion": "^12.35.2",
-    "obsidian-magical-editor": "link:..\\..\\my-projects-02\\obsidian-magical-editor",
+    "monkey-around": "^3.0.0",
+    "obsidian-magical-editor": "link:E:/Desktop/coding/my-projects-02/obsidian-magical-editor",
     "preact": "^10.29.0",
     "react": "~19.2.4",
     "react-compiler-runtime": "^1.0.0",
     "react-dom": "~19.2.4",
     "react-transition-group": "^4.4.5",
-    "zustand": "^5.0.11",
-    "monkey-around": "^3.0.0"
+    "zustand": "^5.0.11"
   }
 }

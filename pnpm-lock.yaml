@@ -30,7 +30,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       obsidian-magical-editor:
-        specifier: link:..\..\my-projects-02\obsidian-magical-editor
+        specifier: link:E:/Desktop/coding/my-projects-02/obsidian-magical-editor
         version: link:../../my-projects-02/obsidian-magical-editor
       preact:
         specifier: ^10.29.0
@@ -52,8 +52,8 @@ importers:
         version: 5.0.11(@types/react@19.2.14)(react@19.2.4)
     devDependencies:
       '@22-2/esbuild-plugin-obsidian-copy':
-        specifier: git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git
-        version: git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916
+        specifier: link:E:/Desktop/coding/my-projects-02/esbuild-plugin-obsidian-copy
+        version: link:../../my-projects-02/esbuild-plugin-obsidian-copy
       '@babel/core':
         specifier: ^7.29.0
         version: 7.29.0
@@ -128,10 +128,6 @@ importers:
         version: 4.0.18(@types/node@25.4.0)(jsdom@28.1.0)
 
 packages:
-
-  '@22-2/esbuild-plugin-obsidian-copy@git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916':
-    resolution: {commit: 3677bb62f4af684968629eb8fc508260240fb916, repo: https://github.com/22-2/esbuild-plugin-obsidian-copy.git, type: git}
-    version: 0.1.0
 
   '@acemir/cssom@0.9.31':
     resolution: {integrity: sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA==}
@@ -2796,8 +2792,6 @@ packages:
         optional: true
 
 snapshots:
-
-  '@22-2/esbuild-plugin-obsidian-copy@git+https://github.com/22-2/esbuild-plugin-obsidian-copy.git#3677bb62f4af684968629eb8fc508260240fb916': {}
 
   '@acemir/cssom@0.9.31': {}
 
