@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { resolveTimelineBaseDate } from "src/ui/hooks/internal/timelinePosts";
+import { resolveTimelineCacheBucket } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -42,5 +43,25 @@ describe("useInfiniteTimeline", () => {
     );
 
     expect(result.isSame(yesterday, "day")).toBe(true);
+  });
+
+  it("ビュー表示時刻と投稿時刻が異なる場合は投稿時刻側の日付を基準にする", () => {
+    let now = yesterday.clone();
+    const getEffectiveDate = () => now.clone();
+
+    const initialBaseDate = resolveTimelineBaseDate(null, getEffectiveDate);
+    expect(initialBaseDate.isSame(yesterday, "day")).toBe(true);
+
+    now = today.clone();
+    const afterPostingBaseDate = resolveTimelineBaseDate(null, getEffectiveDate);
+    expect(afterPostingBaseDate.isSame(today, "day")).toBe(true);
+  });
+
+  it("キャッシュバケットは指定間隔で切り替わる", () => {
+    const intervalMs = 3 * 60 * 1000;
+
+    expect(resolveTimelineCacheBucket(0, intervalMs)).toBe(0);
+    expect(resolveTimelineCacheBucket(intervalMs - 1, intervalMs)).toBe(0);
+    expect(resolveTimelineCacheBucket(intervalMs, intervalMs)).toBe(1);
   });
 });

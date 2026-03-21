@@ -12,6 +12,15 @@ export type TimelinePostsPage = {
   lastSearchedDate: MomentLike;
 };
 
+export const TIMELINE_CACHE_INVALIDATE_MS = 3 * 60 * 1000;
+
+export function resolveTimelineCacheBucket(
+  nowMs: number = Date.now(),
+  intervalMs: number = TIMELINE_CACHE_INVALIDATE_MS,
+): number {
+  return Math.floor(nowMs / intervalMs);
+}
+
 export interface CreateTimelinePageFetcherDeps {
   app: App;
   readFile: (file: TFile) => Promise<string>;

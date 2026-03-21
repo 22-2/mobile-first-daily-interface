@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
@@ -9,6 +9,8 @@ import { useShallow } from "zustand/shallow";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
+  resolveTimelineCacheBucket,
+  TIMELINE_CACHE_INVALIDATE_MS,
   TimelinePostsPage
 } from "./timelinePosts";
 
@@ -19,6 +21,9 @@ const PAGE_SIZE_DAYS = 14;
  */
 export const useInfiniteTimeline = () => {
   const { app, appHelper } = useAppContext();
+  const [cacheBucket, setCacheBucket] = useState(() =>
+    resolveTimelineCacheBucket(),
+  );
 
   const { activeTopic, displayMode } = useSettingsStore(
     useShallow((s) => ({
@@ -41,6 +46,19 @@ export const useInfiniteTimeline = () => {
     [app, appHelper],
   );
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const nextBucket = resolveTimelineCacheBucket();
+      setCacheBucket((current) =>
+        current === nextBucket ? current : nextBucket,
+      );
+    }, 30 * 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
   // ---------------------------------------------------------------------------
   // 無限クエリ
   // ---------------------------------------------------------------------------
@@ -56,7 +74,7 @@ export const useInfiniteTimeline = () => {
     string[],
     string | null
   >({
-    queryKey: ["posts", activeTopic, displayMode],
+    queryKey: ["posts", activeTopic, displayMode, String(cacheBucket)],
     enabled: isTimelineView(displayMode),
     initialPageParam: null,
 
@@ -94,3 +112,5 @@ export const useInfiniteTimeline = () => {
 
   return { loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };
+
+export { TIMELINE_CACHE_INVALIDATE_MS, resolveTimelineCacheBucket };
