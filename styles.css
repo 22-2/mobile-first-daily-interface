@@ -7,6 +7,11 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+:root {
+  --mfdi-icon-color: var(--text-muted);
+  --mfdi-icon-color-hover: var(--text-normal);
+}
+
 .item-enter {
   opacity: 0 !important;
   transform: translateY(-20px);

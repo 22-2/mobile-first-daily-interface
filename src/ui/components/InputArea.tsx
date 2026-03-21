@@ -142,14 +142,17 @@ const InputAreaControl: React.FC = React.memo(() => {
         <ObsidianIcon
           name="home"
           size="1.1em"
-          cursor="pointer"
-          color={homeIconColor}
+          color={isViewDefault ? undefined : "var(--text-accent)"}
           padding="4px"
           borderRadius="4px"
-          _hover={{
-            color: "var(--text-normal)",
-            bg: "var(--background-modifier-hover)",
-          }}
+          _hover={
+            isViewDefault
+              ? { bg: "var(--background-modifier-hover)" }
+              : {
+                  color: "var(--text-normal)",
+                  bg: "var(--background-modifier-hover)",
+                }
+          }
           onClick={handleClickHome}
         />
       )}
@@ -203,7 +206,6 @@ const InputAreaControl: React.FC = React.memo(() => {
           name="maximize"
           size="1.1em"
           cursor={isReadOnly ? "default" : "pointer"}
-          color="var(--text-muted)"
           opacity={isReadOnly ? 0.3 : 1}
           padding="4px"
           borderRadius="4px"
@@ -211,7 +213,6 @@ const InputAreaControl: React.FC = React.memo(() => {
             isReadOnly
               ? {}
               : {
-                  color: "var(--text-normal)",
                   bg: "var(--background-modifier-hover)",
                 }
           }

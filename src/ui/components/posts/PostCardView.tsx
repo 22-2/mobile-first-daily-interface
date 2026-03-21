@@ -82,12 +82,7 @@ export const PostCardView = React.memo(
                 display="inline-flex"
                 alignItems="center"
                 justifyContent="center"
-                color={
-                  isThreadFocused ? "var(--text-normal)" : "var(--text-muted)"
-                }
-                _hover={{
-                  color: "var(--text-normal)",
-                }}
+                color={isThreadFocused ? "var(--text-normal)" : undefined}
               />
             ) : undefined
           }

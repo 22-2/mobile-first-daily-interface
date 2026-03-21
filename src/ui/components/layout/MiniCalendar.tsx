@@ -260,12 +260,10 @@ const CalendarHeader: React.FC<{
         <Box
           className="mini-calendar__nav-button"
           key={icon}
-          cursor="pointer"
           onClick={i === 0 ? onPrev : onNext}
           p={1.5}
           borderRadius="4px"
           _hover={{ bg: "var(--background-modifier-hover)" }}
-          color="var(--text-muted)"
         >
           <ObsidianIcon name={icon} size="1.2em" />
         </Box>

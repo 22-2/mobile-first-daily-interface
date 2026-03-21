@@ -58,6 +58,10 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
         display="inline-flex"
         alignItems="center"
         justifyContent="center"
+        color="var(--mfdi-icon-color)"
+        cursor="pointer"
+        transition="all 0.15s"
+        _hover={{ color: "var(--mfdi-icon-color-hover)" }}
         {...props}
       />
     );

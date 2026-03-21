@@ -175,8 +175,6 @@ export const TopicItem = ({
         justifyContent="center"
         alignItems="center"
         flexShrink={0}
-        color="var(--text-muted)"
-        _hover={{ color: "var(--text-normal)" }}
         onClick={handleOpenMenu}
       >
         <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
