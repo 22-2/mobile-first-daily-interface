@@ -67,26 +67,26 @@ export class MFDIView extends ItemView {
         });
     });
 
-    if (capabilities.supportsDisplayModeSwitch) {
-      menu.addItem((item) => {
-        item
-          .setTitle(
-            this.state.displayMode === "focus"
-              ? "タイムライン表示に切替"
-              : "フォーカス表示に切替",
-          )
-          .setIcon(
-            this.state.displayMode === "focus"
-              ? "toggle-left"
-              : "toggle-right",
-          )
-          .onClick(() => {
-            this.handlers.onChangeDisplayMode?.(
-              this.state.displayMode === "focus" ? "timeline" : "focus",
-            );
-          });
-      });
-    }
+    // if (capabilities.supportsDisplayModeSwitch) {
+    //   menu.addItem((item) => {
+    //     item
+    //       .setTitle(
+    //         this.state.displayMode === "focus"
+    //           ? "タイムライン表示に切替"
+    //           : "フォーカス表示に切替",
+    //       )
+    //       .setIcon(
+    //         this.state.displayMode === "focus"
+    //           ? "toggle-left"
+    //           : "toggle-right",
+    //       )
+    //       .onClick(() => {
+    //         this.handlers.onChangeDisplayMode?.(
+    //           this.state.displayMode === "focus" ? "timeline" : "focus",
+    //         );
+    //       });
+    //   });
+    // }
 
     if (capabilities.supportsTopicSelection) {
       menu.addItem((item) => {
