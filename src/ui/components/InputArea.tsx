@@ -317,6 +317,7 @@ const InputAreaFooter: React.FC = React.memo(() => {
           minHeight={"2.4em"}
           maxHeight={"2.4em"}
           variant="ghost"
+          disabled={!input.trim()}
           onClick={handleCreateDraft}
         >
           下書きに追加
