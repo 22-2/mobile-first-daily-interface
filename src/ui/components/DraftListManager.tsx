@@ -21,12 +21,11 @@ export interface DraftListManagerProps {
 export const DraftListManager: React.FC<DraftListManagerProps> = ({
   onClose,
 }) => {
-  const { drafts, removeDraft, setInput, inputRef, app } = useAppStore(
+  const { drafts, removeDraft, replaceInput, app } = useAppStore(
     useShallow((s) => ({
       drafts: s.drafts,
       removeDraft: s.removeDraft,
-      setInput: s.setInput,
-      inputRef: s.inputRef,
+      replaceInput: s.replaceInput,
       app: s.app!,
     })),
   );
@@ -142,8 +141,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                           .setTitle("復元")
                           .setIcon("refresh-cw")
                           .onClick(() => {
-                            setInput(draft.content);
-                            inputRef.current?.setContent(draft.content);
+                            replaceInput(draft.content);
                             onClose();
                           });
                       });

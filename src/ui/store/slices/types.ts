@@ -110,18 +110,21 @@ export interface NoteSlice {
 }
 
 export interface EditorSlice {
-  input: string;
+  inputSnapshot: string;
   editingPostOffset: number | null;
   inputRef: RefObject<ObsidianLiveEditorRef | null>;
   scrollContainerRef: RefObject<HTMLDivElement | null>;
-  setInput: (v: string) => void;
+  syncInputSession: (v: string) => void;
+  replaceInput: (v: string) => void;
+  clearInput: () => void;
+  getInputValue: () => string;
   setEditingPostOffset: (offset: number | null) => void;
   setInputRef: (ref: RefObject<ObsidianLiveEditorRef | null>) => void;
   setScrollContainerRef: (ref: RefObject<HTMLDivElement | null>) => void;
   startEdit: (post: Post) => void;
   cancelEdit: () => void;
   getEditingPost: (posts: Post[]) => Post | null;
-  canSubmit: (posts: Post[]) => boolean;
+  canSubmit: (posts: Post[], currentValue?: string) => boolean;
   hydrateEditorState: () => void;
 }
 

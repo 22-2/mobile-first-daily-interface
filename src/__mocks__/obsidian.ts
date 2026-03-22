@@ -1,3 +1,4 @@
+export { debounce } from "es-toolkit";
 export const normalizePath = (p: string) => p;
 export class TFile {
   basename: string;
@@ -49,3 +50,4 @@ export class Notice {
   constructor(message: string) {}
 }
 export const setIcon = () => {};
+

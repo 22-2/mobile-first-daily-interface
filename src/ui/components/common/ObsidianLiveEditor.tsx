@@ -10,7 +10,7 @@ interface ObsidianLiveEditorProps extends Omit<
 > {
   leaf: WorkspaceLeaf;
   app: App;
-  value: string;
+  initialValue: string;
   onChange: (text: string) => void;
   onSubmit?: () => void;
   placeholder?: string;
@@ -21,6 +21,8 @@ interface ObsidianLiveEditorProps extends Omit<
 export interface ObsidianLiveEditorRef {
   focus: () => void;
   getValue: () => string;
+  getContentSnapshot: () => string;
+  subscribeContent: (listener: (text: string) => void) => () => void;
   setContent: (text: string) => void;
 }
 
@@ -32,7 +34,7 @@ export const ObsidianLiveEditor = forwardRef<
     {
       leaf,
       app,
-      value,
+      initialValue,
       onChange,
       onSubmit,
       placeholder,
@@ -44,10 +46,29 @@ export const ObsidianLiveEditor = forwardRef<
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const magicalEditorRef = useRef<MagicalEditor | null>(null);
+    const onChangeRef = useRef(onChange);
+
+    useEffect(() => {
+      onChangeRef.current = onChange;
+    }, [onChange]);
+
+    useEffect(() => {
+      const editor = magicalEditorRef.current;
+      if (!editor) return;
+
+      const currentContent = editor.getContent();
+      if (currentContent === initialValue) return;
+
+      editor.setContent(initialValue ?? "");
+    }, [initialValue]);
 
     useImperativeHandle(ref, () => ({
       focus: () => magicalEditorRef.current?.focus(),
       getValue: () => magicalEditorRef.current?.getContent() ?? "",
+      getContentSnapshot: () =>
+        magicalEditorRef.current?.getContentSnapshot() ?? "",
+      subscribeContent: (listener) =>
+        magicalEditorRef.current?.subscribeContent(listener) ?? (() => {}),
       setContent: (text: string) => {
         magicalEditorRef.current?.setContent(text);
       },
@@ -60,6 +81,7 @@ export const ObsidianLiveEditor = forwardRef<
 
     useEffect(() => {
       let active = true;
+
       const init = async () => {
         if (!containerRef.current) return;
         containerRef.current.empty();
@@ -68,7 +90,7 @@ export const ObsidianLiveEditor = forwardRef<
         const editor = await MagicalEditor.create(app, leaf, {
           onChange: (text) => {
             if (!active) return;
-            onChange(text);
+            onChangeRef.current(text);
           },
           onEnter: (_editor: unknown, mod: boolean, shift: boolean) => {
             if (mod && !shift) {
@@ -77,7 +99,7 @@ export const ObsidianLiveEditor = forwardRef<
             }
             return false;
           },
-          initialContent: value ?? "",
+          initialContent: initialValue ?? "",
           placeholder: placeholder,
           isReadOnly: isReadOnly,
           readonlyPlaceholder: readonlyPlaceholder,
@@ -94,7 +116,9 @@ export const ObsidianLiveEditor = forwardRef<
       init();
       return () => {
         active = false;
-        magicalEditorRef.current?.destroy();
+        const editor = magicalEditorRef.current;
+        magicalEditorRef.current = null;
+        editor?.destroy();
       };
     }, []); // Empty dependency array! Do not re-run on props change.
 

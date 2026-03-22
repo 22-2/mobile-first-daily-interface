@@ -19,15 +19,61 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     }, 300);
   };
 
+  const persistInputImmediately = (input: string) => {
+    if (inputPersistTimer !== null) {
+      clearTimeout(inputPersistTimer);
+      inputPersistTimer = null;
+    }
+
+    get().storage?.set(STORAGE_KEYS.INPUT, input);
+  };
+
+  const updateSessionInput = (
+    input: string,
+    options?: {
+      updateEditor?: boolean;
+      persistMode?: "debounced" | "immediate";
+    },
+  ) => {
+    set({ inputSnapshot: input });
+
+    if (options?.persistMode === "immediate") {
+      persistInputImmediately(input);
+    } else {
+      persistInputDebounced(input);
+    }
+
+    if (options?.updateEditor) {
+      get().inputRef.current?.setContent(input);
+    }
+  };
+
   return ({
-  input: "",
+  inputSnapshot: "",
   editingPostOffset: null,
   inputRef: { current: null },
   scrollContainerRef: { current: null },
 
-  setInput: (input) => {
-    set({ input });
-    persistInputDebounced(input);
+  syncInputSession: (input) => {
+    updateSessionInput(input, { persistMode: "debounced" });
+  },
+
+  replaceInput: (input) => {
+    updateSessionInput(input, {
+      updateEditor: true,
+      persistMode: "immediate",
+    });
+  },
+
+  clearInput: () => {
+    updateSessionInput("", {
+      updateEditor: true,
+      persistMode: "immediate",
+    });
+  },
+
+  getInputValue: () => {
+    return get().inputSnapshot;
   },
 
   setEditingPostOffset: (editingPostOffset) => {
@@ -44,28 +90,26 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   },
 
   startEdit: (post) => {
-    const { date, granularity, setAsTask, setInput, storage } = get();
+    const { date, granularity, setAsTask, replaceInput, storage } = get();
     setAsTask(false);
     set({ editingPostOffset: post.startOffset });
     storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, post.startOffset);
     storage?.set(STORAGE_KEYS.EDITING_POST_DATE, date.toISOString());
     storage?.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
-    setInput(post.message);
+    replaceInput(post.message);
 
     setTimeout(() => {
-      get().inputRef.current?.setContent(post.message);
       get().inputRef.current?.focus();
     });
   },
 
   cancelEdit: () => {
-    const { storage, setInput } = get();
+    const { storage, clearInput } = get();
     set({ editingPostOffset: null });
     storage?.remove(STORAGE_KEYS.EDITING_POST_OFFSET);
     storage?.remove(STORAGE_KEYS.EDITING_POST_DATE);
     storage?.remove(STORAGE_KEYS.EDITING_POST_GRANULARITY);
-    setInput("");
-    get().inputRef.current?.setContent("");
+    clearInput();
   },
 
   getEditingPost: (posts) => {
@@ -74,14 +118,15 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     return posts.find((post) => post.startOffset === editingPostOffset) ?? null;
   },
 
-  canSubmit: (posts) => {
+  canSubmit: (posts, currentValue) => {
     const {
-      input,
+      getInputValue,
       granularity,
       getEffectiveDate,
       getEditingPost,
       isDateReadOnly,
     } = get();
+    const input = currentValue ?? getInputValue();
     const effectiveDate = getEffectiveDate();
     if (isDateReadOnly(effectiveDate, granularity)) return false;
 
@@ -97,13 +142,18 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     const { storage } = get();
     if (!storage) return;
 
-    set({
-      input: storage.get<string>(STORAGE_KEYS.INPUT, ""),
-      editingPostOffset: storage.get<number | null>(
-        STORAGE_KEYS.EDITING_POST_OFFSET,
-        null,
-      ),
-    });
+    const persistedInput = storage.get<string>(STORAGE_KEYS.INPUT, "");
+    const persistedEditingOffset = storage.get<number | null>(
+      STORAGE_KEYS.EDITING_POST_OFFSET,
+      null,
+    );
+
+    set((state) => ({
+      inputSnapshot:
+        state.inputSnapshot.length > 0 ? state.inputSnapshot : persistedInput,
+      editingPostOffset:
+        state.editingPostOffset ?? persistedEditingOffset,
+    }));
   },
   });
 };

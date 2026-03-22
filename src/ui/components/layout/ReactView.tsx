@@ -448,13 +448,14 @@ function useViewSync(view: MFDIView) {
     })),
   );
 
-  const { input, inputRef } = useEditorStore(
+  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } = useEditorStore(
     useShallow((state) => ({
-      input: state.input,
-      inputRef: state.inputRef,
+      inputSnapshot: state.inputSnapshot,
+      getInputValue: state.getInputValue,
+      replaceInput: state.replaceInput,
+      syncInputSession: state.syncInputSession,
     })),
   );
-  const { setInput } = store.getState();
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = React.useCallback(() => {
@@ -463,8 +464,7 @@ function useViewSync(view: MFDIView) {
 
   const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
 
-  const inputRefVal = React.useRef(input);
-  const inputRefObj = React.useRef(inputRef);
+  const inputRefVal = React.useRef(inputSnapshot);
   const sidebarOpenRef = React.useRef(sidebarOpen);
   const setSidebarOpenRef = React.useRef(setSidebarOpen);
 
@@ -477,12 +477,8 @@ function useViewSync(view: MFDIView) {
   }, [setSidebarOpen]);
 
   React.useEffect(() => {
-    inputRefVal.current = input;
-  }, [input]);
-
-  React.useEffect(() => {
-    inputRefObj.current = inputRef;
-  }, [inputRef]);
+    inputRefVal.current = inputSnapshot;
+  }, [inputSnapshot]);
 
   React.useEffect(() => {
     view.setStatePartial({ granularity });
@@ -597,18 +593,12 @@ function useViewSync(view: MFDIView) {
 
     view.handlers.onOpenModalEditor = () => {
       const modal = new MFDIEditorModal(app, {
-        initialContent: inputRefVal.current,
+        initialContent: getInputValue() || inputRefVal.current,
         onChange: (content) => {
-          setInput(content);
-          setTimeout(() => {
-            inputRefObj.current.current?.setContent(content);
-          });
+          replaceInput(content);
         },
         onClose: (content) => {
-          setInput(content);
-          setTimeout(() => {
-            inputRefObj.current.current?.setContent(content);
-          });
+          replaceInput(content);
         },
       });
       modal.open();
@@ -616,7 +606,7 @@ function useViewSync(view: MFDIView) {
     return () => {
       view.handlers.onOpenModalEditor = undefined;
     };
-  }, [view, app, setInput, isReadOnly]);
+  }, [view, app, getInputValue, replaceInput, isReadOnly]);
 
   React.useEffect(() => {
     view.handlers.onToggleSidebar = () => {
@@ -635,4 +625,18 @@ function useViewSync(view: MFDIView) {
       view.handlers.onOpenDraftList = undefined;
     };
   }, [view, app, store]);
+
+  React.useEffect(() => {
+    view.handlers.onSetLiveEditorContentForTesting = (content: string) => {
+      syncInputSession(content);
+    };
+    view.handlers.onGetLiveEditorContentForTesting = () => {
+      return getInputValue();
+    };
+
+    return () => {
+      view.handlers.onSetLiveEditorContentForTesting = undefined;
+      view.handlers.onGetLiveEditorContentForTesting = undefined;
+    };
+  }, [view, syncInputSession, getInputValue]);
 }

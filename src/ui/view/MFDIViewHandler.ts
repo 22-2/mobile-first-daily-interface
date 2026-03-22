@@ -16,4 +16,6 @@ export class MFDIViewHandler {
   onToggleSidebar?: () => void;
   onCopyAllPosts?: () => void;
   onOpenDraftList?: () => void;
+  onSetLiveEditorContentForTesting?: (content: string) => void;
+  onGetLiveEditorContentForTesting?: () => string;
 }

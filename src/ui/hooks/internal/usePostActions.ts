@@ -63,8 +63,9 @@ export const usePostActions = () => {
 
   const editorState = useEditorStore(
     useShallow((s) => ({
-      input: s.input,
-      setInput: s.setInput,
+      inputSnapshot: s.inputSnapshot,
+      getInputValue: s.getInputValue,
+      clearInput: s.clearInput,
       inputRef: s.inputRef,
       scrollContainerRef: s.scrollContainerRef,
       editingPost: s.getEditingPost(postsState.posts),
@@ -281,8 +282,7 @@ export const usePostActions = () => {
       }
     }
 
-    const currentInput =
-      editorState.inputRef.current?.getValue() ?? editorState.input;
+    const currentInput = editorState.getInputValue();
 
     // --- 編集中の投稿を上書き ---
     if (editorState.editingPost?.path) {
@@ -352,8 +352,7 @@ export const usePostActions = () => {
         metadata,
       );
       if (!text) {
-        editorState.setInput("");
-        editorState.inputRef.current?.setContent("");
+        editorState.clearInput();
         return;
       }
 
@@ -366,8 +365,7 @@ export const usePostActions = () => {
       await appHelper.insertTextAfter(noteFile, text, settings.insertAfter);
       await refreshPosts(rootPost.path);
 
-      editorState.setInput("");
-      editorState.inputRef.current?.setContent("");
+      editorState.clearInput();
       editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
       return;
     }
@@ -388,8 +386,7 @@ export const usePostActions = () => {
       metadata,
     );
     if (!text) {
-      editorState.setInput("");
-      editorState.inputRef.current?.setContent("");
+      editorState.clearInput();
       return;
     }
 
@@ -429,8 +426,7 @@ export const usePostActions = () => {
       return;
     }
 
-    editorState.setInput("");
-    editorState.inputRef.current?.setContent("");
+    editorState.clearInput();
     editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [
     app,

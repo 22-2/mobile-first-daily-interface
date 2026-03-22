@@ -243,12 +243,11 @@ const InputAreaFooter: React.FC = React.memo(() => {
     })),
   );
 
-  const { editingPost, input, setInput, inputRef } = useEditorStore(
+  const { editingPost, inputSnapshot, clearInput } = useEditorStore(
     useShallow((s) => ({
       editingPost: s.getEditingPost(posts),
-      input: s.input,
-      setInput: s.setInput,
-      inputRef: s.inputRef,
+      inputSnapshot: s.inputSnapshot,
+      clearInput: s.clearInput,
     })),
   );
 
@@ -268,12 +267,11 @@ const InputAreaFooter: React.FC = React.memo(() => {
   const handleCreateDraft = React.useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      if (!input.trim()) return;
-      addDraft(input);
-      setInput("");
-      inputRef.current?.setContent("");
+      if (!inputSnapshot.trim()) return;
+      addDraft(inputSnapshot);
+      clearInput();
     },
-    [addDraft, input, setInput, inputRef],
+    [addDraft, inputSnapshot, clearInput],
   );
 
   const { handleSubmit } = usePostActions();
@@ -315,7 +313,7 @@ const InputAreaFooter: React.FC = React.memo(() => {
           minHeight={"2.4em"}
           maxHeight={"2.4em"}
           variant="ghost"
-          disabled={!input.trim()}
+          disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
         >
           下書きに追加
@@ -342,10 +340,10 @@ const InputAreaFooter: React.FC = React.memo(() => {
 
 export const InputArea: React.FC = React.memo(() => {
   const { app, view } = useAppContext();
-  const { input, setInput, inputRef } = useEditorStore(
+  const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
-      input: s.input,
-      setInput: s.setInput,
+      inputSnapshot: s.inputSnapshot,
+      syncInputSession: s.syncInputSession,
       inputRef: s.inputRef,
     })),
   );
@@ -373,8 +371,8 @@ export const InputArea: React.FC = React.memo(() => {
         ref={inputRef}
         leaf={view.leaf}
         app={app}
-        value={input}
-        onChange={setInput}
+        initialValue={inputSnapshot}
+        onChange={syncInputSession}
         onSubmit={handleSubmit}
         minHeight="var(--size-4-18)"
         marginX="var(--size-4-4)"

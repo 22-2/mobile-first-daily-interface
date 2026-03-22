@@ -20,3 +20,7 @@
 - [ ] tag
 - [ ] pin
 - [x] 下書き
+
+- [x] tests: エスケープキーでEMFDIEditorModalが閉じる、scopedホットキーで開く
+- [x] tests: ctrl+enterで、MFDIViewのScopeのホットキーのみが呼び出される（Obsidian側でctrl+enterにホットキーを登録していても）
+- [ ] tests: ライブエディタで、エスケープキーでマルチカーソルが解除される

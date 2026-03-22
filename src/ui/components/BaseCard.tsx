@@ -42,7 +42,6 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       <Box
         padding={5}
         paddingTop={4}
-        className="markdown-rendered"
         overflowY="auto"
         flex="1"
         sx={{

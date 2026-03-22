@@ -1,17 +1,14 @@
 {
   "compilerOptions": {
     "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "src/*": ["src/*"]
-    },
+    "paths": {"*": ["./*"]},
     "inlineSourceMap": true,
     "inlineSources": true,
-    "module": "nodenext",
+    "module": "esnext",
     "target": "esnext",
     "allowJs": true,
     "noImplicitAny": true,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "isolatedModules": true,
     "strictPropertyInitialization": false,

@@ -23,3 +23,6 @@ data.json
 myfiles/
 metafile.json
 .VSCodeCounter/
+playwright-report/
+test-results/
+

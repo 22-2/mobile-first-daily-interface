@@ -125,13 +125,15 @@ describe("timeline note resolution", () => {
     postsStore.setState({ posts: [], tasks: [] });
 
     editorStore.setState({
-      input: "timeline post",
+      inputSnapshot: "timeline post",
       editingPostOffset: null,
       inputRef: {
         current: {
           getValue: () => "timeline post",
           setContent: mockSetContent,
           focus: vi.fn(),
+          getContentSnapshot: () => "timeline post",
+          subscribeContent: vi.fn(),
         },
       },
       scrollContainerRef: {
@@ -184,11 +186,13 @@ describe("timeline note resolution", () => {
     mockRefreshPosts.mockResolvedValue(undefined);
 
     editorStore.setState({
-      input: "```\nconsole.log('hello')\n```",
+      inputSnapshot: "```\nconsole.log('hello')\n```",
       inputRef: {
         current: {
           getValue: () => "```\nconsole.log('hello')\n```",
           setContent: mockSetContent,
+          getContentSnapshot: () => "```\nconsole.log('hello')\n```",
+          subscribeContent: () => () => {},
           focus: vi.fn(),
         },
       },
@@ -209,6 +213,59 @@ describe("timeline note resolution", () => {
         "    ```",
         "",
       ].join("\n"),
+      "## Thino",
+    );
+  });
+
+  it("inputRef が空文字を返しても snapshot の値で canSubmit できる", () => {
+    editorStore.setState({
+      inputSnapshot: "from-snapshot",
+      inputRef: {
+        current: {
+          getValue: () => "",
+          setContent: mockSetContent,
+          focus: vi.fn(),
+          getContentSnapshot: () => "",
+          subscribeContent: () => () => {},
+        },
+      },
+    });
+
+    expect(editorStore.getState().getInputValue()).toBe("from-snapshot");
+    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+      true,
+    );
+  });
+
+  it("inputRef が空文字でも handleSubmit は snapshot を投稿する", async () => {
+    vi.mocked(dailyNotes.getTopicNote).mockImplementation((_app, date) =>
+      date.isSame(today, "day") ? todayNote : null,
+    );
+    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockRefreshPosts.mockResolvedValue(undefined);
+
+    editorStore.setState({
+      inputSnapshot: "snapshot-post",
+      inputRef: {
+        current: {
+          getValue: () => "",
+          setContent: mockSetContent,
+          focus: vi.fn(),
+          getContentSnapshot: () => "",
+          subscribeContent: () => () => {},
+        },
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+      todayNote,
+      expect.stringContaining("snapshot-post"),
       "## Thino",
     );
   });
