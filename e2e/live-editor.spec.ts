@@ -119,6 +119,42 @@ async function getLiveEditorContent(obsidian: ObsidianAPI) {
   });
 }
 
+async function getLiveEditorSelectionCount(obsidian: ObsidianAPI): Promise<number> {
+  return obsidian.page.evaluate(() => {
+    const editor = app.workspace.activeEditor?.editor;
+    if (!editor) {
+      throw new Error("active editor not found");
+    }
+
+    return editor.listSelections().length;
+  });
+}
+
+async function createLiveEditorMulticursor(obsidian: ObsidianAPI): Promise<void> {
+  await obsidian.page.evaluate(() => {
+    const editor = app.workspace.activeEditor?.editor;
+    if (!editor) {
+      throw new Error("active editor not found");
+    }
+
+    const selections = editor.listSelections().map((selection) => ({
+      anchor: selection.anchor,
+      head: selection.head,
+    }));
+    const { ch, line } = selections[selections.length - 1].anchor;
+
+    const nextLine = line + 1;
+    const nextChar = Math.min(ch, editor.getLine(nextLine).length);
+    const nextCursor = {
+      line: nextLine,
+      ch: nextChar,
+    };
+
+    selections.push({ anchor: nextCursor, head: nextCursor });
+    editor.setSelections(selections);
+  });
+}
+
 test.describe("MFDI live editor e2e", () => {
   test("ライブエディタで Playwright fill が使える", async ({ obsidian }) => {
     const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
@@ -156,6 +192,22 @@ test.describe("MFDI live editor e2e", () => {
     await obsidian.page.keyboard.press("Escape");
     await expect(obsidian.page.locator(".mfdi-modal-editor")).not.toBeVisible();
     await expect(liveEditor).toBeVisible();
+  });
+
+  test("ライブエディタで Escape キーでマルチカーソルが解除される", async ({ obsidian }) => {
+    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
+
+    // テキストを設定：最低 15 文字必要（2 つ目の選択範囲のため）
+    await setLiveEditorContent(obsidian, "h\ne\nl\nlo\n w\no\nr\nl\nd\n t\ne\ns\nt");
+    await liveEditor.click();
+
+    // マルチカーソルを作成（2 つの選択範囲）
+    await createLiveEditorMulticursor(obsidian);
+    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(2);
+
+    // Escape キーを押してマルチカーソルを解除
+    await obsidian.page.keyboard.press("Escape");
+    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(1);
   });
 
   test("モーダルエディタで fill できてライブエディタに同期される", async ({ obsidian, page }) => {
