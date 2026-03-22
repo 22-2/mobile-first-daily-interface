@@ -32,6 +32,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     input: string,
     options?: {
       updateEditor?: boolean;
+      syncEditorIfStale?: boolean;
       persistMode?: "debounced" | "immediate";
     },
   ) => {
@@ -43,9 +44,20 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       persistInputDebounced(input);
     }
 
+    // ないとEditorの内容が同期されない
+    const inputRef = get().inputRef.current;
     if (options?.updateEditor) {
-      get().inputRef.current?.setContent(input);
+      inputRef?.setContent(input);
+      return;
     }
+
+    if (options?.syncEditorIfStale && inputRef) {
+      const editorSnapshot = inputRef.getContentSnapshot();
+      if (editorSnapshot !== input) {
+        inputRef.setContent(input);
+      }
+    }
+    // ここまでないと、reactのstateは更新されるが、live editorの内容が更新されないため、両方を更新する必要がある
   };
 
   return ({
@@ -55,7 +67,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   scrollContainerRef: { current: null },
 
   syncInputSession: (input) => {
-    updateSessionInput(input, { persistMode: "debounced" });
+    updateSessionInput(input, {
+      persistMode: "debounced",
+      syncEditorIfStale: true,
+    });
   },
 
   replaceInput: (input) => {
