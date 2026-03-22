@@ -1,8 +1,9 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import moment from "moment";
 import React from "react";
 import { DEFAULT_SETTINGS } from "src/settings";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { initializePostsStore } from "src/ui/store/postsStore";
 import {
   initializeSettingsStore,
@@ -86,5 +87,25 @@ describe("MiniCalendar", () => {
     expect(getAllByText("5").length).toBeGreaterThan(0);
 
     // Finding dots or backgrounds purely by render isn't perfect without test IDs, but we can verify it doesn't crash.
+  });
+
+  it("タイムライン表示中に日付セルを押すとフォーカス表示へ戻る", () => {
+    settingsStore.setState({
+      date: moment("2026-03-09T00:00:00.000Z"),
+      granularity: "day",
+      dateFilter: "today",
+      displayMode: DISPLAY_MODE.TIMELINE,
+      activeTopic: "",
+    });
+
+    const { container } = render(<MiniCalendar />);
+    const dayCell = container.querySelector(".mini-calendar__day-cell");
+
+    expect(dayCell).toBeTruthy();
+    fireEvent.click(dayCell as HTMLElement);
+
+    expect(settingsStore.getState().displayMode).toBe(DISPLAY_MODE.FOCUS);
+    expect(settingsStore.getState().dateFilter).toBe("today");
+    expect(settingsStore.getState().granularity).toBe("day");
   });
 });

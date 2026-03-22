@@ -25,12 +25,14 @@ export const useInfiniteTimeline = () => {
     resolveTimelineCacheBucket(),
   );
 
-  const { activeTopic, displayMode } = useSettingsStore(
+  const { activeTopic, displayMode, date } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       displayMode: s.displayMode,
+      date: s.date,
     })),
   );
+  const timelineDayKey = date.format("YYYY-MM-DD");
 
   const { setPosts } = usePostsStore(
     useShallow((s) => ({ setPosts: s.setPosts })),
@@ -41,7 +43,8 @@ export const useInfiniteTimeline = () => {
   const fetchPage = useCallback(
     createTimelinePageFetcher({
       app,
-      readFile: appHelper.cachedReadFile.bind(appHelper),
+      // Timeline should prioritize freshness over cached reads around midnight/file-create timing.
+      readFile: (file) => appHelper.loadFile(file.path),
     }),
     [app, appHelper],
   );
@@ -82,7 +85,13 @@ export const useInfiniteTimeline = () => {
     string[],
     string | null
   >({
-    queryKey: ["posts", activeTopic, displayMode, String(cacheBucket)],
+    queryKey: [
+      "posts",
+      activeTopic,
+      displayMode,
+      String(cacheBucket),
+      timelineDayKey,
+    ],
     enabled: isTimelineView(displayMode),
     initialPageParam: null,
 

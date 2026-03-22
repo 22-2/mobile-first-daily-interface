@@ -101,8 +101,8 @@ function resolveInitialSettingsState(
     displayMode:
       storage?.get<DisplayMode>(
         STORAGE_KEYS.DISPLAY_MODE,
-        DISPLAY_MODE.FOCUS,
-      ) ?? (DISPLAY_MODE.FOCUS as DisplayMode),
+        DISPLAY_MODE.TIMELINE,
+      ) ?? (DISPLAY_MODE.TIMELINE as DisplayMode),
     asTask: storage?.get<boolean>(STORAGE_KEYS.AS_TASK, false) ?? false,
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
@@ -122,7 +122,7 @@ export const createSettingsSlice: StateCreator<
   timeFilter: TIME_FILTER_IDS.ALL,
   dateFilter: DATE_FILTER_IDS.TODAY,
   sidebarOpen: true,
-  displayMode: DISPLAY_MODE.FOCUS as DisplayMode,
+  displayMode: DISPLAY_MODE.TIMELINE as DisplayMode,
   asTask: false,
   threadFocusRootId: null,
 

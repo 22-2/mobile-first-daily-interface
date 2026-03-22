@@ -107,8 +107,19 @@ export const ObsidianLiveEditor = forwardRef<
         if (active && containerRef.current) {
           fakeEditor.current = editor;
           fakeEditor.current!.loadToDom(containerRef.current);
+          await editor.ready;
 
-          const editorContainer = editor.view.containerEl;
+          if (!active) {
+            editor.destroy();
+            return;
+          }
+
+          const editorView = editor.view;
+          if (!editorView) {
+            return;
+          }
+
+          const editorContainer = editorView.containerEl;
           const handleCompositionStart = () => {
             isComposingRef.current = true;
           };

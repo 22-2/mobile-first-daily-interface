@@ -1,6 +1,7 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -119,6 +120,7 @@ function useMiniCalendar() {
     setGranularity,
     dateFilter,
     setDateFilter,
+    setDisplayMode,
     activeTopic,
   } = useSettingsStore(
     useShallow((s) => ({
@@ -128,6 +130,7 @@ function useMiniCalendar() {
       setGranularity: s.setGranularity,
       dateFilter: s.dateFilter,
       setDateFilter: s.setDateFilter,
+      setDisplayMode: s.setDisplayMode,
       activeTopic: s.activeTopic,
     })),
   );
@@ -172,6 +175,7 @@ function useMiniCalendar() {
     if (!day.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
+    setDisplayMode(DISPLAY_MODE.FOCUS);
     setGranularity("day");
     setDateFilter("today"); // 1日表示に戻す
     setDate(day.clone());
@@ -181,6 +185,7 @@ function useMiniCalendar() {
     if (!weekStart.isSame(viewDate, "month")) {
       skipNextViewUpdate.current = true;
     }
+    setDisplayMode(DISPLAY_MODE.FOCUS);
     // 週スケール（週ノート）に切り替える（SidebarScales とは挙動を分離）
     setGranularity("day");
     setDateFilter("this_week");

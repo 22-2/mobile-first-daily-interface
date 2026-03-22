@@ -101,7 +101,15 @@ async function setLiveEditorContent(obsidian: ObsidianAPI, text: string) {
     (leaf.view as MFDIView).handlers.onSetLiveEditorContentForTesting!(content);
   }, text);
 
+  const liveEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
+  await liveEditor.click();
+
   await expect.poll(() => getLiveEditorContent(obsidian)).toBe(text);
+  await expect.poll(async () => {
+    return obsidian.page.evaluate(() => {
+      return app.workspace.activeEditor?.editor?.getValue() ?? null;
+    });
+  }).toBe(text);
 }
 
 async function getLiveEditorContent(obsidian: ObsidianAPI) {
@@ -119,6 +127,8 @@ async function getLiveEditorContent(obsidian: ObsidianAPI) {
   });
 }
 
+// DO NOT EDIT: This is a helper function for the test "ライブエディタで Escape キーでマルチカーソルが解除される" to create a multi-cursor selection in the live editor. It simulates the user action of adding a new cursor on the next line. The implementation uses Obsidian's API to manipulate the editor's selections directly.
+// copy from obsidian-advanced-cursor plugin:
 async function getLiveEditorSelectionCount(obsidian: ObsidianAPI): Promise<number> {
   return obsidian.page.evaluate(() => {
     const editor = app.workspace.activeEditor?.editor;
@@ -130,6 +140,8 @@ async function getLiveEditorSelectionCount(obsidian: ObsidianAPI): Promise<numbe
   });
 }
 
+// DO NOT EDIT: This is a helper function for the test "ライブエディタで Escape キーでマルチカーソルが解除される" to create a multi-cursor selection in the live editor. It simulates the user action of adding a new cursor on the next line. The implementation uses Obsidian's API to manipulate the editor's selections directly.
+// copy from obsidian-advanced-cursor plugin:
 async function createLiveEditorMulticursor(obsidian: ObsidianAPI): Promise<void> {
   await obsidian.page.evaluate(() => {
     const editor = app.workspace.activeEditor?.editor;
@@ -156,6 +168,38 @@ async function createLiveEditorMulticursor(obsidian: ObsidianAPI): Promise<void>
 }
 
 test.describe("MFDI live editor e2e", () => {
+  test("mfdiビュー起動時に view 未初期化エラーを出さない", async ({ obsidian }) => {
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+
+    obsidian.page.on("pageerror", (error) => {
+      pageErrors.push(error.message);
+    });
+    obsidian.page.on("console", (message) => {
+      if (message.type() === "error") {
+        consoleErrors.push(message.text());
+      }
+    });
+
+    await waitForMFDIReady(obsidian, obsidian.page);
+    await obsidian.page.waitForTimeout(500);
+
+    const startupErrors = [...pageErrors, ...consoleErrors].join("\n");
+    expect(startupErrors).not.toContain(
+      "Cannot read properties of undefined (reading 'view')",
+    );
+  });
+
+  test("タイムライン中にカレンダー日付を押すとフォーカス表示へ戻る", async ({ obsidian }) => {
+    await waitForMFDIReady(obsidian, obsidian.page);
+
+    await expect(obsidian.page.getByText("タイムライン表示中")).toBeVisible();
+    await obsidian.page.locator(".mini-calendar__day-cell").first().click();
+
+    await expect(obsidian.page.locator(".mfdi-date-input")).toBeVisible();
+    await expect(obsidian.page.getByText("タイムライン表示中")).toHaveCount(0);
+  });
+
   test("ライブエディタで Playwright fill が使える", async ({ obsidian }) => {
     const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
 
@@ -197,10 +241,11 @@ test.describe("MFDI live editor e2e", () => {
 
   test("ライブエディタで Escape キーでマルチカーソルが解除される", async ({ obsidian }) => {
     const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
+    await liveEditor.click();
+    await obsidian.page.waitForTimeout(300);
 
     // テキストを設定：最低 15 文字必要（2 つ目の選択範囲のため）
     await setLiveEditorContent(obsidian, "h\ne\nl\nlo\n w\no\nr\nl\nd\n t\ne\ns\nt");
-    await liveEditor.click();
     await obsidian.page.waitForTimeout(300);
 
     // マルチカーソルを作成（2 つの選択範囲）

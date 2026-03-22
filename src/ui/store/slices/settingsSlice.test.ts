@@ -2,6 +2,7 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { settingsStore } from "src/ui/store/settingsStore";
 import {
+  createSettingsSlice,
   isPastDateReadOnly,
   isViewReadOnly
 } from "src/ui/store/slices/settingsSlice";
@@ -91,5 +92,10 @@ describe("settingsSlice", () => {
     expect(state.threadFocusRootId).toBe("root-1");
     expect(state.displayMode).toBe(DISPLAY_MODE.FOCUS);
     expect(state.date.isSame(yesterday, "day")).toBe(true);
+  });
+
+  it("初期表示モードはタイムライン", () => {
+    const initial = createSettingsSlice(() => {}, () => ({} as any));
+    expect(initial.displayMode).toBe(DISPLAY_MODE.TIMELINE);
   });
 });
