@@ -395,9 +395,7 @@ describe("timeline note resolution", () => {
     } as any;
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
-    const content = `## Thino
-- 12:00:00 parent
-`;
+    const content = ["## Thino", "- 12:00:00 parent", ""].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       appHelper: {
@@ -501,9 +499,7 @@ note header
     } as any;
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
-    const content = `## Thino
-- 12:00:00 parent
-`;
+    const content = ["## Thino", "- 12:00:00 parent", ""].join("\n");
     const refreshStateSnapshots: Array<{
       displayMode: string;
       threadFocusRootId: string | null;
@@ -626,12 +622,14 @@ note header
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
-    const content = `## Thino
-- 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1]
-- 23:59:59 reply
-    [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]
-    [posted::${today.toISOString()}]
-`;
+    const content = [
+      "## Thino",
+      `- 12:00:00 parent [${THREAD_METADATA_KEYS.ID}::root-1]`,
+      "- 23:59:59 reply",
+      `    [${THREAD_METADATA_KEYS.PARENT_ID}::root-1]`,
+      `    [posted::${today.toISOString()}]`,
+      "",
+    ].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       appHelper: {
