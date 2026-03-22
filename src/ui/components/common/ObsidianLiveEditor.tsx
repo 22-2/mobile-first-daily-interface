@@ -47,20 +47,12 @@ export const ObsidianLiveEditor = forwardRef<
     const containerRef = useRef<HTMLDivElement>(null);
     const fakeEditor = useRef<FakeEditor | null>(null);
     const onChangeRef = useRef(onChange);
+    const isComposingRef = useRef(false);
+    const pendingContentRef = useRef<string | null>(null);
 
     useEffect(() => {
       onChangeRef.current = onChange;
     }, [onChange]);
-
-    useEffect(() => {
-      const editor = fakeEditor.current;
-      if (!editor) return;
-
-      const currentContent = editor.getContent();
-      if (currentContent === initialValue) return;
-
-      editor.setContent(initialValue ?? "");
-    }, [initialValue]);
 
     useImperativeHandle(ref, () => ({
       focus: () => fakeEditor.current?.focus(),
@@ -90,6 +82,12 @@ export const ObsidianLiveEditor = forwardRef<
         const editor = new FakeEditor(app, {
           onChange: (text) => {
             if (!active) return;
+
+            if (isComposingRef.current) {
+              pendingContentRef.current = text;
+              return;
+            }
+
             onChangeRef.current(text);
           },
           onEnter: (_editor: unknown, mod: boolean, shift: boolean) => {
@@ -109,6 +107,39 @@ export const ObsidianLiveEditor = forwardRef<
         if (active && containerRef.current) {
           fakeEditor.current = editor;
           fakeEditor.current!.loadToDom(containerRef.current);
+
+          const editorContainer = editor.view.containerEl;
+          const handleCompositionStart = () => {
+            isComposingRef.current = true;
+          };
+          const handleCompositionEnd = () => {
+            if (!active) return;
+
+            isComposingRef.current = false;
+            const nextText =
+              pendingContentRef.current ?? fakeEditor.current?.getContent() ?? "";
+            pendingContentRef.current = null;
+            onChangeRef.current(nextText);
+          };
+
+          editorContainer.addEventListener(
+            "compositionstart",
+            handleCompositionStart,
+          );
+          editorContainer.addEventListener("compositionend", handleCompositionEnd);
+
+          const originalDestroy = editor.destroy.bind(editor);
+          editor.destroy = () => {
+            editorContainer.removeEventListener(
+              "compositionstart",
+              handleCompositionStart,
+            );
+            editorContainer.removeEventListener(
+              "compositionend",
+              handleCompositionEnd,
+            );
+            originalDestroy();
+          };
         } else {
           editor.destroy();
         }
@@ -117,6 +148,8 @@ export const ObsidianLiveEditor = forwardRef<
       init();
       return () => {
         active = false;
+        isComposingRef.current = false;
+        pendingContentRef.current = null;
         const editor = fakeEditor.current;
         fakeEditor.current = null;
         editor?.destroy();
