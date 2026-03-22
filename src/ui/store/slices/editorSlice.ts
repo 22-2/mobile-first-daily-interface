@@ -5,7 +5,21 @@ import { EditorSlice, MFDIStore } from "./types";
 export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   set,
   get,
-) => ({
+) => {
+  let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const persistInputDebounced = (input: string) => {
+    if (inputPersistTimer !== null) {
+      clearTimeout(inputPersistTimer);
+    }
+
+    inputPersistTimer = setTimeout(() => {
+      get().storage?.set(STORAGE_KEYS.INPUT, input);
+      inputPersistTimer = null;
+    }, 300);
+  };
+
+  return ({
   input: "",
   editingPostOffset: null,
   inputRef: { current: null },
@@ -13,7 +27,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
   setInput: (input) => {
     set({ input });
-    get().storage?.set(STORAGE_KEYS.INPUT, input);
+    persistInputDebounced(input);
   },
 
   setEditingPostOffset: (editingPostOffset) => {
@@ -91,4 +105,5 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       ),
     });
   },
-});
+  });
+};
