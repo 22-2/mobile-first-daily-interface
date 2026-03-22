@@ -23,17 +23,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup pnpm (action)
-        uses: pnpm/action-setup@v4
-        with:
-          version: "10"
-
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: "24.x"
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Cache plugin downloads
         uses: actions/cache@v4
@@ -56,47 +61,33 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .cache/ms-playwright
-          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-playwright-chromium-
-
-      - name: Ensure pnpm (Unix)
-        if: matrix.os != 'windows-latest'
-        run: |
-          npm install -g pnpm@10 || corepack prepare pnpm@10 --activate
-          pnpm -v
-        shell: bash
-
-      - name: Ensure pnpm (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          npm install -g pnpm@10 -s
-          pnpm -v
-        shell: pwsh
 
       - name: Install dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-          pnpm install --no-frozen-lockfile
+          bun install
 
       - name: Install Playwright chromium (Unix)
         if: matrix.os != 'windows-latest' && steps.playwright-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: pnpm exec playwright install chromium
+        run: bunx playwright install chromium
         shell: bash
 
       - name: Install Playwright chromium (Windows)
         if: matrix.os == 'windows-latest' && steps.playwright-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: pnpm exec playwright install chromium
+        run: bunx playwright install chromium
         shell: pwsh
 
       - name: Build plugin under test
-        run: pnpm run build
+        run: bun run build
 
       - name: Ensure toolkit Obsidian is installed (Unix)
         if: matrix.os != 'windows-latest'
@@ -122,7 +113,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: pnpm run test:e2e
+        run: bun run test:e2e
 
       - name: Upload Playwright report
         if: always()
