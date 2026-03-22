@@ -1,6 +1,6 @@
 import { Box, BoxProps } from "@chakra-ui/react";
 import { App, WorkspaceLeaf } from "obsidian";
-import { MagicalEditor } from "obsidian-magical-editor";
+import { FakeEditor } from "obsidian-magical-editor";
 import * as React from "react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
@@ -45,7 +45,7 @@ export const ObsidianLiveEditor = forwardRef<
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const magicalEditorRef = useRef<MagicalEditor | null>(null);
+    const fakeEditor = useRef<FakeEditor | null>(null);
     const onChangeRef = useRef(onChange);
 
     useEffect(() => {
@@ -53,7 +53,7 @@ export const ObsidianLiveEditor = forwardRef<
     }, [onChange]);
 
     useEffect(() => {
-      const editor = magicalEditorRef.current;
+      const editor = fakeEditor.current;
       if (!editor) return;
 
       const currentContent = editor.getContent();
@@ -63,14 +63,14 @@ export const ObsidianLiveEditor = forwardRef<
     }, [initialValue]);
 
     useImperativeHandle(ref, () => ({
-      focus: () => magicalEditorRef.current?.focus(),
-      getValue: () => magicalEditorRef.current?.getContent() ?? "",
+      focus: () => fakeEditor.current?.focus(),
+      getValue: () => fakeEditor.current?.getContent() ?? "",
       getContentSnapshot: () =>
-        magicalEditorRef.current?.getContentSnapshot() ?? "",
+        fakeEditor.current?.getContentSnapshot() ?? "",
       subscribeContent: (listener) =>
-        magicalEditorRef.current?.subscribeContent(listener) ?? (() => {}),
+        fakeEditor.current?.subscribeContent(listener) ?? (() => {}),
       setContent: (text: string) => {
-        magicalEditorRef.current?.setContent(text);
+        fakeEditor.current?.setContent(text);
       },
     }));
 
@@ -87,7 +87,7 @@ export const ObsidianLiveEditor = forwardRef<
         containerRef.current.empty();
 
         // @ts-expect-error
-        const editor = await MagicalEditor.create(app, leaf, {
+        const editor = new FakeEditor(app, {
           onChange: (text) => {
             if (!active) return;
             onChangeRef.current(text);
@@ -106,8 +106,8 @@ export const ObsidianLiveEditor = forwardRef<
         });
 
         if (active && containerRef.current) {
-          magicalEditorRef.current = editor;
-          magicalEditorRef.current.loadToDom(containerRef.current);
+          fakeEditor.current = editor;
+          fakeEditor.current!.loadToDom(containerRef.current);
         } else {
           editor.destroy();
         }
@@ -116,22 +116,22 @@ export const ObsidianLiveEditor = forwardRef<
       init();
       return () => {
         active = false;
-        const editor = magicalEditorRef.current;
-        magicalEditorRef.current = null;
+        const editor = fakeEditor.current;
+        fakeEditor.current = null;
         editor?.destroy();
       };
     }, []); // Empty dependency array! Do not re-run on props change.
 
     // Synchronize read-only state and placeholder
     useEffect(() => {
-      if (magicalEditorRef.current) {
-        magicalEditorRef.current.setReadOnly(!!isReadOnly);
+      if (fakeEditor.current) {
+        fakeEditor.current.setReadOnly(!!isReadOnly);
       }
     }, [isReadOnly]);
 
     useEffect(() => {
-      if (magicalEditorRef.current) {
-        magicalEditorRef.current.setPlaceholder(
+      if (fakeEditor.current) {
+        fakeEditor.current.setPlaceholder(
           placeholder || "",
           readonlyPlaceholder,
         );
