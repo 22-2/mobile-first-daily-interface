@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 import path from "node:path";
 import { ObsidianAPI, expect, test } from "obsidian-e2e-toolkit";
-import { MFDIView } from "src/ui/view/MFDIView";
+import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 
 const PLUGIN_PATH = path.resolve(".");
 const HOST_FILE_PATH = "mfdi-e2e-host.md";
@@ -188,6 +188,7 @@ test.describe("MFDI live editor e2e", () => {
 
     await liveEditor.click();
     await openModalFromKeyboard(obsidian.page);
+    await obsidian.page.waitForTimeout(300);
 
     await obsidian.page.keyboard.press("Escape");
     await expect(obsidian.page.locator(".mfdi-modal-editor")).not.toBeVisible();
@@ -200,6 +201,7 @@ test.describe("MFDI live editor e2e", () => {
     // テキストを設定：最低 15 文字必要（2 つ目の選択範囲のため）
     await setLiveEditorContent(obsidian, "h\ne\nl\nlo\n w\no\nr\nl\nd\n t\ne\ns\nt");
     await liveEditor.click();
+    await obsidian.page.waitForTimeout(300);
 
     // マルチカーソルを作成（2 つの選択範囲）
     await createLiveEditorMulticursor(obsidian);

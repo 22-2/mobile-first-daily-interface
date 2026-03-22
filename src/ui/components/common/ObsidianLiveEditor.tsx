@@ -99,6 +99,7 @@ export const ObsidianLiveEditor = forwardRef<
             }
             return false;
           },
+          parentScope: leaf.view.scope,
           initialContent: initialValue ?? "",
           placeholder: placeholder,
           isReadOnly: isReadOnly,
