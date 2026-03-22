@@ -48,6 +48,14 @@ export const useInfiniteTimeline = () => {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
+      const state = settingsStore.getState();
+      if (isTimelineView(state.displayMode)) {
+        const now = window.moment();
+        if (!state.date.isSame(now, "day")) {
+          state.setDate(now);
+        }
+      }
+
       const nextBucket = resolveTimelineCacheBucket();
       setCacheBucket((current) =>
         current === nextBucket ? current : nextBucket,

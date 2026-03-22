@@ -15,6 +15,7 @@ import {
   isThreadRoot,
   THREAD_METADATA_KEYS
 } from "src/ui/utils/thread-utils";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import { getTopicNote } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
@@ -271,6 +272,14 @@ export const usePostActions = () => {
   // ---------------------------------------------------------------------------
   const handleSubmit = useCallback(async () => {
     if (!editorState.canSubmit) return;
+
+    // タイムライン表示時は日付が変わったら自動で今日のノートに切り替える
+    if (isTimelineView(settingsState.displayMode)) {
+      const now = window.moment();
+      if (!settingsState.date.isSame(now, "day")) {
+        settingsState.setDate(now);
+      }
+    }
 
     const currentInput =
       editorState.inputRef.current?.getValue() ?? editorState.input;

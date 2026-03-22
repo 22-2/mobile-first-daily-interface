@@ -86,7 +86,14 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     initializeAppStore({ app, appHelper, settings, storage }, store);
   }, [settings, storage, app, appHelper, store]);
 
-  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
+  const {
+    date,
+    granularity,
+    activeTopic,
+    dateFilter,
+    asTask,
+    isReadOnly,
+  } =
     useSettingsStore(
       useShallow((state) => ({
         date: state.date,
