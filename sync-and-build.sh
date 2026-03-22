@@ -15,6 +15,6 @@ echo "Updating and building mobile-first-daily-interface..."
 cd "$TARGET_DIR"
 # Use --force to ensure the local package is re-installed even if version hasn't changed
 pnpm add "$SCRIPT_DIR"
-pnpm build
+pnpm fastbuild
 
 echo "All tasks completed successfully!"

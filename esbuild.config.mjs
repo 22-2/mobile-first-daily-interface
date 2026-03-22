@@ -19,6 +19,31 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = process.argv[2] === "production";
+const fastProd = process.argv[2] === "fast-production";
+
+const plugins = [
+    !fastProd ? babel({
+      filter: /\.[jt]sx?$/,
+      config: {
+        presets: [
+          ["@babel/preset-react", { runtime: "automatic" }],
+          "@babel/preset-typescript",
+        ],
+        plugins: [
+          ["babel-plugin-react-compiler", { target: "18" }],
+        ],
+      },
+    }) : undefined,
+    obsidianCopyPlugin({
+      pluginsDir: [
+        PLUGINS_DIR,
+        "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+        "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
+        "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
+      ],
+      force: true,
+    }),
+  ].filter(Boolean);
 
 const context = await esbuild.context({
   banner: {
@@ -58,34 +83,12 @@ const context = await esbuild.context({
   outfile: "main.js",
   minify: prod,
   metafile: true,
-  plugins: [
-    // @ts-expect-error
-    babel({
-      filter: /\.[jt]sx?$/,
-      config: {
-        presets: [
-          ["@babel/preset-react", { runtime: "automatic" }],
-          "@babel/preset-typescript",
-        ],
-        plugins: [
-          ["babel-plugin-react-compiler", { target: "18" }],
-        ],
-      },
-    }),
-    obsidianCopyPlugin({
-      pluginsDir: [
-        PLUGINS_DIR,
-        "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
-        "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
-        "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
-      ],
-      force: true,
-    }),
-  ],
+  // @ts-expect-error
+  plugins,
 });
 
 
-if (prod) {
+if (prod || fastProd) {
   const result = await context.rebuild();
   fs.writeFileSync("metafile.json", JSON.stringify(result.metafile));
   process.exit(0);
