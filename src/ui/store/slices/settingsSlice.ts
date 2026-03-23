@@ -87,6 +87,7 @@ function resolveInitialSettingsState(
 
   return {
     activeTopic: settings.activeTopic ?? "",
+    activeTag: storage?.get<string | null>(STORAGE_KEYS.ACTIVE_TAG, null) ?? null,
     granularity,
     date: validDate,
     timeFilter:
@@ -117,6 +118,7 @@ export const createSettingsSlice: StateCreator<
   SettingsSlice
 > = (set, get) => ({
   activeTopic: "",
+  activeTag: null,
   granularity: GRANULARITY_CONFIG.day.unit,
   date: window.moment(),
   timeFilter: TIME_FILTER_IDS.ALL,
@@ -129,6 +131,11 @@ export const createSettingsSlice: StateCreator<
   setActiveTopic: (activeTopic) => {
     set({ activeTopic, threadFocusRootId: null });
     persistValue(get(), STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+  },
+
+  setActiveTag: (activeTag) => {
+    set({ activeTag });
+    persistValue(get(), STORAGE_KEYS.ACTIVE_TAG, activeTag);
   },
 
   setGranularity: (granularity) => {

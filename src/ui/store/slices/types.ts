@@ -39,6 +39,7 @@ export interface EnvironmentSlice {
 
 export interface SettingsSlice {
   activeTopic: string;
+  activeTag: string | null;
   granularity: Granularity;
   date: MomentLike;
   timeFilter: TimeFilter;
@@ -48,6 +49,7 @@ export interface SettingsSlice {
   asTask: boolean;
   threadFocusRootId: string | null;
   setActiveTopic: (topicId: string) => void;
+  setActiveTag: (tag: string | null) => void;
   setGranularity: (g: Granularity) => void;
   setDate: (d: MomentLike) => void;
   setTimeFilter: (f: TimeFilter) => void;

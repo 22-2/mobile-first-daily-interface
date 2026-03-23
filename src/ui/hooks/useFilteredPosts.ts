@@ -12,12 +12,13 @@ import {
   isVisibleRootPost,
   sortThreadPosts
 } from "src/ui/utils/thread-utils";
-import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
+import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { MFDINoteMode } from "src/ui/view/state";
 
 interface UseFilteredPostsProps {
   posts: Post[];
+  activeTag?: string | null;
   timeFilter: TimeFilter;
   dateFilter: DateFilter;
   asTask: boolean;
@@ -30,6 +31,7 @@ interface UseFilteredPostsProps {
 
 export const useFilteredPosts = ({
   posts,
+  activeTag = null,
   timeFilter,
   dateFilter,
   asTask,
@@ -43,6 +45,12 @@ export const useFilteredPosts = ({
     const postsWithoutHidden = posts.filter(
       (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
     );
+    const postsMatchingTag =
+      activeTag == null
+        ? postsWithoutHidden
+        : postsWithoutHidden.filter((post) =>
+            getPostTags(post.metadata).includes(activeTag),
+          );
     const activeThreadRootId = threadFocusRootId;
 
     if (
@@ -50,7 +58,7 @@ export const useFilteredPosts = ({
       isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
     ) {
       const threadPosts = sortThreadPosts(
-        getThreadPosts(postsWithoutHidden, activeThreadRootId),
+        getThreadPosts(postsMatchingTag, activeThreadRootId),
         activeThreadRootId,
       );
       return includeThreadReplies
@@ -58,7 +66,7 @@ export const useFilteredPosts = ({
         : threadPosts.filter(isVisibleRootPost);
     }
 
-    const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
+    const visibleRoots = postsMatchingTag.filter(isVisibleRootPost);
 
     if (viewNoteMode === "fixed") return visibleRoots;
 
@@ -79,6 +87,7 @@ export const useFilteredPosts = ({
     return visibleRoots.filter((p) => now.diff(p.timestamp, "hours") < hours);
   }, [
     posts,
+    activeTag,
     timeFilter,
     dateFilter,
     asTask,

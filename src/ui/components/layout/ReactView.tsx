@@ -8,6 +8,7 @@ import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
+import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
@@ -257,6 +258,7 @@ const ReactViewContent = () => {
   );
   const settings = useSettingsStore(
     useShallow((s) => ({
+      activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
       dateFilter: s.dateFilter,
@@ -402,6 +404,7 @@ const ReactViewContent = () => {
         >
           <MiniCalendar onViewDateChange={setSideBarViewDate} />
           <SidebarScales viewedDate={sideBarViewDate} />
+          <TagList />
         </Box>
       )}
     </Flex>

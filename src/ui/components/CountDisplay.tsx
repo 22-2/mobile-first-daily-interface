@@ -114,6 +114,7 @@ const useFilterMenu = () => {
 const CountSection: React.FC = () => {
   const settings = useSettingsStore(
     useShallow((s) => ({
+      activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
       dateFilter: s.dateFilter,
