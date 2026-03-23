@@ -1,5 +1,9 @@
-import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
+import { HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import * as React from "react";
+import {
+  SidebarSectionHeader,
+  SidebarTextButton,
+} from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { getTopicNote } from "src/utils/daily-notes";
@@ -99,12 +103,6 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     };
   }, [baseDate, activeTopic, getCountsForPeriod]);
 
-  const activeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
-  const activeColor = "var(--color-accent)";
-  const inactiveBg = "transparent";
-  const inactiveColor = "var(--text-normal)";
-  const hoverBg = "var(--background-modifier-hover)";
-
   const renderCountBadge = (counts?: Counts) => {
     if (!counts || (counts.posts === 0 && counts.tasks === 0)) return null;
     return (
@@ -133,21 +131,16 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
         spacing={1}
         className="mfdi-scale-section mfdi-scale-section-week"
       >
-        <HStack justify="space-between" px={2} mb={1}>
-          <Text
-            fontSize="11px"
-            fontWeight="bold"
-            color="var(--text-muted)"
-            textTransform="uppercase"
-            letterSpacing="0.05em"
-            className="mfdi-scale-label"
-          >
-            週
-          </Text>
-          {loading && (
-            <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />
-          )}
-        </HStack>
+        <SidebarSectionHeader
+          className="mfdi-scale-label"
+          rightAddon={
+            loading ? (
+              <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />
+            ) : null
+          }
+        >
+          週
+        </SidebarSectionHeader>
         <VStack
           align="stretch"
           spacing={0}
@@ -161,28 +154,10 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
               counts && (counts.posts > 0 || counts.tasks > 0);
 
             return (
-              <Box
+              <SidebarTextButton
                 key={w.format("YYYY-WW")}
-                px={3}
-                py={1.5}
-                borderRadius="6px"
-                bg={isSelected ? activeBg : inactiveBg}
-                color={
-                  isSelected
-                    ? activeColor
-                    : hasActivity
-                      ? inactiveColor
-                      : "var(--text-muted)"
-                }
-                cursor="pointer"
-                fontSize="xs"
-                fontWeight={isSelected ? "bold" : "normal"}
-                transition="background-color 0.1s ease"
-                _hover={{
-                  bg: isSelected
-                    ? "color-mix(in srgb, var(--color-accent), transparent 80%)"
-                    : hoverBg,
-                }}
+                isSelected={isSelected}
+                isMuted={!hasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-week ${isSelected ? "is-selected" : ""}`}
                 onClick={() => {
                   setGranularity("week");
@@ -198,7 +173,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   <Text as="span">W{w.isoWeek()}</Text>
                   {renderCountBadge(counts)}
                 </HStack>
-              </Box>
+              </SidebarTextButton>
             );
           })}
         </VStack>
@@ -210,18 +185,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
         pt={2}
         className="mfdi-scale-section mfdi-scale-section-month-year"
       >
-        <Text
-          fontSize="11px"
-          fontWeight="bold"
-          color="var(--text-muted)"
-          textTransform="uppercase"
-          letterSpacing="0.05em"
-          px={2}
-          mb={1}
-          className="mfdi-scale-label"
-        >
+        <SidebarSectionHeader className="mfdi-scale-label">
           月 / 年
-        </Text>
+        </SidebarSectionHeader>
         <VStack
           align="stretch"
           spacing={0}
@@ -235,27 +201,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
             const isMonthSelected = granularity === "month";
 
             return (
-              <Box
-                px={3}
-                py={1.5}
-                borderRadius="6px"
-                bg={isMonthSelected ? activeBg : inactiveBg}
-                color={
-                  isMonthSelected
-                    ? activeColor
-                    : mHasActivity
-                      ? inactiveColor
-                      : "var(--text-muted)"
-                }
-                cursor="pointer"
-                fontSize="xs"
-                fontWeight={isMonthSelected ? "bold" : "normal"}
-                transition="background-color 0.1s ease"
-                _hover={{
-                  bg: isMonthSelected
-                    ? "color-mix(in srgb, var(--color-accent), transparent 80%)"
-                    : hoverBg,
-                }}
+              <SidebarTextButton
+                isSelected={isMonthSelected}
+                isMuted={!mHasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-month ${isMonthSelected ? "is-selected" : ""}`}
                 onClick={() => {
                   setGranularity("month");
@@ -267,7 +215,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   <Text as="span">{baseDate.format("YYYY-MM")}</Text>
                   {renderCountBadge(mCounts)}
                 </HStack>
-              </Box>
+              </SidebarTextButton>
             );
           })()}
           {(() => {
@@ -278,27 +226,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
             const isYearSelected = granularity === "year";
 
             return (
-              <Box
-                px={3}
-                py={1.5}
-                borderRadius="6px"
-                bg={isYearSelected ? activeBg : inactiveBg}
-                color={
-                  isYearSelected
-                    ? activeColor
-                    : yHasActivity
-                      ? inactiveColor
-                      : "var(--text-muted)"
-                }
-                cursor="pointer"
-                fontSize="xs"
-                fontWeight={isYearSelected ? "bold" : "normal"}
-                transition="background-color 0.1s ease"
-                _hover={{
-                  bg: isYearSelected
-                    ? "color-mix(in srgb, var(--color-accent), transparent 80%)"
-                    : hoverBg,
-                }}
+              <SidebarTextButton
+                isSelected={isYearSelected}
+                isMuted={!yHasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-year ${isYearSelected ? "is-selected" : ""}`}
                 onClick={() => {
                   setGranularity("year");
@@ -310,7 +240,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   <Text as="span">{baseDate.format("YYYY")}</Text>
                   {renderCountBadge(yCounts)}
                 </HStack>
-              </Box>
+              </SidebarTextButton>
             );
           })()}
         </VStack>

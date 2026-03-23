@@ -15,7 +15,10 @@ import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { DEFAULT_VIEW_STATE } from "src/ui/store/slices/settingsSlice";
+import {
+  getCenterIndicatorLabel,
+  isDefaultViewState,
+} from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
@@ -45,14 +48,14 @@ const NavButton: React.FC<{
 const DisplayModeIndicator: React.FC<{
   displayMode: "focus" | "timeline";
   threadFocusRootId: string | null;
+  activeTag: string | null;
   onClick: () => void;
-}> = React.memo(({ displayMode, threadFocusRootId, onClick }) => {
-  const text =
-    threadFocusRootId != null
-      ? "スレッド表示中"
-      : displayMode === DISPLAY_MODE.TIMELINE
-        ? "タイムライン表示中"
-        : "フォーカス表示中";
+}> = React.memo(({ displayMode, threadFocusRootId, activeTag, onClick }) => {
+  const text = getCenterIndicatorLabel({
+    displayMode,
+    threadFocusRootId,
+    activeTag,
+  });
   return (
     <Box
       fontSize="var(--font-ui-smaller)"
@@ -84,7 +87,9 @@ const InputAreaControl: React.FC = React.memo(() => {
     handleClickHome,
     handleChangeCalendarDateAction,
     displayMode,
+    activeTag,
     setDisplayMode,
+    setActiveTag,
     setThreadFocusRootId,
     getMoveStep,
   } = useSettingsStore(
@@ -99,7 +104,9 @@ const InputAreaControl: React.FC = React.memo(() => {
       handleClickHome: s.handleClickHome,
       handleChangeCalendarDateAction: s.handleChangeCalendarDate,
       displayMode: s.displayMode,
+      activeTag: s.activeTag,
       setDisplayMode: s.setDisplayMode,
+      setActiveTag: s.setActiveTag,
       setThreadFocusRootId: s.setThreadFocusRootId,
       getMoveStep: s.getMoveStep,
     })),
@@ -115,13 +122,34 @@ const InputAreaControl: React.FC = React.memo(() => {
       })),
     );
 
-  const isViewDefault =
-    displayMode === DEFAULT_VIEW_STATE.displayMode &&
-    granularity === DEFAULT_VIEW_STATE.granularity &&
-    dateFilter === DEFAULT_VIEW_STATE.dateFilter &&
-    timeFilter === DEFAULT_VIEW_STATE.timeFilter &&
-    asTask === DEFAULT_VIEW_STATE.asTask &&
-    threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId;
+  const isViewDefault = isDefaultViewState({
+    displayMode,
+    granularity,
+    dateFilter,
+    timeFilter,
+    asTask,
+    activeTag,
+    threadFocusRootId,
+  });
+
+  const isStatusIndicatorVisible =
+    activeTag != null ||
+    threadFocusRootId != null ||
+    displayMode !== DISPLAY_MODE.FOCUS;
+
+  const handleIndicatorClick = React.useCallback(() => {
+    if (activeTag != null) {
+      setActiveTag(null);
+      return;
+    }
+
+    if (threadFocusRootId != null) {
+      setThreadFocusRootId(null);
+      return;
+    }
+
+    setDisplayMode(DISPLAY_MODE.FOCUS);
+  }, [activeTag, setActiveTag, setDisplayMode, setThreadFocusRootId, threadFocusRootId]);
 
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,13 +188,12 @@ const InputAreaControl: React.FC = React.memo(() => {
       )}
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
-        {!capabilities.supportsDateNavigation ? null : displayMode ===
-          DISPLAY_MODE.FOCUS ? (
-          threadFocusRootId ? (
+        {!capabilities.supportsDateNavigation ? null : isStatusIndicatorVisible ? (
             <DisplayModeIndicator
               displayMode={displayMode}
               threadFocusRootId={threadFocusRootId}
-              onClick={() => setThreadFocusRootId(null)}
+              activeTag={activeTag}
+              onClick={handleIndicatorClick}
             />
           ) : (
             <>
@@ -196,13 +223,6 @@ const InputAreaControl: React.FC = React.memo(() => {
                 step={step}
               />
             </>
-          )
-        ) : (
-          <DisplayModeIndicator
-            displayMode={displayMode}
-            threadFocusRootId={threadFocusRootId}
-            onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
-          />
         )}
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">

@@ -1,7 +1,11 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import { HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import * as React from "react";
 import { MFDIDatabase } from "src/db/mfdi-db";
+import {
+  SidebarSectionHeader,
+  SidebarTextButton,
+} from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
@@ -48,42 +52,19 @@ export const TagList: React.FC = () => {
     return null;
   }
 
-  const activeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
-  const activeColor = "var(--color-accent)";
-  const hoverBg = "var(--background-modifier-hover)";
-
   return (
     <VStack align="stretch" spacing={1} pt={2} className="mfdi-tag-section">
-      <Text
-        fontSize="11px"
-        fontWeight="bold"
-        color="var(--text-muted)"
-        textTransform="uppercase"
-        letterSpacing="0.05em"
-        px={2}
-        mb={1}
-      >
+      <SidebarSectionHeader>
         タグ
-      </Text>
+      </SidebarSectionHeader>
       <VStack align="stretch" spacing={0} className="mfdi-tag-list">
         {items.map((item) => {
           const isActive = activeTag === item.tag;
 
           return (
-            <Box
+            <SidebarTextButton
               key={item.tag}
-              px={3}
-              py={1.5}
-              borderRadius="6px"
-              bg={isActive ? activeBg : "transparent"}
-              color={isActive ? activeColor : "var(--text-normal)"}
-              cursor="pointer"
-              fontSize="xs"
-              fontWeight={isActive ? "bold" : "normal"}
-              transition="background-color 0.1s ease"
-              _hover={{
-                bg: isActive ? activeBg : hoverBg,
-              }}
+              isSelected={isActive}
               onClick={() => {
                 setActiveTag(isActive ? null : item.tag);
               }}
@@ -92,7 +73,7 @@ export const TagList: React.FC = () => {
                 <Text as="span">{item.tag}</Text>
                 <Text as="span" color="var(--text-muted)">{item.count}</Text>
               </HStack>
-            </Box>
+            </SidebarTextButton>
           );
         })}
       </VStack>
