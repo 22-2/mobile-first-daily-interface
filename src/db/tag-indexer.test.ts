@@ -10,6 +10,7 @@ function createApiMock(): ScanWorkerAPI {
     scanFiles: vi.fn(async () => {}),
     scanFile: vi.fn(async () => {}),
     removeFile: vi.fn(async () => {}),
+    rebuildTagStats: vi.fn(async () => {}),
     setMeta: vi.fn(async () => {}),
     dispose: vi.fn(async () => {}),
   };
@@ -87,5 +88,34 @@ describe("TagIndexer", () => {
 
     expect(api.removeFile).toHaveBeenCalledWith("daily/2026-03-23.md");
     expect(api.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  test("scanAllNotes rebuilds tag stats after scanning", async () => {
+    const api = createApiMock();
+    const indexer = new TagIndexer("vault-1", { api, scanChunkSize: 1 });
+    const file = { basename: "2026-03-23", path: "daily/2026-03-23.md" };
+    const app = {
+      vault: {
+        cachedRead: vi.fn(async () => "## Thino\n- 10:00:00 hello"),
+      },
+    } as any;
+
+    vi.mocked(app.vault.cachedRead);
+
+    const dailyNotesModule = await import("src/utils/daily-notes");
+    const getAllTopicNotesSpy = vi
+      .spyOn(dailyNotesModule, "getAllTopicNotes")
+      .mockImplementation((_, granularity) =>
+        (granularity === "day"
+          ? { day: file as any }
+          : {}) as Record<string, any>,
+      );
+
+    await indexer.scanAllNotes(app, { topics: [DEFAULT_TOPIC] } as any);
+
+    expect(api.resetIndex).toHaveBeenCalledTimes(1);
+    expect(api.scanFiles).toHaveBeenCalledTimes(1);
+    expect(api.rebuildTagStats).toHaveBeenCalledTimes(1);
+    getAllTopicNotesSpy.mockRestore();
   });
 });

@@ -32,21 +32,10 @@ export const TagList: React.FC = () => {
   }, [db]);
 
   const items = useLiveQuery(async (): Promise<TagCountItem[]> => {
-    const memos = await db.memos.toArray();
-    const counts = new Map<string, number>();
+    const tagStats = await db.tagStats.toArray();
 
-    for (const memo of memos) {
-      if (memo.archived || memo.deleted) {
-        continue;
-      }
-
-      for (const tag of memo.tags) {
-        counts.set(tag, (counts.get(tag) ?? 0) + 1);
-      }
-    }
-
-    return [...counts.entries()]
-      .map(([tag, count]) => ({ tag, count }))
+    return tagStats
+      .map(({ tag, count }) => ({ tag, count }))
       .sort((left, right) => {
         if (right.count !== left.count) {
           return right.count - left.count;

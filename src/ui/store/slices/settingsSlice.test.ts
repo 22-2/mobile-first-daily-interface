@@ -95,7 +95,11 @@ describe("settingsSlice", () => {
   });
 
   it("初期表示モードはタイムライン", () => {
-    const initial = createSettingsSlice(() => {}, () => ({} as any));
+    const initial = createSettingsSlice(
+      () => {},
+      () => ({} as any),
+      {} as any,
+    );
     expect(initial.displayMode).toBe(DISPLAY_MODE.TIMELINE);
   });
 });

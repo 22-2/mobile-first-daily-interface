@@ -43,10 +43,16 @@ const NavButton: React.FC<{
 };
 
 const DisplayModeIndicator: React.FC<{
+  displayMode: "focus" | "timeline";
   threadFocusRootId: string | null;
   onClick: () => void;
-}> = React.memo(({ threadFocusRootId, onClick }) => {
-  const text = threadFocusRootId ? "スレッド表示中" : "タイムライン表示中";
+}> = React.memo(({ displayMode, threadFocusRootId, onClick }) => {
+  const text =
+    threadFocusRootId != null
+      ? "スレッド表示中"
+      : displayMode === DISPLAY_MODE.TIMELINE
+        ? "タイムライン表示中"
+        : "フォーカス表示中";
   return (
     <Box
       fontSize="var(--font-ui-smaller)"
@@ -79,6 +85,7 @@ const InputAreaControl: React.FC = React.memo(() => {
     handleChangeCalendarDateAction,
     displayMode,
     setDisplayMode,
+    setThreadFocusRootId,
     getMoveStep,
   } = useSettingsStore(
     useShallow((s) => ({
@@ -93,6 +100,7 @@ const InputAreaControl: React.FC = React.memo(() => {
       handleChangeCalendarDateAction: s.handleChangeCalendarDate,
       displayMode: s.displayMode,
       setDisplayMode: s.setDisplayMode,
+      setThreadFocusRootId: s.setThreadFocusRootId,
       getMoveStep: s.getMoveStep,
     })),
   );
@@ -114,10 +122,6 @@ const InputAreaControl: React.FC = React.memo(() => {
     timeFilter === DEFAULT_VIEW_STATE.timeFilter &&
     asTask === DEFAULT_VIEW_STATE.asTask &&
     threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId;
-
-  const homeIconColor = isViewDefault
-    ? "var(--text-muted)"
-    : "var(--text-accent)";
 
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,8 +164,9 @@ const InputAreaControl: React.FC = React.memo(() => {
           DISPLAY_MODE.FOCUS ? (
           threadFocusRootId ? (
             <DisplayModeIndicator
+              displayMode={displayMode}
               threadFocusRootId={threadFocusRootId}
-              onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
+              onClick={() => setThreadFocusRootId(null)}
             />
           ) : (
             <>
@@ -194,6 +199,7 @@ const InputAreaControl: React.FC = React.memo(() => {
           )
         ) : (
           <DisplayModeIndicator
+            displayMode={displayMode}
             threadFocusRootId={threadFocusRootId}
             onClick={() => setDisplayMode(DISPLAY_MODE.FOCUS)}
           />

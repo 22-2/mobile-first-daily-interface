@@ -1,6 +1,7 @@
 import * as Comlink from "comlink";
 import PQueue from "p-queue";
 import { App, TFile } from "obsidian";
+// @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import ScanWorkerFactory from "src/db/scan.worker";
 import {
   GRANULARITIES,
@@ -122,8 +123,9 @@ export class TagIndexer {
     if (options.api) {
       this.api = options.api;
     } else {
-      this.worker = (options.workerFactory ?? (() => new ScanWorkerFactory()))();
-      this.api = Comlink.wrap<ScanWorkerAPI>(this.worker);
+      const worker = (options.workerFactory ?? (() => new ScanWorkerFactory()))();
+      this.worker = worker;
+      this.api = Comlink.wrap<ScanWorkerAPI>(worker);
     }
 
     this.initializePromise = this.api.initialize({ appId });
@@ -150,6 +152,7 @@ export class TagIndexer {
     }
 
     await queue.onIdle();
+    await this.api.rebuildTagStats();
     await this.api.setMeta("lastFullScanAt", new Date().toISOString());
   }
 

@@ -23,6 +23,7 @@ export const DEFAULT_VIEW_STATE = {
   dateFilter: DATE_FILTER_IDS.TODAY,
   timeFilter: TIME_FILTER_IDS.ALL,
   asTask: false,
+  activeTag: null,
   threadFocusRootId: null,
 } as const;
 
@@ -243,6 +244,7 @@ export const createSettingsSlice: StateCreator<
       STORAGE_KEYS.THREAD_FOCUS_ROOT_ID,
       DEFAULT_VIEW_STATE.threadFocusRootId,
     );
+    persistValue(state, STORAGE_KEYS.ACTIVE_TAG, DEFAULT_VIEW_STATE.activeTag);
   },
 
   handleClickToday: () => {

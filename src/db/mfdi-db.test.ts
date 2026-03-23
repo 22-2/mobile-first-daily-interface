@@ -86,4 +86,20 @@ describe("MFDIDatabase", () => {
       tags: ["IT"],
     });
   });
+
+  test("stores aggregated tag stat records", async () => {
+    const db = createDatabase();
+
+    await db.tagStats.put({
+      tag: "IT",
+      count: 2,
+      updatedAt: "2026-03-23T10:00:00.000Z",
+    });
+
+    await expect(db.tagStats.get("IT")).resolves.toEqual({
+      tag: "IT",
+      count: 2,
+      updatedAt: "2026-03-23T10:00:00.000Z",
+    });
+  });
 });

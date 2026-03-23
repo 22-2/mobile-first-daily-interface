@@ -15,6 +15,7 @@ export interface ScanWorkerAPI {
   scanFiles(files: ScannableNote[]): Promise<void>;
   scanFile(file: ScannableNote): Promise<void>;
   removeFile(path: string): Promise<void>;
+  rebuildTagStats(): Promise<void>;
   setMeta(key: string, value: string): Promise<void>;
   dispose(): Promise<void>;
 }

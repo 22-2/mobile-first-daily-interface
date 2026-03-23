@@ -21,6 +21,12 @@ export interface MetaRecord {
   value: string;
 }
 
+export interface TagStatRecord {
+  tag: string;
+  count: number;
+  updatedAt: string;
+}
+
 export function getMFDIDatabaseName(appId: string): string {
   return `${appId}-mfdi-db`;
 }
@@ -28,6 +34,7 @@ export function getMFDIDatabaseName(appId: string): string {
 export class MFDIDatabase extends Dexie {
   memos!: EntityTable<MemoRecord, "id">;
   meta!: EntityTable<MetaRecord, "key">;
+  tagStats!: EntityTable<TagStatRecord, "tag">;
 
   constructor(appId: string) {
     super(getMFDIDatabaseName(appId));
@@ -36,6 +43,7 @@ export class MFDIDatabase extends Dexie {
       memos:
         "id, path, noteName, topicId, noteGranularity, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity]",
       meta: "key",
+      tagStats: "tag, count, updatedAt",
     });
   }
 }
