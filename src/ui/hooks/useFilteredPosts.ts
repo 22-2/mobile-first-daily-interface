@@ -12,6 +12,7 @@ import {
   isVisibleRootPost,
   sortThreadPosts
 } from "src/ui/utils/thread-utils";
+import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { MFDINoteMode } from "src/ui/view/state";
 
@@ -40,7 +41,7 @@ export const useFilteredPosts = ({
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
     const postsWithoutHidden = posts.filter(
-      (p) => !p.metadata.archived && !p.metadata.deleted,
+      (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
     );
     const activeThreadRootId = threadFocusRootId;
 
