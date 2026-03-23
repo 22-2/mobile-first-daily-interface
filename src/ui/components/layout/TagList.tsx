@@ -15,6 +15,11 @@ interface TagCountItem {
   count: number;
 }
 
+interface TagListSnapshot {
+  items: TagCountItem[] | null;
+  hasCompletedFullScan: boolean;
+}
+
 export const TagList: React.FC = () => {
   const { appHelper } = useAppContext();
   const { activeTag, setActiveTag } = useSettingsStore(
@@ -35,18 +40,46 @@ export const TagList: React.FC = () => {
     };
   }, [db]);
 
-  const items = useLiveQuery(async (): Promise<TagCountItem[]> => {
-    const tagStats = await db.tagStats.toArray();
+  const snapshot = useLiveQuery(async (): Promise<TagListSnapshot> => {
+    const [tagStats, lastFullScanAt] = await Promise.all([
+      db.tagStats.toArray(),
+      db.meta.get("lastFullScanAt"),
+    ]);
 
-    return tagStats
-      .map(({ tag, count }) => ({ tag, count }))
-      .sort((left, right) => {
-        if (right.count !== left.count) {
-          return right.count - left.count;
-        }
-        return left.tag.localeCompare(right.tag, "ja");
-      });
-  }, [db]);
+    return {
+      items: tagStats
+        .map(({ tag, count }) => ({ tag, count }))
+        .sort((left, right) => {
+          if (right.count !== left.count) {
+            return right.count - left.count;
+          }
+          return left.tag.localeCompare(right.tag, "ja");
+        }),
+      hasCompletedFullScan: lastFullScanAt != null,
+    };
+  }, [db], {
+    items: null,
+    hasCompletedFullScan: false,
+  });
+
+  const [stableItems, setStableItems] = React.useState<TagCountItem[] | null>(null);
+
+  React.useEffect(() => {
+    if (snapshot.items == null) {
+      return;
+    }
+
+    if (snapshot.items.length > 0) {
+      setStableItems(snapshot.items);
+      return;
+    }
+
+    if (snapshot.hasCompletedFullScan) {
+      setStableItems([]);
+    }
+  }, [snapshot]);
+
+  const items = stableItems ?? snapshot.items;
 
   if (!items || items.length === 0) {
     return null;
