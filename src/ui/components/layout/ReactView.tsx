@@ -294,9 +294,21 @@ const ReactViewContent = () => {
     ...settings,
   });
 
+  // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
+  const filteredPostsWithThreadReplies = useFilteredPosts({
+    posts,
+    ...settings,
+    includeThreadReplies: true,
+  });
+
   React.useEffect(() => {
     view.handlers.onCopyAllPosts = () => {
-      const text = filteredPosts
+      // スレッド表示中は返信も含めて全メッセージをコピー
+      const postsTocopy =
+        settings.threadFocusRootId && settings.displayMode === "focus"
+          ? filteredPostsWithThreadReplies.toReversed()
+          : filteredPosts;
+      const text = postsTocopy
         .map((p) => `${p.timestamp.format("YYYY-MM-DD HH:mm")}\n${p.message}`)
         .join("\n\n");
       navigator.clipboard.writeText(text);
@@ -304,7 +316,7 @@ const ReactViewContent = () => {
     return () => {
       view.handlers.onCopyAllPosts = undefined;
     };
-  }, [view, filteredPosts]);
+  }, [view, filteredPosts, filteredPostsWithThreadReplies, settings.threadFocusRootId, settings.displayMode]);
 
   const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
     settings;
