@@ -2,7 +2,7 @@ import { App, TFile } from "obsidian";
 import { RefObject } from "react";
 import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
-import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
+import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
   DateFilter,
   DisplayMode,
