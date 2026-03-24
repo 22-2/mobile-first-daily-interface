@@ -27,6 +27,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Mental model: setup-node's pnpm cache lookup requires pnpm to already exist on PATH.
+          version: 10
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
@@ -36,11 +42,6 @@ jobs:
           scope: "@22-2"
           registry-url: "https://npm.pkg.github.com"
           always-auth: true
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
