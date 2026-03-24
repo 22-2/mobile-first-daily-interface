@@ -15,6 +15,10 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ${{ matrix.os }}
+    env:
+      # Mental model: bun install resolves npm auth through .npmrc and NODE_AUTH_TOKEN.
+      # Prefer an explicit PAT when available; fallback to GITHUB_TOKEN for same-repo access.
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -27,24 +31,19 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24.x"
+          scope: "@22-2"
+          registry-url: "https://npm.pkg.github.com"
+          always-auth: true
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-        env:
-          # Mental model: private @22-2 packages must always be resolved via GitHub Packages.
-          # Bun registries require either NODE_AUTH_TOKEN or GITHUB_TOKEN for @22-2 scope.
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-        with:
-          registries: |
-            https://registry.npmjs.org/
-            @22-2:https://npm.pkg.github.com/|${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock', 'bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
 
