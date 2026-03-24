@@ -11,6 +11,8 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ${{ matrix.os }}
+    env:
+      TZ: Asia/Tokyo
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]

@@ -15,6 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OBSIDIAN_E2E_TOOLKIT_OBSIDIAN_VERSION: "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.obsidian_version || 'latest' }}"
+      TZ: Asia/Tokyo
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
