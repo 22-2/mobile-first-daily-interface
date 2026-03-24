@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef } from "react";
  * Keeps a ref always in sync with the latest value of a callback,
  * avoiding stale closures without adding the callback to effect deps.
  */
-export function useLatestRef<T>(value: T) {
+function useLatestRef<T>(value: T) {
   const ref = useRef(value);
   useEffect(() => {
     ref.current = value;
@@ -18,7 +18,7 @@ export function useLatestRef<T>(value: T) {
 
 // ─── IME Composition Hook ─────────────────────────────────────────────────────
 
-export interface UseCompositionGuardOptions {
+interface UseCompositionGuardOptions {
   onFlush: (text: string) => void;
   getFallbackText: () => string;
 }
@@ -27,7 +27,7 @@ export interface UseCompositionGuardOptions {
  * Returns handlers and a wrapped onChange that suppresses intermediate
  * IME composition events, flushing the final value on compositionend.
  */
-export function useCompositionGuard({
+function useCompositionGuard({
   onFlush,
   getFallbackText,
 }: UseCompositionGuardOptions) {
@@ -65,7 +65,7 @@ export function useCompositionGuard({
 
 // ─── Editor Initialization Hook ───────────────────────────────────────────────
 
-export interface UseFakeEditorOptions {
+interface UseFakeEditorOptions {
   app: App;
   leaf: WorkspaceLeaf;
   initialValue: string;
