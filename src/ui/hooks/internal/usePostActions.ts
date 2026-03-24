@@ -13,10 +13,11 @@ import {
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
-  THREAD_METADATA_KEYS
+  THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getTopicNote } from "src/utils/daily-notes";
+import { serializeMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./refreshPosts";
@@ -204,6 +205,54 @@ export const usePostActions = () => {
       editorState,
       findLatestPost,
       refreshPosts,
+    ],
+  );
+
+  const replaceAndRefreshWithMetadata = useCallback(
+    async (
+      post: Post,
+      transformMetadata: (
+        metadata: Record<string, string>,
+      ) => Record<string, string>,
+    ) => {
+      const latestPost = await findLatestPost(post);
+      if (!latestPost) {
+        new Notice("投稿の位置を再特定できませんでした");
+        await refreshPosts(post.path);
+        return;
+      }
+
+      const metadata = transformMetadata({ ...latestPost.metadata });
+      const text = toText(
+        latestPost.message,
+        false,
+        settingsState.granularity,
+        latestPost.timestamp,
+        metadata,
+      );
+
+      await appHelper.replaceRange(
+        latestPost.path,
+        latestPost.startOffset,
+        latestPost.endOffset,
+        text,
+      );
+
+      if (
+        editorState.editingPost?.id === latestPost.id &&
+        editorState.editingPost?.path === latestPost.path
+      ) {
+        editorState.cancelEdit();
+      }
+
+      await refreshPosts(latestPost.path);
+    },
+    [
+      appHelper,
+      editorState,
+      findLatestPost,
+      refreshPosts,
+      settingsState.granularity,
     ],
   );
 
@@ -545,6 +594,23 @@ export const usePostActions = () => {
     [replaceAndRefresh],
   );
 
+  const setPostTags = useCallback(
+    async (post: Post, rawInput: string) => {
+      await replaceAndRefreshWithMetadata(post, (metadata) => {
+        const serializedTags = serializeMfdiTags(rawInput.split(","));
+
+        if (serializedTags.length === 0) {
+          delete metadata[TAG_METADATA_KEY];
+          return metadata;
+        }
+
+        metadata[TAG_METADATA_KEY] = serializedTags;
+        return metadata;
+      });
+    },
+    [replaceAndRefreshWithMetadata],
+  );
+
   // ---------------------------------------------------------------------------
   // 投稿を翌日へ移動
   // ---------------------------------------------------------------------------
@@ -706,6 +772,7 @@ export const usePostActions = () => {
     deletePost,
     permanentlyDeletePost,
     archivePost,
+    setPostTags,
     movePostToTomorrow,
     handleClickTime,
   };

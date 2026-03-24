@@ -1,5 +1,4 @@
 import { App, Modal } from "obsidian";
-import * as React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { DraftListManager } from "src/ui/components/DraftListManager";
 import { AppStoreApi, AppStoreProvider } from "src/ui/store/appStore";
@@ -21,7 +20,7 @@ export class DraftListModal extends Modal {
     this.root.render(
       <AppStoreProvider store={this.store}>
         <DraftListManager onClose={() => this.close()} />
-      </AppStoreProvider>
+      </AppStoreProvider>,
     );
   }
 

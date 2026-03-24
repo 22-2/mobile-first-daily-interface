@@ -2,7 +2,7 @@ import { Settings } from "src/settings";
 import {
   DISPLAY_MODE,
   MOVE_STEP,
-  STORAGE_KEYS
+  STORAGE_KEYS,
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
@@ -11,7 +11,7 @@ import {
   DisplayMode,
   Granularity,
   MomentLike,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
@@ -23,6 +23,7 @@ export const DEFAULT_VIEW_STATE = {
   dateFilter: DATE_FILTER_IDS.TODAY,
   timeFilter: TIME_FILTER_IDS.ALL,
   asTask: false,
+  activeTag: null,
   threadFocusRootId: null,
 } as const;
 
@@ -87,6 +88,8 @@ function resolveInitialSettingsState(
 
   return {
     activeTopic: settings.activeTopic ?? "",
+    activeTag:
+      storage?.get<string | null>(STORAGE_KEYS.ACTIVE_TAG, null) ?? null,
     granularity,
     date: validDate,
     timeFilter:
@@ -117,6 +120,7 @@ export const createSettingsSlice: StateCreator<
   SettingsSlice
 > = (set, get) => ({
   activeTopic: "",
+  activeTag: null,
   granularity: GRANULARITY_CONFIG.day.unit,
   date: window.moment(),
   timeFilter: TIME_FILTER_IDS.ALL,
@@ -129,6 +133,11 @@ export const createSettingsSlice: StateCreator<
   setActiveTopic: (activeTopic) => {
     set({ activeTopic, threadFocusRootId: null });
     persistValue(get(), STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+  },
+
+  setActiveTag: (activeTag) => {
+    set({ activeTag });
+    persistValue(get(), STORAGE_KEYS.ACTIVE_TAG, activeTag);
   },
 
   setGranularity: (granularity) => {
@@ -236,6 +245,7 @@ export const createSettingsSlice: StateCreator<
       STORAGE_KEYS.THREAD_FOCUS_ROOT_ID,
       DEFAULT_VIEW_STATE.threadFocusRootId,
     );
+    persistValue(state, STORAGE_KEYS.ACTIVE_TAG, DEFAULT_VIEW_STATE.activeTag);
   },
 
   handleClickToday: () => {

@@ -6,6 +6,7 @@ import path from "path";
 import process from "process";
 import fs from "fs";
 import babel from "esbuild-plugin-babel";
+import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
 
 const VAULT_DIR = "E:/AppData/obsidian/vaults/suizen";
 const PLUGINS_DIR = path.join(VAULT_DIR, ".obsidian/plugins");
@@ -22,6 +23,7 @@ const prod = process.argv[2] === "production";
 const fastProd = process.argv[2] === "fast-production";
 
 const plugins = [
+    inlineWorkerPlugin(),
     !fastProd ? babel({
       filter: /\.[jt]sx?$/,
       config: {

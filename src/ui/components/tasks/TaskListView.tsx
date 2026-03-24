@@ -1,6 +1,5 @@
 import { Box } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import * as React from "react";
 import { useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";

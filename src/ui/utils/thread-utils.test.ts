@@ -8,7 +8,7 @@ import {
   isThreadRoot,
   resolvePostId,
   resolveThreadRootId,
-  sortThreadPosts
+  sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 import { describe, expect, test } from "vitest";
 

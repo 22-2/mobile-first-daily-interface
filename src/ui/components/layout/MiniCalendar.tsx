@@ -1,5 +1,4 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
-import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import moment from "moment";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useInfiniteTimeline } from "./useInfiniteTimeline";
 
 const useInfiniteQueryMock = vi.fn();
@@ -44,13 +44,15 @@ vi.mock("src/ui/store/settingsStore", () => ({
 }));
 
 vi.mock("src/ui/store/postsStore", () => ({
-  usePostsStore: (selector: (state: { setPosts: typeof setPostsMock }) => unknown) =>
-    selector({ setPosts: setPostsMock }),
+  usePostsStore: (
+    selector: (state: { setPosts: typeof setPostsMock }) => unknown,
+  ) => selector({ setPosts: setPostsMock }),
 }));
 
 vi.mock("src/ui/store/noteStore", () => ({
-  useNoteStore: (selector: (state: { addPaths: typeof addPathsMock }) => unknown) =>
-    selector({ addPaths: addPathsMock }),
+  useNoteStore: (
+    selector: (state: { addPaths: typeof addPathsMock }) => unknown,
+  ) => selector({ addPaths: addPathsMock }),
 }));
 
 vi.mock("src/ui/utils/view-mode", () => ({
@@ -60,10 +62,12 @@ vi.mock("src/ui/utils/view-mode", () => ({
 vi.mock("./timelinePosts", () => ({
   TIMELINE_CACHE_INVALIDATE_MS: 3 * 60 * 1000,
   resolveTimelineCacheBucket: vi.fn(() => 123),
-  resolveTimelineBaseDate: vi.fn((pageParam: string | null, getEffectiveDate: () => moment.Moment) =>
-    pageParam ? moment(pageParam) : getEffectiveDate(),
+  resolveTimelineBaseDate: vi.fn(
+    (pageParam: string | null, getEffectiveDate: () => moment.Moment) =>
+      pageParam ? moment(pageParam) : getEffectiveDate(),
   ),
-  createTimelinePageFetcher: (...args: unknown[]) => createTimelinePageFetcherMock(...args),
+  createTimelinePageFetcher: (...args: unknown[]) =>
+    createTimelinePageFetcherMock(...args),
 }));
 
 describe("useInfiniteTimeline", () => {

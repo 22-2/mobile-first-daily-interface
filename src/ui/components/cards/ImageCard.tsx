@@ -1,5 +1,4 @@
 import { Box, Image } from "@chakra-ui/react";
-import * as React from "react";
 import { ImageMeta } from "src/utils/meta";
 
 export const ImageCard = ({ meta }: { meta: ImageMeta }) => {

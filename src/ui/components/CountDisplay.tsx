@@ -1,6 +1,5 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import * as React from "react";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
@@ -10,6 +9,7 @@ import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle, getMFDIViewCapabilities } from "src/ui/view/state";
@@ -113,6 +113,7 @@ const useFilterMenu = () => {
 const CountSection: React.FC = () => {
   const settings = useSettingsStore(
     useShallow((s) => ({
+      activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
       dateFilter: s.dateFilter,
@@ -148,7 +149,9 @@ const CountSection: React.FC = () => {
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
   const allPostsCount = countVisibleRootPosts(
-    posts.filter((post) => !post.metadata.archived && !post.metadata.deleted),
+    posts.filter(
+      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
+    ),
   );
 
   const showTotal =

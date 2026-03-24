@@ -8,6 +8,7 @@ export const DISPLAY_MODE = {
 export const STORAGE_KEYS = {
   TOPICS: "topics",
   ACTIVE_TOPIC: "activeTopic",
+  ACTIVE_TAG: "activeTag",
   TIME_FILTER: "timeFilter",
   DATE_FILTER: "dateFilter",
   SIDEBAR_OPEN: "sidebarOpen",

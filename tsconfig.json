@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "strictPropertyInitialization": false,
     "lib": ["DOM", "ESNext"],
-    "jsx": "react",
+    "jsx": "react-jsx",
     "types": ["@types/bun", "obsidian-typings"]
   },
   "include": ["**/*.ts", "**/*.tsx"]

@@ -34,6 +34,7 @@ describe("useFilteredPosts", () => {
     const { result } = renderHook(() =>
       useFilteredPosts({
         posts,
+        activeTag: null,
         timeFilter: "all",
         dateFilter: "today",
         asTask: false,
@@ -70,6 +71,7 @@ describe("useFilteredPosts", () => {
     const { result } = renderHook(() =>
       useFilteredPosts({
         posts,
+        activeTag: null,
         timeFilter: "all",
         dateFilter: "today",
         asTask: false,
@@ -85,5 +87,28 @@ describe("useFilteredPosts", () => {
       "reply-1",
       "root-1",
     ]);
+  });
+
+  test("activeTag があるとタグ一致の投稿だけ返す", () => {
+    const posts = [
+      createPost({ id: "it-1", metadata: { mfditags: "IT, Later" } }),
+      createPost({ id: "writing-1", metadata: { mfditags: "writing" } }),
+      createPost({ id: "plain-1", startOffset: 30 }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: "IT",
+        timeFilter: "all",
+        dateFilter: "today",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: null,
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual(["it-1"]);
   });
 });

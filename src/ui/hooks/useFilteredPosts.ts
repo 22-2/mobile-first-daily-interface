@@ -4,19 +4,21 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
+import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import {
   countVisibleRootPosts,
   getThreadPosts,
   isVisibleRootPost,
-  sortThreadPosts
+  sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { MFDINoteMode } from "src/ui/view/state";
 
 interface UseFilteredPostsProps {
   posts: Post[];
+  activeTag?: string | null;
   timeFilter: TimeFilter;
   dateFilter: DateFilter;
   asTask: boolean;
@@ -29,6 +31,7 @@ interface UseFilteredPostsProps {
 
 export const useFilteredPosts = ({
   posts,
+  activeTag = null,
   timeFilter,
   dateFilter,
   asTask,
@@ -40,8 +43,14 @@ export const useFilteredPosts = ({
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
     const postsWithoutHidden = posts.filter(
-      (p) => !p.metadata.archived && !p.metadata.deleted,
+      (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
     );
+    const postsMatchingTag =
+      activeTag == null
+        ? postsWithoutHidden
+        : postsWithoutHidden.filter((post) =>
+            getPostTags(post.metadata).includes(activeTag),
+          );
     const activeThreadRootId = threadFocusRootId;
 
     if (
@@ -49,7 +58,7 @@ export const useFilteredPosts = ({
       isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
     ) {
       const threadPosts = sortThreadPosts(
-        getThreadPosts(postsWithoutHidden, activeThreadRootId),
+        getThreadPosts(postsMatchingTag, activeThreadRootId),
         activeThreadRootId,
       );
       return includeThreadReplies
@@ -57,7 +66,7 @@ export const useFilteredPosts = ({
         : threadPosts.filter(isVisibleRootPost);
     }
 
-    const visibleRoots = postsWithoutHidden.filter(isVisibleRootPost);
+    const visibleRoots = postsMatchingTag.filter(isVisibleRootPost);
 
     if (viewNoteMode === "fixed") return visibleRoots;
 
@@ -78,6 +87,7 @@ export const useFilteredPosts = ({
     return visibleRoots.filter((p) => now.diff(p.timestamp, "hours") < hours);
   }, [
     posts,
+    activeTag,
     timeFilter,
     dateFilter,
     asTask,

@@ -2,15 +2,15 @@ import { App, TFile } from "obsidian";
 import { RefObject } from "react";
 import { AppHelper, Task } from "src/app-helper";
 import { Settings } from "src/settings";
-import { ObsidianLiveEditorRef } from "src/ui/components/common/ObsidianLiveEditor";
+import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
   DateFilter,
   DisplayMode,
+  Draft,
   Granularity,
   MomentLike,
   Post,
   TimeFilter,
-  Draft,
 } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { MFDIStorage } from "src/utils/storage";
@@ -39,6 +39,7 @@ export interface EnvironmentSlice {
 
 export interface SettingsSlice {
   activeTopic: string;
+  activeTag: string | null;
   granularity: Granularity;
   date: MomentLike;
   timeFilter: TimeFilter;
@@ -48,6 +49,7 @@ export interface SettingsSlice {
   asTask: boolean;
   threadFocusRootId: string | null;
   setActiveTopic: (topicId: string) => void;
+  setActiveTag: (tag: string | null) => void;
   setGranularity: (g: Granularity) => void;
   setDate: (d: MomentLike) => void;
   setTimeFilter: (f: TimeFilter) => void;

@@ -1,13 +1,12 @@
 import { fireEvent, render } from "@testing-library/react";
 import moment from "moment";
-import React from "react";
 import { DEFAULT_SETTINGS } from "src/settings";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { initializePostsStore } from "src/ui/store/postsStore";
 import {
   initializeSettingsStore,
-  settingsStore
+  settingsStore,
 } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

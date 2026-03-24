@@ -1,13 +1,13 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
-import * as React from "react";
 import { Settings } from "src/settings";
 import { CountDisplay } from "src/ui/components/CountDisplay";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
+import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
@@ -21,7 +21,7 @@ import {
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
-  useCurrentAppStore
+  useCurrentAppStore,
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -32,13 +32,13 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import {
   DEFAULT_MFDI_VIEW_STATE,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
@@ -86,14 +86,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     initializeAppStore({ app, appHelper, settings, storage }, store);
   }, [settings, storage, app, appHelper, store]);
 
-  const {
-    date,
-    granularity,
-    activeTopic,
-    dateFilter,
-    asTask,
-    isReadOnly,
-  } =
+  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
     useSettingsStore(
       useShallow((state) => ({
         date: state.date,
@@ -257,6 +250,7 @@ const ReactViewContent = () => {
   );
   const settings = useSettingsStore(
     useShallow((s) => ({
+      activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
       dateFilter: s.dateFilter,
@@ -292,9 +286,21 @@ const ReactViewContent = () => {
     ...settings,
   });
 
+  // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
+  const filteredPostsWithThreadReplies = useFilteredPosts({
+    posts,
+    ...settings,
+    includeThreadReplies: true,
+  });
+
   React.useEffect(() => {
     view.handlers.onCopyAllPosts = () => {
-      const text = filteredPosts
+      // スレッド表示中は返信も含めて全メッセージをコピー
+      const postsTocopy =
+        settings.threadFocusRootId && settings.displayMode === "focus"
+          ? filteredPostsWithThreadReplies.toReversed()
+          : filteredPosts;
+      const text = postsTocopy
         .map((p) => `${p.timestamp.format("YYYY-MM-DD HH:mm")}\n${p.message}`)
         .join("\n\n");
       navigator.clipboard.writeText(text);
@@ -302,7 +308,13 @@ const ReactViewContent = () => {
     return () => {
       view.handlers.onCopyAllPosts = undefined;
     };
-  }, [view, filteredPosts]);
+  }, [
+    view,
+    filteredPosts,
+    filteredPostsWithThreadReplies,
+    settings.threadFocusRootId,
+    settings.displayMode,
+  ]);
 
   const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
     settings;
@@ -402,6 +414,7 @@ const ReactViewContent = () => {
         >
           <MiniCalendar onViewDateChange={setSideBarViewDate} />
           <SidebarScales viewedDate={sideBarViewDate} />
+          <TagList />
         </Box>
       )}
     </Flex>
@@ -448,14 +461,15 @@ function useViewSync(view: MFDIView) {
     })),
   );
 
-  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } = useEditorStore(
-    useShallow((state) => ({
-      inputSnapshot: state.inputSnapshot,
-      getInputValue: state.getInputValue,
-      replaceInput: state.replaceInput,
-      syncInputSession: state.syncInputSession,
-    })),
-  );
+  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } =
+    useEditorStore(
+      useShallow((state) => ({
+        inputSnapshot: state.inputSnapshot,
+        getInputValue: state.getInputValue,
+        replaceInput: state.replaceInput,
+        syncInputSession: state.syncInputSession,
+      })),
+    );
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = React.useCallback(() => {

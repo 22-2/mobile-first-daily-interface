@@ -1,16 +1,17 @@
 import { App, TFile } from "obsidian";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
+import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import {
   buildPostFromEntry,
-  sortPostsDescending
+  sortPostsDescending,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import {
   getAllTopicNotes,
   getDateUID,
-  getTopicNote
+  getTopicNote,
 } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";
@@ -190,7 +191,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       viewNoteMode,
     } = get();
     const visiblePosts = posts.filter(
-      (post) => !post.metadata.archived && !post.metadata.deleted,
+      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
     );
 
     if (viewNoteMode === "fixed") return visiblePosts;

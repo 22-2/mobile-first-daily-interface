@@ -62,7 +62,7 @@ export class DeleteConfirmModal extends MFDIBaseModal<boolean> {
 
   renderBody(bodyEl: HTMLElement): void {
     this.confirmed = false;
-    
+
     if (typeof this.message === "string") {
       bodyEl.createEl("p", { text: this.message });
     } else {
@@ -72,13 +72,18 @@ export class DeleteConfirmModal extends MFDIBaseModal<boolean> {
 
     const actionsEl = this.createActions(bodyEl);
     this.createButton(actionsEl, this.cancelText, () => this.close());
-    this.createButton(actionsEl, this.confirmText, async () => {
-      this.confirmed = true;
-      if (typeof this.message === "function") {
-        await this.message();
-      }
-      this.close();
-    }, { warning: this.isDestructive, cta: !this.isDestructive });
+    this.createButton(
+      actionsEl,
+      this.confirmText,
+      async () => {
+        this.confirmed = true;
+        if (typeof this.message === "function") {
+          await this.message();
+        }
+        this.close();
+      },
+      { warning: this.isDestructive, cta: !this.isDestructive },
+    );
   }
 
   onClose(): void {

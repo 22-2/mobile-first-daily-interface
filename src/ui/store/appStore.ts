@@ -1,12 +1,12 @@
 import * as React from "react";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
+import { createDraftSlice } from "./slices/draftSlice";
 import { createEditorSlice } from "./slices/editorSlice";
 import { createEnvironmentSlice } from "./slices/environmentSlice";
 import { createNoteSlice } from "./slices/noteSlice";
 import { createPostsSlice } from "./slices/postsSlice";
 import { createSettingsSlice } from "./slices/settingsSlice";
-import { createDraftSlice } from "./slices/draftSlice";
 import { MFDIStore } from "./slices/types";
 
 export function createAppStore() {

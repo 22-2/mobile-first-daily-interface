@@ -10,8 +10,8 @@ import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
+  TimelinePostsPage,
   TIMELINE_CACHE_INVALIDATE_MS,
-  TimelinePostsPage
 } from "./timelinePosts";
 
 const PAGE_SIZE_DAYS = 14;

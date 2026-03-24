@@ -1,22 +1,21 @@
 import { Box } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
-import * as React from "react";
 import { useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import { showInputModal } from "src/ui/modals/InputModal";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import {
-  MomentLike,
-  Post
-} from "src/ui/types";
+import { MomentLike, Post } from "src/ui/types";
+import { getRawTagMetadata } from "src/ui/utils/post-metadata";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
@@ -27,8 +26,10 @@ type TimelineItem =
   | { type: "divider"; date: MomentLike; key: string };
 
 export const PostListView: React.FC = React.memo(() => {
+  const { app } = useAppContext();
   const settings = useSettingsStore(
     useShallow((s) => ({
+      activeTag: s.activeTag,
       granularity: s.granularity,
       displayMode: s.displayMode,
       dateFilter: s.dateFilter,
@@ -65,6 +66,7 @@ export const PostListView: React.FC = React.memo(() => {
     movePostToTomorrow,
     archivePost,
     createThread,
+    setPostTags,
   } = usePostActions();
 
   const filteredPosts = useFilteredPosts({
@@ -132,6 +134,26 @@ export const PostListView: React.FC = React.memo(() => {
             )
             .onClick(() => {
               movePostToTomorrow(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("タグ付け")
+            .setIcon("tag")
+            .setDisabled(isReadOnly)
+            .onClick(async () => {
+              const nextValue = await showInputModal(app, {
+                title: "タグを入力",
+                placeholder: "IT, Later",
+                defaultValue: getRawTagMetadata(post.metadata),
+              });
+
+              if (nextValue === null) {
+                return;
+              }
+
+              await setPostTags(post, nextValue);
             }),
         );
       });
@@ -212,6 +234,7 @@ export const PostListView: React.FC = React.memo(() => {
       handleClickTime,
       isReadOnly,
       movePostToTomorrow,
+      setPostTags,
       setDate,
       setDisplayMode,
       startEdit,

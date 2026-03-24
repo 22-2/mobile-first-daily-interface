@@ -23,4 +23,5 @@
 - [x] tests: ctrl+enterで、MFDIViewのScopeのホットキーのみが呼び出される（Obsidian側でctrl+enterにホットキーを登録していても）
 - [x] tests: ライブエディタで、エスケープキーでマルチカーソルが解除される
 - [ ] 検索
-- [ ] タグ
+- [x] タグ
+- [ ] コア切り離し

@@ -1,10 +1,11 @@
-import { Box, VStack } from "@chakra-ui/react";
+import { Box, HStack, Tag, VStack } from "@chakra-ui/react";
 import { setTooltip } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import { DateFilter, Granularity, Post } from "src/ui/types";
+import { getPostTags } from "src/ui/utils/post-metadata";
 
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
@@ -54,6 +55,7 @@ export const PostCardView = React.memo(
     const threadToggleLabel = isThreadFocused
       ? "スレッド表示を閉じる"
       : "スレッドを表示";
+    const tags = getPostTags(post.metadata);
 
     return (
       <Card className={className} style={style}>
@@ -64,6 +66,23 @@ export const PostCardView = React.memo(
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={() => !isDimmed && onEdit?.(post)}
+          footerAddon={
+            tags.length > 0 ? (
+              <HStack gap={1} flexWrap="wrap">
+                {tags.map((tag) => (
+                  <Tag
+                    key={tag}
+                    size="sm"
+                    variant="subtle"
+                    colorScheme="gray"
+                    borderRadius="md"
+                  >
+                    {tag}
+                  </Tag>
+                ))}
+              </HStack>
+            ) : undefined
+          }
           footerRightAddon={
             isThreadRoot(post) ? (
               <ObsidianIcon
