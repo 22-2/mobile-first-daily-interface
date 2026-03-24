@@ -1,5 +1,5 @@
 import { App, Scope } from "obsidian";
-import { ModalEditor } from "obsidian-magical-editor";
+import { ModalEditor } from "@22-2/obsidian-magical-editor";
 import { PLACEHOLDER_TEXT } from "src/ui/config/consntants";
 
 export interface MFDIEditorModalOptions {
@@ -10,7 +10,6 @@ export interface MFDIEditorModalOptions {
 
 export class MFDIEditorModal extends ModalEditor {
   constructor(app: App, options: MFDIEditorModalOptions) {
-    // @ts-expect-error
     super(app, {
       initialContent: options.initialContent,
       onChange: options.onChange,
