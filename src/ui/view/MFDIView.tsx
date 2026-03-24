@@ -1,4 +1,4 @@
-import { ItemView, Menu, Scope, WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, Scope, Setting, TFile, WorkspaceLeaf } from "obsidian";
 import * as React from "react";
 import { Root, createRoot } from "react-dom/client";
 import { Settings } from "src/settings";
@@ -11,6 +11,8 @@ import {
   getFixedNoteTitle,
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
+import { EditableTitleBar } from "../components/EditableTitleBar";
+import { ensureExtension } from "src/utils/path";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -18,11 +20,12 @@ export const VIEW_TYPE_MFDI = "mfdi-view";
 type IconName = string;
 
 export class MFDIView extends ItemView {
+  private editableTitleBar: EditableTitleBar | null = null;
   private root: Root;
   private settings: Settings;
-  public readonly handlers = new MFDIViewHandler();
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
+  public readonly handlers = new MFDIViewHandler();
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -170,6 +173,12 @@ export class MFDIView extends ItemView {
       this.handlers.onOpenModalEditor?.();
       return true;
     });
+    this.scope.register([], "F2", () => {
+      if (this.editableTitleBar) {
+        this.editableTitleBar.focus();
+        return false;
+      }
+    });
     this.app.workspace.on("active-leaf-change", (leaf) => {
       if (leaf?.id === this.leaf.id) {
         this.handlers.onFocusRequested?.();
@@ -183,6 +192,37 @@ export class MFDIView extends ItemView {
         this.handlers.onToggleSidebar?.();
       });
     }
+
+    if (this.state.noteMode === "fixed") {
+      this.editableTitleBar = new EditableTitleBar(this, {
+        getTitle: () => getFixedNoteTitle(this.state.fixedNotePath),
+        onSubmitTitle: async (newTitle: string) => {
+          if (!this.state.fixedNotePath) return;
+          if (!newTitle.trim().length) return;
+          const file = this.app.vault.getAbstractFileByPath(
+            this.state.fixedNotePath!,
+          ) as TFile | null;
+          if (!file) return;
+          // Handle the title submission here
+          this.app.fileManager.renameFile(
+            file,
+            ensureExtension(newTitle, ".mfdi.md"),
+          );
+          this.state.fixedNotePath = file.path;
+          this.render();
+        },
+      });
+      this.editableTitleBar.render();
+    }
+    // const search = new Setting(createDiv())
+    //   .addSearch(search => search
+    //     .setClass("mfdi-search")
+    //     .setPlaceholder("Search...")
+    //     .onChange(val => {
+
+    //     })
+    //   );
+    // this.actionsEl.prepend(search.controlEl);
     this.render();
   }
 
