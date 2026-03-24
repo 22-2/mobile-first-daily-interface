@@ -17,8 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       # Mental model: private @22-2 packages are resolved by npmrc auth + NODE_AUTH_TOKEN.
-      # Prefer an explicit PAT when available; fallback to GITHUB_TOKEN for same-repo access.
-      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN || secrets.GITHUB_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]

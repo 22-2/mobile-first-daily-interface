@@ -19,37 +19,33 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OBSIDIAN_E2E_TOOLKIT_OBSIDIAN_VERSION: "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.obsidian_version || 'latest' }}"
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Mental model: setup-node's pnpm cache lookup requires pnpm to already exist on PATH.
+          version: 10
 
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: "24.x"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
+          scope: "@22-2"
+          registry-url: "https://npm.pkg.github.com"
+          always-auth: true
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        env:
-          # Mental model: keep the same private-registry wiring as unit tests to avoid env-specific drift.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          registries: |
-            https://registry.npmjs.org/
-            @22-2:https://npm.pkg.github.com/|$GITHUB_TOKEN
-
-      - name: Cache Bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Cache plugin downloads
         uses: actions/cache@v4
@@ -72,31 +68,31 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .cache/ms-playwright
-          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('bun.lock') }}
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-playwright-chromium-
 
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-        run: bun install
+        run: pnpm install
 
       - name: Install Playwright chromium (Unix)
         if: matrix.os != 'windows-latest' && steps.playwright-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: bunx playwright install chromium
+        run: pnpx playwright install chromium
         shell: bash
 
       - name: Install Playwright chromium (Windows)
         if: matrix.os == 'windows-latest' && steps.playwright-cache.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: bunx playwright install chromium
+        run: pnpx playwright install chromium
         shell: pwsh
 
       - name: Build plugin under test
-        run: bun run build
+        run: pnpm run build
 
       - name: Ensure toolkit Obsidian is installed (Unix)
         if: matrix.os != 'windows-latest'
@@ -122,7 +118,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BROWSERS_PATH: .cache/ms-playwright
-        run: bun run test:e2e
+        run: pnpm run test:e2e
 
       - name: Upload Playwright report
         if: always()
