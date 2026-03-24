@@ -255,6 +255,8 @@ export const PostListView: React.FC = memo(() => {
     postsToDisplay.forEach((post) => {
       const currentDate = post.timestamp.format("YYYY-MM-DD");
       const shouldShowDividers =
+        // fixedノートは複数日の投稿が混在するため、常にdividerを表示する
+        settings.viewNoteMode === "fixed" ||
         isTimelineView(displayMode) ||
         granularity !== "day" ||
         dateFilter !== "today";
@@ -282,7 +284,7 @@ export const PostListView: React.FC = memo(() => {
     });
 
     return list;
-  }, [filteredPosts, editingPostOffset, granularity, displayMode, dateFilter]);
+  }, [filteredPosts, editingPostOffset, granularity, displayMode, dateFilter, settings.viewNoteMode]);
 
   const parentRef = scrollContainerRef;
 
