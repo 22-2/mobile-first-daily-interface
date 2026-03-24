@@ -1,7 +1,7 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
   getCenterIndicatorLabel,
-  isDefaultViewState,
+  isDefaultViewState
 } from "src/ui/utils/view-state";
 import { describe, expect, it } from "vitest";
 

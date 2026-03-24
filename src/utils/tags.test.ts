@@ -3,7 +3,7 @@ import {
   normalizeTags,
   parseMfdiTags,
   serializeMfdiTags,
-  TAG_METADATA_KEY,
+  TAG_METADATA_KEY
 } from "src/utils/tags";
 import { describe, expect, test } from "vitest";
 

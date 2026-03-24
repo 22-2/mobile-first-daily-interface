@@ -4,7 +4,7 @@ import PQueue from "p-queue";
 // @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import {
   GRANULARITIES,
-  inferNoteIdentityFromFile,
+  inferNoteIdentityFromFile
 } from "src/db/note-file-identity";
 import ScanWorkerFactory from "src/db/scan.worker";
 import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";

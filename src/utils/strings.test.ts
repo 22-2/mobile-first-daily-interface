@@ -6,7 +6,7 @@ import {
   pickTaskName,
   pickUrls,
   replaceDayToJa,
-  trimRedundantEmptyLines,
+  trimRedundantEmptyLines
 } from "src/utils/strings";
 
 describe.each`

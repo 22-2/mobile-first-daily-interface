@@ -2,6 +2,7 @@ import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
+import { FC, useMemo } from "react";
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -15,7 +16,7 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle, getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-const DateSection: React.FC = () => {
+const DateSection: FC = () => {
   const { date, granularity, dateFilter, displayMode, viewNoteMode } =
     useSettingsStore(
       useShallow((s) => ({
@@ -28,7 +29,7 @@ const DateSection: React.FC = () => {
     );
   const onClick = useFilterMenu();
   const onContextMenu = useGranularityMenu();
-  const capabilities = React.useMemo(
+  const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
     [viewNoteMode],
   );
@@ -36,7 +37,7 @@ const DateSection: React.FC = () => {
   if (isTimelineView(displayMode) || !capabilities.supportsDateNavigation)
     return null;
 
-  const dateLabel = React.useMemo(() => {
+  const dateLabel = useMemo(() => {
     if (granularity !== "day" || dateFilter === "today") {
       return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
     }
@@ -110,7 +111,7 @@ const useFilterMenu = () => {
   };
 };
 
-const CountSection: React.FC = () => {
+const CountSection: FC = () => {
   const settings = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -178,7 +179,7 @@ const CountSection: React.FC = () => {
   );
 };
 
-const TopicSection: React.FC = () => {
+const TopicSection: FC = () => {
   const { settings } = useAppContext();
   const {
     activeTopic,
@@ -232,7 +233,7 @@ const TopicSection: React.FC = () => {
   );
 };
 
-export const CountDisplay: React.FC = () => {
+export const CountDisplay: FC = () => {
   return (
     <HStack
       fontSize="var(--font-ui-smaller)"

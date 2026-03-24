@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
-import { useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
@@ -25,7 +25,7 @@ type TimelineItem =
   | { type: "post"; post: Post; key: string }
   | { type: "divider"; date: MomentLike; key: string };
 
-export const PostListView: React.FC = React.memo(() => {
+export const PostListView: React.FC = memo(() => {
   const { app } = useAppContext();
   const settings = useSettingsStore(
     useShallow((s) => ({
@@ -75,7 +75,7 @@ export const PostListView: React.FC = React.memo(() => {
     includeThreadReplies: true,
   });
 
-  const capabilities = React.useMemo(
+  const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
     [settings.viewNoteMode],
   );

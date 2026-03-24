@@ -1,10 +1,11 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
+import { ChangeEvent, FC, memo, useCallback, useMemo } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
-  READONLY_PLACEHOLDER_TEXT,
+  READONLY_PLACEHOLDER_TEXT
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -16,12 +17,12 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import {
   getCenterIndicatorLabel,
-  isDefaultViewState,
+  isDefaultViewState
 } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-const NavButton: React.FC<{
+const NavButton: FC<{
   direction: "left" | "right";
   onClick: () => void;
   step: number;
@@ -44,12 +45,12 @@ const NavButton: React.FC<{
   );
 };
 
-const DisplayModeIndicator: React.FC<{
+const DisplayModeIndicator: FC<{
   displayMode: "focus" | "timeline";
   threadFocusRootId: string | null;
   activeTag: string | null;
   onClick: () => void;
-}> = React.memo(({ displayMode, threadFocusRootId, activeTag, onClick }) => {
+}> = memo(({ displayMode, threadFocusRootId, activeTag, onClick }) => {
   const text = getCenterIndicatorLabel({
     displayMode,
     threadFocusRootId,
@@ -68,10 +69,10 @@ const DisplayModeIndicator: React.FC<{
   );
 });
 
-const InputAreaControl: React.FC = React.memo(() => {
+const InputAreaControl: FC = memo(() => {
   const { view } = useAppContext();
   const viewState = view.getState();
-  const capabilities = React.useMemo(
+  const capabilities = useMemo(
     () => getMFDIViewCapabilities(viewState),
     [view, viewState.noteMode],
   );
@@ -136,7 +137,7 @@ const InputAreaControl: React.FC = React.memo(() => {
     threadFocusRootId != null ||
     displayMode !== DISPLAY_MODE.FOCUS;
 
-  const handleIndicatorClick = React.useCallback(() => {
+  const handleIndicatorClick = useCallback(() => {
     if (activeTag != null) {
       setActiveTag(null);
       return;
@@ -156,8 +157,8 @@ const InputAreaControl: React.FC = React.memo(() => {
     threadFocusRootId,
   ]);
 
-  const handleChangeCalendarDate = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeCalendarDate = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
       handleChangeCalendarDateAction(event.target.value);
     },
     [handleChangeCalendarDateAction],
@@ -253,7 +254,7 @@ const InputAreaControl: React.FC = React.memo(() => {
   );
 });
 
-const InputAreaFooter: React.FC = React.memo(() => {
+const InputAreaFooter: FC = memo(() => {
   const posts = usePostsStore((s) => s.posts);
 
   const { asTask, isReadOnly, setAsTask } = useSettingsStore(
@@ -289,11 +290,11 @@ const InputAreaFooter: React.FC = React.memo(() => {
   const { app } = useAppContext();
   const store = useCurrentAppStore();
 
-  const handleOpenDrafts = React.useCallback(() => {
+  const handleOpenDrafts = useCallback(() => {
     new DraftListModal(app, store).open();
   }, [app, store]);
 
-  const handleCreateDraft = React.useCallback(
+  const handleCreateDraft = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       if (!inputSnapshot.trim()) return;
@@ -367,7 +368,7 @@ const InputAreaFooter: React.FC = React.memo(() => {
   );
 });
 
-export const InputArea: React.FC = React.memo(() => {
+export const InputArea: FC = memo(() => {
   const { app, view } = useAppContext();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({

@@ -8,7 +8,7 @@ import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
-  MFDIViewState,
+  MFDIViewState
 } from "src/ui/view/state";
 import { ensureExtension } from "src/utils/path";
 import { EditableTitleBar } from "../components/EditableTitleBar";

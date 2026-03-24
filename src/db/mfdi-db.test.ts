@@ -1,7 +1,7 @@
 import {
   getMFDIDatabaseName,
   MFDIDatabase,
-  type MemoRecord,
+  type MemoRecord
 } from "src/db/mfdi-db";
 import { afterEach, describe, expect, test } from "vitest";
 

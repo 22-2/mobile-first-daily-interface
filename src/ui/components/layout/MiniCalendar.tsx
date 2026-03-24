@@ -1,4 +1,5 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -140,15 +141,15 @@ function useMiniCalendar() {
     })),
   );
 
-  const [viewDate, setViewDate] = React.useState(() =>
+  const [viewDate, setViewDate] = useState(() =>
     window.moment(date).startOf("month"),
   );
 
-  const prevDateRef = React.useRef(date);
-  const skipNextViewUpdate = React.useRef(false);
+  const prevDateRef = useRef(date);
+  const skipNextViewUpdate = useRef(false);
 
   // 外部からの date 変更時のみ表示月を追従
-  React.useEffect(() => {
+  useEffect(() => {
     if (skipNextViewUpdate.current) {
       skipNextViewUpdate.current = false;
       prevDateRef.current = date;
@@ -191,7 +192,7 @@ function useMiniCalendar() {
     setDate(weekStart.clone());
   };
 
-  const activityDates = React.useMemo(() => {
+  const activityDates = useMemo(() => {
     const notes = getAllTopicNotes(app, "day", activeTopic);
     const dates = new Set<string>();
 
@@ -208,7 +209,7 @@ function useMiniCalendar() {
     return dates;
   }, [app, activeTopic, posts]);
 
-  const weeks = React.useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
+  const weeks = useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
   const { rangeStart, rangeEnd } = calcSelectedRange(
     date,
     granularity,
@@ -429,7 +430,7 @@ export const MiniCalendar: React.FC<{
     handleSelectWeek,
   } = useMiniCalendar();
 
-  React.useEffect(() => {
+  useEffect(() => {
     onViewDateChange?.(viewDate);
   }, [viewDate, onViewDateChange]);
 

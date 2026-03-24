@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 import { createTopicNote } from "src/utils/daily-notes";
 import {
   ensureFixedNote,
-  resolveCurrentTargetNote,
+  resolveCurrentTargetNote
 } from "src/utils/fixed-note";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, NoteSlice } from "./types";

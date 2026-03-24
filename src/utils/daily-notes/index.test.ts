@@ -6,7 +6,7 @@ import {
   getMonthlyNoteSettings,
   getTopicNote,
   getYearlyNoteSettings,
-  resolveTopicNotePath,
+  resolveTopicNotePath
 } from "src/utils/daily-notes/index";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

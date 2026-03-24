@@ -6,7 +6,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { initializePostsStore } from "src/ui/store/postsStore";
 import {
   initializeSettingsStore,
-  settingsStore,
+  settingsStore
 } from "src/ui/store/settingsStore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

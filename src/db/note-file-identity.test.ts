@@ -1,6 +1,6 @@
 import {
   inferNoteIdentityFromFile,
-  inferNoteIdentityFromFilename,
+  inferNoteIdentityFromFilename
 } from "src/db/note-file-identity";
 import { describe, expect, test } from "vitest";
 

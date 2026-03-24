@@ -11,14 +11,14 @@ import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState,
+  MFDIViewState
 } from "src/ui/view/state";
 import {
   buildFixedNotePathFromName,
   createNewFixedNote,
   ensureFixedNote,
   isMFDIFixedNotePath,
-  normalizeFixedNotePath,
+  normalizeFixedNotePath
 } from "src/utils/fixed-note";
 
 export default class MFDIPlugin extends Plugin {

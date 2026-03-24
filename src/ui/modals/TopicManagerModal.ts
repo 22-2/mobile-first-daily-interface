@@ -1,4 +1,5 @@
 import { App, Modal } from "obsidian";
+import React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { Topic } from "src/topic";
 import { TopicManagerView } from "src/ui/components/topics/TopicManagerView";

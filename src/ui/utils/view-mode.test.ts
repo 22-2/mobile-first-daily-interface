@@ -2,7 +2,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import {
   isPlainFocusView,
   isThreadView,
-  isTimelineView,
+  isTimelineView
 } from "src/ui/utils/view-mode";
 import { describe, expect, test } from "vitest";
 

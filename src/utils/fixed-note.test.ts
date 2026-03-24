@@ -7,7 +7,7 @@ import {
   isMFDIFixedNotePath,
   normalizeFixedNoteFolder,
   normalizeFixedNotePath,
-  resolveCurrentTargetNote,
+  resolveCurrentTargetNote
 } from "src/utils/fixed-note";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

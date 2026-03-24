@@ -1,6 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Settings } from "src/settings";
 import { CountDisplay } from "src/ui/components/CountDisplay";
 import { EmptyState } from "src/ui/components/EmptyState";
@@ -21,7 +22,7 @@ import {
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
-  useCurrentAppStore,
+  useCurrentAppStore
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -32,13 +33,13 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter,
+  TimeFilter
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import {
   DEFAULT_MFDI_VIEW_STATE,
-  getMFDIViewCapabilities,
+  getMFDIViewCapabilities
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
@@ -55,7 +56,7 @@ export const ReactView = ({
   settings: Settings;
   view: MFDIView;
 }) => {
-  const storeRef = React.useRef<AppStoreApi | null>(null);
+  const storeRef = useRef<AppStoreApi | null>(null);
   if (!storeRef.current) {
     storeRef.current = createAppStore();
   }
@@ -77,12 +78,12 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { view, settings, storage, app, appHelper } = useAppContext();
   const store = useCurrentAppStore();
   const viewState = view.getState();
-  const capabilities = React.useMemo(
+  const capabilities = useMemo(
     () => getMFDIViewCapabilities(viewState),
     [view, viewState.noteMode],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     initializeAppStore({ app, appHelper, settings, storage }, store);
   }, [settings, storage, app, appHelper, store]);
 
@@ -130,7 +131,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useNoteSync();
 
-  React.useEffect(() => {
+  useEffect(() => {
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
       fixedNotePath: viewState.fixedNotePath,
@@ -149,7 +150,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, [store, view, viewState.noteMode, viewState.fixedNotePath]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     store.getState().updateCurrentDailyNote(app);
   }, [
     store,
@@ -161,7 +162,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     viewState.fixedNotePath,
   ]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!capabilities.supportsPeriodMenus) return;
     if (granularity !== "day" || asTask) return;
 
@@ -192,7 +193,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     capabilities.supportsPeriodMenus,
   ]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isReadOnly && inputRef.current) {
       setTimeout(() => inputRef.current?.focus());
     }
@@ -206,7 +207,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     inputRef,
   ]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!currentDailyNote) return;
 
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
@@ -220,7 +221,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useViewSync(view);
 
   // Handle focus requested from View
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onFocusRequested = () => {
       inputRef.current?.focus();
     };
@@ -230,7 +231,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [view, inputRef]);
 
   // Initial scroll position when note changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!currentDailyNote || !scrollContainerRef.current) return;
     const timer = setTimeout(() => {
       scrollContainerRef.current?.scrollTo({ top: 0 });
@@ -244,7 +245,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const ReactViewContent = () => {
   const { view } = useAppContext();
   const viewState = view.getState();
-  const capabilities = React.useMemo(
+  const capabilities = useMemo(
     () => getMFDIViewCapabilities(viewState),
     [view, viewState.noteMode],
   );
@@ -293,7 +294,7 @@ const ReactViewContent = () => {
     includeThreadReplies: true,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy =
@@ -319,15 +320,15 @@ const ReactViewContent = () => {
   const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
     settings;
 
-  const [containerWidth, setContainerWidth] = React.useState(1000);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const lastWidthRef = React.useRef(containerWidth);
+  const [containerWidth, setContainerWidth] = useState(1000);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastWidthRef = useRef(containerWidth);
 
-  const [sideBarViewDate, setSideBarViewDate] = React.useState(() =>
+  const [sideBarViewDate, setSideBarViewDate] = useState(() =>
     window.moment(),
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
@@ -472,67 +473,67 @@ function useViewSync(view: MFDIView) {
     );
 
   const { handleSubmit } = usePostActions();
-  const handleClickOpenDailyNote = React.useCallback(() => {
+  const handleClickOpenDailyNote = useCallback(() => {
     return store.getState().handleClickOpenDailyNote(app, settings);
   }, [store, app, settings]);
 
   const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
 
-  const inputRefVal = React.useRef(inputSnapshot);
-  const sidebarOpenRef = React.useRef(sidebarOpen);
-  const setSidebarOpenRef = React.useRef(setSidebarOpen);
+  const inputRefVal = useRef(inputSnapshot);
+  const sidebarOpenRef = useRef(sidebarOpen);
+  const setSidebarOpenRef = useRef(setSidebarOpen);
 
-  React.useEffect(() => {
+  useEffect(() => {
     sidebarOpenRef.current = sidebarOpen;
   }, [sidebarOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setSidebarOpenRef.current = setSidebarOpen;
   }, [setSidebarOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     inputRefVal.current = inputSnapshot;
   }, [inputSnapshot]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ granularity });
   }, [view, granularity]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ asTask });
   }, [view, asTask]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ timeFilter });
   }, [view, timeFilter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ dateFilter });
   }, [view, dateFilter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ displayMode });
   }, [view, displayMode]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.setStatePartial({ activeTopic });
   }, [view, activeTopic]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onSubmit = handleSubmit;
     return () => {
       view.handlers.onSubmit = undefined;
     };
   }, [view, handleSubmit]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
     return () => {
       view.handlers.onOpenDailyNoteAction = undefined;
     };
   }, [view, handleClickOpenDailyNote]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeGranularity = (nextGranularity: Granularity) => {
       setGranularity(nextGranularity);
       if (nextGranularity !== "day") {
@@ -556,14 +557,14 @@ function useViewSync(view: MFDIView) {
     setTasks,
   ]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeTopic = setActiveTopic;
     return () => {
       view.handlers.onChangeTopic = undefined;
     };
   }, [view, setActiveTopic]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeAsTask = (nextAsTask: boolean) => {
       setAsTask(nextAsTask);
     };
@@ -572,7 +573,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, setAsTask]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeTimeFilter = (nextTimeFilter: TimeFilter) => {
       setTimeFilter(nextTimeFilter);
     };
@@ -581,7 +582,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, setTimeFilter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeDateFilter = (nextDateFilter: DateFilter) => {
       setDateFilter(nextDateFilter);
     };
@@ -590,7 +591,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, setDateFilter]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
       setDisplayMode(nextDisplayMode);
     };
@@ -599,7 +600,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, setDisplayMode]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isReadOnly) {
       view.handlers.onOpenModalEditor = undefined;
       return;
@@ -622,7 +623,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, app, getInputValue, replaceInput, isReadOnly]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onToggleSidebar = () => {
       setSidebarOpenRef.current(!sidebarOpenRef.current);
     };
@@ -631,7 +632,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onOpenDraftList = () => {
       new DraftListModal(app, store).open();
     };
@@ -640,7 +641,7 @@ function useViewSync(view: MFDIView) {
     };
   }, [view, app, store]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     view.handlers.onSetLiveEditorContentForTesting = (content: string) => {
       syncInputSession(content);
     };

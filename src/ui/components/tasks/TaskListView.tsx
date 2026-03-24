@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import { useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -10,7 +10,7 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
-export const TaskListView: React.FC = React.memo(() => {
+export const TaskListView: React.FC = memo(() => {
   const { app } = useAppContext();
   const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(
     useShallow((s) => ({

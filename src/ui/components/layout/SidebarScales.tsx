@@ -1,7 +1,8 @@
 import { HStack, Spinner, Text, VStack } from "@chakra-ui/react";
+import { useCallback, useEffect, useState } from "react";
 import {
   SidebarSectionHeader,
-  SidebarTextButton,
+  SidebarTextButton
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -48,11 +49,11 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     cursor.add(1, "week");
   }
 
-  const [countsMap, setCountsMap] = React.useState<Record<string, Counts>>({});
-  const [loading, setLoading] = React.useState(false);
+  const [countsMap, setCountsMap] = useState<Record<string, Counts>>({});
+  const [loading, setLoading] = useState(false);
 
   // 指定した期間の投稿数とタスク数を取得する関数
-  const getCountsForPeriod = React.useCallback(
+  const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
       const note = getTopicNote(app, d, g, activeTopic);
       if (!note) return { posts: 0, tasks: 0 };
@@ -65,7 +66,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     [app, appHelper, activeTopic],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     let isMounted = true;
     const fetchAllCounts = async () => {
       setLoading(true);

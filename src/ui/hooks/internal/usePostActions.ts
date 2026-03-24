@@ -13,7 +13,7 @@ import {
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
-  THREAD_METADATA_KEYS,
+  THREAD_METADATA_KEYS
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getTopicNote } from "src/utils/daily-notes";

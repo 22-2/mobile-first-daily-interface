@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import {
   SidebarSectionHeader,
-  SidebarTextButton,
+  SidebarTextButton
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
