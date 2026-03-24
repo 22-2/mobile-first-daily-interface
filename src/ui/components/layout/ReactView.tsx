@@ -145,6 +145,8 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         dateFilter: DEFAULT_MFDI_VIEW_STATE.dateFilter,
         timeFilter: DEFAULT_MFDI_VIEW_STATE.timeFilter,
         asTask: DEFAULT_MFDI_VIEW_STATE.asTask,
+        // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
+        activeTag: null,
         threadFocusRootId: null,
       });
     }
@@ -163,6 +165,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ]);
 
   useEffect(() => {
+    if (viewState.noteMode === "fixed") return;
     if (!capabilities.supportsPeriodMenus) return;
     if (granularity !== "day" || asTask) return;
 
@@ -191,6 +194,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePostsForWeek,
     updatePostsForDays,
     capabilities.supportsPeriodMenus,
+    viewState.noteMode,
   ]);
 
   useEffect(() => {
@@ -211,11 +215,11 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!currentDailyNote) return;
 
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
-    if (dateFilter === "today") {
+    if (viewState.noteMode === "fixed" || dateFilter === "today") {
       promises.push(updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, dateFilter, updatePosts, updateTasks]);
+  }, [currentDailyNote, dateFilter, updatePosts, updateTasks, viewState.noteMode]);
 
   // Sync state/handlers with Obsidian View
   useViewSync(view);
@@ -297,7 +301,7 @@ const ReactViewContent = () => {
   useEffect(() => {
     view.handlers.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
-      const postsTocopy =
+      const postsTocopy: Post[] =
         settings.threadFocusRootId && settings.displayMode === "focus"
           ? filteredPostsWithThreadReplies.toReversed()
           : filteredPosts;

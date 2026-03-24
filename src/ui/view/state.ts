@@ -10,6 +10,7 @@ export interface MFDIViewCapabilities {
   supportsTopicSelection: boolean;
   supportsPeriodMenus: boolean;
   supportsMovePostBetweenDays: boolean;
+  supportsTags: boolean;
 }
 
 export interface MFDIViewState extends Record<string, unknown> {
@@ -43,8 +44,9 @@ export function getMFDIViewCapabilities(
       supportsDisplayModeSwitch: false,
       supportsSidebar: false,
       supportsTopicSelection: false,
-      supportsPeriodMenus: false,
+      supportsPeriodMenus: true,
       supportsMovePostBetweenDays: false,
+      supportsTags: false,
     };
   }
 
@@ -55,6 +57,7 @@ export function getMFDIViewCapabilities(
     supportsTopicSelection: true,
     supportsPeriodMenus: true,
     supportsMovePostBetweenDays: true,
+    supportsTags: true,
   };
 }
 

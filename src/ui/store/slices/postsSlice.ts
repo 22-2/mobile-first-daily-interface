@@ -1,6 +1,7 @@
 import { App, TFile } from "obsidian";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
+import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import {
@@ -194,7 +195,14 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
     );
 
-    if (viewNoteMode === "fixed") return visiblePosts;
+    if (viewNoteMode === "fixed") {
+      return filterPostsByRelativeWindow(visiblePosts, {
+        dateFilter,
+        timeFilter,
+        asTask,
+        granularity,
+      });
+    }
     if (isTimelineView(displayMode)) return visiblePosts;
     if (dateFilter !== DATE_FILTER_IDS.TODAY) return visiblePosts;
     if (timeFilter === TIME_FILTER_IDS.ALL || asTask || granularity !== "day")

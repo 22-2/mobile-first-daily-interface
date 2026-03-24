@@ -3,7 +3,7 @@ import moment from "moment";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { Post } from "src/ui/types";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 function createPost(overrides: Partial<Post>): Post {
   const timestamp = overrides.timestamp ?? moment("2026-03-15T10:00:00.000Z");
@@ -24,6 +24,10 @@ function createPost(overrides: Partial<Post>): Post {
 }
 
 describe("useFilteredPosts", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   test("通常表示ではスレッド返信を隠す", () => {
     const posts = [
       createPost({ id: "reply-1", threadRootId: "root-1", startOffset: 20 }),
@@ -110,5 +114,69 @@ describe("useFilteredPosts", () => {
     );
 
     expect(result.current.map((post) => post.id)).toEqual(["it-1"]);
+  });
+
+  test("fixed note では現在時刻基準の日付フィルタを適用する", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));
+
+    const posts = [
+      createPost({ id: "today-1", timestamp: moment("2026-03-18T10:00:00.000Z") }),
+      createPost({ id: "within-3d", timestamp: moment("2026-03-16T09:00:00.000Z") }),
+      createPost({ id: "outside-3d", timestamp: moment("2026-03-14T23:00:00.000Z") }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: null,
+        timeFilter: "all",
+        dateFilter: "3d",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: null,
+        viewNoteMode: "fixed",
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual([
+      "today-1",
+      "within-3d",
+    ]);
+  });
+
+  test("fixed note では timeFilter を適用し、activeTag は無視する", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));
+
+    const posts = [
+      createPost({
+        id: "recent-plain",
+        timestamp: moment("2026-03-18T11:30:00.000Z"),
+        metadata: {},
+      }),
+      createPost({
+        id: "older-tagged",
+        timestamp: moment("2026-03-18T08:00:00.000Z"),
+        metadata: { mfditags: "IT" },
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: "IT",
+        timeFilter: "2h",
+        dateFilter: "today",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: null,
+        viewNoteMode: "fixed",
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual(["recent-plain"]);
   });
 });

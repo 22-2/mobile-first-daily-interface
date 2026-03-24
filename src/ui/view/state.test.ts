@@ -5,14 +5,15 @@ import {
 import { describe, expect, it } from "vitest";
 
 describe("MFDI view state", () => {
-  it("fixed mode では日付系 capability を無効化する", () => {
+  it("fixed mode では相対期間だけを許可し、それ以外の capability を抑制する", () => {
     expect(getMFDIViewCapabilities({ noteMode: "fixed" })).toEqual({
       supportsDateNavigation: false,
       supportsDisplayModeSwitch: false,
       supportsSidebar: false,
       supportsTopicSelection: false,
-      supportsPeriodMenus: false,
+      supportsPeriodMenus: true,
       supportsMovePostBetweenDays: false,
+      supportsTags: false,
     });
   });
 

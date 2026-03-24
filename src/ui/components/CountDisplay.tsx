@@ -2,7 +2,7 @@ import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -29,15 +29,37 @@ const DateSection: FC = () => {
     );
   const onClick = useFilterMenu();
   const onContextMenu = useGranularityMenu();
+  const isFixedNote = viewNoteMode === "fixed";
+  const [currentTime, setCurrentTime] = useState(() => window.moment());
   const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
     [viewNoteMode],
   );
 
-  if (isTimelineView(displayMode) || !capabilities.supportsDateNavigation)
+  useEffect(() => {
+    if (!isFixedNote) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentTime(window.moment());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [isFixedNote]);
+
+  if (
+    isTimelineView(displayMode) ||
+    (!capabilities.supportsDateNavigation && !capabilities.supportsPeriodMenus)
+  )
     return null;
 
   const dateLabel = useMemo(() => {
+    // fixedノートでは選択日ではなく「いま」を基準に絞るため、見出しも現在日時を表示する。
+    if (isFixedNote) {
+      return currentTime.format("YYYY-MM-DD HH:mm");
+    }
+
     if (granularity !== "day" || dateFilter === "today") {
       return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
     }
@@ -56,11 +78,16 @@ const DateSection: FC = () => {
       return `${start.format(format)} - ${end.format(format)}`;
     }
     return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
-  }, [date, granularity, dateFilter]);
+  }, [currentTime, date, granularity, dateFilter, isFixedNote]);
 
   return (
     <Box>
-      <UnderlinedClickable onClick={onClick} onContextMenu={onContextMenu}>
+      <UnderlinedClickable
+        onClick={onClick}
+        onContextMenu={
+          capabilities.supportsDateNavigation ? onContextMenu : undefined
+        }
+      >
         {dateLabel}
       </UnderlinedClickable>
     </Box>
@@ -114,7 +141,6 @@ const useFilterMenu = () => {
 const CountSection: FC = () => {
   const settings = useSettingsStore(
     useShallow((s) => ({
-      activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
       dateFilter: s.dateFilter,

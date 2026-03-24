@@ -13,6 +13,7 @@ import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
 import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/utils/meta";
 import { pickUrls } from "src/utils/strings";
@@ -41,6 +42,7 @@ export const PostCardView = React.memo(
     style?: React.CSSProperties;
   }) => {
     const { settings } = useAppContext();
+    const viewNoteMode = useSettingsStore((s) => s.viewNoteMode);
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,
@@ -63,6 +65,7 @@ export const PostCardView = React.memo(
           timestamp={post.timestamp}
           granularity={granularity}
           dateFilter={dateFilter}
+          showFullTimestamp={viewNoteMode === "fixed"}
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={() => !isDimmed && onEdit?.(post)}

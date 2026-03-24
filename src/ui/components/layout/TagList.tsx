@@ -1,5 +1,6 @@
 import { HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useEffect, useMemo, useState } from "react";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import {
   SidebarSectionHeader,
@@ -28,12 +29,12 @@ export const TagList: React.FC = () => {
     })),
   );
 
-  const db = React.useMemo(
+  const db = useMemo(
     () => new MFDIDatabase(appHelper.getAppId()),
     [appHelper],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       db.close();
     };
@@ -65,11 +66,11 @@ export const TagList: React.FC = () => {
     },
   );
 
-  const [stableItems, setStableItems] = React.useState<TagCountItem[] | null>(
+  const [stableItems, setStableItems] = useState<TagCountItem[] | null>(
     null,
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (snapshot.items == null) {
       return;
     }

@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { DATE_FILTER_OPTIONS } from "src/ui/config/filter-config";
+import { DATE_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from "src/ui/config/filter-config";
 import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 
@@ -42,21 +42,21 @@ export function addPeriodMenuItems(
     });
   }
 
-  // --- 表示期間（時間） ---
-  // menu.addSeparator();
-  // menu.addItem((item) => {
-  //   item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
-  // });
-  // for (const f of TIME_FILTER_OPTIONS) {
-  //   menu.addItem((item) => {
-  //     const isChecked = showFilter ? state.timeFilter === f.id : f.id === "all";
-  //     item
-  //       .setTitle(f.label)
-  //       .setChecked(isChecked)
-  //       .setDisabled(!showFilter)
-  //       .onClick(() => {
-  //         callbacks.onChangeTimeFilter?.(f.id);
-  //       });
-  //   });
-  // }
+  // date と time は同じ period 条件で効くので、同一メニュー内で同じ enable 条件に揃える。
+  menu.addSeparator();
+  menu.addItem((item) => {
+    item.setTitle("表示期間（時間）").setIcon("clock").setDisabled(true);
+  });
+  for (const f of TIME_FILTER_OPTIONS) {
+    menu.addItem((item) => {
+      const isChecked = showFilter ? state.timeFilter === f.id : f.id === "all";
+      item
+        .setTitle(f.label)
+        .setChecked(isChecked)
+        .setDisabled(!showFilter)
+        .onClick(() => {
+          callbacks.onChangeTimeFilter?.(f.id);
+        });
+    });
+  }
 }

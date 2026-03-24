@@ -141,7 +141,7 @@ export const PostListView: React.FC = memo(() => {
           si
             .setTitle("タグ付け")
             .setIcon("tag")
-            .setDisabled(isReadOnly)
+            .setDisabled(isReadOnly || !capabilities.supportsTags)
             .onClick(async () => {
               const nextValue = await showInputModal(app, {
                 title: "タグを入力",
@@ -240,6 +240,7 @@ export const PostListView: React.FC = memo(() => {
       startEdit,
       capabilities.supportsDateNavigation,
       capabilities.supportsMovePostBetweenDays,
+      capabilities.supportsTags,
     ],
   );
 

@@ -6,6 +6,7 @@ import {
   Post,
   TimeFilter
 } from "src/ui/types";
+import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import {
   countVisibleRootPosts,
@@ -45,11 +46,12 @@ export const useFilteredPosts = ({
     const postsWithoutHidden = posts.filter(
       (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
     );
+    const effectiveActiveTag = viewNoteMode === "fixed" ? null : activeTag;
     const postsMatchingTag =
-      activeTag == null
+      effectiveActiveTag == null
         ? postsWithoutHidden
         : postsWithoutHidden.filter((post) =>
-            getPostTags(post.metadata).includes(activeTag),
+            getPostTags(post.metadata).includes(effectiveActiveTag),
           );
     const activeThreadRootId = threadFocusRootId;
 
@@ -68,7 +70,14 @@ export const useFilteredPosts = ({
 
     const visibleRoots = postsMatchingTag.filter(isVisibleRootPost);
 
-    if (viewNoteMode === "fixed") return visibleRoots;
+    if (viewNoteMode === "fixed") {
+      return filterPostsByRelativeWindow(visibleRoots, {
+        dateFilter,
+        timeFilter,
+        asTask,
+        granularity,
+      });
+    }
 
     // タイムラインモード時は一切のフィルタ（期間、時間等）を無視して全件表示
     if (isTimelineView(displayMode)) return visibleRoots;

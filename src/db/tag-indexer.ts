@@ -1,11 +1,11 @@
 import * as Comlink from "comlink";
 import { App, TFile } from "obsidian";
 import PQueue from "p-queue";
-// @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import {
   GRANULARITIES,
   inferNoteIdentityFromFile
 } from "src/db/note-file-identity";
+// @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import ScanWorkerFactory from "src/db/scan.worker";
 import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 import { Settings } from "src/settings";

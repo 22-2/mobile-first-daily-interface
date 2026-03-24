@@ -9,6 +9,7 @@ interface BaseCardProps {
   timestamp: MomentLike;
   granularity: Granularity;
   dateFilter?: DateFilter;
+  showFullTimestamp?: boolean;
   isDimmed: boolean;
   onContextMenu?: (e: React.MouseEvent) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
@@ -21,6 +22,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   timestamp,
   granularity,
   dateFilter,
+  showFullTimestamp = false,
   isDimmed,
   onContextMenu,
   onDoubleClick,
@@ -83,8 +85,11 @@ export const BaseCard: React.FC<BaseCardProps> = ({
             colorScheme="gray"
             borderRadius="full"
           >
+            {/* fixedノートは複数日が混在しうるので、時刻だけだと投稿の文脈を失う。 */}
             {timestamp.format(
-              granularity === "day" && dateFilter !== "this_week"
+              showFullTimestamp
+                ? DISPLAY_DATE_TIME_FORMAT
+                : granularity === "day" && dateFilter !== "this_week"
                 ? DISPLAY_TIME_FORMAT
                 : DISPLAY_DATE_TIME_FORMAT,
             )}
