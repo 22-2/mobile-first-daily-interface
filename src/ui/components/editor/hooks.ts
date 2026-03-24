@@ -1,5 +1,5 @@
 import { App, WorkspaceLeaf } from "obsidian";
-import { FakeEditor } from "obsidian-magical-editor";
+import { FakeEditor } from "@22-2/obsidian-magical-editor";
 import { useCallback, useEffect, useRef } from "react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -104,7 +104,6 @@ export function useFakeEditor(
         readonlyPlaceholder,
       } = optionsRef.current;
 
-      // @ts-expect-error – FakeEditor constructor is not typed
       const editor = new FakeEditor(app, {
         onChange: (text: string) => {
           if (active) composition.handleChange(text);
@@ -116,7 +115,7 @@ export function useFakeEditor(
           }
           return false;
         },
-        parentScope: leaf.view.scope,
+        parentScope: leaf.view.scope!,
         initialContent: initialValue ?? "",
         placeholder,
         isReadOnly,
