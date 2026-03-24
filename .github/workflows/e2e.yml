@@ -19,7 +19,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OBSIDIAN_E2E_TOOLKIT_OBSIDIAN_VERSION: "${{ github.event_name == 'workflow_dispatch' && github.event.inputs.obsidian_version || 'latest' }}"
-      NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -46,6 +45,8 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache plugin downloads
         uses: actions/cache@v4
