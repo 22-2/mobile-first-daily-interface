@@ -1,31 +1,36 @@
-import { type ItemView } from "obsidian";
-import type Plugin from "../../main";
+import { Scope, type ItemView } from "obsidian";
 
-// TitleUrlEditorが操作するビューが持つべきメソッドを定義するインターフェース
 export interface EditableItemView extends ItemView {
   getDisplayText(): string;
 }
 
+// interface Focusable {
+//   focus(): void;
+// }
+
 interface EditableTitleBarOptions {
   onSubmitTitle: (newTitle: string) => Promise<void>;
   getTitle: () => string;
+  scope: Scope;
 }
 
 export class EditableTitleBar {
-  private view: EditableItemView;
-  private titleEl: HTMLElement;
-  private titleContainerEl: HTMLElement;
+  private readonly titleEl: HTMLElement;
+  private readonly titleContainerEl: HTMLElement;
+  private readonly scope: Scope;
+  private suppressBlur = false;
+  // private lastFocused: Focusable | undefined = undefined;
 
   constructor(
-    view: EditableItemView,
-    private options: EditableTitleBarOptions,
+    private readonly view: EditableItemView,
+    private readonly options: EditableTitleBarOptions,
   ) {
-    this.view = view;
     this.titleEl = view.titleEl;
     this.titleContainerEl = view.titleContainerEl;
+    this.scope = options.scope;
   }
 
-  public render() {
+  public render(): void {
     if (
       !(this.titleEl instanceof HTMLElement) ||
       !(this.titleContainerEl instanceof HTMLElement)
@@ -41,34 +46,42 @@ export class EditableTitleBar {
     });
     this.titleEl.setText(this.options.getTitle());
 
-    this.view.registerDomEvent(this.titleContainerEl, "click", (evt) => {
-      if (evt.target !== this.titleEl) {
-        this.titleEl.focus();
-      }
-    });
-
-    this.view.registerDomEvent(
-      this.titleEl,
-      "focus",
-      this.handleFocus.bind(this),
-    );
-    this.view.registerDomEvent(
-      this.titleEl,
-      "keydown",
-      this.handleKeyDown.bind(this),
-    );
-    this.view.registerDomEvent(this.titleEl, "blur", this.onBlur.bind(this));
+    this.registerEvents();
   }
 
-  public focus() {
+  public focus(): void {
+    // this.lastFocused = this.view.app.workspace.activeEditor?.editor;
     this.titleEl.focus();
   }
 
-  public setText(text: string) {
+  public setText(text: string): void {
     this.titleEl.innerText = text;
   }
 
-  private handleFocus(evt: FocusEvent) {
+  // -----------------------------------------------------------------------
+  // Private
+  // -----------------------------------------------------------------------
+
+  private registerEvents(): void {
+    this.view.registerDomEvent(this.titleContainerEl, "click", (evt) => {
+      if (evt.target !== this.titleEl) this.focus();
+    });
+
+    this.view.registerDomEvent(this.titleEl, "focus", (evt) =>
+      this.handleFocus(evt),
+    );
+    this.view.registerDomEvent(this.titleEl, "keydown", (evt) =>
+      this.handleKeyDown(evt),
+    );
+    this.view.registerDomEvent(this.titleEl, "blur", () => this.handleBlur());
+
+    this.scope.register([], "Escape", () => {
+      this.escape();
+      return false;
+    });
+  }
+
+  private handleFocus(evt: FocusEvent): void {
     const target = evt.target as HTMLElement;
     window.setTimeout(() => {
       const selection = window.getSelection();
@@ -80,7 +93,7 @@ export class EditableTitleBar {
     }, 0);
   }
 
-  private async handleKeyDown(evt: KeyboardEvent) {
+  private async handleKeyDown(evt: KeyboardEvent): Promise<void> {
     if (evt.key === "Enter") {
       evt.preventDefault();
       await this.options.onSubmitTitle(this.titleEl.innerText.trim());
@@ -88,7 +101,20 @@ export class EditableTitleBar {
     }
   }
 
-  private onBlur() {
+  private handleBlur(): void {
+    if (this.suppressBlur) {
+      this.suppressBlur = false;
+      return;
+    }
     this.setText(this.options.getTitle());
+  }
+
+  private escape(): void {
+    this.suppressBlur = true;
+    this.setText(this.options.getTitle());
+    this.titleEl.blur();
+    // if (this.lastFocused) {
+    //   this.lastFocused.focus();
+    // }
   }
 }
