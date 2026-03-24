@@ -1,5 +1,9 @@
 name: Unit Tests
 
+permissions:
+  contents: read
+  packages: read
+
 on:
   push:
     branches: [master, dev]
@@ -23,11 +27,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24.x"
-          registry-url: "https://npm.pkg.github.com"
-          scope: "@22-2"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
+        env:
+          # Mental model: private @22-2 packages must always be resolved via GitHub Packages.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          registries: |
+            https://registry.npmjs.org/
+            @22-2:https://npm.pkg.github.com/|$GITHUB_TOKEN
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -40,7 +49,7 @@ jobs:
 
       - name: Install dependencies
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun install
 
       - name: Run unit tests
