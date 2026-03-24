@@ -1,11 +1,7 @@
 import moment from "moment";
 import { MemoRecord } from "src/db/mfdi-db";
 import { DATE_FORMAT, DATE_TIME_FORMAT } from "src/ui/config/date-formats";
-import {
-  getPostTags,
-  isArchived,
-  isDeleted,
-} from "src/ui/utils/post-metadata";
+import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { parseThinoEntries } from "src/utils/thino";
 import { ScannableNote } from "./worker-api";
 
@@ -35,7 +31,11 @@ function resolveMemoTimestamp(
 
 export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
   return parseThinoEntries(file.content).map((entry) => {
-    const createdAt = resolveMemoTimestamp(file.noteDate, entry.time, entry.metadata);
+    const createdAt = resolveMemoTimestamp(
+      file.noteDate,
+      entry.time,
+      entry.metadata,
+    );
 
     return {
       id: `${file.path}:${entry.startOffset}`,

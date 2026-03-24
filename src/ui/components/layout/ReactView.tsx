@@ -1,7 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
-import * as React from "react";
 import { Settings } from "src/settings";
 import { CountDisplay } from "src/ui/components/CountDisplay";
 import { EmptyState } from "src/ui/components/EmptyState";
@@ -22,7 +21,7 @@ import {
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
-  useCurrentAppStore
+  useCurrentAppStore,
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -33,13 +32,13 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import {
   DEFAULT_MFDI_VIEW_STATE,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
@@ -87,14 +86,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     initializeAppStore({ app, appHelper, settings, storage }, store);
   }, [settings, storage, app, appHelper, store]);
 
-  const {
-    date,
-    granularity,
-    activeTopic,
-    dateFilter,
-    asTask,
-    isReadOnly,
-  } =
+  const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
     useSettingsStore(
       useShallow((state) => ({
         date: state.date,
@@ -316,7 +308,13 @@ const ReactViewContent = () => {
     return () => {
       view.handlers.onCopyAllPosts = undefined;
     };
-  }, [view, filteredPosts, filteredPostsWithThreadReplies, settings.threadFocusRootId, settings.displayMode]);
+  }, [
+    view,
+    filteredPosts,
+    filteredPostsWithThreadReplies,
+    settings.threadFocusRootId,
+    settings.displayMode,
+  ]);
 
   const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
     settings;
@@ -463,14 +461,15 @@ function useViewSync(view: MFDIView) {
     })),
   );
 
-  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } = useEditorStore(
-    useShallow((state) => ({
-      inputSnapshot: state.inputSnapshot,
-      getInputValue: state.getInputValue,
-      replaceInput: state.replaceInput,
-      syncInputSession: state.syncInputSession,
-    })),
-  );
+  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } =
+    useEditorStore(
+      useShallow((state) => ({
+        inputSnapshot: state.inputSnapshot,
+        getInputValue: state.getInputValue,
+        replaceInput: state.replaceInput,
+        syncInputSession: state.syncInputSession,
+      })),
+    );
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = React.useCallback(() => {

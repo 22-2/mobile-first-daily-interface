@@ -2,7 +2,7 @@ import { Settings } from "src/settings";
 import {
   DISPLAY_MODE,
   MOVE_STEP,
-  STORAGE_KEYS
+  STORAGE_KEYS,
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
@@ -11,7 +11,7 @@ import {
   DisplayMode,
   Granularity,
   MomentLike,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
@@ -88,7 +88,8 @@ function resolveInitialSettingsState(
 
   return {
     activeTopic: settings.activeTopic ?? "",
-    activeTag: storage?.get<string | null>(STORAGE_KEYS.ACTIVE_TAG, null) ?? null,
+    activeTag:
+      storage?.get<string | null>(STORAGE_KEYS.ACTIVE_TAG, null) ?? null,
     granularity,
     date: validDate,
     timeFilter:

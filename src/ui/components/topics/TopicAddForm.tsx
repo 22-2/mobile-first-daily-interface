@@ -8,9 +8,8 @@ import {
   HStack,
   Input,
   Text,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
-import * as React from "react";
 
 interface TopicAddFormProps {
   newTitle: string;

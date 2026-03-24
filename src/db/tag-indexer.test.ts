@@ -105,10 +105,12 @@ describe("TagIndexer", () => {
     const dailyNotesModule = await import("src/utils/daily-notes");
     const getAllTopicNotesSpy = vi
       .spyOn(dailyNotesModule, "getAllTopicNotes")
-      .mockImplementation((_, granularity) =>
-        (granularity === "day"
-          ? { day: file as any }
-          : {}) as Record<string, any>,
+      .mockImplementation(
+        (_, granularity) =>
+          (granularity === "day" ? { day: file as any } : {}) as Record<
+            string,
+            any
+          >,
       );
 
     await indexer.scanAllNotes(app, { topics: [DEFAULT_TOPIC] } as any);

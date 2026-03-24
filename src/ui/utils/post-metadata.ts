@@ -1,4 +1,4 @@
-import { TAG_METADATA_KEY, parseMfdiTags } from "src/utils/tags";
+import { parseMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
 
 export function getPostTags(metadata: Record<string, string>): string[] {
   return parseMfdiTags(metadata);

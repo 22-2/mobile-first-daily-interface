@@ -6,7 +6,10 @@ import { describe, expect, test } from "vitest";
 
 describe("note file identity inference", () => {
   test("infers the default topic daily note", () => {
-    const identity = inferNoteIdentityFromFilename("2026-03-23", ["", "writing"]);
+    const identity = inferNoteIdentityFromFilename("2026-03-23", [
+      "",
+      "writing",
+    ]);
 
     expect(identity).not.toBeNull();
     expect(identity?.topicId).toBe("");
@@ -27,7 +30,9 @@ describe("note file identity inference", () => {
   });
 
   test("returns null when nothing matches", () => {
-    expect(inferNoteIdentityFromFilename("not-a-note", ["", "writing"])).toBeNull();
+    expect(
+      inferNoteIdentityFromFilename("not-a-note", ["", "writing"]),
+    ).toBeNull();
   });
 
   test("accepts a TFile-like object", () => {

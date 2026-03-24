@@ -11,7 +11,9 @@ export interface NoteFileIdentity {
   noteDate: MomentLike;
 }
 
-function normalizeTopicIds(topics: Array<Pick<Topic, "id">> | string[]): string[] {
+function normalizeTopicIds(
+  topics: Array<Pick<Topic, "id">> | string[],
+): string[] {
   const topicIds = topics.map((topic) =>
     typeof topic === "string" ? topic : topic.id,
   );

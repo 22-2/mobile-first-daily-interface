@@ -1,14 +1,8 @@
 import { Box, BoxProps } from "@chakra-ui/react";
 import { App, WorkspaceLeaf } from "obsidian";
-import * as React from "react";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef
-} from "react";
+import { type FakeEditor } from "obsidian-magical-editor";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "./hooks";
-import { FakeEditor } from "obsidian-magical-editor"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface ObsidianLiveEditorRef {
@@ -19,8 +13,10 @@ export interface ObsidianLiveEditorRef {
   setContent: FakeEditor["setContent"];
 }
 
-export interface ObsidianLiveEditorProps
-  extends Omit<BoxProps, "onChange" | "onSubmit"> {
+export interface ObsidianLiveEditorProps extends Omit<
+  BoxProps,
+  "onChange" | "onSubmit"
+> {
   leaf: WorkspaceLeaf;
   app: App;
   initialValue: string;
@@ -68,8 +64,7 @@ export const ObsidianLiveEditor = forwardRef<
     useImperativeHandle(ref, () => ({
       focus: () => editorRef.current?.focus(),
       getValue: () => editorRef.current?.getContent() ?? "",
-      getContentSnapshot: () =>
-        editorRef.current?.getContentSnapshot() ?? "",
+      getContentSnapshot: () => editorRef.current?.getContentSnapshot() ?? "",
       subscribeContent: (listener) =>
         editorRef.current?.subscribeContent(listener) ?? (() => {}),
       setContent: (text) => editorRef.current?.setContent(text),

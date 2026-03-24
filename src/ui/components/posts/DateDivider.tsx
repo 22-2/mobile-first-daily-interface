@@ -1,5 +1,4 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import * as React from "react";
 import { MomentLike } from "src/ui/types";
 import { replaceDayToJa } from "src/utils/strings";
 

@@ -70,5 +70,7 @@ export function createFixedNoteViewState(filePath: string): MFDIViewState {
 export function getFixedNoteTitle(path: string | null): string {
   if (!path) return "Fixed Note";
   const segments = path.replace(/\\/g, "/").split("/");
-  return segments[segments.length - 1].replace(/\.mfdi\.md$/, "") || "Fixed Note";
+  return (
+    segments[segments.length - 1].replace(/\.mfdi\.md$/, "") || "Fixed Note"
+  );
 }

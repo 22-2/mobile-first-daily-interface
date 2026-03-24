@@ -1,5 +1,4 @@
 import { Box, Checkbox, HStack } from "@chakra-ui/react";
-import * as React from "react";
 import { Task } from "src/app-helper";
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";

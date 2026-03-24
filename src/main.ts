@@ -1,5 +1,6 @@
 import { around } from "monkey-around";
 import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import { unpatchToggleSourceCommand } from "obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
 import { TagIndexer } from "src/db/tag-indexer";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
@@ -10,13 +11,15 @@ import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState
+  MFDIViewState,
 } from "src/ui/view/state";
 import {
-  buildFixedNotePathFromName, createNewFixedNote, ensureFixedNote,
-  isMFDIFixedNotePath, normalizeFixedNotePath
+  buildFixedNotePathFromName,
+  createNewFixedNote,
+  ensureFixedNote,
+  isMFDIFixedNotePath,
+  normalizeFixedNotePath,
 } from "src/utils/fixed-note";
-import { unpatchToggleSourceCommand } from "obsidian-magical-editor";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
@@ -142,11 +145,7 @@ export default class MFDIPlugin extends Plugin {
     this.register(
       around(WorkspaceLeaf.prototype, {
         setViewState(original: Function) {
-          return function (
-            this: WorkspaceLeaf,
-            viewState,
-            eState,
-          ) {
+          return function (this: WorkspaceLeaf, viewState, eState) {
             const nextState =
               plugin.convertMarkdownViewStateForFixedNote(viewState);
             return original.call(this, nextState, eState);

@@ -1,10 +1,6 @@
 import { App, WorkspaceLeaf } from "obsidian";
 import { FakeEditor } from "obsidian-magical-editor";
-import {
-  useCallback,
-  useEffect,
-  useRef
-} from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,8 +50,7 @@ export function useCompositionGuard({
 
   const handleCompositionEnd = useCallback(() => {
     isComposingRef.current = false;
-    const text =
-      pendingTextRef.current ?? getFallbackTextRef.current();
+    const text = pendingTextRef.current ?? getFallbackTextRef.current();
     pendingTextRef.current = null;
     onFlushRef.current(text);
   }, []);

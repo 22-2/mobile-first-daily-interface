@@ -8,16 +8,16 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { Post } from "src/ui/types";
-import { TAG_METADATA_KEY, serializeMfdiTags } from "src/utils/tags";
 import { resolveTimestamp, toText } from "src/ui/utils/post-utils";
 import {
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
-  THREAD_METADATA_KEYS
+  THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getTopicNote } from "src/utils/daily-notes";
+import { serializeMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./refreshPosts";
@@ -211,7 +211,9 @@ export const usePostActions = () => {
   const replaceAndRefreshWithMetadata = useCallback(
     async (
       post: Post,
-      transformMetadata: (metadata: Record<string, string>) => Record<string, string>,
+      transformMetadata: (
+        metadata: Record<string, string>,
+      ) => Record<string, string>,
     ) => {
       const latestPost = await findLatestPost(post);
       if (!latestPost) {
@@ -245,7 +247,13 @@ export const usePostActions = () => {
 
       await refreshPosts(latestPost.path);
     },
-    [appHelper, editorState, findLatestPost, refreshPosts, settingsState.granularity],
+    [
+      appHelper,
+      editorState,
+      findLatestPost,
+      refreshPosts,
+      settingsState.granularity,
+    ],
   );
 
   const updateManyPosts = useCallback(

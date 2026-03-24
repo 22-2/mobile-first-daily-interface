@@ -70,8 +70,12 @@ describe("MFDIDatabase", () => {
       }),
     ]);
 
-    await expect(db.memos.where("tags").equals("IT").toArray()).resolves.toHaveLength(1);
-    await expect(db.memos.where("tags").equals("Writing").toArray()).resolves.toHaveLength(1);
+    await expect(
+      db.memos.where("tags").equals("IT").toArray(),
+    ).resolves.toHaveLength(1);
+    await expect(
+      db.memos.where("tags").equals("Writing").toArray(),
+    ).resolves.toHaveLength(1);
   });
 
   test("upserts memo records by id", async () => {
@@ -81,10 +85,12 @@ describe("MFDIDatabase", () => {
     await db.memos.put(createMemo({ content: "updated", tags: ["IT"] }));
 
     await expect(db.memos.toArray()).resolves.toHaveLength(1);
-    await expect(db.memos.get("daily/2026-03-23.md:10")).resolves.toMatchObject({
-      content: "updated",
-      tags: ["IT"],
-    });
+    await expect(db.memos.get("daily/2026-03-23.md:10")).resolves.toMatchObject(
+      {
+        content: "updated",
+        tags: ["IT"],
+      },
+    );
   });
 
   test("stores aggregated tag stat records", async () => {

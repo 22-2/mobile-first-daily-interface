@@ -1,13 +1,13 @@
 import * as Comlink from "comlink";
-import PQueue from "p-queue";
 import { App, TFile } from "obsidian";
+import PQueue from "p-queue";
 // @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
-import ScanWorkerFactory from "src/db/scan.worker";
 import {
   GRANULARITIES,
   inferNoteIdentityFromFile,
 } from "src/db/note-file-identity";
-import { ScanWorkerAPI, ScannableNote } from "src/db/worker-api";
+import ScanWorkerFactory from "src/db/scan.worker";
+import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 import { Settings } from "src/settings";
 import { DEFAULT_TOPIC, Topic } from "src/topic";
 import { getAllTopicNotes } from "src/utils/daily-notes";
@@ -72,7 +72,8 @@ function collectScanTargets(app: App, settings: Settings): ScanTarget[] {
           noteName: file.basename,
           topicId: topic.id,
           noteGranularity: granularity,
-          noteDate: getDateFromFile(file, granularity, topic.id)?.toISOString() ?? "",
+          noteDate:
+            getDateFromFile(file, granularity, topic.id)?.toISOString() ?? "",
         };
 
         if (!nextTarget.noteDate) {
@@ -96,7 +97,10 @@ function collectScanTargets(app: App, settings: Settings): ScanTarget[] {
   return [...uniqueTargets.values()];
 }
 
-async function toScannableNote(app: App, target: ScanTarget): Promise<ScannableNote> {
+async function toScannableNote(
+  app: App,
+  target: ScanTarget,
+): Promise<ScannableNote> {
   const content = await app.vault.cachedRead(target.file);
   return {
     path: target.path,
@@ -123,7 +127,9 @@ export class TagIndexer {
     if (options.api) {
       this.api = options.api;
     } else {
-      const worker = (options.workerFactory ?? (() => new ScanWorkerFactory()))();
+      const worker = (
+        options.workerFactory ?? (() => new ScanWorkerFactory())
+      )();
       this.worker = worker;
       this.api = Comlink.wrap<ScanWorkerAPI>(worker);
     }
@@ -146,7 +152,9 @@ export class TagIndexer {
     for (let start = 0; start < targets.length; start += this.scanChunkSize) {
       const batchTargets = targets.slice(start, start + this.scanChunkSize);
       const files = await Promise.all(
-        batchTargets.map((target) => queue.add(() => toScannableNote(app, target))),
+        batchTargets.map((target) =>
+          queue.add(() => toScannableNote(app, target)),
+        ),
       );
       await this.api.scanFiles(files);
     }
@@ -156,10 +164,17 @@ export class TagIndexer {
     await this.api.setMeta("lastFullScanAt", new Date().toISOString());
   }
 
-  async onFileChanged(app: App, file: TFile, settings: Settings): Promise<void> {
+  async onFileChanged(
+    app: App,
+    file: TFile,
+    settings: Settings,
+  ): Promise<void> {
     await this.waitUntilReady();
 
-    const identity = inferNoteIdentityFromFile(file, normalizeTopics(settings.topics));
+    const identity = inferNoteIdentityFromFile(
+      file,
+      normalizeTopics(settings.topics),
+    );
     if (!identity) {
       return;
     }

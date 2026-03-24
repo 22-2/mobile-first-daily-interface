@@ -6,11 +6,11 @@ import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEdit
 import {
   DateFilter,
   DisplayMode,
+  Draft,
   Granularity,
   MomentLike,
   Post,
   TimeFilter,
-  Draft,
 } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { MFDIStorage } from "src/utils/storage";

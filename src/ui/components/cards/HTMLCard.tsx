@@ -1,5 +1,4 @@
 import { Box, Image, Link, Text } from "@chakra-ui/react";
-import * as React from "react";
 import { useState } from "react";
 import { HTMLMeta } from "src/utils/meta";
 

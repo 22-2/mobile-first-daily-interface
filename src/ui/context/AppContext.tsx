@@ -1,5 +1,4 @@
 import { App } from "obsidian";
-import * as React from "react";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import { AppHelper } from "src/app-helper";
 import { Settings } from "src/settings";

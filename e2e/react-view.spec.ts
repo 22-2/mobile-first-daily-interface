@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import path from "node:path";
-import { ObsidianAPI, expect, test } from "obsidian-e2e-toolkit";
+import { expect, ObsidianAPI, test } from "obsidian-e2e-toolkit";
 import { MFDIView } from "src/ui/view/MFDIView";
 
 const PLUGIN_PATH = path.resolve(".");

@@ -1,6 +1,5 @@
 import { HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
-import * as React from "react";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import {
   SidebarSectionHeader,
@@ -40,29 +39,35 @@ export const TagList: React.FC = () => {
     };
   }, [db]);
 
-  const snapshot = useLiveQuery(async (): Promise<TagListSnapshot> => {
-    const [tagStats, lastFullScanAt] = await Promise.all([
-      db.tagStats.toArray(),
-      db.meta.get("lastFullScanAt"),
-    ]);
+  const snapshot = useLiveQuery(
+    async (): Promise<TagListSnapshot> => {
+      const [tagStats, lastFullScanAt] = await Promise.all([
+        db.tagStats.toArray(),
+        db.meta.get("lastFullScanAt"),
+      ]);
 
-    return {
-      items: tagStats
-        .map(({ tag, count }) => ({ tag, count }))
-        .sort((left, right) => {
-          if (right.count !== left.count) {
-            return right.count - left.count;
-          }
-          return left.tag.localeCompare(right.tag, "ja");
-        }),
-      hasCompletedFullScan: lastFullScanAt != null,
-    };
-  }, [db], {
-    items: null,
-    hasCompletedFullScan: false,
-  });
+      return {
+        items: tagStats
+          .map(({ tag, count }) => ({ tag, count }))
+          .sort((left, right) => {
+            if (right.count !== left.count) {
+              return right.count - left.count;
+            }
+            return left.tag.localeCompare(right.tag, "ja");
+          }),
+        hasCompletedFullScan: lastFullScanAt != null,
+      };
+    },
+    [db],
+    {
+      items: null,
+      hasCompletedFullScan: false,
+    },
+  );
 
-  const [stableItems, setStableItems] = React.useState<TagCountItem[] | null>(null);
+  const [stableItems, setStableItems] = React.useState<TagCountItem[] | null>(
+    null,
+  );
 
   React.useEffect(() => {
     if (snapshot.items == null) {
@@ -87,9 +92,7 @@ export const TagList: React.FC = () => {
 
   return (
     <VStack align="stretch" spacing={1} pt={2} className="mfdi-tag-section">
-      <SidebarSectionHeader>
-        タグ
-      </SidebarSectionHeader>
+      <SidebarSectionHeader>タグ</SidebarSectionHeader>
       <VStack align="stretch" spacing={0} className="mfdi-tag-list">
         {items.map((item) => {
           const isActive = activeTag === item.tag;
@@ -104,7 +107,9 @@ export const TagList: React.FC = () => {
             >
               <HStack spacing={0} justify="space-between">
                 <Text as="span">{item.tag}</Text>
-                <Text as="span" color="var(--text-muted)">{item.count}</Text>
+                <Text as="span" color="var(--text-muted)">
+                  {item.count}
+                </Text>
               </HStack>
             </SidebarTextButton>
           );

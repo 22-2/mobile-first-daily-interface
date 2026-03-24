@@ -1,8 +1,8 @@
 import { Box, HStack, Text } from "@chakra-ui/react";
-import * as React from "react";
 
 const activeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
-const activeHoverBg = "color-mix(in srgb, var(--color-accent), transparent 80%)";
+const activeHoverBg =
+  "color-mix(in srgb, var(--color-accent), transparent 80%)";
 const activeColor = "var(--color-accent)";
 const hoverBg = "var(--background-modifier-hover)";
 

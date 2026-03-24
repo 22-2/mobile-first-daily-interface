@@ -1,7 +1,9 @@
 import { App } from "obsidian";
 import { AppHelper } from "src/app-helper";
 import {
-  appStore, AppStoreApi, useCurrentAppStore
+  appStore,
+  AppStoreApi,
+  useCurrentAppStore,
 } from "src/ui/store/appStore";
 import type { MFDIStore, PostsSlice } from "src/ui/store/slices/types";
 import { useStore } from "zustand";

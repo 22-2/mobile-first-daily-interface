@@ -53,7 +53,10 @@ describe("useInfiniteTimeline", () => {
     expect(initialBaseDate.isSame(yesterday, "day")).toBe(true);
 
     now = today.clone();
-    const afterPostingBaseDate = resolveTimelineBaseDate(null, getEffectiveDate);
+    const afterPostingBaseDate = resolveTimelineBaseDate(
+      null,
+      getEffectiveDate,
+    );
     expect(afterPostingBaseDate.isSame(today, "day")).toBe(true);
   });
 

@@ -1,9 +1,9 @@
 import {
-  TAG_METADATA_KEY,
   isValidTagName,
   normalizeTags,
   parseMfdiTags,
   serializeMfdiTags,
+  TAG_METADATA_KEY,
 } from "src/utils/tags";
 import { describe, expect, test } from "vitest";
 

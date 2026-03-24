@@ -1,6 +1,5 @@
 import { Box, HStack } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import * as React from "react";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
@@ -150,7 +149,9 @@ const CountSection: React.FC = () => {
   const tasksCount = tasks.length;
   const filteredPostsCount = filteredPosts.length;
   const allPostsCount = countVisibleRootPosts(
-    posts.filter((post) => !isArchived(post.metadata) && !isDeleted(post.metadata)),
+    posts.filter(
+      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
+    ),
   );
 
   const showTotal =

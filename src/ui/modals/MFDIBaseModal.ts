@@ -3,7 +3,10 @@ import { App, Modal } from "obsidian";
 export abstract class MFDIBaseModal<T = void> extends Modal {
   protected resolvePromise!: (value: T) => void;
 
-  constructor(app: App, protected titleText: string) {
+  constructor(
+    app: App,
+    protected titleText: string,
+  ) {
     super(app);
   }
 
@@ -18,7 +21,7 @@ export abstract class MFDIBaseModal<T = void> extends Modal {
     this.modalEl.addClass("mfdi-modal");
     this.contentEl.empty();
     this.titleEl.setText(this.titleText);
-    
+
     const bodyEl = this.contentEl.createDiv({ cls: "mfdi-modal__body" });
     this.renderBody(bodyEl);
   }

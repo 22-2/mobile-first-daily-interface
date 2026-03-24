@@ -4,7 +4,7 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import {
   createSettingsSlice,
   isPastDateReadOnly,
-  isViewReadOnly
+  isViewReadOnly,
 } from "src/ui/store/slices/settingsSlice";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -97,7 +97,7 @@ describe("settingsSlice", () => {
   it("初期表示モードはタイムライン", () => {
     const initial = createSettingsSlice(
       () => {},
-      () => ({} as any),
+      () => ({}) as any,
       {} as any,
     );
     expect(initial.displayMode).toBe(DISPLAY_MODE.TIMELINE);

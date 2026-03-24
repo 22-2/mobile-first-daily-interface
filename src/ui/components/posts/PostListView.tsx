@@ -1,7 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
-import * as React from "react";
 import { useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
@@ -15,10 +14,7 @@ import { showInputModal } from "src/ui/modals/InputModal";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import {
-  MomentLike,
-  Post
-} from "src/ui/types";
+import { MomentLike, Post } from "src/ui/types";
 import { getRawTagMetadata } from "src/ui/utils/post-metadata";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";

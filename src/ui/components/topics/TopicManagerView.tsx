@@ -1,5 +1,4 @@
 import { Box, Button, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
-import * as React from "react";
 import { useCallback, useRef, useState } from "react";
 import { DEFAULT_TOPIC, Topic } from "src/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";

@@ -1,11 +1,10 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import * as React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
-  READONLY_PLACEHOLDER_TEXT
+  READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -149,7 +148,13 @@ const InputAreaControl: React.FC = React.memo(() => {
     }
 
     setDisplayMode(DISPLAY_MODE.FOCUS);
-  }, [activeTag, setActiveTag, setDisplayMode, setThreadFocusRootId, threadFocusRootId]);
+  }, [
+    activeTag,
+    setActiveTag,
+    setDisplayMode,
+    setThreadFocusRootId,
+    threadFocusRootId,
+  ]);
 
   const handleChangeCalendarDate = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,40 +194,38 @@ const InputAreaControl: React.FC = React.memo(() => {
       <Box flex="1" />
       <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
         {!capabilities.supportsDateNavigation ? null : isStatusIndicatorVisible ? (
-            <DisplayModeIndicator
-              displayMode={displayMode}
-              threadFocusRootId={threadFocusRootId}
-              activeTag={activeTag}
-              onClick={handleIndicatorClick}
+          <DisplayModeIndicator
+            displayMode={displayMode}
+            threadFocusRootId={threadFocusRootId}
+            activeTag={activeTag}
+            onClick={handleIndicatorClick}
+          />
+        ) : (
+          <>
+            <NavButton
+              direction="left"
+              onClick={handleClickMovePrevious}
+              step={step}
             />
-          ) : (
-            <>
-              <NavButton
-                direction="left"
-                onClick={handleClickMovePrevious}
-                step={step}
+            <HStack spacing="0.2em" className="mfdi-date-controls">
+              <Input
+                className="mfdi-date-input"
+                size="sm"
+                height="28px"
+                fontSize="90%"
+                type={GRANULARITY_CONFIG[granularity].inputType}
+                value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
+                onChange={handleChangeCalendarDate}
+                width={granularity === "year" ? "6.5em" : "10em"}
+                paddingX="0.5em"
               />
-              <HStack spacing="0.2em" className="mfdi-date-controls">
-                <Input
-                  className="mfdi-date-input"
-                  size="sm"
-                  height="28px"
-                  fontSize="90%"
-                  type={GRANULARITY_CONFIG[granularity].inputType}
-                  value={date.format(
-                    GRANULARITY_CONFIG[granularity].inputFormat,
-                  )}
-                  onChange={handleChangeCalendarDate}
-                  width={granularity === "year" ? "6.5em" : "10em"}
-                  paddingX="0.5em"
-                />
-              </HStack>
-              <NavButton
-                direction="right"
-                onClick={handleClickMoveNext}
-                step={step}
-              />
-            </>
+            </HStack>
+            <NavButton
+              direction="right"
+              onClick={handleClickMoveNext}
+              step={step}
+            />
+          </>
         )}
       </HStack>
       <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">

@@ -1,18 +1,17 @@
 import { ItemView, Menu, Scope, TFile, WorkspaceLeaf } from "obsidian";
-import * as React from "react";
-import { Root, createRoot } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 import {
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
+  MFDIViewState,
 } from "src/ui/view/state";
-import { EditableTitleBar } from "../components/EditableTitleBar";
 import { ensureExtension } from "src/utils/path";
+import { EditableTitleBar } from "../components/EditableTitleBar";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -231,9 +230,7 @@ export class MFDIView extends ItemView {
           .setTitle(isFocus ? "フォーカスモード" : "タイムラインモード")
           .setIcon(isFocus ? "toggle-left" : "toggle-right")
           .onClick(() =>
-            this.handlers.onChangeDisplayMode?.(
-              isFocus ? "timeline" : "focus",
-            ),
+            this.handlers.onChangeDisplayMode?.(isFocus ? "timeline" : "focus"),
           ),
       );
     }
