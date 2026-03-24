@@ -14,7 +14,7 @@
     "strictPropertyInitialization": false,
     "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
-    "types": ["@types/bun", "obsidian-typings"]
+    "types": ["obsidian-typings"]
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }
