@@ -1,9 +1,5 @@
 name: Unit Tests
 
-permissions:
-  contents: read
-  packages: read
-
 on:
   push:
     branches: [master, dev]
@@ -42,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           # Mental model: private @22-2 packages are resolved by npmrc auth + NODE_AUTH_TOKEN.
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Run unit tests
         run: pnpm test
