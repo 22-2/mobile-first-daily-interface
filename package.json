@@ -21,7 +21,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@22-2/esbuild-plugin-obsidian-copy": "link:E:/Desktop/coding/my-projects-02/esbuild-plugin-obsidian-copy",
+    "@22-2/esbuild-plugin-obsidian-copy": "0.1.0",
     "@babel/core": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
@@ -65,7 +65,7 @@
     "es-toolkit": "^1.45.1",
     "framer-motion": "^12.35.2",
     "monkey-around": "^3.0.0",
-    "obsidian-magical-editor": "link:E:/Desktop/coding/my-projects-02/obsidian-magical-editor",
+    "@22-2/obsidian-magical-editor": "1.0.1",
     "p-queue": "^9.1.0",
     "preact": "^10.29.0",
     "react": "~19.2.4",

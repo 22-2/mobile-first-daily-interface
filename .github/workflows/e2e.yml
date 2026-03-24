@@ -67,10 +67,8 @@ jobs:
 
       - name: Install dependencies
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-          bun install
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun install
 
       - name: Install Playwright chromium (Unix)
         if: matrix.os != 'windows-latest' && steps.playwright-cache.outputs.cache-hit != 'true'

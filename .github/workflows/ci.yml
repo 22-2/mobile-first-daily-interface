@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24.x"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@22-2"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -37,6 +39,8 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun install
 
       - name: Run unit tests
