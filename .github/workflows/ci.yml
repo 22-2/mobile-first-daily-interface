@@ -32,11 +32,12 @@ jobs:
         uses: oven-sh/setup-bun@v2
         env:
           # Mental model: private @22-2 packages must always be resolved via GitHub Packages.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bun registries require either NODE_AUTH_TOKEN or GITHUB_TOKEN for @22-2 scope.
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
         with:
           registries: |
             https://registry.npmjs.org/
-            @22-2:https://npm.pkg.github.com/|$GITHUB_TOKEN
+            @22-2:https://npm.pkg.github.com/|${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
@@ -48,8 +49,6 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
         run: bun install
 
       - name: Run unit tests
