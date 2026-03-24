@@ -1,6 +1,6 @@
 import { around } from "monkey-around";
 import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
-import { unpatchToggleSourceCommand } from "obsidian-magical-editor";
+import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
 import { TagIndexer } from "src/db/tag-indexer";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
