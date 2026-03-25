@@ -1,8 +1,11 @@
-import { around } from "monkey-around";
-import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
 import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
+import {
+  createBuiltinMainServices,
+  MainServiceContext
+} from "src/core/main-services";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import {
   createTagIndexExtension,
@@ -38,14 +41,7 @@ export default class MFDIPlugin extends Plugin {
     this.registerMFDIView();
     this.registerRibbonActions();
     this.registerCommands();
-    this.patchSetViewStateForFixedNotes();
-    this.registerEventListeners();
-
-    this.app.workspace.onLayoutReady(() => {
-      void this.tagIndexExtension.fullScan(this.appHelper, this.settings);
-    });
-
-    void this.replaceOpenFixedMarkdownLeaves();
+    this.registerBuiltinServices();
   }
 
   // ---------------------------------------------------------------------------
@@ -83,24 +79,6 @@ export default class MFDIPlugin extends Plugin {
     });
   }
 
-  private registerEventListeners() {
-    this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
-        void this.handleFileChanged(file);
-      }),
-    );
-
-    this.registerEvent(
-      this.app.vault.on("rename", (file, oldPath) =>
-        this.handleFileRename(file, oldPath),
-      ),
-    );
-
-    this.registerEvent(
-      this.app.vault.on("delete", (file) => this.handleFileDelete(file)),
-    );
-  }
-
   // ---------------------------------------------------------------------------
   // コマンド処理
   // ---------------------------------------------------------------------------
@@ -133,78 +111,27 @@ export default class MFDIPlugin extends Plugin {
   }
 
   // ---------------------------------------------------------------------------
-  // イベントハンドラ
-  // ---------------------------------------------------------------------------
-
-  private patchSetViewStateForFixedNotes() {
-    const plugin = this;
-
-    this.register(
-      around(WorkspaceLeaf.prototype, {
-        setViewState(original: Function) {
-          return function (this: WorkspaceLeaf, viewState, eState) {
-            const nextState = plugin.fixedNoteViewExtension.convertMarkdownViewState(viewState);
-            return original.call(this, nextState, eState);
-          };
-        },
-      }),
-    );
-  }
-
-  private async replaceOpenFixedMarkdownLeaves() {
-    await this.fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
-      leaves: this.app.workspace.getLeavesOfType("markdown"),
-      attachMFDIView: (state, preferredLeaf) =>
-        this.attachMFDIView(state, preferredLeaf),
-    });
-  }
-
-  private handleFileRename(file: TAbstractFile | null, oldPath: string) {
-    if (!(file instanceof TFile)) return;
-
-    void this.tagIndexExtension.handleFileRenamed(
-      this.appHelper,
-      file,
-      oldPath,
-      this.settings,
-    );
-
-    const idx = this.settings.fixedNoteFiles.findIndex(
-      (f) => f.path === oldPath,
-    );
-    if (idx === -1) return;
-
-    this.settings.fixedNoteFiles = this.settings.fixedNoteFiles.map((f, i) =>
-      i === idx ? { ...f, path: file.path } : f,
-    );
-    this.saveSettings();
-  }
-
-  private handleFileDelete(file: TAbstractFile | null) {
-    if (!(file instanceof TFile)) return;
-
-    void this.tagIndexExtension.handleFileDeleted(file.path);
-
-    const filtered = this.settings.fixedNoteFiles.filter(
-      (f) => f.path !== file.path,
-    );
-    if (filtered.length === this.settings.fixedNoteFiles.length) return;
-
-    this.settings.fixedNoteFiles = filtered;
-    this.saveSettings();
-  }
-
-  private async handleFileChanged(file: TFile) {
-    await this.tagIndexExtension.handleFileChanged(
-      this.appHelper,
-      file,
-      this.settings,
-    );
-  }
-
-  // ---------------------------------------------------------------------------
   // ビュー管理
   // ---------------------------------------------------------------------------
+
+  private registerBuiltinServices() {
+    const context: MainServiceContext = {
+      app: this.app,
+      appHelper: this.appHelper,
+      getSettings: () => this.settings,
+      saveSettings: () => this.saveSettings(),
+      register: (cb) => this.register(cb),
+      registerEvent: (eventRef) => this.registerEvent(eventRef),
+      attachMFDIView: (state, preferredLeaf) =>
+        this.attachMFDIView(state, preferredLeaf),
+      fixedNoteViewExtension: this.fixedNoteViewExtension,
+      tagIndexExtension: this.tagIndexExtension,
+    };
+
+    for (const service of createBuiltinMainServices()) {
+      service.activate(context);
+    }
+  }
 
   /**
    * MFDIのViewをアタッチします。
