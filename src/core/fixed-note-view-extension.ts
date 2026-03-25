@@ -70,6 +70,10 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
         typeof candidate.state?.file === "string" ? candidate.state.file : "";
       if (!isMFDIFixedNotePath(filePath)) return viewState;
 
+      // TODO: ここでファイルの存在チェックを入れたい
+      // app.vault.adapter.exists(filePath) で存在チェックできるはずだが、app をこの関数に渡す必要があるため、実装が少し面倒。
+
+
       return {
         ...candidate,
         type: MFDI_VIEW_TYPE,
