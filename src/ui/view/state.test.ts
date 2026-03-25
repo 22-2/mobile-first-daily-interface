@@ -22,7 +22,7 @@ describe("MFDI view state", () => {
       noteMode: "fixed",
       fixedNotePath: "Inbox.md",
       displayMode: "focus",
-      dateFilter: "today",
+      dateFilter: "all",
       timeFilter: "all",
     });
   });

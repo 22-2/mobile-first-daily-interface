@@ -73,7 +73,17 @@ describe("timeline note resolution", () => {
 
     mockApp = {
       workspace: {
-        getLeaf: vi.fn(() => ({ openFile: mockOpenFile })),
+        getLeaf: vi.fn(() => ({
+          openFile: mockOpenFile,
+          setViewState: async (viewState: any) => {
+            const filePath =
+              typeof viewState?.state?.file === "string"
+                ? viewState.state.file
+                : "";
+            const file = mockApp.vault.getAbstractFileByPath(filePath);
+            if (file) await mockOpenFile(file);
+          },
+        })),
       },
       vault: {
         getAbstractFileByPath: vi.fn((path: string) =>
