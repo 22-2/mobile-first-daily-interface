@@ -11,7 +11,6 @@ import { MFDIStorage } from "src/utils/storage";
 // ─────────────────────────────────────────────────────────────────
 
 export interface AppContextValue {
-  app: App;
   shell: ObsidianAppShell;
   appHelper: AppHelper;
   storage: MFDIStorage;
@@ -20,6 +19,7 @@ export interface AppContextValue {
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
+const ObsidianAppContext = createContext<App | null>(null);
 
 // ─────────────────────────────────────────────────────────────────
 // Consumer hook
@@ -31,6 +31,14 @@ export function useAppContext(): AppContextValue {
     throw new Error("useAppContext must be used within AppContextProvider");
   }
   return ctx;
+}
+
+export function useObsidianApp(): App {
+  const app = useContext(ObsidianAppContext);
+  if (!app) {
+    throw new Error("useObsidianApp must be used within AppContextProvider");
+  }
+  return app;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -56,9 +64,13 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({
     [appHelper],
   );
   const value = useMemo<AppContextValue>(
-    // raw app は Obsidian UI コンポーネント向けに残し、通常の業務ロジックは shell を使う。
-    () => ({ app, shell: appHelper, appHelper, storage, settings, view }),
-    [app, appHelper, storage, settings, view],
+    // 一般ロジックから raw app を見えなくして、依存の漏れを型で止める。
+    () => ({ shell: appHelper, appHelper, storage, settings, view }),
+    [appHelper, storage, settings, view],
   );
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <ObsidianAppContext.Provider value={app}>
+      <AppContext.Provider value={value}>{children}</AppContext.Provider>
+    </ObsidianAppContext.Provider>
+  );
 };

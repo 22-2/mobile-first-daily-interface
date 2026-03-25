@@ -5,7 +5,7 @@ import { memo, useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useObsidianApp } from "src/ui/context/AppContext";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -26,7 +26,7 @@ type TimelineItem =
   | { type: "divider"; date: MomentLike; key: string };
 
 export const PostListView: React.FC = memo(() => {
-  const { app } = useAppContext();
+  const app = useObsidianApp();
   const settings = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -241,6 +241,7 @@ export const PostListView: React.FC = memo(() => {
       capabilities.supportsDateNavigation,
       capabilities.supportsMovePostBetweenDays,
       capabilities.supportsTags,
+      app,
     ],
   );
 

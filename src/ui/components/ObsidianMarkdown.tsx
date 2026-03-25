@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { Component, MarkdownRenderer } from "obsidian";
 import { useEffect, useRef } from "react";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useObsidianApp } from "src/ui/context/AppContext";
 
 interface Props {
   content: string;
@@ -14,7 +14,7 @@ export const ObsidianMarkdown: React.FC<Props> = ({
   sourcePath,
   inline,
 }) => {
-  const { app } = useAppContext();
+  const app = useObsidianApp();
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

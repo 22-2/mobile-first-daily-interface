@@ -3,7 +3,7 @@ import { Menu } from "obsidian";
 import { memo, useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useObsidianApp } from "src/ui/context/AppContext";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
 import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { usePostsStore } from "src/ui/store/postsStore";
@@ -11,7 +11,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = memo(() => {
-  const { app } = useAppContext();
+  const app = useObsidianApp();
   const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,

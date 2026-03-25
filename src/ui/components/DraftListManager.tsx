@@ -1,23 +1,24 @@
 import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react";
-import { Menu } from "obsidian";
+import { App, Menu } from "obsidian";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
 import { useAppStore } from "src/ui/store/appStore";
 import { useShallow } from "zustand/shallow";
 
 export interface DraftListManagerProps {
+  app: App;
   onClose: () => void;
 }
 
 export const DraftListManager: React.FC<DraftListManagerProps> = ({
+  app,
   onClose,
 }) => {
-  const { drafts, removeDraft, replaceInput, app } = useAppStore(
+  const { drafts, removeDraft, replaceInput } = useAppStore(
     useShallow((s) => ({
       drafts: s.drafts,
       removeDraft: s.removeDraft,
       replaceInput: s.replaceInput,
-      app: s.app!,
     })),
   );
 

@@ -33,6 +33,7 @@ vi.mock("src/ui/context/AppContext", () => ({
       cachedReadFile: cachedReadFileMock,
     },
   }),
+  useObsidianApp: () => ({}) ,
 }));
 
 vi.mock("src/ui/store/settingsStore", () => ({

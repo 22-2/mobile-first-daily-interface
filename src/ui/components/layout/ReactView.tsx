@@ -11,7 +11,11 @@ import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
-import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
+import {
+  AppContextProvider,
+  useAppContext,
+  useObsidianApp
+} from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
@@ -434,6 +438,7 @@ const ReactViewContent = () => {
 
 function useViewSync(view: MFDIView) {
   const { shell, settings } = useAppContext();
+  const app = useObsidianApp();
   const store = useCurrentAppStore();
 
   const {

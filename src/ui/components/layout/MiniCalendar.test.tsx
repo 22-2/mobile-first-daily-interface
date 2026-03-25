@@ -32,8 +32,8 @@ vi.mock("obsidian", () => ({
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(() => ({
     shell: {},
-    app: { vault: { getFiles: () => [] } },
   })),
+  useObsidianApp: vi.fn(() => ({ vault: { getFiles: () => [] } })),
 }));
 
 vi.mock("src/utils/daily-notes/notes", () => ({

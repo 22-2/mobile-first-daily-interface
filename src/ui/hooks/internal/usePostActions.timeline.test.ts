@@ -27,6 +27,7 @@ vi.mock("@tanstack/react-query", async () => {
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(),
+  useObsidianApp: vi.fn(),
 }));
 
 vi.mock("src/utils/daily-notes", async () => {

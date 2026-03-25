@@ -8,7 +8,7 @@ import {
   READONLY_PLACEHOLDER_TEXT
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
@@ -287,7 +287,7 @@ const InputAreaFooter: FC = memo(() => {
     })),
   );
 
-  const { app } = useAppContext();
+  const app = useObsidianApp();
   const store = useCurrentAppStore();
 
   const handleOpenDrafts = useCallback(() => {
@@ -369,7 +369,8 @@ const InputAreaFooter: FC = memo(() => {
 });
 
 export const InputArea: FC = memo(() => {
-  const { app, view } = useAppContext();
+  const { view } = useAppContext();
+  const app = useObsidianApp();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
       inputSnapshot: s.inputSnapshot,
