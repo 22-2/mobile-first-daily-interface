@@ -7,6 +7,7 @@ import {
   MainServiceContext
 } from "src/core/main-services";
 import { createFixedNoteFromInput } from "src/core/note-source";
+import { createBuiltinPluginManager } from "src/core/plugin-manager";
 import {
   createTagIndexExtension,
   TagIndexExtension
@@ -128,9 +129,7 @@ export default class MFDIPlugin extends Plugin {
       tagIndexExtension: this.tagIndexExtension,
     };
 
-    for (const service of createBuiltinMainServices()) {
-      service.activate(context);
-    }
+    createBuiltinPluginManager(createBuiltinMainServices()).activate(context);
   }
 
   /**
