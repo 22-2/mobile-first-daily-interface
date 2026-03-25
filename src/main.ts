@@ -3,7 +3,10 @@ import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
 import { createFixedNoteFromInput } from "src/core/note-source";
-import { TagIndexer } from "src/db/tag-indexer";
+import {
+  createTagIndexExtension,
+  TagIndexExtension
+} from "src/core/tag-index-extension";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
 import { showInputModal } from "src/ui/modals/InputModal";
@@ -23,13 +26,13 @@ export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
   settings: Settings;
   settingTab: MFDISettingTab;
-  tagIndexer: TagIndexer;
+  tagIndexExtension: TagIndexExtension;
   view?: MFDIView;
 
   async onload() {
     this.appHelper = new AppHelper(this.app);
     await this.loadSettings();
-    this.tagIndexer = new TagIndexer(this.appHelper.getAppId());
+    this.tagIndexExtension = createTagIndexExtension(this.appHelper.getAppId());
 
     this.settingTab = new MFDISettingTab(this.app, this);
     this.addSettingTab(this.settingTab);
@@ -41,7 +44,7 @@ export default class MFDIPlugin extends Plugin {
     this.registerEventListeners();
 
     this.app.workspace.onLayoutReady(() => {
-      void this.tagIndexer.scanAllNotes(this.appHelper, this.settings);
+      void this.tagIndexExtension.fullScan(this.appHelper, this.settings);
     });
 
     void this.replaceOpenFixedMarkdownLeaves();
@@ -193,7 +196,12 @@ export default class MFDIPlugin extends Plugin {
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
     if (!(file instanceof TFile)) return;
 
-    void this.tagIndexer.onFileRenamed(this.appHelper, file, oldPath, this.settings);
+    void this.tagIndexExtension.handleFileRenamed(
+      this.appHelper,
+      file,
+      oldPath,
+      this.settings,
+    );
 
     const idx = this.settings.fixedNoteFiles.findIndex(
       (f) => f.path === oldPath,
@@ -209,7 +217,7 @@ export default class MFDIPlugin extends Plugin {
   private handleFileDelete(file: TAbstractFile | null) {
     if (!(file instanceof TFile)) return;
 
-    void this.tagIndexer.onFileDeleted(file.path);
+    void this.tagIndexExtension.handleFileDeleted(file.path);
 
     const filtered = this.settings.fixedNoteFiles.filter(
       (f) => f.path !== file.path,
@@ -221,7 +229,11 @@ export default class MFDIPlugin extends Plugin {
   }
 
   private async handleFileChanged(file: TFile) {
-    await this.tagIndexer.onFileChanged(this.appHelper, file, this.settings);
+    await this.tagIndexExtension.handleFileChanged(
+      this.appHelper,
+      file,
+      this.settings,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -317,7 +329,7 @@ export default class MFDIPlugin extends Plugin {
   }
 
   onunload(): void {
-    void this.tagIndexer?.dispose();
+    void this.tagIndexExtension?.dispose();
     unpatchToggleSourceCommand();
   }
 }

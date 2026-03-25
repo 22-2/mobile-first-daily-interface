@@ -219,3 +219,4 @@ export class TagIndexer {
 }
 
 export { collectScanTargets, normalizeTopics };
+export type { TagIndexerOptions };
