@@ -6,6 +6,7 @@ import { Card } from "src/ui/components/cards/Card";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { Granularity, TimeFilter } from "src/ui/types";
 import { excludeWikiLink } from "src/utils/strings";
+import { MarkedMarkdown } from "../MarkedMarkdown";
 
 export const TaskView = memo(
   ({
@@ -46,9 +47,8 @@ export const TaskView = memo(
               wordBreak={"break-word"}
               flex="1"
             >
-              <ObsidianMarkdown
+              <MarkedMarkdown
                 content={excludeWikiLink(task.name)}
-                sourcePath={task.path}
               />
             </Box>
           </HStack>

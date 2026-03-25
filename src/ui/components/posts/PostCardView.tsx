@@ -12,12 +12,12 @@ import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
-import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/utils/meta";
+import { HTMLMeta, ImageMeta, TwitterMeta, createMeta } from "src/utils/meta";
 import { pickUrls } from "src/utils/strings";
 import { isPresent } from "src/utils/types";
+import { MarkedMarkdown } from "../MarkedMarkdown";
 
 export const PostCardView = React.memo(
   ({
@@ -112,7 +112,7 @@ export const PostCardView = React.memo(
           <VStack align="stretch" gap={3}>
             {/* Message Body */}
             <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-              <ObsidianMarkdown content={post.message} sourcePath={post.path} />
+              <MarkedMarkdown content={post.message} />
             </Box>
 
             {settings.enabledCardView && (
