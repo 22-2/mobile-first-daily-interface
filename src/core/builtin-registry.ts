@@ -102,6 +102,11 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
   return {
     id: "tag-index-lifecycle",
     activate: (context) => {
+      // dispose は Plugin の unload 機構に委ねて main のフィールドを不要にする
+      context.register(() => {
+        void context.tagIndexExtension.dispose();
+      });
+
       context.app.workspace.onLayoutReady(() => {
         void context.tagIndexExtension.fullScan(
           context.shell,
