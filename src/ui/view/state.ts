@@ -35,6 +35,33 @@ export const DEFAULT_MFDI_VIEW_STATE: MFDIViewState = {
   fixedNotePath: null,
 };
 
+export function createDefaultMFDIViewState(params?: {
+  noteMode?: MFDINoteMode;
+  fixedNotePath?: string | null;
+}): MFDIViewState {
+  const {
+    noteMode = "periodic",
+    fixedNotePath = null,
+  } = params ?? {};
+
+  if (noteMode === "fixed") {
+    // fixedノートの既定値をここに集約し、React側の再同期でperiodic既定値へ戻るのを防ぐ。
+    return {
+      ...DEFAULT_MFDI_VIEW_STATE,
+      noteMode,
+      fixedNotePath,
+      displayMode: DISPLAY_MODE.FOCUS,
+      dateFilter: "all",
+    };
+  }
+
+  return {
+    ...DEFAULT_MFDI_VIEW_STATE,
+    noteMode,
+    fixedNotePath: null,
+  };
+}
+
 export function getMFDIViewCapabilities(
   state: Pick<MFDIViewState, "noteMode">,
 ): MFDIViewCapabilities {
@@ -62,13 +89,10 @@ export function getMFDIViewCapabilities(
 }
 
 export function createFixedNoteViewState(filePath: string): MFDIViewState {
-  return {
-    ...DEFAULT_MFDI_VIEW_STATE,
+  return createDefaultMFDIViewState({
     noteMode: "fixed",
     fixedNotePath: filePath,
-    displayMode: DISPLAY_MODE.FOCUS,
-    dateFilter: "all",
-  };
+  });
 }
 
 export function getFixedNoteTitle(path: string | null): string {

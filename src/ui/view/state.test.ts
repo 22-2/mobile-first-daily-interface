@@ -1,4 +1,5 @@
 import {
+  createDefaultMFDIViewState,
   createFixedNoteViewState,
   getMFDIViewCapabilities
 } from "src/ui/view/state";
@@ -24,6 +25,25 @@ describe("MFDI view state", () => {
       displayMode: "focus",
       dateFilter: "all",
       timeFilter: "all",
+    });
+  });
+
+  it("note mode ごとの既定 dateFilter を一元管理する", () => {
+    expect(createDefaultMFDIViewState()).toMatchObject({
+      noteMode: "periodic",
+      fixedNotePath: null,
+      dateFilter: "today",
+    });
+
+    expect(
+      createDefaultMFDIViewState({
+        noteMode: "fixed",
+        fixedNotePath: "Inbox.md",
+      }),
+    ).toMatchObject({
+      noteMode: "fixed",
+      fixedNotePath: "Inbox.md",
+      dateFilter: "all",
     });
   });
 });

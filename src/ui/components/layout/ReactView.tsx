@@ -38,6 +38,7 @@ import {
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import {
+  createDefaultMFDIViewState,
   DEFAULT_MFDI_VIEW_STATE,
   getMFDIViewCapabilities
 } from "src/ui/view/state";
@@ -139,12 +140,17 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     // fixedビューでは periodic 側の永続状態を引き継がない
     if (viewState.noteMode === "fixed") {
+      const fixedDefaults = createDefaultMFDIViewState({
+        noteMode: "fixed",
+        fixedNotePath: viewState.fixedNotePath,
+      });
+
       store.setState({
-        displayMode: DEFAULT_MFDI_VIEW_STATE.displayMode,
-        granularity: DEFAULT_MFDI_VIEW_STATE.granularity,
-        dateFilter: DEFAULT_MFDI_VIEW_STATE.dateFilter,
-        timeFilter: DEFAULT_MFDI_VIEW_STATE.timeFilter,
-        asTask: DEFAULT_MFDI_VIEW_STATE.asTask,
+        displayMode: fixedDefaults.displayMode,
+        granularity: fixedDefaults.granularity,
+        dateFilter: fixedDefaults.dateFilter,
+        timeFilter: fixedDefaults.timeFilter,
+        asTask: fixedDefaults.asTask,
         // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
         activeTag: null,
         threadFocusRootId: null,
