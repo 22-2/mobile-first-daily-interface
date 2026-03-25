@@ -2,6 +2,7 @@ import { around } from "monkey-around";
 import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
+import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import {
   createTagIndexExtension,
@@ -13,20 +14,17 @@ import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
-  createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
   MFDIViewState
 } from "src/ui/view/state";
-import {
-  isMFDIFixedNotePath,
-  normalizeFixedNotePath
-} from "src/utils/fixed-note";
+import { createFixedNoteViewState } from "src/ui/view/state";
 
 export default class MFDIPlugin extends Plugin {
   appHelper: AppHelper;
   settings: Settings;
   settingTab: MFDISettingTab;
   tagIndexExtension: TagIndexExtension;
+  fixedNoteViewExtension = createFixedNoteViewExtension();
   view?: MFDIView;
 
   async onload() {
@@ -145,8 +143,7 @@ export default class MFDIPlugin extends Plugin {
       around(WorkspaceLeaf.prototype, {
         setViewState(original: Function) {
           return function (this: WorkspaceLeaf, viewState, eState) {
-            const nextState =
-              plugin.convertMarkdownViewStateForFixedNote(viewState);
+            const nextState = plugin.fixedNoteViewExtension.convertMarkdownViewState(viewState);
             return original.call(this, nextState, eState);
           };
         },
@@ -154,43 +151,12 @@ export default class MFDIPlugin extends Plugin {
     );
   }
 
-  private convertMarkdownViewStateForFixedNote(viewState: any): any {
-    if (!viewState || viewState.type !== "markdown") return viewState;
-
-    // フラグが付与されている場合は強制的にMarkdownビューとして開く意図がある。
-    if (viewState.state?.__mfdi_force_markdown) return viewState;
-
-    const filePath =
-      typeof viewState.state?.file === "string" ? viewState.state.file : "";
-    if (!isMFDIFixedNotePath(filePath)) return viewState;
-
-    // if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
-    //   return viewState;
-    // }
-
-    return {
-      ...viewState,
-      type: VIEW_TYPE_MFDI,
-      state: {
-        ...DEFAULT_MFDI_VIEW_STATE,
-        ...createFixedNoteViewState(filePath),
-      },
-    };
-  }
-
   private async replaceOpenFixedMarkdownLeaves() {
-    const markdownLeaves = this.app.workspace.getLeavesOfType("markdown");
-
-    for (const leaf of markdownLeaves) {
-      const filePath = (leaf.view as any)?.file?.path;
-      if (typeof filePath !== "string") continue;
-      if (!isMFDIFixedNotePath(filePath)) continue;
-      // if (!this.settings.fixedNoteFiles.some((f) => f.path === filePath)) {
-      //   continue;
-      // }
-
-      await this.attachMFDIView(createFixedNoteViewState(filePath), leaf);
-    }
+    await this.fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
+      leaves: this.app.workspace.getLeavesOfType("markdown"),
+      attachMFDIView: (state, preferredLeaf) =>
+        this.attachMFDIView(state, preferredLeaf),
+    });
   }
 
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
@@ -269,21 +235,10 @@ export default class MFDIPlugin extends Plugin {
   private findExistingLeaf(
     state: Partial<MFDIViewState>,
   ): WorkspaceLeaf | undefined {
-    const fixedPath = normalizeFixedNotePath(
-      typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
+    return this.fixedNoteViewExtension.findExistingLeaf(
+      this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI),
+      state,
     );
-    const isFixedMode = state.noteMode === "fixed";
-
-    return this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI).find((leaf) => {
-      if (!(leaf.view instanceof MFDIView)) return false;
-
-      const currentState = leaf.view.getState();
-      return isFixedMode
-        ? currentState.noteMode === "fixed" &&
-            normalizeFixedNotePath(currentState.fixedNotePath ?? "") ===
-              fixedPath
-        : currentState.noteMode !== "fixed";
-    });
   }
 
   /**
