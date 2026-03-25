@@ -25,7 +25,6 @@ import {
 export default class MFDIPlugin extends Plugin {
   shell: ObsidianAppShell;
   settings: Settings;
-  settingTab: MFDISettingTab;
   tagIndexExtension: TagIndexExtension;
   fixedNoteViewExtension = createFixedNoteViewExtension();
   view?: MFDIView;
@@ -35,8 +34,7 @@ export default class MFDIPlugin extends Plugin {
     await this.loadSettings();
     this.tagIndexExtension = createTagIndexExtension(this.shell.getAppId());
 
-    this.settingTab = new MFDISettingTab(this.app, this);
-    this.addSettingTab(this.settingTab);
+    this.addSettingTab(new MFDISettingTab(this.app, this));
 
     this.activateBuiltinRegistry();
   }
