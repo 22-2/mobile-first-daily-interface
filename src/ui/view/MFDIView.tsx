@@ -62,6 +62,22 @@ export class MFDIView extends ItemView {
     this.addFixedNoteMenuItems(menu);
     this.addViewMenuItems(menu);
     this.addPeriodMenuItemsIfSupported(menu);
+    if (this.state.noteMode === "fixed") {
+      // delete fixed note menu
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item
+        .setTitle("削除")
+        .setIcon("trash")
+        .setWarning(true)
+        .onClick(async () => {
+          const file = this.app.metadataCache.getFirstLinkpathDest(this.state.fixedNotePath!, "");
+          if (file instanceof TFile) {
+            this.app.fileManager.trashFile(file);
+          }
+        });
+      });
+    }
     super.onPaneMenu(menu, prev);
   }
 
