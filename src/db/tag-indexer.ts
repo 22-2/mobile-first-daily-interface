@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import PQueue from "p-queue";
 import {
   GRANULARITIES,
-  inferNoteIdentityFromFile
+  inferNoteIdentityFromFile,
 } from "src/db/note-file-identity";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 // @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
@@ -77,7 +77,12 @@ function collectScanTargets(
           topicId: topic.id,
           noteGranularity: granularity,
           noteDate:
-            getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "",
+            getDateFromFile(
+              file,
+              granularity,
+              shell,
+              topic.id,
+            )?.toISOString() ?? "",
         };
 
         if (!nextTarget.noteDate) {
@@ -145,7 +150,10 @@ export class TagIndexer {
     await this.initializePromise;
   }
 
-  async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
+  async scanAllNotes(
+    shell: ObsidianAppShell,
+    settings: Settings,
+  ): Promise<void> {
     await this.waitUntilReady();
 
     const targets = collectScanTargets(shell, settings);

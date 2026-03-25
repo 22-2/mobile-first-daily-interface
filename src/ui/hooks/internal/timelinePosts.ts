@@ -1,7 +1,5 @@
 import { TFile } from "obsidian";
-import {
-  searchPeriodicDayWindow
-} from "src/core/note-source";
+import { searchPeriodicDayWindow } from "src/core/note-source";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";

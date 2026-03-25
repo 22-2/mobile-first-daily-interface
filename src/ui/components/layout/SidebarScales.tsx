@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
 import {
   SidebarSectionHeader,
-  SidebarTextButton
+  SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";

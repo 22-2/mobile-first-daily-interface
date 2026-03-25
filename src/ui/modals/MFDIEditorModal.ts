@@ -1,5 +1,5 @@
-import { App, Scope } from "obsidian";
 import { ModalEditor } from "@22-2/obsidian-magical-editor";
+import { App, Scope } from "obsidian";
 import { PLACEHOLDER_TEXT } from "src/ui/config/consntants";
 
 export interface MFDIEditorModalOptions {

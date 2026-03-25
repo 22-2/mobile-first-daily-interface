@@ -1,7 +1,7 @@
 import {
   createDefaultMFDIViewState,
   createFixedNoteViewState,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { describe, expect, it } from "vitest";
 

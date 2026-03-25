@@ -2,11 +2,11 @@ import { WorkspaceLeaf } from "obsidian";
 import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState
+  MFDIViewState,
 } from "src/ui/view/state";
 import {
   isMFDIFixedNotePath,
-  normalizeFixedNotePath
+  normalizeFixedNotePath,
 } from "src/utils/fixed-note";
 
 type LeafWithState = WorkspaceLeaf & {
@@ -65,7 +65,7 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
     replaceOpenFixedMarkdownLeaves: async ({ leaves, attachMFDIView }) => {
       for (const leaf of leaves) {
         const filePath = isViewStatefulLeaf(leaf)
-          ? leaf.view.file?.path ?? ""
+          ? (leaf.view.file?.path ?? "")
           : "";
         if (!isMFDIFixedNotePath(filePath)) continue;
         await attachMFDIView(createFixedNoteViewState(filePath), leaf);

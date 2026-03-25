@@ -30,7 +30,12 @@ export function inferNoteIdentityFromFilename(
 
   for (const topicId of normalizeTopicIds(topics)) {
     for (const granularity of GRANULARITIES) {
-      const noteDate = getDateFromFilename(filename, granularity, shell, topicId);
+      const noteDate = getDateFromFilename(
+        filename,
+        granularity,
+        shell,
+        topicId,
+      );
       if (!noteDate) {
         continue;
       }

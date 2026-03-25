@@ -121,9 +121,18 @@ describe("useFilteredPosts", () => {
     vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));
 
     const posts = [
-      createPost({ id: "today-1", timestamp: moment("2026-03-18T10:00:00.000Z") }),
-      createPost({ id: "within-3d", timestamp: moment("2026-03-16T09:00:00.000Z") }),
-      createPost({ id: "outside-3d", timestamp: moment("2026-03-14T23:00:00.000Z") }),
+      createPost({
+        id: "today-1",
+        timestamp: moment("2026-03-18T10:00:00.000Z"),
+      }),
+      createPost({
+        id: "within-3d",
+        timestamp: moment("2026-03-16T09:00:00.000Z"),
+      }),
+      createPost({
+        id: "outside-3d",
+        timestamp: moment("2026-03-14T23:00:00.000Z"),
+      }),
     ];
 
     const { result } = renderHook(() =>

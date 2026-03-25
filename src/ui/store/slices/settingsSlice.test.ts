@@ -4,7 +4,7 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import {
   createSettingsSlice,
   isPastDateReadOnly,
-  isViewReadOnly
+  isViewReadOnly,
 } from "src/ui/store/slices/settingsSlice";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

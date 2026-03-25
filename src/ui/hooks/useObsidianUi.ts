@@ -1,11 +1,14 @@
 import { useCallback, useMemo } from "react";
 import { useObsidianApp } from "src/ui/context/AppContext";
-import { DeleteConfirmModal, showDeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import {
+  DeleteConfirmModal,
+  showDeleteConfirmModal,
+} from "src/ui/modals/DeleteConfirmModal";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { showInputModal } from "src/ui/modals/InputModal";
 import {
   MFDIEditorModal,
-  MFDIEditorModalOptions
+  MFDIEditorModalOptions,
 } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 

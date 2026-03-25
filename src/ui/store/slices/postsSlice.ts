@@ -1,4 +1,7 @@
-import { TFile } from "obsidian";
+import {
+  collectPeriodicNoteEntries,
+  searchPeriodicDayWindow,
+} from "src/core/note-source";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
@@ -6,14 +9,9 @@ import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import {
   buildPostFromEntry,
-  sortPostsDescending
+  sortPostsDescending,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import {
-  collectPeriodicNoteEntries,
-  resolvePeriodicNote,
-  searchPeriodicDayWindow
-} from "src/core/note-source";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, PostsSlice } from "./types";
@@ -75,7 +73,12 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     const weekDates = Array.from({ length: 7 }, (_, index) =>
       weekStart.clone().add(index, "days"),
     );
-    const entries = collectPeriodicNoteEntries(shell, "day", topicId, weekDates);
+    const entries = collectPeriodicNoteEntries(
+      shell,
+      "day",
+      topicId,
+      weekDates,
+    );
 
     const posts = (
       await Promise.all(

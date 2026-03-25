@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import { createContext, ReactNode, useContext, useMemo } from "react";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Settings } from "src/settings";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MFDIView } from "src/ui/view/MFDIView";
 import { MFDIStorage } from "src/utils/storage";
 

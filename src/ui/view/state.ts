@@ -39,10 +39,7 @@ export function createDefaultMFDIViewState(params?: {
   noteMode?: MFDINoteMode;
   fixedNotePath?: string | null;
 }): MFDIViewState {
-  const {
-    noteMode = "periodic",
-    fixedNotePath = null,
-  } = params ?? {};
+  const { noteMode = "periodic", fixedNotePath = null } = params ?? {};
 
   if (noteMode === "fixed") {
     // fixedノートの既定値をここに集約し、React側の再同期でperiodic既定値へ戻るのを防ぐ。

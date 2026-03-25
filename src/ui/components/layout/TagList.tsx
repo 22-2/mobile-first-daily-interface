@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import {
   SidebarSectionHeader,
-  SidebarTextButton
+  SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -63,9 +63,7 @@ export const TagList: React.FC = () => {
     },
   );
 
-  const [stableItems, setStableItems] = useState<TagCountItem[] | null>(
-    null,
-  );
+  const [stableItems, setStableItems] = useState<TagCountItem[] | null>(null);
 
   useEffect(() => {
     if (snapshot.items == null) {

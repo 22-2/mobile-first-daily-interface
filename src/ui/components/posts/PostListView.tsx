@@ -7,8 +7,8 @@ import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -282,7 +282,14 @@ export const PostListView: React.FC = memo(() => {
     });
 
     return list;
-  }, [filteredPosts, editingPostOffset, granularity, displayMode, dateFilter, settings.viewNoteMode]);
+  }, [
+    filteredPosts,
+    editingPostOffset,
+    granularity,
+    displayMode,
+    dateFilter,
+    settings.viewNoteMode,
+  ]);
 
   const parentRef = scrollContainerRef;
 

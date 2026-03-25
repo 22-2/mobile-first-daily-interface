@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
 import { TagIndexer, TagIndexerOptions } from "src/db/tag-indexer";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Settings } from "src/settings";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 export interface TagIndexExtension {
   fullScan: (shell: ObsidianAppShell, settings: Settings) => Promise<void>;
@@ -22,7 +22,11 @@ export interface TagIndexExtension {
 
 type TagIndexerLike = Pick<
   TagIndexer,
-  "scanAllNotes" | "onFileChanged" | "onFileRenamed" | "onFileDeleted" | "dispose"
+  | "scanAllNotes"
+  | "onFileChanged"
+  | "onFileRenamed"
+  | "onFileDeleted"
+  | "dispose"
 >;
 
 export function adaptTagIndexer(indexer: TagIndexerLike): TagIndexExtension {

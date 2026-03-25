@@ -28,7 +28,10 @@ export function filterPostsByRelativeWindow(
       return true;
     }
 
-    const start = now.clone().startOf("day").subtract(days - 1, "days");
+    const start = now
+      .clone()
+      .startOf("day")
+      .subtract(days - 1, "days");
     return !post.timestamp.isBefore(start) && !post.timestamp.isAfter(now);
   });
 

@@ -4,7 +4,7 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
@@ -12,7 +12,7 @@ import {
   countVisibleRootPosts,
   getThreadPosts,
   isVisibleRootPost,
-  sortThreadPosts
+  sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { MFDINoteMode } from "src/ui/view/state";

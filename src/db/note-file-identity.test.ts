@@ -1,6 +1,6 @@
 import {
   inferNoteIdentityFromFile,
-  inferNoteIdentityFromFilename
+  inferNoteIdentityFromFilename,
 } from "src/db/note-file-identity";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { describe, expect, test } from "vitest";
@@ -18,10 +18,11 @@ const shell = {
 
 describe("note file identity inference", () => {
   test("infers the default topic daily note", () => {
-    const identity = inferNoteIdentityFromFilename("2026-03-23", [
-      "",
-      "writing",
-    ], shell as any);
+    const identity = inferNoteIdentityFromFilename(
+      "2026-03-23",
+      ["", "writing"],
+      shell as any,
+    );
 
     expect(identity).not.toBeNull();
     expect(identity?.topicId).toBe("");
@@ -30,11 +31,11 @@ describe("note file identity inference", () => {
   });
 
   test("infers a hyphenated topic id safely", () => {
-    const identity = inferNoteIdentityFromFilename("deep-work-2026-03-23", [
-      "",
-      "deep-work",
-      "deep",
-    ], shell as any);
+    const identity = inferNoteIdentityFromFilename(
+      "deep-work-2026-03-23",
+      ["", "deep-work", "deep"],
+      shell as any,
+    );
 
     expect(identity).not.toBeNull();
     expect(identity?.topicId).toBe("deep-work");
@@ -43,7 +44,11 @@ describe("note file identity inference", () => {
 
   test("returns null when nothing matches", () => {
     expect(
-      inferNoteIdentityFromFilename("not-a-note", ["", "writing"], shell as any),
+      inferNoteIdentityFromFilename(
+        "not-a-note",
+        ["", "writing"],
+        shell as any,
+      ),
     ).toBeNull();
   });
 

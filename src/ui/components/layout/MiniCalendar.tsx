@@ -1,9 +1,6 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  getPeriodicNoteDate,
-  listPeriodicNotes
-} from "src/core/note-source";
+import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";

@@ -14,7 +14,7 @@ import {
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
-  THREAD_METADATA_KEYS
+  THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
@@ -576,13 +576,7 @@ export const usePostActions = () => {
       await shell.writeFile(latestPost.path, newContent);
       await refreshPosts(latestPost.path);
     },
-    [
-      shell,
-      findLatestPost,
-      findLatestThreadPosts,
-      refreshPosts,
-      settingsState,
-    ],
+    [shell, findLatestPost, findLatestThreadPosts, refreshPosts, settingsState],
   );
 
   // ---------------------------------------------------------------------------

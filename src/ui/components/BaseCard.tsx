@@ -1,7 +1,7 @@
 import { Box, Flex, HStack, Spacer, Tag } from "@chakra-ui/react";
 import {
   DISPLAY_DATE_TIME_FORMAT,
-  DISPLAY_TIME_FORMAT
+  DISPLAY_TIME_FORMAT,
 } from "src/ui/config/date-formats";
 import { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
@@ -90,8 +90,8 @@ export const BaseCard: React.FC<BaseCardProps> = ({
               showFullTimestamp
                 ? DISPLAY_DATE_TIME_FORMAT
                 : granularity === "day" && dateFilter !== "this_week"
-                ? DISPLAY_TIME_FORMAT
-                : DISPLAY_DATE_TIME_FORMAT,
+                  ? DISPLAY_TIME_FORMAT
+                  : DISPLAY_DATE_TIME_FORMAT,
             )}
           </Tag>
         </HStack>

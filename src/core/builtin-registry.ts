@@ -1,11 +1,9 @@
 import { around } from "monkey-around";
 import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
-import {
-  FixedNoteViewExtension
-} from "src/core/fixed-note-view-extension";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { FixedNoteViewExtension } from "src/core/fixed-note-view-extension";
 import { TagIndexExtension } from "src/core/tag-index-extension";
 import { Settings } from "src/settings";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import { MFDIViewState } from "src/ui/view/state";
 
@@ -58,7 +56,9 @@ export function createViewRegistrationContribution(): BuiltinContribution {
   return {
     id: "view-registration",
     activate: (context) => {
-      context.registerView(VIEW_TYPE_MFDI, (leaf) => context.createMFDIView(leaf));
+      context.registerView(VIEW_TYPE_MFDI, (leaf) =>
+        context.createMFDIView(leaf),
+      );
     },
   };
 }
@@ -155,8 +155,9 @@ export function createFixedNoteRegistryContribution(): BuiltinContribution {
           );
           if (idx === -1) return;
 
-          settings.fixedNoteFiles = settings.fixedNoteFiles.map((entry, index) =>
-            index === idx ? { ...entry, path: file.path } : entry,
+          settings.fixedNoteFiles = settings.fixedNoteFiles.map(
+            (entry, index) =>
+              index === idx ? { ...entry, path: file.path } : entry,
           );
           void context.saveSettings();
         }),
@@ -189,7 +190,9 @@ export function createFixedNoteViewLifecycleContribution(): BuiltinContribution 
           setViewState(original: Function) {
             return function (this: WorkspaceLeaf, viewState, eState) {
               const nextState =
-                context.fixedNoteViewExtension.convertMarkdownViewState(viewState);
+                context.fixedNoteViewExtension.convertMarkdownViewState(
+                  viewState,
+                );
               return original.call(this, nextState, eState);
             };
           },

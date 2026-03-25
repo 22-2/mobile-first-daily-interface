@@ -2,7 +2,7 @@ import { Settings } from "src/settings";
 import {
   appStore,
   AppStoreApi,
-  useCurrentAppStore
+  useCurrentAppStore,
 } from "src/ui/store/appStore";
 import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
 import { MFDIStorage } from "src/utils/storage";

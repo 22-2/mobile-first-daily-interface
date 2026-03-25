@@ -1,4 +1,11 @@
-import { App, Editor, MarkdownView, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import {
+  App,
+  Editor,
+  MarkdownView,
+  TAbstractFile,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 import { Commands } from "obsidian-typings";
 import { MomentLike } from "src/ui/types";
 import { parseMarkdownList } from "src/utils/strings";

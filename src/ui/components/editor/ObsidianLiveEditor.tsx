@@ -1,6 +1,6 @@
+import { type FakeEditor } from "@22-2/obsidian-magical-editor";
 import { Box, BoxProps } from "@chakra-ui/react";
 import { App, WorkspaceLeaf } from "obsidian";
-import { type FakeEditor } from "@22-2/obsidian-magical-editor";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "./hooks";
 

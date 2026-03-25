@@ -3,19 +3,19 @@ import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import {
+  createTopicNote,
   getAllTopicNotes,
   getDateFromFile,
   getDateUID,
-  createTopicNote,
+  getTopicNote,
   resolveTopicNotePath,
-  getTopicNote
 } from "src/utils/daily-notes";
 import {
   buildFixedNotePathFromName,
   createNewFixedNote,
   ensureFixedNote,
   normalizeFixedNotePath,
-  resolveFixedNote
+  resolveFixedNote,
 } from "src/utils/fixed-note";
 
 export interface NoteSourceContext {
@@ -174,14 +174,16 @@ export async function createFixedNoteFromInput(
 function createFixedNoteSource(context: NoteSourceContext): NoteSource {
   return {
     mode: "fixed",
-    resolveCurrentNote: () => resolveFixedNote(context.shell, context.fixedNotePath),
+    resolveCurrentNote: () =>
+      resolveFixedNote(context.shell, context.fixedNotePath),
     ensureCurrentNote: async () => {
       if (!context.fixedNotePath) return null;
       return ensureFixedNote(context.shell, context.fixedNotePath);
     },
     matchesPath: (filePath, currentNote) => {
       const targetPath =
-        currentNote?.path ?? normalizeFixedNotePath(context.fixedNotePath ?? "");
+        currentNote?.path ??
+        normalizeFixedNotePath(context.fixedNotePath ?? "");
       return !!targetPath && filePath === targetPath;
     },
   };

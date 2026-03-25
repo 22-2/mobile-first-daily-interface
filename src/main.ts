@@ -1,26 +1,26 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
-import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import {
   BuiltinMainContext,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
+import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import {
   createTagIndexExtension,
-  TagIndexExtension
+  TagIndexExtension,
 } from "src/core/tag-index-extension";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Topic } from "src/topic";
 import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import {
+  createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
-  MFDIViewState
+  MFDIViewState,
 } from "src/ui/view/state";
-import { createFixedNoteViewState } from "src/ui/view/state";
 
 export default class MFDIPlugin extends Plugin {
   shell: ObsidianAppShell;
@@ -54,11 +54,7 @@ export default class MFDIPlugin extends Plugin {
     });
     if (name === null) return;
 
-    const fixedNote = await createFixedNoteFromInput(
-      this.shell,
-      folder,
-      name,
-    );
+    const fixedNote = await createFixedNoteFromInput(this.shell, folder, name);
 
     this.settings.fixedNoteFiles = [
       ...this.settings.fixedNoteFiles,

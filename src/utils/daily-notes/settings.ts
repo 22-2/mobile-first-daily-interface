@@ -1,5 +1,5 @@
-import { Granularity } from "src/ui/types";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { Granularity } from "src/ui/types";
 
 export interface PeriodicNoteSettings {
   format: string;
@@ -56,9 +56,8 @@ function shouldUsePeriodicNotesSettings(
   shell: ObsidianAppShell,
   periodicity: string,
 ): boolean {
-  const periodicNotes = shell.getCommunityPlugin<PeriodicNotesPlugin>(
-    "periodic-notes",
-  );
+  const periodicNotes =
+    shell.getCommunityPlugin<PeriodicNotesPlugin>("periodic-notes");
   return !!(periodicNotes && periodicNotes.settings?.[periodicity]?.enabled);
 }
 
@@ -66,9 +65,8 @@ function getPeriodicNotesSettings(
   shell: ObsidianAppShell,
   periodicity: Periodicity,
 ) {
-  const periodicNotes = shell.getCommunityPlugin<PeriodicNotesPlugin>(
-    "periodic-notes",
-  );
+  const periodicNotes =
+    shell.getCommunityPlugin<PeriodicNotesPlugin>("periodic-notes");
   return periodicNotes?.settings?.[periodicity] as
     | PeriodicNotesEntry
     | undefined;
@@ -79,18 +77,18 @@ export function getDailyNoteSettings(
 ): PeriodicNoteSettings {
   try {
     if (shouldUsePeriodicNotesSettings(shell, "daily")) {
-      const daily = shell.getCommunityPlugin<PeriodicNotesPlugin>(
-        "periodic-notes",
-      )?.settings?.daily;
+      const daily =
+        shell.getCommunityPlugin<PeriodicNotesPlugin>("periodic-notes")
+          ?.settings?.daily;
       return {
         format: daily?.format || DEFAULT_DAILY_NOTE_FORMAT,
         folder: daily?.folder?.trim() || "",
         template: daily?.template?.trim() || "",
       };
     }
-    const dailyOptions = shell.getInternalPluginById<DailyNotesPlugin>(
-      "daily-notes",
-    )?.instance?.options;
+    const dailyOptions =
+      shell.getInternalPluginById<DailyNotesPlugin>("daily-notes")?.instance
+        ?.options;
     return {
       format: dailyOptions?.format || DEFAULT_DAILY_NOTE_FORMAT,
       folder: dailyOptions?.folder?.trim() || "",
@@ -105,12 +103,11 @@ export function getWeeklyNoteSettings(
   shell: ObsidianAppShell,
 ): PeriodicNoteSettings {
   try {
-    const calendarSettings = shell.getCommunityPlugin<CalendarPlugin>(
-      "calendar",
-    )?.options;
-    const periodicNotesSettings = shell.getCommunityPlugin<PeriodicNotesPlugin>(
-      "periodic-notes",
-    )?.settings?.weekly;
+    const calendarSettings =
+      shell.getCommunityPlugin<CalendarPlugin>("calendar")?.options;
+    const periodicNotesSettings =
+      shell.getCommunityPlugin<PeriodicNotesPlugin>("periodic-notes")?.settings
+        ?.weekly;
     if (shouldUsePeriodicNotesSettings(shell, "weekly")) {
       return {
         format: periodicNotesSettings?.format || DEFAULT_WEEKLY_NOTE_FORMAT,

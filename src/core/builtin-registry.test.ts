@@ -3,9 +3,9 @@ import {
   createBuiltinRegistry,
   createCommandContribution,
   createFixedNoteRegistryContribution,
+  createRibbonContribution,
   createTagIndexLifecycleContribution,
   createViewRegistrationContribution,
-  createRibbonContribution,
 } from "src/core/builtin-registry";
 import { describe, expect, it, vi } from "vitest";
 
@@ -38,7 +38,7 @@ describe("builtin registry", () => {
 
   it("registers the MFDI view through the contribution", () => {
     const registerView = vi.fn();
-    const createMFDIView = vi.fn((leaf) => ({ leaf } as any));
+    const createMFDIView = vi.fn((leaf) => ({ leaf }) as any);
 
     createViewRegistrationContribution().activate({
       registerView,
@@ -57,7 +57,7 @@ describe("builtin registry", () => {
   it("registers ribbon and commands through built-in contributions", async () => {
     const addRibbonIcon = vi.fn();
     const addCommand = vi.fn((command) => command);
-    const attachMFDIView = vi.fn(async () => ({ id: "leaf" } as any));
+    const attachMFDIView = vi.fn(async () => ({ id: "leaf" }) as any);
     const revealLeaf = vi.fn();
     const createAndOpenFixedNote = vi.fn(async () => {});
 

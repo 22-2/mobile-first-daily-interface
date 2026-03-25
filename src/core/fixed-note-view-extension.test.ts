@@ -33,7 +33,8 @@ describe("fixed note view extension", () => {
     const extension = createFixedNoteViewExtension();
     const leaf = {
       view: {
-        getState: () => ({ noteMode: "fixed", fixedNotePath: "MFDI/Inbox.mfdi.md" }) as any,
+        getState: () =>
+          ({ noteMode: "fixed", fixedNotePath: "MFDI/Inbox.mfdi.md" }) as any,
       },
     } as WorkspaceLeaf;
 
@@ -52,7 +53,8 @@ describe("fixed note view extension", () => {
       {
         view: {
           file: { path: "MFDI/Inbox.mfdi.md" },
-          getState: () => ({ noteMode: "periodic", fixedNotePath: null }) as any,
+          getState: () =>
+            ({ noteMode: "periodic", fixedNotePath: null }) as any,
         },
       } as any,
     ];

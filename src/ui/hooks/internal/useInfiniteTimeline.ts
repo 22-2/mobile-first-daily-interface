@@ -11,7 +11,7 @@ import {
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
   TimelinePostsPage,
-  TIMELINE_CACHE_INVALIDATE_MS
+  TIMELINE_CACHE_INVALIDATE_MS,
 } from "./timelinePosts";
 
 const PAGE_SIZE_DAYS = 14;

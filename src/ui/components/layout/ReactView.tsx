@@ -11,20 +11,17 @@ import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
-import {
-  AppContextProvider,
-  useAppContext
-} from "src/ui/context/AppContext";
+import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import {
   AppStoreApi,
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
-  useCurrentAppStore
+  useCurrentAppStore,
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -35,14 +32,13 @@ import {
   DisplayMode,
   Granularity,
   Post,
-  TimeFilter
+  TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { MFDIView } from "src/ui/view/MFDIView";
 import {
   createDefaultMFDIViewState,
-  DEFAULT_MFDI_VIEW_STATE,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
@@ -227,7 +223,13 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       promises.push(updatePosts(currentDailyNote));
     }
     Promise.all(promises);
-  }, [currentDailyNote, dateFilter, updatePosts, updateTasks, viewState.noteMode]);
+  }, [
+    currentDailyNote,
+    dateFilter,
+    updatePosts,
+    updateTasks,
+    viewState.noteMode,
+  ]);
 
   // Sync state/handlers with Obsidian View
   useViewSync(view);
@@ -336,9 +338,7 @@ const ReactViewContent = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastWidthRef = useRef(containerWidth);
 
-  const [sideBarViewDate, setSideBarViewDate] = useState(() =>
-    window.moment(),
-  );
+  const [sideBarViewDate, setSideBarViewDate] = useState(() => window.moment());
 
   useEffect(() => {
     if (!containerRef.current) return;

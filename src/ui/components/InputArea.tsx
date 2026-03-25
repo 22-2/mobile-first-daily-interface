@@ -5,19 +5,19 @@ import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor"
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
-  READONLY_PLACEHOLDER_TEXT
+  READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
-import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import {
   getCenterIndicatorLabel,
-  isDefaultViewState
+  isDefaultViewState,
 } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";

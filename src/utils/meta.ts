@@ -7,7 +7,7 @@ import {
   getFaviconUrl,
   getMetaByHttpEquiv,
   getMetaByName,
-  getMetaByProperty
+  getMetaByProperty,
 } from "src/utils/meta-helper";
 import { eucJp2String, sjis2String } from "src/utils/strings";
 
