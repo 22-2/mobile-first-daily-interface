@@ -14,8 +14,6 @@ const createRenderer = (app: App): CustomReactRenderer => ({
   text(content) {
     const textContent = String(content);
 
-    console.log("Rendering text:", textContent); // デバッグ用ログ
-
     // ![[画像名.png]] のパターンにマッチさせる
     const regex = /!\[\[(.+?)\.(png|jpg|jpeg|gif|svg|webp)\]\]/g;
 
