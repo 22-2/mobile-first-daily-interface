@@ -1,9 +1,5 @@
 import { Notice } from "obsidian";
-import { createTopicNote } from "src/utils/daily-notes";
-import {
-  ensureFixedNote,
-  resolveCurrentTargetNote
-} from "src/utils/fixed-note";
+import { resolveNoteSource } from "src/core/note-source";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, NoteSlice } from "./types";
 
@@ -27,7 +23,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       viewNoteMode,
       fixedNotePath,
     } = get();
-    const note = resolveCurrentTargetNote({
+    const noteSource = resolveNoteSource({
       shell,
       date: getEffectiveDate(),
       granularity,
@@ -35,6 +31,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       noteMode: viewNoteMode,
       fixedNotePath,
     });
+    const note = noteSource.resolveCurrentNote();
     if (note?.path !== currentDailyNote?.path) {
       set({ currentDailyNote: note });
     }
@@ -64,34 +61,24 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       viewNoteMode,
       fixedNotePath,
     } = get();
-
-    if (viewNoteMode === "fixed") {
-      if (!fixedNotePath) return null;
-      const fixedNote = await ensureFixedNote(shell, fixedNotePath);
-      set({ currentDailyNote: fixedNote });
-      return fixedNote;
-    }
-
     const date = targetDate ?? getEffectiveDate();
-    const existing = resolveCurrentTargetNote({
+    const noteSource = resolveNoteSource({
       shell,
       date,
       granularity,
       activeTopic,
-      noteMode: "periodic",
-      fixedNotePath: null,
+      noteMode: viewNoteMode,
+      fixedNotePath,
     });
-    if (existing) {
-      set({ currentDailyNote: existing });
-      return existing;
-    }
+    const note =
+      noteSource.resolveCurrentNote() ?? (await noteSource.ensureCurrentNote());
+    if (!note) return null;
 
-    const created = await createTopicNote(shell, date, granularity, activeTopic);
-    if (settings.insertAfter) {
-      const content = await shell.readVaultFile(created);
+    if (noteSource.mode === "periodic" && settings.insertAfter) {
+      const content = await shell.readVaultFile(note);
       if (!content.includes(settings.insertAfter)) {
         await shell.modifyVaultFile(
-          created,
+          note,
           content
             ? `${content}\n${settings.insertAfter}`
             : settings.insertAfter,
@@ -99,8 +86,8 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       }
     }
 
-    set({ currentDailyNote: created });
-    return created;
+    set({ currentDailyNote: note });
+    return note;
   },
 
   handleClickOpenDailyNote: async (shell, settings) => {
@@ -112,7 +99,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       fixedNotePath,
     } = get();
     const targetDate = getEffectiveDate();
-    let note = resolveCurrentTargetNote({
+    const noteSource = resolveNoteSource({
       shell,
       date: targetDate,
       granularity,
@@ -120,6 +107,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       noteMode: viewNoteMode,
       fixedNotePath,
     });
+    let note = noteSource.resolveCurrentNote();
 
     if (!note) {
       new Notice("ノートが存在しなかったので新しく作成しました");

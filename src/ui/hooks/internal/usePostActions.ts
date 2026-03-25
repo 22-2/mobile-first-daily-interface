@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
+import { resolveNoteSource } from "src/core/note-source";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
@@ -16,7 +17,6 @@ import {
   THREAD_METADATA_KEYS
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { getTopicNote } from "src/utils/daily-notes";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
@@ -439,15 +439,18 @@ export const usePostActions = () => {
       return;
     }
 
-    let note = noteState.currentDailyNote;
+    const noteSource = resolveNoteSource({
+      shell,
+      date: targetDate,
+      granularity: settingsState.granularity,
+      activeTopic: settingsState.activeTopic,
+      noteMode: settingsState.viewNoteMode,
+      fixedNotePath: store.getState().fixedNotePath,
+    });
 
-    if (settingsState.viewNoteMode !== "fixed") {
-      note = getTopicNote(
-        shell,
-        targetDate,
-        settingsState.granularity,
-        settingsState.activeTopic,
-      );
+    let note = noteState.currentDailyNote;
+    if (noteSource.mode !== "fixed") {
+      note = noteSource.resolveCurrentNote();
     }
 
     if (!note) {
@@ -456,7 +459,7 @@ export const usePostActions = () => {
         .createNoteWithInsertAfter(
           shell,
           settings,
-          settingsState.viewNoteMode === "fixed" ? undefined : targetDate,
+          noteSource.mode === "fixed" ? undefined : targetDate,
         );
     }
 
