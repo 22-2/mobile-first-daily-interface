@@ -19,7 +19,7 @@ export class DraftListModal extends Modal {
     this.root = createRoot(contentEl);
     this.root.render(
       <AppStoreProvider store={this.store}>
-        <DraftListManager app={this.app} onClose={() => this.close()} />
+        <DraftListManager onClose={() => this.close()} />
       </AppStoreProvider>,
     );
   }

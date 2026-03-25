@@ -13,14 +13,12 @@ import { PostListView } from "src/ui/components/posts/PostListView";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import {
   AppContextProvider,
-  useAppContext,
-  useObsidianApp
+  useAppContext
 } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
-import { DraftListModal } from "src/ui/modals/DraftListModal";
-import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import {
   AppStoreApi,
   AppStoreProvider,
@@ -438,7 +436,7 @@ const ReactViewContent = () => {
 
 function useViewSync(view: MFDIView) {
   const { shell, settings } = useAppContext();
-  const app = useObsidianApp();
+  const { openDraftList, openModalEditor } = useObsidianUi();
   const store = useCurrentAppStore();
 
   const {
@@ -622,7 +620,7 @@ function useViewSync(view: MFDIView) {
     }
 
     view.handlers.onOpenModalEditor = () => {
-      const modal = new MFDIEditorModal(app, {
+      openModalEditor({
         initialContent: getInputValue() || inputRefVal.current,
         onChange: (content) => {
           replaceInput(content);
@@ -631,12 +629,11 @@ function useViewSync(view: MFDIView) {
           replaceInput(content);
         },
       });
-      modal.open();
     };
     return () => {
       view.handlers.onOpenModalEditor = undefined;
     };
-  }, [view, app, getInputValue, replaceInput, isReadOnly]);
+  }, [view, openModalEditor, getInputValue, replaceInput, isReadOnly]);
 
   useEffect(() => {
     view.handlers.onToggleSidebar = () => {
@@ -649,12 +646,12 @@ function useViewSync(view: MFDIView) {
 
   useEffect(() => {
     view.handlers.onOpenDraftList = () => {
-      new DraftListModal(app, store).open();
+      openDraftList();
     };
     return () => {
       view.handlers.onOpenDraftList = undefined;
     };
-  }, [view, app, store]);
+  }, [view, openDraftList, store]);
 
   useEffect(() => {
     view.handlers.onSetLiveEditorContentForTesting = (content: string) => {

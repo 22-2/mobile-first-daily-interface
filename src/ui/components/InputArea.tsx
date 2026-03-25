@@ -9,9 +9,9 @@ import {
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { DraftListModal } from "src/ui/modals/DraftListModal";
-import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
+import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -287,12 +287,11 @@ const InputAreaFooter: FC = memo(() => {
     })),
   );
 
-  const app = useObsidianApp();
-  const store = useCurrentAppStore();
+  const { openDraftList } = useObsidianUi();
 
   const handleOpenDrafts = useCallback(() => {
-    new DraftListModal(app, store).open();
-  }, [app, store]);
+    openDraftList();
+  }, [openDraftList]);
 
   const handleCreateDraft = useCallback(
     (e: React.MouseEvent) => {

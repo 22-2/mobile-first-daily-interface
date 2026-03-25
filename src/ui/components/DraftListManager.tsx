@@ -1,19 +1,18 @@
 import { Box, Button, Flex, HStack, Text, VStack } from "@chakra-ui/react";
-import { App, Menu } from "obsidian";
+import { Menu } from "obsidian";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
-import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
 import { useShallow } from "zustand/shallow";
 
 export interface DraftListManagerProps {
-  app: App;
   onClose: () => void;
 }
 
 export const DraftListManager: React.FC<DraftListManagerProps> = ({
-  app,
   onClose,
 }) => {
+  const { confirmDeleteAction } = useObsidianUi();
   const { drafts, removeDraft, replaceInput } = useAppStore(
     useShallow((s) => ({
       drafts: s.drafts,
@@ -143,9 +142,9 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                           .setIcon("trash")
                           .setWarning(true)
                           .onClick(() => {
-                            new DeleteConfirmModal(app, async () => {
+                            confirmDeleteAction(async () => {
                               removeDraft(draft.id);
-                            }).open();
+                            });
                           });
                       });
                       menu.showAtPosition({

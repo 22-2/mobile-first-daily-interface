@@ -5,12 +5,10 @@ import { memo, useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useObsidianApp } from "src/ui/context/AppContext";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
-import { showInputModal } from "src/ui/modals/InputModal";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -26,7 +24,7 @@ type TimelineItem =
   | { type: "divider"; date: MomentLike; key: string };
 
 export const PostListView: React.FC = memo(() => {
-  const app = useObsidianApp();
+  const { showTextInput, confirmDeleteAction } = useObsidianUi();
   const settings = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -143,7 +141,7 @@ export const PostListView: React.FC = memo(() => {
             .setIcon("tag")
             .setDisabled(isReadOnly || !capabilities.supportsTags)
             .onClick(async () => {
-              const nextValue = await showInputModal(app, {
+              const nextValue = await showTextInput({
                 title: "タグを入力",
                 placeholder: "IT, Later",
                 defaultValue: getRawTagMetadata(post.metadata),
@@ -219,9 +217,7 @@ export const PostListView: React.FC = memo(() => {
           .setWarning(true)
           .setDisabled(isReadOnly)
           .onClick(() => {
-            new DeleteConfirmModal(app, () =>
-              permanentlyDeletePost(post),
-            ).open();
+            confirmDeleteAction(() => permanentlyDeletePost(post));
           }),
       );
 
@@ -241,7 +237,8 @@ export const PostListView: React.FC = memo(() => {
       capabilities.supportsDateNavigation,
       capabilities.supportsMovePostBetweenDays,
       capabilities.supportsTags,
-      app,
+      showTextInput,
+      confirmDeleteAction,
     ],
   );
 

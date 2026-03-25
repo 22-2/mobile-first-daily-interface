@@ -3,15 +3,14 @@ import { Menu } from "obsidian";
 import { memo, useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { TaskView } from "src/ui/components/tasks/TaskView";
-import { useObsidianApp } from "src/ui/context/AppContext";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
-import { DeleteConfirmModal } from "src/ui/modals/DeleteConfirmModal";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const TaskListView: React.FC = memo(() => {
-  const app = useObsidianApp();
+  const { confirmDeleteAction } = useObsidianUi();
   const { date, granularity, timeFilter, isReadOnly } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -46,12 +45,12 @@ export const TaskListView: React.FC = memo(() => {
           .setTitle("削除")
           .setDisabled(isReadOnly)
           .onClick(() => {
-            new DeleteConfirmModal(app, () => deleteTask(task)).open();
+            confirmDeleteAction(() => deleteTask(task));
           }),
       );
       menu.showAtMouseEvent(e as unknown as MouseEvent);
     },
-    [app, deleteTask, isReadOnly, openTaskInEditor, tasks],
+    [confirmDeleteAction, deleteTask, isReadOnly, openTaskInEditor, tasks],
   );
 
   const incompleteTasks = useMemo(
