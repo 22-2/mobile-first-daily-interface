@@ -1,20 +1,35 @@
 import { around } from "monkey-around";
-import { App, EventRef, TFile, WorkspaceLeaf } from "obsidian";
+import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
 import { AppHelper } from "src/app-helper";
 import {
   FixedNoteViewExtension
 } from "src/core/fixed-note-view-extension";
 import { TagIndexExtension } from "src/core/tag-index-extension";
 import { Settings } from "src/settings";
+import type { MFDIView } from "src/ui/view/MFDIView";
 import { MFDIViewState } from "src/ui/view/state";
 
-export interface MainServiceContext {
+const VIEW_TYPE_MFDI = "mfdi-view";
+
+export interface BuiltinMainContext {
   app: App;
   appHelper: AppHelper;
   getSettings: () => Settings;
   saveSettings: () => Promise<void>;
   register: (cb: () => unknown) => void;
   registerEvent: (eventRef: EventRef) => void;
+  registerView: (
+    type: string,
+    viewCreator: (leaf: WorkspaceLeaf) => MFDIView,
+  ) => void;
+  addRibbonIcon: (
+    icon: string,
+    title: string,
+    callback: () => void,
+  ) => HTMLElement;
+  addCommand: (command: Command) => Command;
+  createMFDIView: (leaf: WorkspaceLeaf) => MFDIView;
+  createAndOpenFixedNote: () => Promise<void>;
   attachMFDIView: (
     state: Partial<MFDIViewState>,
     preferredLeaf?: WorkspaceLeaf,
@@ -23,12 +38,67 @@ export interface MainServiceContext {
   tagIndexExtension: TagIndexExtension;
 }
 
-export interface BuiltinMainService {
+export interface BuiltinContribution {
   id: string;
-  activate: (context: MainServiceContext) => void;
+  activate: (context: BuiltinMainContext) => void;
 }
 
-export function createTagIndexLifecycleService(): BuiltinMainService {
+export class BuiltinRegistry {
+  constructor(private readonly contributions: BuiltinContribution[]) {}
+
+  activate(context: BuiltinMainContext): void {
+    // main は host API の橋渡しだけを持ち、起動順は registry 側で固定する。
+    for (const contribution of this.contributions) {
+      contribution.activate(context);
+    }
+  }
+}
+
+export function createViewRegistrationContribution(): BuiltinContribution {
+  return {
+    id: "view-registration",
+    activate: (context) => {
+      context.registerView(VIEW_TYPE_MFDI, (leaf) => context.createMFDIView(leaf));
+    },
+  };
+}
+
+export function createRibbonContribution(): BuiltinContribution {
+  return {
+    id: "open-view-ribbon",
+    activate: (context) => {
+      context.addRibbonIcon("pencil", "Mobile First Daily Interface", () => {
+        void context.attachMFDIView({});
+      });
+    },
+  };
+}
+
+export function createCommandContribution(): BuiltinContribution {
+  return {
+    id: "command-registration",
+    activate: (context) => {
+      context.addCommand({
+        id: "mfdi-open-view",
+        name: "Open Mobile First Daily Interface",
+        callback: async () => {
+          const leaf = await context.attachMFDIView({});
+          if (leaf) context.app.workspace.revealLeaf(leaf);
+        },
+      });
+
+      context.addCommand({
+        id: "mfdi-open-fixed-note-view",
+        name: "Create New MFDI Fixed Note",
+        callback: () => {
+          void context.createAndOpenFixedNote();
+        },
+      });
+    },
+  };
+}
+
+export function createTagIndexLifecycleContribution(): BuiltinContribution {
   return {
     id: "tag-index-lifecycle",
     activate: (context) => {
@@ -71,7 +141,7 @@ export function createTagIndexLifecycleService(): BuiltinMainService {
   };
 }
 
-export function createFixedNoteRegistryService(): BuiltinMainService {
+export function createFixedNoteRegistryContribution(): BuiltinContribution {
   return {
     id: "fixed-note-registry",
     activate: (context) => {
@@ -110,7 +180,7 @@ export function createFixedNoteRegistryService(): BuiltinMainService {
   };
 }
 
-export function createFixedNoteViewLifecycleService(): BuiltinMainService {
+export function createFixedNoteViewLifecycleContribution(): BuiltinContribution {
   return {
     id: "fixed-note-view-lifecycle",
     activate: (context) => {
@@ -126,7 +196,6 @@ export function createFixedNoteViewLifecycleService(): BuiltinMainService {
         }),
       );
 
-      // main は service の順序だけを持ち、各副作用の配線は built-in service 側へ寄せる。
       void context.fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
         leaves: context.app.workspace.getLeavesOfType("markdown"),
         attachMFDIView: context.attachMFDIView,
@@ -135,10 +204,19 @@ export function createFixedNoteViewLifecycleService(): BuiltinMainService {
   };
 }
 
-export function createBuiltinMainServices(): BuiltinMainService[] {
+export function createBuiltinContributions(): BuiltinContribution[] {
   return [
-    createTagIndexLifecycleService(),
-    createFixedNoteRegistryService(),
-    createFixedNoteViewLifecycleService(),
+    createViewRegistrationContribution(),
+    createRibbonContribution(),
+    createCommandContribution(),
+    createTagIndexLifecycleContribution(),
+    createFixedNoteRegistryContribution(),
+    createFixedNoteViewLifecycleContribution(),
   ];
+}
+
+export function createBuiltinRegistry(
+  contributions: BuiltinContribution[] = createBuiltinContributions(),
+): BuiltinRegistry {
+  return new BuiltinRegistry(contributions);
 }

@@ -3,11 +3,10 @@ import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
 import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
 import {
-  createBuiltinMainServices,
-  MainServiceContext
-} from "src/core/main-services";
+  BuiltinMainContext,
+  createBuiltinRegistry,
+} from "src/core/builtin-registry";
 import { createFixedNoteFromInput } from "src/core/note-source";
-import { createBuiltinPluginManager } from "src/core/plugin-manager";
 import {
   createTagIndexExtension,
   TagIndexExtension
@@ -39,45 +38,7 @@ export default class MFDIPlugin extends Plugin {
     this.settingTab = new MFDISettingTab(this.app, this);
     this.addSettingTab(this.settingTab);
 
-    this.registerMFDIView();
-    this.registerRibbonActions();
-    this.registerCommands();
-    this.registerBuiltinServices();
-  }
-
-  // ---------------------------------------------------------------------------
-  // 登録系メソッド
-  // ---------------------------------------------------------------------------
-
-  private registerMFDIView() {
-    this.registerView(VIEW_TYPE_MFDI, (leaf) => {
-      this.view = new MFDIView(leaf, this.settings);
-      this.setupViewCallbacks(this.view);
-      return this.view;
-    });
-  }
-
-  private registerRibbonActions() {
-    this.addRibbonIcon("pencil", "Mobile First Daily Interface", () =>
-      this.attachMFDIView(),
-    );
-  }
-
-  private registerCommands() {
-    this.addCommand({
-      id: "mfdi-open-view",
-      name: "Open Mobile First Daily Interface",
-      callback: async () => {
-        const leaf = await this.attachMFDIView();
-        if (leaf) this.app.workspace.revealLeaf(leaf);
-      },
-    });
-
-    this.addCommand({
-      id: "mfdi-open-fixed-note-view",
-      name: "Create New MFDI Fixed Note",
-      callback: () => this.createAndOpenFixedNote(),
-    });
+    this.activateBuiltinRegistry();
   }
 
   // ---------------------------------------------------------------------------
@@ -115,21 +76,32 @@ export default class MFDIPlugin extends Plugin {
   // ビュー管理
   // ---------------------------------------------------------------------------
 
-  private registerBuiltinServices() {
-    const context: MainServiceContext = {
+  private activateBuiltinRegistry() {
+    // main は host API と domain callback を束ねるだけにして、登録処理は registry 側へ寄せる。
+    const context: BuiltinMainContext = {
       app: this.app,
       appHelper: this.appHelper,
       getSettings: () => this.settings,
       saveSettings: () => this.saveSettings(),
       register: (cb) => this.register(cb),
       registerEvent: (eventRef) => this.registerEvent(eventRef),
+      registerView: (type, viewCreator) => this.registerView(type, viewCreator),
+      addRibbonIcon: (icon, title, callback) =>
+        this.addRibbonIcon(icon, title, callback),
+      addCommand: (command) => this.addCommand(command),
+      createMFDIView: (leaf) => {
+        this.view = new MFDIView(leaf, this.settings);
+        this.setupViewCallbacks(this.view);
+        return this.view;
+      },
+      createAndOpenFixedNote: () => this.createAndOpenFixedNote(),
       attachMFDIView: (state, preferredLeaf) =>
         this.attachMFDIView(state, preferredLeaf),
       fixedNoteViewExtension: this.fixedNoteViewExtension,
       tagIndexExtension: this.tagIndexExtension,
     };
 
-    createBuiltinPluginManager(createBuiltinMainServices()).activate(context);
+    createBuiltinRegistry().activate(context);
   }
 
   /**

@@ -1,12 +1,98 @@
 import { TFile } from "obsidian";
 import {
-  createFixedNoteRegistryService,
-  createTagIndexLifecycleService,
-} from "src/core/main-services";
+  createBuiltinRegistry,
+  createCommandContribution,
+  createFixedNoteRegistryContribution,
+  createTagIndexLifecycleContribution,
+  createViewRegistrationContribution,
+  createRibbonContribution,
+} from "src/core/builtin-registry";
 import { describe, expect, it, vi } from "vitest";
 
-describe("main services", () => {
-  it("tag index lifecycle service wires layout-ready and vault events", async () => {
+const VIEW_TYPE_MFDI = "mfdi-view";
+
+describe("builtin registry", () => {
+  it("activates contributions in registration order", () => {
+    const calls: string[] = [];
+    const context = { marker: "ctx" } as any;
+    const registry = createBuiltinRegistry([
+      {
+        id: "first",
+        activate: (receivedContext) => {
+          expect(receivedContext).toBe(context);
+          calls.push("first");
+        },
+      },
+      {
+        id: "second",
+        activate: () => {
+          calls.push("second");
+        },
+      },
+    ]);
+
+    registry.activate(context);
+
+    expect(calls).toEqual(["first", "second"]);
+  });
+
+  it("registers the MFDI view through the contribution", () => {
+    const registerView = vi.fn();
+    const createMFDIView = vi.fn((leaf) => ({ leaf } as any));
+
+    createViewRegistrationContribution().activate({
+      registerView,
+      createMFDIView,
+    } as any);
+
+    expect(registerView).toHaveBeenCalledTimes(1);
+    const [viewType, creator] = registerView.mock.calls[0];
+    expect(viewType).toBe(VIEW_TYPE_MFDI);
+
+    const leaf = { id: "leaf" } as any;
+    expect(creator(leaf)).toEqual({ leaf });
+    expect(createMFDIView).toHaveBeenCalledWith(leaf);
+  });
+
+  it("registers ribbon and commands through built-in contributions", async () => {
+    const addRibbonIcon = vi.fn();
+    const addCommand = vi.fn((command) => command);
+    const attachMFDIView = vi.fn(async () => ({ id: "leaf" } as any));
+    const revealLeaf = vi.fn();
+    const createAndOpenFixedNote = vi.fn(async () => {});
+
+    const context = {
+      addRibbonIcon,
+      addCommand,
+      attachMFDIView,
+      createAndOpenFixedNote,
+      app: { workspace: { revealLeaf } },
+    } as any;
+
+    createRibbonContribution().activate(context);
+    createCommandContribution().activate(context);
+
+    expect(addRibbonIcon).toHaveBeenCalledWith(
+      "pencil",
+      "Mobile First Daily Interface",
+      expect.any(Function),
+    );
+    expect(addCommand).toHaveBeenCalledTimes(2);
+
+    const ribbonCallback = addRibbonIcon.mock.calls[0][2];
+    ribbonCallback();
+    expect(attachMFDIView).toHaveBeenCalledWith({});
+
+    const openViewCommand = addCommand.mock.calls[0][0];
+    await openViewCommand.callback();
+    expect(revealLeaf).toHaveBeenCalledWith({ id: "leaf" });
+
+    const fixedNoteCommand = addCommand.mock.calls[1][0];
+    await fixedNoteCommand.callback();
+    expect(createAndOpenFixedNote).toHaveBeenCalledTimes(1);
+  });
+
+  it("tag index lifecycle contribution wires layout-ready and vault events", async () => {
     let onLayoutReadyCallback: (() => void) | undefined;
     let changedCallback: ((file: TFile) => void) | undefined;
     let renameCallback:
@@ -44,13 +130,18 @@ describe("main services", () => {
     };
     const settings = { fixedNoteFiles: [] } as any;
 
-    createTagIndexLifecycleService().activate({
+    createTagIndexLifecycleContribution().activate({
       app,
       appHelper: {} as any,
       getSettings: () => settings,
       saveSettings: vi.fn(async () => {}),
       register: vi.fn(),
       registerEvent: vi.fn(),
+      registerView: vi.fn(),
+      addRibbonIcon: vi.fn(),
+      addCommand: vi.fn(),
+      createMFDIView: vi.fn(),
+      createAndOpenFixedNote: vi.fn(async () => {}),
       attachMFDIView: vi.fn(async () => undefined),
       fixedNoteViewExtension: {} as any,
       tagIndexExtension,
@@ -81,7 +172,7 @@ describe("main services", () => {
     expect(tagIndexExtension.handleFileDeleted).toHaveBeenCalledWith(file.path);
   });
 
-  it("fixed note registry service keeps settings in sync on rename and delete", async () => {
+  it("fixed note registry contribution keeps settings in sync on rename and delete", async () => {
     let renameCallback:
       | ((file: TFile | null, oldPath: string) => void)
       | undefined;
@@ -102,13 +193,18 @@ describe("main services", () => {
     } as any;
     const saveSettings = vi.fn(async () => {});
 
-    createFixedNoteRegistryService().activate({
+    createFixedNoteRegistryContribution().activate({
       app,
       appHelper: {} as any,
       getSettings: () => settings,
       saveSettings,
       register: vi.fn(),
       registerEvent: vi.fn(),
+      registerView: vi.fn(),
+      addRibbonIcon: vi.fn(),
+      addCommand: vi.fn(),
+      createMFDIView: vi.fn(),
+      createAndOpenFixedNote: vi.fn(async () => {}),
       attachMFDIView: vi.fn(async () => undefined),
       fixedNoteViewExtension: {} as any,
       tagIndexExtension: {} as any,
