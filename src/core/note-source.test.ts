@@ -1,5 +1,8 @@
 import { TFile } from "obsidian";
-import { resolveNoteSource } from "src/core/note-source";
+import {
+  createFixedNoteFromInput,
+  resolveNoteSource
+} from "src/core/note-source";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("src/utils/daily-notes", () => ({
@@ -64,5 +67,12 @@ describe("resolveNoteSource", () => {
     expect(source.mode).toBe("fixed");
     expect(source.resolveCurrentNote()).toBe(fixedFile);
     expect(source.matchesPath(fixedFile.path)).toBe(true);
+  });
+
+  it("creates a fixed note from user input through the core helper", async () => {
+    const created = await createFixedNoteFromInput(shell, "MFDI", "Scratch");
+
+    expect(shell.createFile).toHaveBeenCalledWith("MFDI/Scratch.mfdi.md", "");
+    expect(created.path).toBe("MFDI/Scratch.mfdi.md");
   });
 });

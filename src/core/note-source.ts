@@ -11,6 +11,8 @@ import {
   getTopicNote
 } from "src/utils/daily-notes";
 import {
+  buildFixedNotePathFromName,
+  createNewFixedNote,
   ensureFixedNote,
   normalizeFixedNotePath,
   resolveFixedNote
@@ -72,6 +74,21 @@ export function getPeriodicNoteDate(
   activeTopic?: string,
 ) {
   return getDateFromFile(file, granularity, shell, activeTopic);
+}
+
+export async function createFixedNoteFromInput(
+  shell: ObsidianAppShell,
+  folder: string,
+  name: string,
+): Promise<TFile> {
+  // fixed note 作成の入口を core に寄せて、main から util の手順知識を剥がす。
+  const trimmedName = name.trim();
+  if (!trimmedName) {
+    return createNewFixedNote(shell, folder);
+  }
+
+  const path = buildFixedNotePathFromName(folder, trimmedName, shell);
+  return ensureFixedNote(shell, path);
 }
 
 function createFixedNoteSource(context: NoteSourceContext): NoteSource {

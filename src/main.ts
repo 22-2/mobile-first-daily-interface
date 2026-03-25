@@ -2,6 +2,7 @@ import { around } from "monkey-around";
 import { Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { AppHelper } from "src/app-helper";
+import { createFixedNoteFromInput } from "src/core/note-source";
 import { TagIndexer } from "src/db/tag-indexer";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { Topic } from "src/topic";
@@ -14,9 +15,6 @@ import {
   MFDIViewState
 } from "src/ui/view/state";
 import {
-  buildFixedNotePathFromName,
-  createNewFixedNote,
-  ensureFixedNote,
   isMFDIFixedNotePath,
   normalizeFixedNotePath
 } from "src/utils/fixed-note";
@@ -115,13 +113,11 @@ export default class MFDIPlugin extends Plugin {
     });
     if (name === null) return;
 
-    const path = name.trim()
-      ? buildFixedNotePathFromName(folder, name, this.appHelper)
-      : undefined;
-
-    const fixedNote = path
-      ? await ensureFixedNote(this.appHelper, path)
-      : await createNewFixedNote(this.appHelper, folder);
+    const fixedNote = await createFixedNoteFromInput(
+      this.appHelper,
+      folder,
+      name,
+    );
 
     this.settings.fixedNoteFiles = [
       ...this.settings.fixedNoteFiles,
