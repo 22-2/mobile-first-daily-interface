@@ -2,11 +2,11 @@ import {
   inferNoteIdentityFromFile,
   inferNoteIdentityFromFilename
 } from "src/db/note-file-identity";
-import { AppHelper } from "src/app-helper";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { describe, expect, test } from "vitest";
 
 const shell = {
-  ...new AppHelper({
+  ...new ObsidianAppShell({
     vault: {},
     workspace: {},
     metadataCache: {},

@@ -1,6 +1,6 @@
 import { Box, Checkbox, HStack } from "@chakra-ui/react";
 import { memo } from "react";
-import { Task } from "src/app-helper";
+import { Task } from "src/shell/obsidian-shell";
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";

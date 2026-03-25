@@ -1,5 +1,5 @@
 import { TFile, Vault } from "obsidian";
-import { AppHelper } from "src/app-helper";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import {
   getAllTopicNotes,
   getDailyNoteSettings,
@@ -49,7 +49,7 @@ function setupApp(folder = "Daily") {
 }
 
 function getShell() {
-  return new AppHelper((window as any).app);
+  return new ObsidianAppShell((window as any).app);
 }
 
 beforeEach(() => {

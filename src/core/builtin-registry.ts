@@ -1,9 +1,9 @@
 import { around } from "monkey-around";
 import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
-import { AppHelper } from "src/app-helper";
 import {
   FixedNoteViewExtension
 } from "src/core/fixed-note-view-extension";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { TagIndexExtension } from "src/core/tag-index-extension";
 import { Settings } from "src/settings";
 import type { MFDIView } from "src/ui/view/MFDIView";
@@ -13,7 +13,7 @@ const VIEW_TYPE_MFDI = "mfdi-view";
 
 export interface BuiltinMainContext {
   app: App;
-  appHelper: AppHelper;
+  shell: ObsidianAppShell;
   getSettings: () => Settings;
   saveSettings: () => Promise<void>;
   register: (cb: () => unknown) => void;
@@ -104,7 +104,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
     activate: (context) => {
       context.app.workspace.onLayoutReady(() => {
         void context.tagIndexExtension.fullScan(
-          context.appHelper,
+          context.shell,
           context.getSettings(),
         );
       });
@@ -112,7 +112,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
       context.registerEvent(
         context.app.metadataCache.on("changed", (file) => {
           void context.tagIndexExtension.handleFileChanged(
-            context.appHelper,
+            context.shell,
             file,
             context.getSettings(),
           );
@@ -123,7 +123,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
         context.app.vault.on("rename", (file, oldPath) => {
           if (!(file instanceof TFile)) return;
           void context.tagIndexExtension.handleFileRenamed(
-            context.appHelper,
+            context.shell,
             file,
             oldPath,
             context.getSettings(),

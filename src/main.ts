@@ -1,12 +1,12 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
-import { AppHelper } from "src/app-helper";
 import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
 import {
   BuiltinMainContext,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
 import { createFixedNoteFromInput } from "src/core/note-source";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import {
   createTagIndexExtension,
   TagIndexExtension
@@ -23,7 +23,7 @@ import {
 import { createFixedNoteViewState } from "src/ui/view/state";
 
 export default class MFDIPlugin extends Plugin {
-  appHelper: AppHelper;
+  shell: ObsidianAppShell;
   settings: Settings;
   settingTab: MFDISettingTab;
   tagIndexExtension: TagIndexExtension;
@@ -31,9 +31,9 @@ export default class MFDIPlugin extends Plugin {
   view?: MFDIView;
 
   async onload() {
-    this.appHelper = new AppHelper(this.app);
+    this.shell = new ObsidianAppShell(this.app);
     await this.loadSettings();
-    this.tagIndexExtension = createTagIndexExtension(this.appHelper.getAppId());
+    this.tagIndexExtension = createTagIndexExtension(this.shell.getAppId());
 
     this.settingTab = new MFDISettingTab(this.app, this);
     this.addSettingTab(this.settingTab);
@@ -55,7 +55,7 @@ export default class MFDIPlugin extends Plugin {
     if (name === null) return;
 
     const fixedNote = await createFixedNoteFromInput(
-      this.appHelper,
+      this.shell,
       folder,
       name,
     );
@@ -80,7 +80,7 @@ export default class MFDIPlugin extends Plugin {
     // main は host API と domain callback を束ねるだけにして、登録処理は registry 側へ寄せる。
     const context: BuiltinMainContext = {
       app: this.app,
-      appHelper: this.appHelper,
+      shell: this.shell,
       getSettings: () => this.settings,
       saveSettings: () => this.saveSettings(),
       register: (cb) => this.register(cb),

@@ -1,8 +1,8 @@
 import { TFile } from "obsidian";
-import { AppHelper } from "src/app-helper";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { describe, expect, test, vi } from "vitest";
 
-function createAppHelper(initialContent: string) {
+function createShell(initialContent: string) {
   let content = initialContent;
   const write = vi.fn(async (_path: string, nextContent: string) => {
     content = nextContent;
@@ -19,16 +19,16 @@ function createAppHelper(initialContent: string) {
   } as any;
 
   return {
-    helper: new AppHelper(app),
+    helper: new ObsidianAppShell(app),
     file: Object.assign(new TFile(), { path: "daily.md" }),
     getContent: () => content,
     write,
   };
 }
 
-describe("AppHelper.insertTextAfter", () => {
+describe("ObsidianAppShell.insertTextAfter", () => {
   test("insertAfter marker直後でも投稿間に余計な空行を入れない", async () => {
-    const { helper, file, getContent } = createAppHelper(
+    const { helper, file, getContent } = createShell(
       "## Thino\n- 10:00:00 old\n",
     );
 
@@ -38,7 +38,7 @@ describe("AppHelper.insertTextAfter", () => {
   });
 
   test("marker の後ろに改行がない場合でも 1 つだけ補う", async () => {
-    const { helper, file, getContent } = createAppHelper("## Thino");
+    const { helper, file, getContent } = createShell("## Thino");
 
     await helper.insertTextAfter(file, "- 11:00:00 new\n", "## Thino");
 
@@ -46,7 +46,7 @@ describe("AppHelper.insertTextAfter", () => {
   });
 
   test("末尾追記でも先頭改行を正規化して空行を増やさない", async () => {
-    const { helper, file, getContent } = createAppHelper("header");
+    const { helper, file, getContent } = createShell("header");
 
     await helper.insertTextAfter(file, "\n## Thino", "");
 

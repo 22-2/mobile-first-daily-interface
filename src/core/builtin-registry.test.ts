@@ -132,7 +132,7 @@ describe("builtin registry", () => {
 
     createTagIndexLifecycleContribution().activate({
       app,
-      appHelper: {} as any,
+      shell: {} as any,
       getSettings: () => settings,
       saveSettings: vi.fn(async () => {}),
       register: vi.fn(),
@@ -195,7 +195,7 @@ describe("builtin registry", () => {
 
     createFixedNoteRegistryContribution().activate({
       app,
-      appHelper: {} as any,
+      shell: {} as any,
       getSettings: () => settings,
       saveSettings,
       register: vi.fn(),
