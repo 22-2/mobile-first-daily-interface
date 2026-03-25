@@ -29,10 +29,28 @@ export interface FixedNoteViewExtension {
       preferredLeaf?: WorkspaceLeaf,
     ) => Promise<WorkspaceLeaf | undefined>;
   }) => Promise<void>;
-  findExistingLeaf: (
-    leaves: WorkspaceLeaf[],
-    state: Partial<MFDIViewState>,
-  ) => WorkspaceLeaf | undefined;
+}
+
+// contribution の外側（main 等）が leaf 探索だけしたい場合に直接インポートできるよう standalone export にする。
+// extension インターフェースに載せると「contribution に渡すオブジェクト」と「main が直接呼ぶ関数」の二重管理になるため分離した。
+export function findExistingMFDILeaf(
+  leaves: WorkspaceLeaf[],
+  state: Partial<MFDIViewState>,
+): WorkspaceLeaf | undefined {
+
+  const isFixedMode = state.noteMode === "fixed";
+  const fixedPath = normalizeFixedNotePath(
+    typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
+  );
+
+  return leaves.find((leaf) => {
+    if (!isViewStatefulLeaf(leaf)) return false;
+    const currentState = leaf.view.getState() as MFDIViewState;
+    return isFixedMode
+      ? currentState.noteMode === "fixed" &&
+          normalizeFixedNotePath(currentState.fixedNotePath ?? "") === fixedPath
+      : currentState.noteMode !== "fixed";
+  });
 }
 
 export function createFixedNoteViewExtension(): FixedNoteViewExtension {
@@ -70,24 +88,6 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
         if (!isMFDIFixedNotePath(filePath)) continue;
         await attachMFDIView(createFixedNoteViewState(filePath), leaf);
       }
-    },
-
-    findExistingLeaf: (leaves, state) => {
-      const fixedPath = normalizeFixedNotePath(
-        typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
-      );
-      const isFixedMode = state.noteMode === "fixed";
-
-      return leaves.find((leaf) => {
-        if (!isViewStatefulLeaf(leaf)) return false;
-
-        const currentState = leaf.view.getState() as MFDIViewState;
-        return isFixedMode
-          ? currentState.noteMode === "fixed" &&
-              normalizeFixedNotePath(currentState.fixedNotePath ?? "") ===
-                fixedPath
-          : currentState.noteMode !== "fixed";
-      });
     },
   };
 }

@@ -1,7 +1,13 @@
 import { around } from "monkey-around";
 import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
-import { FixedNoteViewExtension } from "src/core/fixed-note-view-extension";
-import { TagIndexExtension } from "src/core/tag-index-extension";
+import {
+  createFixedNoteViewExtension,
+  FixedNoteViewExtension,
+} from "src/core/fixed-note-view-extension";
+import {
+  createTagIndexExtension,
+  TagIndexExtension,
+} from "src/core/tag-index-extension";
 import { Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
@@ -9,6 +15,8 @@ import { MFDIViewState } from "src/ui/view/state";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
+// contribution が使う plugin ホスト API のみを列挙する。
+// extension インスタンスは各 contribution が引数で受け取るため context には含めない。
 export interface BuiltinMainContext {
   app: App;
   shell: ObsidianAppShell;
@@ -32,8 +40,6 @@ export interface BuiltinMainContext {
     state: Partial<MFDIViewState>,
     preferredLeaf?: WorkspaceLeaf,
   ) => Promise<WorkspaceLeaf | undefined>;
-  fixedNoteViewExtension: FixedNoteViewExtension;
-  tagIndexExtension: TagIndexExtension;
 }
 
 export interface BuiltinContribution {
@@ -98,17 +104,21 @@ export function createCommandContribution(): BuiltinContribution {
   };
 }
 
-export function createTagIndexLifecycleContribution(): BuiltinContribution {
+// extension を引数に取ることで contribution が自分の依存を所有し、context を汚染しない。
+// テスト時はモック extension を直接注入できる。
+export function createTagIndexLifecycleContribution(
+  tagIndexExtension: TagIndexExtension,
+): BuiltinContribution {
   return {
     id: "tag-index-lifecycle",
     activate: (context) => {
       // dispose は Plugin の unload 機構に委ねて main のフィールドを不要にする
       context.register(() => {
-        void context.tagIndexExtension.dispose();
+        void tagIndexExtension.dispose();
       });
 
       context.app.workspace.onLayoutReady(() => {
-        void context.tagIndexExtension.fullScan(
+        void tagIndexExtension.fullScan(
           context.shell,
           context.getSettings(),
         );
@@ -116,7 +126,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
 
       context.registerEvent(
         context.app.metadataCache.on("changed", (file) => {
-          void context.tagIndexExtension.handleFileChanged(
+          void tagIndexExtension.handleFileChanged(
             context.shell,
             file,
             context.getSettings(),
@@ -127,7 +137,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
       context.registerEvent(
         context.app.vault.on("rename", (file, oldPath) => {
           if (!(file instanceof TFile)) return;
-          void context.tagIndexExtension.handleFileRenamed(
+          void tagIndexExtension.handleFileRenamed(
             context.shell,
             file,
             oldPath,
@@ -139,7 +149,7 @@ export function createTagIndexLifecycleContribution(): BuiltinContribution {
       context.registerEvent(
         context.app.vault.on("delete", (file) => {
           if (!(file instanceof TFile)) return;
-          void context.tagIndexExtension.handleFileDeleted(file.path);
+          void tagIndexExtension.handleFileDeleted(file.path);
         }),
       );
     },
@@ -186,7 +196,9 @@ export function createFixedNoteRegistryContribution(): BuiltinContribution {
   };
 }
 
-export function createFixedNoteViewLifecycleContribution(): BuiltinContribution {
+export function createFixedNoteViewLifecycleContribution(
+  fixedNoteViewExtension: FixedNoteViewExtension,
+): BuiltinContribution {
   return {
     id: "fixed-note-view-lifecycle",
     activate: (context) => {
@@ -195,7 +207,7 @@ export function createFixedNoteViewLifecycleContribution(): BuiltinContribution 
           setViewState(original: Function) {
             return function (this: WorkspaceLeaf, viewState, eState) {
               const nextState =
-                context.fixedNoteViewExtension.convertMarkdownViewState(
+                fixedNoteViewExtension.convertMarkdownViewState(
                   viewState,
                 );
               return original.call(this, nextState, eState);
@@ -204,7 +216,7 @@ export function createFixedNoteViewLifecycleContribution(): BuiltinContribution 
         }),
       );
 
-      void context.fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
+      void fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
         leaves: context.app.workspace.getLeavesOfType("markdown"),
         attachMFDIView: context.attachMFDIView,
       });
@@ -212,19 +224,23 @@ export function createFixedNoteViewLifecycleContribution(): BuiltinContribution 
   };
 }
 
-export function createBuiltinContributions(): BuiltinContribution[] {
+// extension の生成はここに集約し、main.ts からは appId だけ受け取る。
+// 各 contribution ファクトリへの注入で依存が明示的になりテスト可能性が保たれる。
+export function createBuiltinContributions(
+  appId: string,
+): BuiltinContribution[] {
   return [
     createViewRegistrationContribution(),
     createRibbonContribution(),
     createCommandContribution(),
-    createTagIndexLifecycleContribution(),
+    createTagIndexLifecycleContribution(createTagIndexExtension(appId)),
     createFixedNoteRegistryContribution(),
-    createFixedNoteViewLifecycleContribution(),
+    createFixedNoteViewLifecycleContribution(createFixedNoteViewExtension()),
   ];
 }
 
 export function createBuiltinRegistry(
-  contributions: BuiltinContribution[] = createBuiltinContributions(),
+  contributions: BuiltinContribution[],
 ): BuiltinRegistry {
   return new BuiltinRegistry(contributions);
 }

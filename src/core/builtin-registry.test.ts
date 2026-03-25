@@ -130,7 +130,7 @@ describe("builtin registry", () => {
     };
     const settings = { fixedNoteFiles: [] } as any;
 
-    createTagIndexLifecycleContribution().activate({
+    createTagIndexLifecycleContribution(tagIndexExtension).activate({
       app,
       shell: {} as any,
       getSettings: () => settings,
@@ -143,8 +143,6 @@ describe("builtin registry", () => {
       createMFDIView: vi.fn(),
       createAndOpenFixedNote: vi.fn(async () => {}),
       attachMFDIView: vi.fn(async () => undefined),
-      fixedNoteViewExtension: {} as any,
-      tagIndexExtension,
     });
 
     onLayoutReadyCallback?.();
@@ -206,8 +204,6 @@ describe("builtin registry", () => {
       createMFDIView: vi.fn(),
       createAndOpenFixedNote: vi.fn(async () => {}),
       attachMFDIView: vi.fn(async () => undefined),
-      fixedNoteViewExtension: {} as any,
-      tagIndexExtension: {} as any,
     });
 
     const renamedFile = Object.assign(new TFile(), {

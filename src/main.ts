@@ -2,11 +2,11 @@ import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import {
   BuiltinMainContext,
+  createBuiltinContributions,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
-import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
+import { findExistingMFDILeaf } from "src/core/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
-import { createTagIndexExtension } from "src/core/tag-index-extension";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Topic } from "src/topic";
@@ -66,22 +66,7 @@ export default class MFDIPlugin extends Plugin {
 
   private activateBuiltinRegistry() {
     // main は host API と domain callback を束ねるだけにして、登録処理は registry 側へ寄せる。
-    // extension の所有は plugin フィールドではなくこのスコープのローカル変数に閉じ込める。
-    const tagIndexExtension = createTagIndexExtension(this.shell.getAppId());
-    const fixedNoteViewExtension = createFixedNoteViewExtension();
-
-    // leaf 探索ロジックを fixedNoteViewExtension に委譲しつつ、plugin の public attachMFDIView を薄く保つ。
-    const attachMFDIViewWithFinding = async (
-      state: Partial<MFDIViewState> = DEFAULT_MFDI_VIEW_STATE,
-      preferredLeaf?: WorkspaceLeaf,
-    ): Promise<WorkspaceLeaf | undefined> => {
-      const existing = fixedNoteViewExtension.findExistingLeaf(
-        this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI),
-        state,
-      );
-      return this.attachMFDIView(state, preferredLeaf ?? existing);
-    };
-
+    // extension 生成は createBuiltinContributions に集約し、main は appId だけ渡す。
     const context: BuiltinMainContext = {
       app: this.app,
       shell: this.shell,
@@ -99,21 +84,27 @@ export default class MFDIPlugin extends Plugin {
         return this.view;
       },
       createAndOpenFixedNote: () => this.createAndOpenFixedNote(),
-      attachMFDIView: attachMFDIViewWithFinding,
-      fixedNoteViewExtension,
-      tagIndexExtension,
+      attachMFDIView: (state, preferredLeaf) =>
+        this.attachMFDIView(state, preferredLeaf),
     };
 
-    createBuiltinRegistry().activate(context);
+    createBuiltinRegistry(
+      createBuiltinContributions(this.shell.getAppId()),
+    ).activate(context);
   }
 
-  // leaf 探索はしない生の setViewState ラッパー。探索が必要な呼び出し元は preferredLeaf を解決してから渡す。
+  // leaf 探索込みの setViewState ラッパー。同一条件の leaf が既に存在する場合は再利用する。
   async attachMFDIView(
     state: Partial<MFDIViewState> = DEFAULT_MFDI_VIEW_STATE,
     preferredLeaf?: WorkspaceLeaf,
   ): Promise<WorkspaceLeaf | undefined> {
     const mergedState = { ...DEFAULT_MFDI_VIEW_STATE, ...state };
-    const targetLeaf = preferredLeaf ?? this.app.workspace.getLeaf(false);
+    const existing = findExistingMFDILeaf(
+      this.app.workspace.getLeavesOfType(VIEW_TYPE_MFDI),
+      state,
+    );
+    const targetLeaf =
+      preferredLeaf ?? existing ?? this.app.workspace.getLeaf(false);
 
     await targetLeaf.setViewState({
       type: VIEW_TYPE_MFDI,

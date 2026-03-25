@@ -1,5 +1,8 @@
 import { WorkspaceLeaf } from "obsidian";
-import { createFixedNoteViewExtension } from "src/core/fixed-note-view-extension";
+import {
+  createFixedNoteViewExtension,
+  findExistingMFDILeaf,
+} from "src/core/fixed-note-view-extension";
 import { describe, expect, it, vi } from "vitest";
 
 describe("fixed note view extension", () => {
@@ -30,7 +33,6 @@ describe("fixed note view extension", () => {
   });
 
   it("finds an existing fixed leaf by fixed path", () => {
-    const extension = createFixedNoteViewExtension();
     const leaf = {
       view: {
         getState: () =>
@@ -38,7 +40,7 @@ describe("fixed note view extension", () => {
       },
     } as WorkspaceLeaf;
 
-    const result = extension.findExistingLeaf([leaf], {
+    const result = findExistingMFDILeaf([leaf], {
       noteMode: "fixed",
       fixedNotePath: "MFDI/Inbox.mfdi.md",
     });
