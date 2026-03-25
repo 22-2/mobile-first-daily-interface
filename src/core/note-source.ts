@@ -3,6 +3,9 @@ import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import {
+  getAllTopicNotes,
+  getDateFromFile,
+  getDateUID,
   createTopicNote,
   resolveTopicNotePath,
   getTopicNote
@@ -29,6 +32,48 @@ export interface NoteSource {
   matchesPath: (filePath: string, currentNote?: TFile | null) => boolean;
 }
 
+export function resolvePeriodicNote(
+  shell: ObsidianAppShell,
+  date: MomentLike,
+  granularity: Granularity,
+  activeTopic: string,
+): TFile | null {
+  return getTopicNote(shell, date, granularity, activeTopic);
+}
+
+export async function ensurePeriodicNote(
+  shell: ObsidianAppShell,
+  date: MomentLike,
+  granularity: Granularity,
+  activeTopic: string,
+): Promise<TFile> {
+  return createTopicNote(shell, date, granularity, activeTopic);
+}
+
+export function listPeriodicNotes(
+  shell: ObsidianAppShell,
+  granularity: Granularity,
+  activeTopic: string = "",
+): Record<string, TFile> {
+  return getAllTopicNotes(shell, granularity, activeTopic);
+}
+
+export function getPeriodicNoteKey(
+  date: MomentLike,
+  granularity: Granularity,
+): string {
+  return getDateUID(date, granularity);
+}
+
+export function getPeriodicNoteDate(
+  file: TFile,
+  granularity: Granularity,
+  shell: ObsidianAppShell,
+  activeTopic?: string,
+) {
+  return getDateFromFile(file, granularity, shell, activeTopic);
+}
+
 function createFixedNoteSource(context: NoteSourceContext): NoteSource {
   return {
     mode: "fixed",
@@ -49,14 +94,14 @@ function createPeriodicNoteSource(context: NoteSourceContext): NoteSource {
   return {
     mode: "periodic",
     resolveCurrentNote: () =>
-      getTopicNote(
+      resolvePeriodicNote(
         context.shell,
         context.date,
         context.granularity,
         context.activeTopic,
       ),
     ensureCurrentNote: async () =>
-      createTopicNote(
+      ensurePeriodicNote(
         context.shell,
         context.date,
         context.granularity,

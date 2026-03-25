@@ -1,12 +1,14 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  getPeriodicNoteDate,
+  listPeriodicNotes
+} from "src/core/note-source";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { getAllTopicNotes } from "src/utils/daily-notes/notes";
-import { getDateFromFile } from "src/utils/daily-notes/utils";
 import { useShallow } from "zustand/shallow";
 
 // ─────────────────────────────────────────────
@@ -193,11 +195,11 @@ function useMiniCalendar() {
   };
 
   const activityDates = useMemo(() => {
-    const notes = getAllTopicNotes(shell, "day", activeTopic);
+    const notes = listPeriodicNotes(shell, "day", activeTopic);
     const dates = new Set<string>();
 
     Object.values(notes).forEach((file) => {
-      const d = getDateFromFile(file, "day", shell, activeTopic);
+      const d = getPeriodicNoteDate(file, "day", shell, activeTopic);
       if (d) dates.add(d.format("YYYY-MM-DD"));
     });
 

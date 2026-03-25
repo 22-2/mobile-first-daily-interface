@@ -1,8 +1,5 @@
 import { normalizePath, TFile } from "obsidian";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Granularity, MomentLike } from "src/ui/types";
-import { MFDINoteMode } from "src/ui/view/state";
-import { getTopicNote } from "src/utils/daily-notes";
 import { ensureExtension } from "./path";
 
 export function normalizeFixedNoteFolder(path: string): string {
@@ -97,22 +94,4 @@ export async function createNewFixedNote(
 ): Promise<TFile> {
   const path = buildUntitledFixedNotePath(folder, shell);
   return ensureFixedNote(shell, path);
-}
-
-export function resolveCurrentTargetNote(params: {
-  shell: ObsidianAppShell;
-  date: MomentLike;
-  granularity: Granularity;
-  activeTopic: string;
-  noteMode: MFDINoteMode;
-  fixedNotePath: string | null;
-}): TFile | null {
-  const { shell, date, granularity, activeTopic, noteMode, fixedNotePath } =
-    params;
-
-  if (noteMode === "fixed") {
-    return resolveFixedNote(shell, fixedNotePath);
-  }
-
-  return getTopicNote(shell, date, granularity, activeTopic);
 }

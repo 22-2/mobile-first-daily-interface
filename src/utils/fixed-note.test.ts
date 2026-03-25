@@ -1,4 +1,5 @@
 import { TFile } from "obsidian";
+import { resolveNoteSource } from "src/core/note-source";
 import {
   buildFixedNotePathFromName,
   buildUntitledFixedNotePath,
@@ -6,14 +7,9 @@ import {
   ensureFixedNote,
   isMFDIFixedNotePath,
   normalizeFixedNoteFolder,
-  normalizeFixedNotePath,
-  resolveCurrentTargetNote
+  normalizeFixedNotePath
 } from "src/utils/fixed-note";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("src/utils/daily-notes", () => ({
-  getTopicNote: vi.fn(),
-}));
 
 describe("fixed note utilities", () => {
   beforeEach(() => {
@@ -53,16 +49,16 @@ describe("fixed note utilities", () => {
       ),
     } as any;
 
-    expect(
-      resolveCurrentTargetNote({
-        shell,
-        date: window.moment(),
-        granularity: "day",
-        activeTopic: "",
-        noteMode: "fixed",
-        fixedNotePath: "notes/fixed.md",
-      }),
-    ).toBe(file);
+    const source = resolveNoteSource({
+      shell,
+      date: window.moment(),
+      granularity: "day",
+      activeTopic: "",
+      noteMode: "fixed",
+      fixedNotePath: "notes/fixed.md",
+    });
+
+    expect(source.resolveCurrentNote()).toBe(file);
   });
 
   it("固定ノートが無ければフォルダを作って新規作成する", async () => {

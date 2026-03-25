@@ -1,12 +1,12 @@
 import { HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
+import { resolvePeriodicNote } from "src/core/note-source";
 import {
   SidebarSectionHeader,
   SidebarTextButton
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { getTopicNote } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
 
@@ -55,7 +55,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   // 指定した期間の投稿数とタスク数を取得する関数
   const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
-      const note = getTopicNote(shell, d, g, activeTopic);
+      const note = resolvePeriodicNote(shell, d, g, activeTopic);
       if (!note) return { posts: 0, tasks: 0 };
 
       const content = await appHelper.cachedReadFile(note);

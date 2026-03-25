@@ -10,10 +10,10 @@ import {
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import {
-  getAllTopicNotes,
-  getDateUID,
-  getTopicNote
-} from "src/utils/daily-notes";
+  getPeriodicNoteKey,
+  listPeriodicNotes,
+  resolvePeriodicNote
+} from "src/core/note-source";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";
 import { MFDIStore, PostsSlice } from "./types";
@@ -77,7 +77,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     );
     const entries = weekDates
       .map((dayDate) => ({
-        file: getTopicNote(shell, dayDate, "day", topicId),
+        file: resolvePeriodicNote(shell, dayDate, "day", topicId),
         dayDate,
       }))
       .filter(
@@ -116,7 +116,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       hasMore: boolean;
       lastSearchedDate: MomentLike;
     }> => {
-      const allTopicNotes = getAllTopicNotes(shell, "day", topicId);
+      const allTopicNotes = listPeriodicNotes(shell, "day", topicId);
       const uids = Object.keys(allTopicNotes).toSorted();
       if (uids.length === 0) {
         return {
@@ -138,7 +138,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
 
       const entries = dates
         .map((dayDate) => ({
-          file: allTopicNotes[getDateUID(dayDate, "day")] ?? null,
+          file: allTopicNotes[getPeriodicNoteKey(dayDate, "day")] ?? null,
           dayDate,
         }))
         .filter(
@@ -147,7 +147,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
         );
 
       if (entries.length === 0 && lastInWindow.isAfter(oldestPossibleDate)) {
-        const lastUid = getDateUID(lastInWindow, "day");
+        const lastUid = getPeriodicNoteKey(lastInWindow, "day");
         const nextUid = uids
           .slice()
           .reverse()

@@ -1,9 +1,12 @@
 import { TFile } from "obsidian";
+import {
+  getPeriodicNoteKey,
+  listPeriodicNotes
+} from "src/core/note-source";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { buildPostFromEntry } from "src/ui/utils/thread-utils";
-import { getAllTopicNotes, getDateUID } from "src/utils/daily-notes";
 import { parseThinoEntries } from "src/utils/thino";
 
 export type TimelinePostsPage = {
@@ -59,7 +62,7 @@ export function createTimelinePageFetcher({
     baseDate: MomentLike,
     days: number,
   ): Promise<TimelinePostsPage> => {
-    const allTopicNotes = getAllTopicNotes(shell, "day", topicId);
+    const allTopicNotes = listPeriodicNotes(shell, "day", topicId);
     const uids = Object.keys(allTopicNotes).toSorted();
 
     if (uids.length === 0) {
@@ -80,7 +83,7 @@ export function createTimelinePageFetcher({
 
     const entries = windowDates
       .map((dayDate) => ({
-        file: allTopicNotes[getDateUID(dayDate, "day")] ?? null,
+        file: allTopicNotes[getPeriodicNoteKey(dayDate, "day")] ?? null,
         dayDate,
       }))
       .filter(
@@ -89,7 +92,7 @@ export function createTimelinePageFetcher({
       );
 
     if (entries.length === 0 && windowEnd.isAfter(oldestDate)) {
-      const windowEndUid = getDateUID(windowEnd, "day");
+      const windowEndUid = getPeriodicNoteKey(windowEnd, "day");
       const nextUid = uids
         .slice()
         .reverse()

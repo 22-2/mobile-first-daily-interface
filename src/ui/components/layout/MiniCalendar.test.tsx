@@ -36,12 +36,9 @@ vi.mock("src/ui/context/AppContext", () => ({
   useObsidianApp: vi.fn(() => ({ vault: { getFiles: () => [] } })),
 }));
 
-vi.mock("src/utils/daily-notes/notes", () => ({
-  getAllTopicNotes: vi.fn(() => ({})),
-}));
-
-vi.mock("src/utils/daily-notes/utils", () => ({
-  getDateFromFile: vi.fn(),
+vi.mock("src/core/note-source", () => ({
+  listPeriodicNotes: vi.fn(() => ({})),
+  getPeriodicNoteDate: vi.fn(),
 }));
 
 describe("MiniCalendar", () => {
