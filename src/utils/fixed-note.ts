@@ -1,4 +1,5 @@
-import { App, normalizePath, TFile } from "obsidian";
+import { normalizePath, TFile } from "obsidian";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
 import { getTopicNote } from "src/utils/daily-notes";
@@ -24,28 +25,31 @@ export function isMFDIFixedNotePath(path: string): boolean {
 }
 
 export function resolveFixedNote(
-  app: App,
+  shell: ObsidianAppShell,
   rawPath: string | null,
 ): TFile | null {
   const path = normalizeFixedNotePath(rawPath ?? "");
   if (!path) return null;
-  const file = app.vault.getAbstractFileByPath(path);
+  const file = shell.getAbstractFileByPath(path);
   return file instanceof TFile ? file : null;
 }
 
-async function ensureFolderPath(app: App, path: string): Promise<void> {
+async function ensureFolderPath(
+  shell: ObsidianAppShell,
+  path: string,
+): Promise<void> {
   const segments = path.split("/").filter(Boolean);
   let currentPath = "";
 
   for (const segment of segments) {
     currentPath = currentPath ? `${currentPath}/${segment}` : segment;
-    if (app.vault.getAbstractFileByPath(currentPath)) continue;
-    await app.vault.createFolder(currentPath);
+    if (shell.getAbstractFileByPath(currentPath)) continue;
+    await shell.createFolder(currentPath);
   }
 }
 
 export async function ensureFixedNote(
-  app: App,
+  shell: ObsidianAppShell,
   rawPath: string,
 ): Promise<TFile> {
   const path = normalizeFixedNotePath(rawPath);
@@ -53,59 +57,62 @@ export async function ensureFixedNote(
     throw new Error("fixed note path is empty");
   }
 
-  const existing = resolveFixedNote(app, path);
+  const existing = resolveFixedNote(shell, path);
   if (existing) return existing;
 
   const lastSlash = path.lastIndexOf("/");
   if (lastSlash > 0) {
-    await ensureFolderPath(app, path.slice(0, lastSlash));
+    await ensureFolderPath(shell, path.slice(0, lastSlash));
   }
 
-  return app.vault.create(path, "");
+  return shell.createFile(path, "");
 }
 
 export function buildFixedNotePathFromName(
   folder: string,
   name: string,
-  app: App,
+  shell: ObsidianAppShell,
 ): string {
   const normalizedFolder = normalizeFixedNoteFolder(folder);
   const prefix = normalizedFolder ? `${normalizedFolder}/` : "";
   const safeName = name.trim() || "Untitled";
   const base = ensureExtension(`${prefix}${safeName}`, ".mfdi.md");
-  if (!app.vault.getAbstractFileByPath(base)) return base;
+  if (!shell.getAbstractFileByPath(base)) return base;
   for (let i = 1; ; i++) {
     const candidate = `${prefix}${safeName} ${i}.mfdi.md`;
-    if (!app.vault.getAbstractFileByPath(candidate)) return candidate;
+    if (!shell.getAbstractFileByPath(candidate)) return candidate;
   }
 }
 
-export function buildUntitledFixedNotePath(folder: string, app: App): string {
-  return buildFixedNotePathFromName(folder, "Untitled", app);
+export function buildUntitledFixedNotePath(
+  folder: string,
+  shell: ObsidianAppShell,
+): string {
+  return buildFixedNotePathFromName(folder, "Untitled", shell);
 }
 
 export async function createNewFixedNote(
-  app: App,
+  shell: ObsidianAppShell,
   folder: string,
 ): Promise<TFile> {
-  const path = buildUntitledFixedNotePath(folder, app);
-  return ensureFixedNote(app, path);
+  const path = buildUntitledFixedNotePath(folder, shell);
+  return ensureFixedNote(shell, path);
 }
 
 export function resolveCurrentTargetNote(params: {
-  app: App;
+  shell: ObsidianAppShell;
   date: MomentLike;
   granularity: Granularity;
   activeTopic: string;
   noteMode: MFDINoteMode;
   fixedNotePath: string | null;
 }): TFile | null {
-  const { app, date, granularity, activeTopic, noteMode, fixedNotePath } =
+  const { shell, date, granularity, activeTopic, noteMode, fixedNotePath } =
     params;
 
   if (noteMode === "fixed") {
-    return resolveFixedNote(app, fixedNotePath);
+    return resolveFixedNote(shell, fixedNotePath);
   }
 
-  return getTopicNote(app, date, granularity, activeTopic);
+  return getTopicNote(shell, date, granularity, activeTopic);
 }

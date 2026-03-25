@@ -1,10 +1,11 @@
 import * as Comlink from "comlink";
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import PQueue from "p-queue";
 import {
   GRANULARITIES,
   inferNoteIdentityFromFile
 } from "src/db/note-file-identity";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 // @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import ScanWorkerFactory from "src/db/scan.worker";
 import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
@@ -52,14 +53,17 @@ function isSameTarget(left: ScanTarget, right: ScanTarget): boolean {
   );
 }
 
-function collectScanTargets(app: App, settings: Settings): ScanTarget[] {
+function collectScanTargets(
+  shell: ObsidianAppShell,
+  settings: Settings,
+): ScanTarget[] {
   const uniqueTargets = new Map<string, ScanTarget>();
   const ambiguousPaths = new Set<string>();
   const topics = normalizeTopics(settings.topics);
 
   for (const topic of topics) {
     for (const granularity of GRANULARITIES) {
-      const notes = getAllTopicNotes(app, granularity, topic.id);
+      const notes = getAllTopicNotes(shell, granularity, topic.id);
 
       for (const file of Object.values(notes)) {
         if (ambiguousPaths.has(file.path)) {
@@ -73,7 +77,7 @@ function collectScanTargets(app: App, settings: Settings): ScanTarget[] {
           topicId: topic.id,
           noteGranularity: granularity,
           noteDate:
-            getDateFromFile(file, granularity, topic.id)?.toISOString() ?? "",
+            getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "",
         };
 
         if (!nextTarget.noteDate) {
@@ -98,10 +102,10 @@ function collectScanTargets(app: App, settings: Settings): ScanTarget[] {
 }
 
 async function toScannableNote(
-  app: App,
+  shell: ObsidianAppShell,
   target: ScanTarget,
 ): Promise<ScannableNote> {
-  const content = await app.vault.cachedRead(target.file);
+  const content = await shell.cachedReadFile(target.file);
   return {
     path: target.path,
     noteName: target.noteName,
@@ -141,10 +145,10 @@ export class TagIndexer {
     await this.initializePromise;
   }
 
-  async scanAllNotes(app: App, settings: Settings): Promise<void> {
+  async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
     await this.waitUntilReady();
 
-    const targets = collectScanTargets(app, settings);
+    const targets = collectScanTargets(shell, settings);
     const queue = new PQueue({ concurrency: this.queueConcurrency });
 
     await this.api.resetIndex();
@@ -153,7 +157,7 @@ export class TagIndexer {
       const batchTargets = targets.slice(start, start + this.scanChunkSize);
       const files = await Promise.all(
         batchTargets.map((target) =>
-          queue.add(() => toScannableNote(app, target)),
+          queue.add(() => toScannableNote(shell, target)),
         ),
       );
       await this.api.scanFiles(files);
@@ -165,7 +169,7 @@ export class TagIndexer {
   }
 
   async onFileChanged(
-    app: App,
+    shell: ObsidianAppShell,
     file: TFile,
     settings: Settings,
   ): Promise<void> {
@@ -174,12 +178,13 @@ export class TagIndexer {
     const identity = inferNoteIdentityFromFile(
       file,
       normalizeTopics(settings.topics),
+      shell,
     );
     if (!identity) {
       return;
     }
 
-    const content = await app.vault.cachedRead(file);
+    const content = await shell.cachedReadFile(file);
     await this.api.scanFile({
       path: file.path,
       noteName: file.basename,
@@ -196,14 +201,14 @@ export class TagIndexer {
   }
 
   async onFileRenamed(
-    app: App,
+    shell: ObsidianAppShell,
     file: TFile,
     oldPath: string,
     settings: Settings,
   ): Promise<void> {
     await this.waitUntilReady();
     await this.api.removeFile(oldPath);
-    await this.onFileChanged(app, file, settings);
+    await this.onFileChanged(shell, file, settings);
   }
 
   async dispose(): Promise<void> {

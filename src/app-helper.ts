@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, TFile } from "obsidian";
 import { Commands } from "obsidian-typings";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MomentLike } from "src/ui/types";
 import { parseMarkdownList } from "src/utils/strings";
 import { parseTaskTimestamp } from "src/utils/task-parser";
@@ -47,27 +48,20 @@ interface UnsafeAppInterface {
   commands: Commands;
 }
 
-export class AppHelper {
-  private unsafeApp: App & UnsafeAppInterface;
+export class AppHelper extends ObsidianAppShell {
+  protected unsafeApp: App & UnsafeAppInterface;
 
   constructor(app: App) {
+    super(app);
     this.unsafeApp = app as any;
   }
 
   getApp(): App {
-    return this.unsafeApp;
-  }
-
-  getAppId(): string {
-    return this.unsafeApp.appId;
+    return this.getRawApp();
   }
 
   async loadFile(path: string): Promise<string> {
-    return this.unsafeApp.vault.adapter.read(path);
-  }
-
-  async cachedReadFile(file: TFile): Promise<string> {
-    return this.unsafeApp.vault.cachedRead(file);
+    return this.readFile(path);
   }
 
   async replaceRange(
@@ -77,7 +71,7 @@ export class AppHelper {
     replacement: string,
   ): Promise<void> {
     const origin = await this.loadFile(path);
-    await this.unsafeApp.vault.adapter.write(
+    await this.writeFile(
       path,
       origin.slice(0, startOffset) + replacement + origin.slice(endOffset),
     );
@@ -90,34 +84,21 @@ export class AppHelper {
   ): Promise<void> {
     const origin = await this.loadFile(path);
     const markOffset = offset + origin.slice(offset).indexOf("[") + 1;
-    await this.unsafeApp.vault.adapter.write(
+    await this.writeFile(
       path,
       `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`,
     );
   }
 
-  getActiveFile(): TFile | null {
-    // noinspection TailRecursionJS
-    return this.unsafeApp.workspace.getActiveFile();
-  }
-
-  getActiveMarkdownView(): MarkdownView | null {
-    return this.unsafeApp.workspace.getActiveViewOfType(MarkdownView);
-  }
-
-  getActiveMarkdownEditor(): Editor | null {
-    return this.getActiveMarkdownView()?.editor ?? null;
-  }
-
   insertTextToEnd(file: TFile, text: string) {
-    return this.unsafeApp.vault.adapter.append(file.path, text);
+    return this.appendFile(file.path, text);
   }
 
   async insertTextAfter(file: TFile, text: string, after: string) {
     const content = await this.loadFile(file.path);
 
     if (!after) {
-      await this.unsafeApp.vault.adapter.write(
+      await this.writeFile(
         file.path,
         joinWithSingleBoundaryNewline(content, text),
       );
@@ -126,7 +107,7 @@ export class AppHelper {
 
     const index = content.indexOf(after);
     if (index === -1) {
-      await this.unsafeApp.vault.adapter.write(
+      await this.writeFile(
         file.path,
         joinWithSingleBoundaryNewline(content, text),
       );
@@ -137,7 +118,7 @@ export class AppHelper {
     const newContent =
       joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
       content.slice(insertIndex);
-    await this.unsafeApp.vault.adapter.write(file.path, newContent);
+    await this.writeFile(file.path, newContent);
   }
 
   async getTasks(file: TFile): Promise<Task[] | null> {
@@ -145,7 +126,7 @@ export class AppHelper {
     const lines = content.split("\n");
 
     return (
-      this.unsafeApp.metadataCache
+      this.getMetadataCache()
         .getFileCache(file)
         ?.listItems?.filter((x) => x.task != null)
         .map((x) => {

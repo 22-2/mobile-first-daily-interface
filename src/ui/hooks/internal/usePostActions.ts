@@ -23,7 +23,7 @@ import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./refreshPosts";
 
 export const usePostActions = () => {
-  const { app, appHelper, settings } = useAppContext();
+  const { shell, appHelper, settings } = useAppContext();
   const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
@@ -84,7 +84,7 @@ export const usePostActions = () => {
 
   const refreshPosts = useCallback(
     createRefreshPosts({
-      vault: app.vault,
+      vault: shell.getVault(),
       queryClient,
       dateFilter: settingsState.dateFilter,
       activeTopic: settingsState.activeTopic,
@@ -96,7 +96,7 @@ export const usePostActions = () => {
       replacePaths: noteState.replacePaths,
     }),
     [
-      app.vault,
+      shell,
       queryClient,
       settingsState.dateFilter,
       settingsState.activeTopic,
@@ -405,7 +405,7 @@ export const usePostActions = () => {
         return;
       }
 
-      const noteFile = app.vault.getAbstractFileByPath(rootPost.path);
+      const noteFile = shell.getAbstractFileByPath(rootPost.path);
       if (!(noteFile instanceof TFile)) {
         new Notice("スレッドの投稿先ノートを解決できませんでした");
         return;
@@ -443,7 +443,7 @@ export const usePostActions = () => {
 
     if (settingsState.viewNoteMode !== "fixed") {
       note = getTopicNote(
-        app,
+        shell,
         targetDate,
         settingsState.granularity,
         settingsState.activeTopic,
@@ -454,7 +454,7 @@ export const usePostActions = () => {
       note = await store
         .getState()
         .createNoteWithInsertAfter(
-          app,
+          shell,
           settings,
           settingsState.viewNoteMode === "fixed" ? undefined : targetDate,
         );
@@ -478,7 +478,7 @@ export const usePostActions = () => {
     editorState.clearInput();
     editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [
-    app,
+    shell,
     appHelper,
     settings,
     settingsState,
@@ -552,7 +552,7 @@ export const usePostActions = () => {
         if (filePath) {
           let newContent = await appHelper.loadFile(filePath);
           newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-          await app.vault.adapter.write(filePath, newContent);
+          await shell.writeFile(filePath, newContent);
           await refreshPosts(filePath);
         }
 
@@ -571,7 +571,7 @@ export const usePostActions = () => {
       );
       let newContent = await appHelper.loadFile(latestPost.path);
       newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-      await app.vault.adapter.write(latestPost.path, newContent);
+      await shell.writeFile(latestPost.path, newContent);
       await refreshPosts(latestPost.path);
     },
     [
@@ -641,7 +641,7 @@ export const usePostActions = () => {
       const nextDay = latestPost.timestamp.clone().add(1, "day");
       const nextNote = await store
         .getState()
-        .createNoteWithInsertAfter(app, settings, nextDay);
+        .createNoteWithInsertAfter(shell, settings, nextDay);
       if (!nextNote) {
         new Notice("明日のノートが見つかりませんでした");
         return;
@@ -665,7 +665,7 @@ export const usePostActions = () => {
 
       new Notice("明日に送りました");
     },
-    [app, appHelper, settings, settingsState, deletePost, store],
+    [shell, appHelper, settings, settingsState, deletePost, store],
   );
 
   const createThread = useCallback(
@@ -740,14 +740,14 @@ export const usePostActions = () => {
           return;
         }
 
-        const noteFile = app.vault.getAbstractFileByPath(latestPost.path);
+        const noteFile = shell.getAbstractFileByPath(latestPost.path);
         if (!(noteFile instanceof TFile)) return;
 
-        const leaf = app.workspace.getLeaf(true);
-        await app.workspace.revealLeaf(leaf);
+        const leaf = shell.getLeaf(true);
+        await shell.revealLeaf(leaf);
         await leaf.openFile(noteFile, { active: true });
 
-        const editor = app.workspace.activeEditor as MarkdownView;
+        const editor = shell.getWorkspace().activeEditor as MarkdownView;
         const startPos = editor.editor!.offsetToPos(latestPost.bodyStartOffset);
         const endPos = editor.editor!.offsetToPos(
           latestPost.bodyStartOffset + latestPost.message.length,
@@ -763,7 +763,7 @@ export const usePostActions = () => {
         });
       })();
     },
-    [app.vault, app.workspace, findLatestPost, refreshPosts],
+    [shell, findLatestPost, refreshPosts],
   );
 
   return {

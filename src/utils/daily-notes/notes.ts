@@ -1,4 +1,5 @@
-import { App, normalizePath, TFile, TFolder, Vault } from "obsidian";
+import { normalizePath, TFile, TFolder, Vault } from "obsidian";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
 import { getPeriodicSettings } from "src/utils/daily-notes/settings";
 import { getDateFromFile, getDateUID } from "src/utils/daily-notes/utils";
@@ -12,8 +13,9 @@ export function resolveTopicNotePath(
   date: MomentLike,
   g: Granularity,
   topicId: string,
+  shell: ObsidianAppShell,
 ): string {
-  const { format, folder } = getPeriodicSettings(g);
+  const { format, folder } = getPeriodicSettings(g, shell);
   const dateStr = date.format(format);
   const prefix = topicId ? `${topicId}-` : "";
   const filename = `${prefix}${dateStr}.md`;
@@ -27,12 +29,12 @@ export function resolveTopicNotePath(
  * topicId="" の場合はプレフィックスなし（デフォルトのデイリーノートと同じ）。
  */
 export function getAllTopicNotes(
-  app: App,
+  shell: ObsidianAppShell,
   g: Granularity,
   topicId: string = "",
 ): Record<string, TFile> {
-  const { folder } = getPeriodicSettings(g);
-  const { vault } = app;
+  const { folder } = getPeriodicSettings(g, shell);
+  const vault = shell.getVault();
 
   const folderPath = folder ? normalizePath(folder) : "/";
   const folderFile = vault.getAbstractFileByPath(folderPath);
@@ -45,7 +47,7 @@ export function getAllTopicNotes(
     if (!(node instanceof TFile)) return;
     if (node.extension !== "md") return;
 
-    const date = getDateFromFile(node, g, topicId);
+    const date = getDateFromFile(node, g, shell, topicId);
     if (!date) return;
 
     const uid = getDateUID(date, g);
@@ -59,12 +61,12 @@ export function getAllTopicNotes(
  * 特定の日付のトピック付きノートを返す。存在しなければ null。
  */
 export function getTopicNote(
-  app: App,
+  shell: ObsidianAppShell,
   date: MomentLike,
   g: Granularity,
   topicId: string,
 ): TFile | null {
-  const notes = getAllTopicNotes(app, g, topicId);
+  const notes = getAllTopicNotes(shell, g, topicId);
   const uid = getDateUID(date, g);
   return notes[uid] ?? null;
 }
@@ -74,13 +76,13 @@ export function getTopicNote(
  * フォルダが存在しない場合は自動作成する。
  */
 export async function createTopicNote(
-  app: App,
+  shell: ObsidianAppShell,
   date: MomentLike,
   g: Granularity,
   topicId: string,
 ): Promise<TFile> {
-  const path = resolveTopicNotePath(date, g, topicId);
-  const { vault } = app;
+  const path = resolveTopicNotePath(date, g, topicId, shell);
+  const vault = shell.getVault();
 
   // フォルダ作成
   const dir = path.substring(0, path.lastIndexOf("/"));

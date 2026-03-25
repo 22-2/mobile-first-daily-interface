@@ -18,7 +18,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
     set({ currentDailyNote });
   },
 
-  updateCurrentDailyNote: (app) => {
+  updateCurrentDailyNote: (shell) => {
     const {
       granularity,
       activeTopic,
@@ -28,7 +28,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       fixedNotePath,
     } = get();
     const note = resolveCurrentTargetNote({
-      app,
+      shell,
       date: getEffectiveDate(),
       granularity,
       activeTopic,
@@ -56,7 +56,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
     set({ weekNotePaths: new Set() });
   },
 
-  createNoteWithInsertAfter: async (app, settings, targetDate) => {
+  createNoteWithInsertAfter: async (shell, settings, targetDate) => {
     const {
       granularity,
       activeTopic,
@@ -67,14 +67,14 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
 
     if (viewNoteMode === "fixed") {
       if (!fixedNotePath) return null;
-      const fixedNote = await ensureFixedNote(app, fixedNotePath);
+      const fixedNote = await ensureFixedNote(shell, fixedNotePath);
       set({ currentDailyNote: fixedNote });
       return fixedNote;
     }
 
     const date = targetDate ?? getEffectiveDate();
     const existing = resolveCurrentTargetNote({
-      app,
+      shell,
       date,
       granularity,
       activeTopic,
@@ -86,11 +86,11 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       return existing;
     }
 
-    const created = await createTopicNote(app, date, granularity, activeTopic);
+    const created = await createTopicNote(shell, date, granularity, activeTopic);
     if (settings.insertAfter) {
-      const content = await app.vault.read(created);
+      const content = await shell.readVaultFile(created);
       if (!content.includes(settings.insertAfter)) {
-        await app.vault.modify(
+        await shell.modifyVaultFile(
           created,
           content
             ? `${content}\n${settings.insertAfter}`
@@ -103,7 +103,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
     return created;
   },
 
-  handleClickOpenDailyNote: async (app, settings) => {
+  handleClickOpenDailyNote: async (shell, settings) => {
     const {
       granularity,
       activeTopic,
@@ -113,7 +113,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
     } = get();
     const targetDate = getEffectiveDate();
     let note = resolveCurrentTargetNote({
-      app,
+      shell,
       date: targetDate,
       granularity,
       activeTopic,
@@ -123,7 +123,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
 
     if (!note) {
       new Notice("ノートが存在しなかったので新しく作成しました");
-      note = await get().createNoteWithInsertAfter(app, settings, targetDate);
+      note = await get().createNoteWithInsertAfter(shell, settings, targetDate);
     }
 
     if (note) {
@@ -131,7 +131,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
 
       // 明示的にMarkdownビューとして開きたい場合はフラグを付与して
       // プラグイン側の setViewState パッチでの置換を回避する。
-      const leaf = app.workspace.getLeaf(true);
+      const leaf = shell.getLeaf(true);
       await leaf.setViewState({
         type: "markdown",
         active: true,

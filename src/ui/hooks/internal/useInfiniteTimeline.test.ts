@@ -27,7 +27,7 @@ vi.mock("@tanstack/react-query", () => ({
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: () => ({
-    app: {},
+    shell: {},
     appHelper: {
       loadFile: loadFileMock,
       cachedReadFile: cachedReadFileMock,

@@ -76,7 +76,7 @@ export const ReactView = ({
 };
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { view, settings, storage, app, appHelper } = useAppContext();
+  const { view, settings, storage, shell, appHelper } = useAppContext();
   const store = useCurrentAppStore();
   const viewState = view.getState();
   const capabilities = useMemo(
@@ -85,8 +85,8 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   useEffect(() => {
-    initializeAppStore({ app, appHelper, settings, storage }, store);
-  }, [settings, storage, app, appHelper, store]);
+    initializeAppStore({ shell, appHelper, settings, storage }, store);
+  }, [settings, storage, shell, appHelper, store]);
 
   const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
     useSettingsStore(
@@ -159,10 +159,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [store, view, viewState.noteMode, viewState.fixedNotePath]);
 
   useEffect(() => {
-    store.getState().updateCurrentDailyNote(app);
+    store.getState().updateCurrentDailyNote(shell);
   }, [
     store,
-    app,
+    shell,
     date,
     granularity,
     activeTopic,
@@ -433,7 +433,7 @@ const ReactViewContent = () => {
 };
 
 function useViewSync(view: MFDIView) {
-  const { app, settings } = useAppContext();
+  const { shell, settings } = useAppContext();
   const store = useCurrentAppStore();
 
   const {
@@ -484,8 +484,8 @@ function useViewSync(view: MFDIView) {
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = useCallback(() => {
-    return store.getState().handleClickOpenDailyNote(app, settings);
-  }, [store, app, settings]);
+    return store.getState().handleClickOpenDailyNote(shell, settings);
+  }, [store, shell, settings]);
 
   const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
 

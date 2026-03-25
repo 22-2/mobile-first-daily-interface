@@ -3,6 +3,15 @@ import { ScanWorkerAPI } from "src/db/worker-api";
 import { DEFAULT_TOPIC } from "src/topic";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
+function createShell(overrides: Record<string, unknown> = {}) {
+  return {
+    cachedReadFile: vi.fn(async () => "## Thino\n- 10:00:00 hello"),
+    getCommunityPlugin: vi.fn(() => undefined),
+    getInternalPluginById: vi.fn(() => undefined),
+    ...overrides,
+  } as any;
+}
+
 function createApiMock(): ScanWorkerAPI {
   return {
     initialize: vi.fn(async () => {}),
@@ -33,21 +42,17 @@ describe("TagIndexer", () => {
   test("onFileChanged scans known note files", async () => {
     const api = createApiMock();
     const indexer = new TagIndexer("vault-1", { api });
-    const app = {
-      vault: {
-        cachedRead: vi.fn(async () => "## Thino\n- 10:00:00 hello"),
-      },
-    } as any;
+    const shell = createShell();
     const file = {
       path: "daily/writing-2026-03.md",
       basename: "writing-2026-03",
     } as any;
 
-    await indexer.onFileChanged(app, file, {
+    await indexer.onFileChanged(shell, file, {
       topics: [DEFAULT_TOPIC, { id: "writing", title: "Writing" }],
     } as any);
 
-    expect(app.vault.cachedRead).toHaveBeenCalledWith(file);
+    expect(shell.cachedReadFile).toHaveBeenCalledWith(file);
     expect(api.scanFile).toHaveBeenCalledTimes(1);
     expect(api.scanFile).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -63,19 +68,15 @@ describe("TagIndexer", () => {
   test("onFileChanged ignores non-note files", async () => {
     const api = createApiMock();
     const indexer = new TagIndexer("vault-1", { api });
-    const app = {
-      vault: {
-        cachedRead: vi.fn(async () => "## Thino\n- 10:00:00 hello"),
-      },
-    } as any;
+    const shell = createShell();
 
     await indexer.onFileChanged(
-      app,
+      shell,
       { path: "misc/random.md", basename: "random" } as any,
       { topics: [DEFAULT_TOPIC] } as any,
     );
 
-    expect(app.vault.cachedRead).not.toHaveBeenCalled();
+    expect(shell.cachedReadFile).not.toHaveBeenCalled();
     expect(api.scanFile).not.toHaveBeenCalled();
   });
 
@@ -94,13 +95,7 @@ describe("TagIndexer", () => {
     const api = createApiMock();
     const indexer = new TagIndexer("vault-1", { api, scanChunkSize: 1 });
     const file = { basename: "2026-03-23", path: "daily/2026-03-23.md" };
-    const app = {
-      vault: {
-        cachedRead: vi.fn(async () => "## Thino\n- 10:00:00 hello"),
-      },
-    } as any;
-
-    vi.mocked(app.vault.cachedRead);
+    const shell = createShell();
 
     const dailyNotesModule = await import("src/utils/daily-notes");
     const getAllTopicNotesSpy = vi
@@ -113,7 +108,7 @@ describe("TagIndexer", () => {
           >,
       );
 
-    await indexer.scanAllNotes(app, { topics: [DEFAULT_TOPIC] } as any);
+    await indexer.scanAllNotes(shell, { topics: [DEFAULT_TOPIC] } as any);
 
     expect(api.resetIndex).toHaveBeenCalledTimes(1);
     expect(api.scanFiles).toHaveBeenCalledTimes(1);

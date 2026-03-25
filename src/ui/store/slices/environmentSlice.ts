@@ -7,15 +7,15 @@ export const createEnvironmentSlice: StateCreator<
   [],
   EnvironmentSlice
 > = (set, get) => ({
-  app: null,
+  shell: null,
   appHelper: null,
   storage: null,
   pluginSettings: null,
   viewNoteMode: "periodic",
   fixedNotePath: null,
 
-  setAppDependencies: (app, appHelper) => {
-    set({ app, appHelper });
+  setAppDependencies: (shell, appHelper) => {
+    set({ shell, appHelper });
   },
 
   setStorage: (storage) => {
@@ -30,9 +30,9 @@ export const createEnvironmentSlice: StateCreator<
     set({ viewNoteMode: noteMode, fixedNotePath });
   },
 
-  initializeAppStore: ({ app, appHelper, settings, storage }) => {
+  initializeAppStore: ({ shell, appHelper, settings, storage }) => {
     set({
-      app,
+      shell,
       appHelper,
       pluginSettings: settings,
       storage,

@@ -18,7 +18,7 @@ interface Counts {
 export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   viewedDate,
 }) => {
-  const { app, appHelper } = useAppContext();
+  const { shell, appHelper } = useAppContext();
   const {
     date,
     setDate,
@@ -55,7 +55,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   // 指定した期間の投稿数とタスク数を取得する関数
   const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
-      const note = getTopicNote(app, d, g, activeTopic);
+      const note = getTopicNote(shell, d, g, activeTopic);
       if (!note) return { posts: 0, tasks: 0 };
 
       const content = await appHelper.cachedReadFile(note);
@@ -63,7 +63,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       const tasks = (await appHelper.getTasks(note))?.length || 0;
       return { posts, tasks };
     },
-    [app, appHelper, activeTopic],
+    [shell, appHelper, activeTopic],
   );
 
   useEffect(() => {

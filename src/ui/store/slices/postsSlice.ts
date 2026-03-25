@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
@@ -68,8 +68,8 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForWeek: async (topicId, date) => {
-    const { app, appHelper, setPosts } = get();
-    if (!app || !appHelper) return new Set();
+    const { shell, appHelper, setPosts } = get();
+    if (!shell || !appHelper) return new Set();
 
     const weekStart = date.clone().startOf("isoWeek");
     const weekDates = Array.from({ length: 7 }, (_, index) =>
@@ -77,7 +77,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     );
     const entries = weekDates
       .map((dayDate) => ({
-        file: getTopicNote(app, dayDate, "day", topicId),
+        file: getTopicNote(shell, dayDate, "day", topicId),
         dayDate,
       }))
       .filter(
@@ -99,8 +99,8 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForDays: async (topicId, date, days) => {
-    const { app, appHelper, setPosts } = get();
-    if (!app || !appHelper) {
+    const { shell, appHelper, setPosts } = get();
+    if (!shell || !appHelper) {
       return {
         paths: new Set<string>(),
         hasMore: false,
@@ -116,7 +116,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       hasMore: boolean;
       lastSearchedDate: MomentLike;
     }> => {
-      const allTopicNotes = getAllTopicNotes(app as App, "day", topicId);
+      const allTopicNotes = getAllTopicNotes(shell, "day", topicId);
       const uids = Object.keys(allTopicNotes).toSorted();
       if (uids.length === 0) {
         return {

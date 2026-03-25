@@ -94,10 +94,33 @@ describe("timeline note resolution", () => {
               : null,
         ),
       },
+      getVault: vi.fn(() => ({ adapter: { write: vi.fn() } })),
+      writeFile: vi.fn(async () => {}),
+      getAbstractFileByPath: vi.fn((path: string) =>
+        path === todayNote.path
+          ? todayNote
+          : path === yesterdayNote.path
+            ? yesterdayNote
+            : null,
+      ),
+      getLeaf: vi.fn(() => ({
+        openFile: mockOpenFile,
+        setViewState: async (viewState: any) => {
+          const filePath =
+            typeof viewState?.state?.file === "string"
+              ? viewState.state.file
+              : "";
+          const file = mockApp.getAbstractFileByPath(filePath);
+          if (file) await mockOpenFile(file);
+        },
+      })),
+      revealLeaf: vi.fn(async () => {}),
+      getWorkspace: vi.fn(() => ({ activeEditor: null })),
     };
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: vi.fn(),
@@ -465,6 +488,7 @@ describe("timeline note resolution", () => {
     const content = ["## Thino", "- 12:00:00 parent", ""].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -523,6 +547,7 @@ note header
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -584,6 +609,7 @@ note header
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -699,6 +725,7 @@ note header
     ].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -773,6 +800,7 @@ prefix
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -846,6 +874,7 @@ prefix
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
@@ -928,6 +957,7 @@ prefix
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
+      shell: mockApp,
       appHelper: {
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,

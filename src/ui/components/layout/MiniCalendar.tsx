@@ -112,7 +112,7 @@ function calcSelectedRange(
 // ─────────────────────────────────────────────
 
 function useMiniCalendar() {
-  const { app } = useAppContext();
+  const { shell } = useAppContext();
   const {
     date,
     setDate,
@@ -193,11 +193,11 @@ function useMiniCalendar() {
   };
 
   const activityDates = useMemo(() => {
-    const notes = getAllTopicNotes(app, "day", activeTopic);
+    const notes = getAllTopicNotes(shell, "day", activeTopic);
     const dates = new Set<string>();
 
     Object.values(notes).forEach((file) => {
-      const d = getDateFromFile(file, "day", activeTopic);
+      const d = getDateFromFile(file, "day", shell, activeTopic);
       if (d) dates.add(d.format("YYYY-MM-DD"));
     });
 
@@ -207,7 +207,7 @@ function useMiniCalendar() {
       }
     }
     return dates;
-  }, [app, activeTopic, posts]);
+  }, [shell, activeTopic, posts]);
 
   const weeks = useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
   const { rangeStart, rangeEnd } = calcSelectedRange(

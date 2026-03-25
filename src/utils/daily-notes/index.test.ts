@@ -1,4 +1,5 @@
 import { TFile, Vault } from "obsidian";
+import { AppHelper } from "src/app-helper";
 import {
   getAllTopicNotes,
   getDailyNoteSettings,
@@ -47,6 +48,10 @@ function setupApp(folder = "Daily") {
   };
 }
 
+function getShell() {
+  return new AppHelper((window as any).app);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   setupApp("Daily");
@@ -67,7 +72,7 @@ describe("daily-notes-interface utility", () => {
 
   describe("getDailyNoteSettings", () => {
     it("コアプラグインの設定を取得できる", () => {
-      const s = getDailyNoteSettings();
+      const s = getDailyNoteSettings(getShell());
       expect(s.folder).toBe("Daily");
       expect(s.format).toBe("YYYY-MM-DD");
     });
@@ -91,7 +96,7 @@ describe("daily-notes-interface utility", () => {
         return null;
       });
 
-      const settings = getMonthlyNoteSettings();
+      const settings = getMonthlyNoteSettings(getShell());
 
       expect(settings.folder).toBe("Periodic/Monthly");
       expect(settings.format).toBe("YYYY-MM");
@@ -114,7 +119,7 @@ describe("daily-notes-interface utility", () => {
         return null;
       });
 
-      const settings = getYearlyNoteSettings();
+      const settings = getYearlyNoteSettings(getShell());
 
       expect(settings.folder).toBe("Periodic/Yearly");
       expect(settings.format).toBe("YYYY");
@@ -124,13 +129,13 @@ describe("daily-notes-interface utility", () => {
   describe("resolveTopicNotePath", () => {
     it("トピックなしのパスを生成する", () => {
       const date = window.moment("2026-03-04");
-      const path = resolveTopicNotePath(date, "day", "");
+      const path = resolveTopicNotePath(date, "day", "", getShell());
       expect(path).toBe("Daily/2026-03-04.md");
     });
 
     it("トピックありのパスを生成する", () => {
       const date = window.moment("2026-03-04");
-      const path = resolveTopicNotePath(date, "day", "novel");
+      const path = resolveTopicNotePath(date, "day", "novel", getShell());
       expect(path).toBe("Daily/novel-2026-03-04.md");
     });
 
@@ -152,7 +157,7 @@ describe("daily-notes-interface utility", () => {
       });
 
       const date = window.moment("2026-03-04");
-      const path = resolveTopicNotePath(date, "month", "");
+      const path = resolveTopicNotePath(date, "month", "", getShell());
 
       expect(path).toBe("Periodic/Monthly/2026-03.md");
     });
@@ -183,13 +188,13 @@ describe("daily-notes-interface utility", () => {
     });
 
     it("デフォルトトピックは他トピックのファイルを拾わない", () => {
-      const result = getAllTopicNotes((window as any).app, "day", "");
+      const result = getAllTopicNotes(getShell(), "day", "");
       expect(Object.keys(result)).toHaveLength(1);
       expect(Object.values(result)[0].basename).toBe("2026-03-01");
     });
 
     it("特定トピックのファイルだけを取得する", () => {
-      const result = getAllTopicNotes((window as any).app, "day", "novel");
+      const result = getAllTopicNotes(getShell(), "day", "novel");
       expect(Object.keys(result)).toHaveLength(1);
       expect(Object.values(result)[0].basename).toBe("novel-2026-03-02");
     });
@@ -206,7 +211,7 @@ describe("daily-notes-interface utility", () => {
       );
 
       const found = getTopicNote(
-        (window as any).app,
+        getShell(),
         window.moment("2026-03-01"),
         "day",
         "",
@@ -214,7 +219,7 @@ describe("daily-notes-interface utility", () => {
       expect(found?.basename).toBe("2026-03-01");
 
       const notFound = getTopicNote(
-        (window as any).app,
+        getShell(),
         window.moment("2099-12-31"),
         "day",
         "",

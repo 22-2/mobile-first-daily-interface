@@ -1,4 +1,5 @@
 import { TFile } from "obsidian";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
 import { getPeriodicSettings } from "src/utils/daily-notes/settings";
 
@@ -20,9 +21,10 @@ export function getDateUID(
 export function getDateFromFilename(
   filename: string,
   granularity: Granularity,
+  shell: ObsidianAppShell,
   topicId: string = "",
 ): MomentLike | null {
-  const settings = getPeriodicSettings(granularity);
+  const settings = getPeriodicSettings(granularity, shell);
   const prefix = topicId ? `${topicId}-` : "";
 
   // If prefix is specified, it must match.
@@ -54,7 +56,8 @@ export function getDateFromFilename(
 export function getDateFromFile(
   file: TFile,
   granularity: Granularity,
+  shell: ObsidianAppShell,
   topicId: string = "",
 ): MomentLike | null {
-  return getDateFromFilename(file.basename, granularity, topicId);
+  return getDateFromFilename(file.basename, granularity, shell, topicId);
 }

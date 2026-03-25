@@ -20,7 +20,7 @@ const PAGE_SIZE_DAYS = 14;
  * タイムラインモード（無限スクロール）のデータ取得と管理を担当するHook。
  */
 export const useInfiniteTimeline = () => {
-  const { app, appHelper } = useAppContext();
+  const { shell, appHelper } = useAppContext();
   const [cacheBucket, setCacheBucket] = useState(() =>
     resolveTimelineCacheBucket(),
   );
@@ -42,11 +42,11 @@ export const useInfiniteTimeline = () => {
   );
   const fetchPage = useCallback(
     createTimelinePageFetcher({
-      app,
+      shell,
       // Timeline should prioritize freshness over cached reads around midnight/file-create timing.
       readFile: (file) => appHelper.loadFile(file.path),
     }),
-    [app, appHelper],
+    [shell, appHelper],
   );
 
   useEffect(() => {

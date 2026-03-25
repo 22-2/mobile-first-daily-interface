@@ -1,6 +1,7 @@
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { RefObject } from "react";
 import { AppHelper, Task } from "src/app-helper";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
@@ -16,13 +17,13 @@ import { MFDINoteMode } from "src/ui/view/state";
 import { MFDIStorage } from "src/utils/storage";
 
 export interface EnvironmentSlice {
-  app: App | null;
+  shell: ObsidianAppShell | null;
   appHelper: AppHelper | null;
   storage: MFDIStorage | null;
   pluginSettings: Settings | null;
   viewNoteMode: MFDINoteMode;
   fixedNotePath: string | null;
-  setAppDependencies: (app: App, appHelper: AppHelper) => void;
+  setAppDependencies: (shell: ObsidianAppShell, appHelper: AppHelper) => void;
   setStorage: (storage: MFDIStorage) => void;
   setPluginSettings: (settings: Settings) => void;
   setViewContext: (params: {
@@ -30,7 +31,7 @@ export interface EnvironmentSlice {
     fixedNotePath: string | null;
   }) => void;
   initializeAppStore: (params: {
-    app: App;
+    shell: ObsidianAppShell;
     appHelper: AppHelper;
     settings: Settings;
     storage: MFDIStorage;
@@ -98,16 +99,19 @@ export interface NoteSlice {
   currentDailyNote: TFile | null;
   weekNotePaths: Set<string>;
   setCurrentDailyNote: (note: TFile | null) => void;
-  updateCurrentDailyNote: (app: App) => void;
+  updateCurrentDailyNote: (shell: ObsidianAppShell) => void;
   replacePaths: (paths: Set<string>) => void;
   addPaths: (paths: Set<string>) => void;
   clearPaths: () => void;
   createNoteWithInsertAfter: (
-    app: App,
+    shell: ObsidianAppShell,
     settings: Settings,
     targetDate?: MomentLike,
   ) => Promise<TFile | null>;
-  handleClickOpenDailyNote: (app: App, settings: Settings) => Promise<void>;
+  handleClickOpenDailyNote: (
+    shell: ObsidianAppShell,
+    settings: Settings,
+  ) => Promise<void>;
   handleChangeTopic: (topicId: string) => void;
 }
 

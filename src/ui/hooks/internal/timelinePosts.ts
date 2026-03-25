@@ -1,4 +1,5 @@
-import { App, TFile } from "obsidian";
+import { TFile } from "obsidian";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MomentLike, Post } from "src/ui/types";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import { buildPostFromEntry } from "src/ui/utils/thread-utils";
@@ -22,7 +23,7 @@ export function resolveTimelineCacheBucket(
 }
 
 export interface CreateTimelinePageFetcherDeps {
-  app: App;
+  shell: ObsidianAppShell;
   readFile: (file: TFile) => Promise<string>;
 }
 
@@ -50,7 +51,7 @@ async function parsePostsFromFile(
 }
 
 export function createTimelinePageFetcher({
-  app,
+  shell,
   readFile,
 }: CreateTimelinePageFetcherDeps) {
   return async (
@@ -58,7 +59,7 @@ export function createTimelinePageFetcher({
     baseDate: MomentLike,
     days: number,
   ): Promise<TimelinePostsPage> => {
-    const allTopicNotes = getAllTopicNotes(app, "day", topicId);
+    const allTopicNotes = getAllTopicNotes(shell, "day", topicId);
     const uids = Object.keys(allTopicNotes).toSorted();
 
     if (uids.length === 0) {
@@ -94,7 +95,7 @@ export function createTimelinePageFetcher({
         .reverse()
         .find((uid) => uid < windowEndUid);
       if (nextUid) {
-        return createTimelinePageFetcher({ app, readFile })(
+        return createTimelinePageFetcher({ shell, readFile })(
           topicId,
           window.moment(nextUid.substring("day-".length)),
           days,

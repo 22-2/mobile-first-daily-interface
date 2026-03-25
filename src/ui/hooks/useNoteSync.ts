@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useCallback, useEffect } from "react";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -22,8 +23,9 @@ type CurrentDayFileParams = {
 function isCurrentDayFile(
   filePath: string,
   { date, granularity, activeTopic }: CurrentDayFileParams,
+  shell: ObsidianAppShell,
 ): boolean {
-  const ds = getPeriodicSettings(granularity);
+  const ds = getPeriodicSettings(granularity, shell);
   const dir = ds.folder ? `${ds.folder}/` : "";
   const prefix = activeTopic ? `${activeTopic}-` : "";
   const entry = date.format(ds.format ?? "YYYY-MM-DD");
@@ -34,7 +36,7 @@ function isCurrentDayFile(
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
  */
 export function useNoteSync() {
-  const { app } = useAppContext();
+  const { shell } = useAppContext();
   const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
@@ -77,7 +79,7 @@ export function useNoteSync() {
 
   const refreshPosts = useCallback(
     createRefreshPosts({
-      vault: app.vault,
+      vault: shell.getVault(),
       queryClient,
       dateFilter,
       activeTopic,
@@ -89,7 +91,7 @@ export function useNoteSync() {
       replacePaths: store.getState().replacePaths,
     }),
     [
-      app.vault,
+      shell,
       store,
       queryClient,
       dateFilter,
@@ -110,7 +112,7 @@ export function useNoteSync() {
           currentDailyNote?.path ?? normalizeFixedNotePath(fixedNotePath ?? "");
         if (!targetPath || file.path !== targetPath) return;
 
-        store.getState().updateCurrentDailyNote(app);
+        store.getState().updateCurrentDailyNote(shell);
         await Promise.all([updatePosts(file), updateTasks(file)]);
         return;
       }
@@ -127,11 +129,11 @@ export function useNoteSync() {
         return;
       if (
         currentDailyNote == null &&
-        !isCurrentDayFile(file.path, { date, granularity, activeTopic })
+        !isCurrentDayFile(file.path, { date, granularity, activeTopic }, shell)
       )
         return;
 
-      store.getState().updateCurrentDailyNote(app);
+      store.getState().updateCurrentDailyNote(shell);
       await Promise.all([updatePosts(file), updateTasks(file)]);
     };
 
@@ -156,19 +158,19 @@ export function useNoteSync() {
       setPosts([]);
     };
 
-    const changedRef = app.metadataCache.on("changed", handleChanged);
-    const deleteRef = app.vault.on("delete", handleDelete);
-    const createRef = app.vault.on("create", (file) => {
+    const changedRef = shell.getMetadataCache().on("changed", handleChanged);
+    const deleteRef = shell.getVault().on("delete", handleDelete);
+    const createRef = shell.getVault().on("create", (file) => {
       if (file instanceof TFile) handleChanged(file);
     });
 
     return () => {
-      app.metadataCache.offref(changedRef);
-      app.vault.offref(deleteRef);
-      app.vault.offref(createRef);
+      shell.getMetadataCache().offref(changedRef);
+      shell.getVault().offref(deleteRef);
+      shell.getVault().offref(createRef);
     };
   }, [
-    app,
+    shell,
     date,
     granularity,
     activeTopic,

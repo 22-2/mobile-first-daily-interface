@@ -2,14 +2,26 @@ import {
   inferNoteIdentityFromFile,
   inferNoteIdentityFromFilename
 } from "src/db/note-file-identity";
+import { AppHelper } from "src/app-helper";
 import { describe, expect, test } from "vitest";
+
+const shell = {
+  ...new AppHelper({
+    vault: {},
+    workspace: {},
+    metadataCache: {},
+    fileManager: {},
+  } as any),
+  getCommunityPlugin: () => undefined,
+  getInternalPluginById: () => undefined,
+};
 
 describe("note file identity inference", () => {
   test("infers the default topic daily note", () => {
     const identity = inferNoteIdentityFromFilename("2026-03-23", [
       "",
       "writing",
-    ]);
+    ], shell as any);
 
     expect(identity).not.toBeNull();
     expect(identity?.topicId).toBe("");
@@ -22,7 +34,7 @@ describe("note file identity inference", () => {
       "",
       "deep-work",
       "deep",
-    ]);
+    ], shell as any);
 
     expect(identity).not.toBeNull();
     expect(identity?.topicId).toBe("deep-work");
@@ -31,7 +43,7 @@ describe("note file identity inference", () => {
 
   test("returns null when nothing matches", () => {
     expect(
-      inferNoteIdentityFromFilename("not-a-note", ["", "writing"]),
+      inferNoteIdentityFromFilename("not-a-note", ["", "writing"], shell as any),
     ).toBeNull();
   });
 
@@ -39,6 +51,7 @@ describe("note file identity inference", () => {
     const identity = inferNoteIdentityFromFile(
       { basename: "writing-2026-03" } as never,
       ["", "writing"],
+      shell as any,
     );
 
     expect(identity).not.toBeNull();

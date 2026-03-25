@@ -47,17 +47,15 @@ describe("fixed note utilities", () => {
       extension: "md",
     });
 
-    const app = {
-      vault: {
-        getAbstractFileByPath: vi.fn((path: string) =>
-          path === "notes/fixed.md" ? file : null,
-        ),
-      },
+    const shell = {
+      getAbstractFileByPath: vi.fn((path: string) =>
+        path === "notes/fixed.md" ? file : null,
+      ),
     } as any;
 
     expect(
       resolveCurrentTargetNote({
-        app,
+        shell,
         date: window.moment(),
         granularity: "day",
         activeTopic: "",
@@ -75,76 +73,69 @@ describe("fixed note utilities", () => {
     });
 
     const createdFolders: string[] = [];
-    const app = {
-      vault: {
-        getAbstractFileByPath: vi.fn((path: string) => {
-          if (path === "notes")
-            return createdFolders.includes(path) ? {} : null;
-          if (path === "notes/fixed.md") return null;
-          return null;
-        }),
-        createFolder: vi.fn(async (path: string) => {
-          createdFolders.push(path);
-        }),
-        create: vi.fn(async () => created),
-      },
+    const shell = {
+      getAbstractFileByPath: vi.fn((path: string) => {
+        if (path === "notes") return createdFolders.includes(path) ? {} : null;
+        if (path === "notes/fixed.md") return null;
+        return null;
+      }),
+      createFolder: vi.fn(async (path: string) => {
+        createdFolders.push(path);
+      }),
+      createFile: vi.fn(async () => created),
     } as any;
 
-    const result = await ensureFixedNote(app, "notes/fixed");
+    const result = await ensureFixedNote(shell, "notes/fixed");
 
-    expect(app.vault.createFolder).toHaveBeenCalledWith("notes");
-    expect(app.vault.create).toHaveBeenCalledWith("notes/fixed.md", "");
+    expect(shell.createFolder).toHaveBeenCalledWith("notes");
+    expect(shell.createFile).toHaveBeenCalledWith("notes/fixed.md", "");
     expect(result).toBe(created);
   });
 
   it("Untitled スタイルで重複しないパスを生成する", () => {
-    const app = {
-      vault: {
-        getAbstractFileByPath: vi.fn((path: string) => {
-          if (path === "MFDI/Untitled.mfdi.md") return new TFile();
-          if (path === "MFDI/Untitled 1.mfdi.md") return new TFile();
-          return null;
-        }),
-      },
+    const shell = {
+      getAbstractFileByPath: vi.fn((path: string) => {
+        if (path === "MFDI/Untitled.mfdi.md") return new TFile();
+        if (path === "MFDI/Untitled 1.mfdi.md") return new TFile();
+        return null;
+      }),
     } as any;
 
-    expect(buildUntitledFixedNotePath("MFDI", app)).toBe(
+    expect(buildUntitledFixedNotePath("MFDI", shell)).toBe(
       "MFDI/Untitled 2.mfdi.md",
     );
   });
 
   it("フォルダなしの場合はルートに Untitled.mfdi.md を生成する", () => {
-    const app = {
-      vault: { getAbstractFileByPath: vi.fn(() => null) },
+    const shell = {
+      getAbstractFileByPath: vi.fn(() => null),
     } as any;
 
-    expect(buildUntitledFixedNotePath("", app)).toBe("Untitled.mfdi.md");
+    expect(buildUntitledFixedNotePath("", shell)).toBe("Untitled.mfdi.md");
   });
 
   it("名前を指定してパスを生成し、重複時は連番を付ける", () => {
-    const app = {
-      vault: {
-        getAbstractFileByPath: vi.fn((path: string) => {
-          if (path === "MFDI/My Note.mfdi.md") return new TFile();
-          return null;
-        }),
-      },
+    const shell = {
+      getAbstractFileByPath: vi.fn((path: string) => {
+        if (path === "MFDI/My Note.mfdi.md") return new TFile();
+        return null;
+      }),
     } as any;
 
-    expect(buildFixedNotePathFromName("MFDI", "My Note", app)).toBe(
+    expect(buildFixedNotePathFromName("MFDI", "My Note", shell)).toBe(
       "MFDI/My Note 1.mfdi.md",
     );
-    expect(buildFixedNotePathFromName("", "My Note", app)).toBe(
+    expect(buildFixedNotePathFromName("", "My Note", shell)).toBe(
       "My Note.mfdi.md",
     );
   });
 
   it("名前が空文字のときは Untitled にフォールバックする", () => {
-    const app = {
-      vault: { getAbstractFileByPath: vi.fn(() => null) },
+    const shell = {
+      getAbstractFileByPath: vi.fn(() => null),
     } as any;
 
-    expect(buildFixedNotePathFromName("MFDI", "", app)).toBe(
+    expect(buildFixedNotePathFromName("MFDI", "", shell)).toBe(
       "MFDI/Untitled.mfdi.md",
     );
   });
@@ -157,23 +148,21 @@ describe("fixed note utilities", () => {
     });
 
     const createdFolders: string[] = [];
-    const app = {
-      vault: {
-        getAbstractFileByPath: vi.fn((path: string) => {
-          if (path === "MFDI") return createdFolders.includes(path) ? {} : null;
-          return null;
-        }),
-        createFolder: vi.fn(async (path: string) => {
-          createdFolders.push(path);
-        }),
-        create: vi.fn(async () => created),
-      },
+    const shell = {
+      getAbstractFileByPath: vi.fn((path: string) => {
+        if (path === "MFDI") return createdFolders.includes(path) ? {} : null;
+        return null;
+      }),
+      createFolder: vi.fn(async (path: string) => {
+        createdFolders.push(path);
+      }),
+      createFile: vi.fn(async () => created),
     } as any;
 
-    const result = await createNewFixedNote(app, "MFDI");
+    const result = await createNewFixedNote(shell, "MFDI");
 
-    expect(app.vault.createFolder).toHaveBeenCalledWith("MFDI");
-    expect(app.vault.create).toHaveBeenCalledWith("MFDI/Untitled.mfdi.md", "");
+    expect(shell.createFolder).toHaveBeenCalledWith("MFDI");
+    expect(shell.createFile).toHaveBeenCalledWith("MFDI/Untitled.mfdi.md", "");
     expect(result).toBe(created);
   });
 });

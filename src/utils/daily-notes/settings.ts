@@ -1,4 +1,5 @@
 import { Granularity } from "src/ui/types";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 export interface PeriodicNoteSettings {
   format: string;
@@ -51,28 +52,35 @@ const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
 const DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
 const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
 
-function shouldUsePeriodicNotesSettings(periodicity: string): boolean {
-  const periodicNotes = (window as any).app.plugins.getPlugin(
+function shouldUsePeriodicNotesSettings(
+  shell: ObsidianAppShell,
+  periodicity: string,
+): boolean {
+  const periodicNotes = shell.getCommunityPlugin<PeriodicNotesPlugin>(
     "periodic-notes",
-  ) as PeriodicNotesPlugin | undefined;
+  );
   return !!(periodicNotes && periodicNotes.settings?.[periodicity]?.enabled);
 }
 
-function getPeriodicNotesSettings(periodicity: Periodicity) {
-  const periodicNotes = (window as any).app.plugins.getPlugin(
+function getPeriodicNotesSettings(
+  shell: ObsidianAppShell,
+  periodicity: Periodicity,
+) {
+  const periodicNotes = shell.getCommunityPlugin<PeriodicNotesPlugin>(
     "periodic-notes",
-  ) as PeriodicNotesPlugin | undefined;
+  );
   return periodicNotes?.settings?.[periodicity] as
     | PeriodicNotesEntry
     | undefined;
 }
 
-export function getDailyNoteSettings(): PeriodicNoteSettings {
+export function getDailyNoteSettings(
+  shell: ObsidianAppShell,
+): PeriodicNoteSettings {
   try {
-    const { internalPlugins, plugins } = (window as any).app;
-    if (shouldUsePeriodicNotesSettings("daily")) {
-      const daily = (
-        plugins.getPlugin("periodic-notes") as PeriodicNotesPlugin | undefined
+    if (shouldUsePeriodicNotesSettings(shell, "daily")) {
+      const daily = shell.getCommunityPlugin<PeriodicNotesPlugin>(
+        "periodic-notes",
       )?.settings?.daily;
       return {
         format: daily?.format || DEFAULT_DAILY_NOTE_FORMAT,
@@ -80,10 +88,8 @@ export function getDailyNoteSettings(): PeriodicNoteSettings {
         template: daily?.template?.trim() || "",
       };
     }
-    const dailyOptions = (
-      internalPlugins.getPluginById("daily-notes") as
-        | DailyNotesPlugin
-        | undefined
+    const dailyOptions = shell.getInternalPluginById<DailyNotesPlugin>(
+      "daily-notes",
     )?.instance?.options;
     return {
       format: dailyOptions?.format || DEFAULT_DAILY_NOTE_FORMAT,
@@ -95,18 +101,17 @@ export function getDailyNoteSettings(): PeriodicNoteSettings {
   }
 }
 
-export function getWeeklyNoteSettings(): PeriodicNoteSettings {
+export function getWeeklyNoteSettings(
+  shell: ObsidianAppShell,
+): PeriodicNoteSettings {
   try {
-    const pluginManager = (window as any).app.plugins;
-    const calendarSettings = (
-      pluginManager.getPlugin("calendar") as CalendarPlugin | undefined
+    const calendarSettings = shell.getCommunityPlugin<CalendarPlugin>(
+      "calendar",
     )?.options;
-    const periodicNotesSettings = (
-      pluginManager.getPlugin("periodic-notes") as
-        | PeriodicNotesPlugin
-        | undefined
+    const periodicNotesSettings = shell.getCommunityPlugin<PeriodicNotesPlugin>(
+      "periodic-notes",
     )?.settings?.weekly;
-    if (shouldUsePeriodicNotesSettings("weekly")) {
+    if (shouldUsePeriodicNotesSettings(shell, "weekly")) {
       return {
         format: periodicNotesSettings?.format || DEFAULT_WEEKLY_NOTE_FORMAT,
         folder: periodicNotesSettings?.folder?.trim() || "",
@@ -123,9 +128,11 @@ export function getWeeklyNoteSettings(): PeriodicNoteSettings {
   }
 }
 
-export function getMonthlyNoteSettings(): PeriodicNoteSettings {
+export function getMonthlyNoteSettings(
+  shell: ObsidianAppShell,
+): PeriodicNoteSettings {
   try {
-    const periodic = getPeriodicNotesSettings("monthly");
+    const periodic = getPeriodicNotesSettings(shell, "monthly");
     return {
       format: periodic?.format || DEFAULT_MONTHLY_NOTE_FORMAT,
       folder: periodic?.folder?.trim() || "",
@@ -136,9 +143,11 @@ export function getMonthlyNoteSettings(): PeriodicNoteSettings {
   }
 }
 
-export function getYearlyNoteSettings(): PeriodicNoteSettings {
+export function getYearlyNoteSettings(
+  shell: ObsidianAppShell,
+): PeriodicNoteSettings {
   try {
-    const periodic = getPeriodicNotesSettings("yearly");
+    const periodic = getPeriodicNotesSettings(shell, "yearly");
     return {
       format: periodic?.format || DEFAULT_YEARLY_NOTE_FORMAT,
       folder: periodic?.folder?.trim() || "",
@@ -149,15 +158,18 @@ export function getYearlyNoteSettings(): PeriodicNoteSettings {
   }
 }
 
-export function getPeriodicSettings(g: Granularity): PeriodicNoteSettings {
+export function getPeriodicSettings(
+  g: Granularity,
+  shell: ObsidianAppShell,
+): PeriodicNoteSettings {
   switch (g) {
     case "week":
-      return getWeeklyNoteSettings();
+      return getWeeklyNoteSettings(shell);
     case "month":
-      return getMonthlyNoteSettings();
+      return getMonthlyNoteSettings(shell);
     case "year":
-      return getYearlyNoteSettings();
+      return getYearlyNoteSettings(shell);
     default:
-      return getDailyNoteSettings();
+      return getDailyNoteSettings(shell);
   }
 }

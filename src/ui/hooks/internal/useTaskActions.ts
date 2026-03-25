@@ -8,7 +8,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const useTaskActions = () => {
-  const { app, appHelper } = useAppContext();
+  const { shell, appHelper } = useAppContext();
 
   const isReadOnly = useSettingsStore((s) => s.isReadOnly());
 
@@ -57,7 +57,7 @@ export const useTaskActions = () => {
     (task: Task) => {
       (async () => {
         if (!noteState.currentDailyNote) return;
-        const leaf = app.workspace.getLeaf(true);
+        const leaf = shell.getLeaf(true);
         await leaf.openFile(noteState.currentDailyNote);
         const editor = appHelper.getActiveMarkdownEditor()!;
         if (!editor) return;
@@ -68,7 +68,7 @@ export const useTaskActions = () => {
         });
       })();
     },
-    [app.workspace, appHelper, noteState.currentDailyNote],
+    [shell, appHelper, noteState.currentDailyNote],
   );
 
   const deleteTask = useCallback(
@@ -87,13 +87,13 @@ export const useTaskActions = () => {
       await appHelper.replaceRange(path, start, end, "");
       let newContent = await appHelper.loadFile(path);
       newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
-      await app.vault.adapter.write(path, newContent);
+      await shell.writeFile(path, newContent);
       postsState.setTasks(
         (await appHelper.getTasks(noteState.currentDailyNote)) ?? [],
       );
     },
     [
-      app.vault.adapter,
+      shell,
       appHelper,
       noteState.currentDailyNote,
       isReadOnly,

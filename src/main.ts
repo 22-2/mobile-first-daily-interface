@@ -43,7 +43,7 @@ export default class MFDIPlugin extends Plugin {
     this.registerEventListeners();
 
     this.app.workspace.onLayoutReady(() => {
-      void this.tagIndexer.scanAllNotes(this.app, this.settings);
+      void this.tagIndexer.scanAllNotes(this.appHelper, this.settings);
     });
 
     void this.replaceOpenFixedMarkdownLeaves();
@@ -116,12 +116,12 @@ export default class MFDIPlugin extends Plugin {
     if (name === null) return;
 
     const path = name.trim()
-      ? buildFixedNotePathFromName(folder, name, this.app)
+      ? buildFixedNotePathFromName(folder, name, this.appHelper)
       : undefined;
 
     const fixedNote = path
-      ? await ensureFixedNote(this.app, path)
-      : await createNewFixedNote(this.app, folder);
+      ? await ensureFixedNote(this.appHelper, path)
+      : await createNewFixedNote(this.appHelper, folder);
 
     this.settings.fixedNoteFiles = [
       ...this.settings.fixedNoteFiles,
@@ -197,7 +197,7 @@ export default class MFDIPlugin extends Plugin {
   private handleFileRename(file: TAbstractFile | null, oldPath: string) {
     if (!(file instanceof TFile)) return;
 
-    void this.tagIndexer.onFileRenamed(this.app, file, oldPath, this.settings);
+    void this.tagIndexer.onFileRenamed(this.appHelper, file, oldPath, this.settings);
 
     const idx = this.settings.fixedNoteFiles.findIndex(
       (f) => f.path === oldPath,
@@ -225,7 +225,7 @@ export default class MFDIPlugin extends Plugin {
   }
 
   private async handleFileChanged(file: TFile) {
-    await this.tagIndexer.onFileChanged(this.app, file, this.settings);
+    await this.tagIndexer.onFileChanged(this.appHelper, file, this.settings);
   }
 
   // ---------------------------------------------------------------------------
