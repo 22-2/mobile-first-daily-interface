@@ -9,6 +9,7 @@ export const TIME_FILTER_OPTIONS = [
 ] as const;
 
 export const DATE_FILTER_OPTIONS = [
+  { id: "all", label: "すべて" },
   { id: "today", label: "今日のみ" },
   { id: "this_week", label: "今週" },
   { id: "3d", label: "過去3日間" },

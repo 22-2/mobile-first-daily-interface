@@ -67,6 +67,7 @@ export function createFixedNoteViewState(filePath: string): MFDIViewState {
     noteMode: "fixed",
     fixedNotePath: filePath,
     displayMode: DISPLAY_MODE.FOCUS,
+    dateFilter: "all",
   };
 }
 
