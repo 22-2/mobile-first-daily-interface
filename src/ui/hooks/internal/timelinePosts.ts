@@ -1,7 +1,6 @@
 import { TFile } from "obsidian";
 import {
-  getPeriodicNoteKey,
-  listPeriodicNotes
+  searchPeriodicDayWindow
 } from "src/core/note-source";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MomentLike, Post } from "src/ui/types";
@@ -62,48 +61,20 @@ export function createTimelinePageFetcher({
     baseDate: MomentLike,
     days: number,
   ): Promise<TimelinePostsPage> => {
-    const allTopicNotes = listPeriodicNotes(shell, "day", topicId);
-    const uids = Object.keys(allTopicNotes).toSorted();
+    const { entries, hasMore, lastSearchedDate } = searchPeriodicDayWindow({
+      shell,
+      activeTopic: topicId,
+      baseDate,
+      days,
+    });
 
-    if (uids.length === 0) {
+    if (entries.length === 0) {
       return {
         posts: [],
         paths: new Set(),
-        hasMore: false,
-        lastSearchedDate: baseDate,
+        hasMore,
+        lastSearchedDate,
       };
-    }
-
-    const oldestDate = window.moment(uids[0].substring("day-".length));
-    const windowStart = baseDate.clone().startOf("day");
-    const windowDates = Array.from({ length: days }, (_, index) =>
-      windowStart.clone().subtract(index, "days"),
-    );
-    const windowEnd = windowDates[windowDates.length - 1];
-
-    const entries = windowDates
-      .map((dayDate) => ({
-        file: allTopicNotes[getPeriodicNoteKey(dayDate, "day")] ?? null,
-        dayDate,
-      }))
-      .filter(
-        (entry): entry is { file: TFile; dayDate: MomentLike } =>
-          entry.file !== null,
-      );
-
-    if (entries.length === 0 && windowEnd.isAfter(oldestDate)) {
-      const windowEndUid = getPeriodicNoteKey(windowEnd, "day");
-      const nextUid = uids
-        .slice()
-        .reverse()
-        .find((uid) => uid < windowEndUid);
-      if (nextUid) {
-        return createTimelinePageFetcher({ shell, readFile })(
-          topicId,
-          window.moment(nextUid.substring("day-".length)),
-          days,
-        );
-      }
     }
 
     const posts = (
@@ -117,8 +88,8 @@ export function createTimelinePageFetcher({
     return {
       posts,
       paths: new Set(entries.map((entry) => entry.file.path)),
-      hasMore: windowEnd.isAfter(oldestDate),
-      lastSearchedDate: windowEnd,
+      hasMore,
+      lastSearchedDate,
     };
   };
 }

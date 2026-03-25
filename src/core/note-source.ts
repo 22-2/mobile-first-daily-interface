@@ -34,6 +34,17 @@ export interface NoteSource {
   matchesPath: (filePath: string, currentNote?: TFile | null) => boolean;
 }
 
+export interface PeriodicNoteEntry {
+  file: TFile;
+  dayDate: MomentLike;
+}
+
+export interface PeriodicNoteWindow {
+  entries: PeriodicNoteEntry[];
+  hasMore: boolean;
+  lastSearchedDate: MomentLike;
+}
+
 export function resolvePeriodicNote(
   shell: ObsidianAppShell,
   date: MomentLike,
@@ -74,6 +85,75 @@ export function getPeriodicNoteDate(
   activeTopic?: string,
 ) {
   return getDateFromFile(file, granularity, shell, activeTopic);
+}
+
+export function collectPeriodicNoteEntries(
+  shell: ObsidianAppShell,
+  granularity: Granularity,
+  activeTopic: string,
+  dates: MomentLike[],
+): PeriodicNoteEntry[] {
+  return dates
+    .map((dayDate) => ({
+      file: resolvePeriodicNote(shell, dayDate, granularity, activeTopic),
+      dayDate,
+    }))
+    .filter((entry): entry is PeriodicNoteEntry => entry.file !== null);
+}
+
+export function searchPeriodicDayWindow(params: {
+  shell: ObsidianAppShell;
+  activeTopic: string;
+  baseDate: MomentLike;
+  days: number;
+}): PeriodicNoteWindow {
+  const { shell, activeTopic, baseDate, days } = params;
+  const allTopicNotes = listPeriodicNotes(shell, "day", activeTopic);
+  const uids = Object.keys(allTopicNotes).toSorted();
+
+  if (uids.length === 0) {
+    return {
+      entries: [],
+      hasMore: false,
+      lastSearchedDate: baseDate,
+    };
+  }
+
+  const oldestPossibleDate = window.moment(uids[0].substring("day-".length));
+  const start = baseDate.clone().startOf("day");
+  const dates = Array.from({ length: days }, (_, index) =>
+    start.clone().subtract(index, "days"),
+  );
+  const lastInWindow = dates[dates.length - 1];
+  const entries = dates
+    .map((dayDate) => ({
+      file: allTopicNotes[getPeriodicNoteKey(dayDate, "day")] ?? null,
+      dayDate,
+    }))
+    .filter((entry): entry is PeriodicNoteEntry => entry.file !== null);
+
+  if (entries.length === 0 && lastInWindow.isAfter(oldestPossibleDate)) {
+    const lastUid = getPeriodicNoteKey(lastInWindow, "day");
+    const nextUid = uids
+      .slice()
+      .reverse()
+      .find((uid) => uid < lastUid);
+    if (nextUid) {
+      // 空白期間をまたいでもタイムライン取得が止まらないよう、次に存在する日付へ飛ぶ。
+      return searchPeriodicDayWindow({
+        shell,
+        activeTopic,
+        baseDate: window.moment(nextUid.substring("day-".length)),
+        days,
+      });
+    }
+  }
+
+  return {
+    entries,
+    hasMore: lastInWindow.isAfter(oldestPossibleDate),
+    lastSearchedDate: lastInWindow,
+  };
 }
 
 export async function createFixedNoteFromInput(

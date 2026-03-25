@@ -10,9 +10,9 @@ import {
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import {
-  getPeriodicNoteKey,
-  listPeriodicNotes,
-  resolvePeriodicNote
+  collectPeriodicNoteEntries,
+  resolvePeriodicNote,
+  searchPeriodicDayWindow
 } from "src/core/note-source";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";
@@ -75,15 +75,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     const weekDates = Array.from({ length: 7 }, (_, index) =>
       weekStart.clone().add(index, "days"),
     );
-    const entries = weekDates
-      .map((dayDate) => ({
-        file: resolvePeriodicNote(shell, dayDate, "day", topicId),
-        dayDate,
-      }))
-      .filter(
-        (entry): entry is { file: TFile; dayDate: MomentLike } =>
-          entry.file !== null,
-      );
+    const entries = collectPeriodicNoteEntries(shell, "day", topicId, weekDates);
 
     const posts = (
       await Promise.all(
@@ -116,48 +108,12 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       hasMore: boolean;
       lastSearchedDate: MomentLike;
     }> => {
-      const allTopicNotes = listPeriodicNotes(shell, "day", topicId);
-      const uids = Object.keys(allTopicNotes).toSorted();
-      if (uids.length === 0) {
-        return {
-          posts: [],
-          paths: new Set<string>(),
-          hasMore: false,
-          lastSearchedDate: baseDate,
-        };
-      }
-
-      const oldestPossibleDate = window.moment(
-        uids[0].substring("day-".length),
-      );
-      const start = baseDate.clone().startOf("day");
-      const dates = Array.from({ length: days }, (_, index) =>
-        start.clone().subtract(index, "days"),
-      );
-      const lastInWindow = dates[dates.length - 1];
-
-      const entries = dates
-        .map((dayDate) => ({
-          file: allTopicNotes[getPeriodicNoteKey(dayDate, "day")] ?? null,
-          dayDate,
-        }))
-        .filter(
-          (entry): entry is { file: TFile; dayDate: MomentLike } =>
-            entry.file !== null,
-        );
-
-      if (entries.length === 0 && lastInWindow.isAfter(oldestPossibleDate)) {
-        const lastUid = getPeriodicNoteKey(lastInWindow, "day");
-        const nextUid = uids
-          .slice()
-          .reverse()
-          .find((uid) => uid < lastUid);
-        if (nextUid) {
-          return getPostsRecursive(
-            window.moment(nextUid.substring("day-".length)),
-          );
-        }
-      }
+      const { entries, hasMore, lastSearchedDate } = searchPeriodicDayWindow({
+        shell,
+        activeTopic: topicId,
+        baseDate,
+        days,
+      });
 
       const posts = (
         await Promise.all(
@@ -171,8 +127,8 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       return {
         posts,
         paths: new Set(entries.map((entry) => entry.file.path)),
-        hasMore: lastInWindow.isAfter(oldestPossibleDate),
-        lastSearchedDate: lastInWindow,
+        hasMore,
+        lastSearchedDate,
       };
     };
 
