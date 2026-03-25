@@ -49,9 +49,9 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePosts: async (note) => {
-    const { appHelper, date, setPosts, viewNoteMode } = get();
-    if (!appHelper) return;
-    const content = await appHelper.loadFile(note.path);
+    const { shell, date, setPosts, viewNoteMode } = get();
+    if (!shell) return;
+    const content = await shell.loadFile(note.path);
     setPosts(
       buildPostsFromContent(
         content,
@@ -62,14 +62,14 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updateTasks: async (note) => {
-    const { appHelper } = get();
-    if (!appHelper) return;
-    set({ tasks: (await appHelper.getTasks(note)) ?? [] });
+    const { shell } = get();
+    if (!shell) return;
+    set({ tasks: (await shell.getTasks(note)) ?? [] });
   },
 
   updatePostsForWeek: async (topicId, date) => {
-    const { shell, appHelper, setPosts } = get();
-    if (!shell || !appHelper) return new Set();
+    const { shell, setPosts } = get();
+    if (!shell) return new Set();
 
     const weekStart = date.clone().startOf("isoWeek");
     const weekDates = Array.from({ length: 7 }, (_, index) =>
@@ -80,7 +80,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     const posts = (
       await Promise.all(
         entries.map(async ({ file, dayDate }) => {
-          const content = await appHelper.cachedReadFile(file);
+          const content = await shell.cachedReadFile(file);
           return buildPostsFromContent(content, file.path, dayDate);
         }),
       )
@@ -91,8 +91,8 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForDays: async (topicId, date, days) => {
-    const { shell, appHelper, setPosts } = get();
-    if (!shell || !appHelper) {
+    const { shell, setPosts } = get();
+    if (!shell) {
       return {
         paths: new Set<string>(),
         hasMore: false,
@@ -118,7 +118,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       const posts = (
         await Promise.all(
           entries.map(async ({ file, dayDate }) => {
-            const content = await appHelper.cachedReadFile(file);
+            const content = await shell.cachedReadFile(file);
             return buildPostsFromContent(content, file.path, dayDate);
           }),
         )

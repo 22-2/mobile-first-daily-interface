@@ -1,18 +1,12 @@
 import { App } from "obsidian";
 import { createContext, ReactNode, useContext, useMemo } from "react";
-import { AppHelper } from "src/app-helper";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Settings } from "src/settings";
 import { MFDIView } from "src/ui/view/MFDIView";
 import { MFDIStorage } from "src/utils/storage";
 
-// ─────────────────────────────────────────────────────────────────
-// Context value type
-// ─────────────────────────────────────────────────────────────────
-
 export interface AppContextValue {
   shell: ObsidianAppShell;
-  appHelper: AppHelper;
   storage: MFDIStorage;
   settings: Settings;
   view: MFDIView;
@@ -20,10 +14,6 @@ export interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 const ObsidianAppContext = createContext<App | null>(null);
-
-// ─────────────────────────────────────────────────────────────────
-// Consumer hook
-// ─────────────────────────────────────────────────────────────────
 
 export function useAppContext(): AppContextValue {
   const ctx = useContext(AppContext);
@@ -41,10 +31,6 @@ export function useObsidianApp(): App {
   return app;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Provider
-// ─────────────────────────────────────────────────────────────────
-
 interface AppContextProviderProps {
   app: App;
   settings: Settings;
@@ -58,16 +44,14 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({
   view,
   children,
 }) => {
-  const appHelper = useMemo(() => new AppHelper(app), [app]);
-  const storage = useMemo(
-    () => new MFDIStorage(appHelper.getAppId()),
-    [appHelper],
-  );
+  const shell = useMemo(() => new ObsidianAppShell(app), [app]);
+  const storage = useMemo(() => new MFDIStorage(shell.getAppId()), [shell]);
   const value = useMemo<AppContextValue>(
     // 一般ロジックから raw app を見えなくして、依存の漏れを型で止める。
-    () => ({ shell: appHelper, appHelper, storage, settings, view }),
-    [appHelper, storage, settings, view],
+    () => ({ shell, storage, settings, view }),
+    [shell, storage, settings, view],
   );
+
   return (
     <ObsidianAppContext.Provider value={app}>
       <AppContext.Provider value={value}>{children}</AppContext.Provider>

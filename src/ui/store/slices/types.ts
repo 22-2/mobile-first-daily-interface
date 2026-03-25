@@ -1,7 +1,6 @@
 import { TFile } from "obsidian";
 import { RefObject } from "react";
-import { AppHelper, Task } from "src/app-helper";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { ObsidianAppShell, Task } from "src/shell/obsidian-shell";
 import { Settings } from "src/settings";
 import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
@@ -18,12 +17,11 @@ import { MFDIStorage } from "src/utils/storage";
 
 export interface EnvironmentSlice {
   shell: ObsidianAppShell | null;
-  appHelper: AppHelper | null;
   storage: MFDIStorage | null;
   pluginSettings: Settings | null;
   viewNoteMode: MFDINoteMode;
   fixedNotePath: string | null;
-  setAppDependencies: (shell: ObsidianAppShell, appHelper: AppHelper) => void;
+  setAppDependencies: (shell: ObsidianAppShell) => void;
   setStorage: (storage: MFDIStorage) => void;
   setPluginSettings: (settings: Settings) => void;
   setViewContext: (params: {
@@ -32,7 +30,6 @@ export interface EnvironmentSlice {
   }) => void;
   initializeAppStore: (params: {
     shell: ObsidianAppShell;
-    appHelper: AppHelper;
     settings: Settings;
     storage: MFDIStorage;
   }) => void;

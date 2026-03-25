@@ -8,7 +8,7 @@ import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
 export const useTaskActions = () => {
-  const { shell, appHelper } = useAppContext();
+  const { shell } = useAppContext();
 
   const isReadOnly = useSettingsStore((s) => s.isReadOnly());
 
@@ -38,7 +38,7 @@ export const useTaskActions = () => {
           x.offset === task.offset ? { ...x, mark } : x,
         ),
       );
-      await appHelper.setCheckMark(
+      await shell.setCheckMark(
         noteState.currentDailyNote.path,
         mark,
         task.offset,
@@ -48,7 +48,7 @@ export const useTaskActions = () => {
       noteState.currentDailyNote,
       postsState.tasks,
       postsState.setTasks,
-      appHelper,
+      shell,
       isReadOnly,
     ],
   );
@@ -59,7 +59,7 @@ export const useTaskActions = () => {
         if (!noteState.currentDailyNote) return;
         const leaf = shell.getLeaf(true);
         await leaf.openFile(noteState.currentDailyNote);
-        const editor = appHelper.getActiveMarkdownEditor()!;
+        const editor = shell.getActiveMarkdownEditor()!;
         if (!editor) return;
         const pos = editor.offsetToPos(task.offset);
         editor.setCursor(pos);
@@ -68,7 +68,7 @@ export const useTaskActions = () => {
         });
       })();
     },
-    [shell, appHelper, noteState.currentDailyNote],
+    [shell, noteState.currentDailyNote],
   );
 
   const deleteTask = useCallback(
@@ -79,26 +79,20 @@ export const useTaskActions = () => {
       }
       if (!noteState.currentDailyNote) return;
       const path = noteState.currentDailyNote.path;
-      const origin = await appHelper.loadFile(path);
+      const origin = await shell.loadFile(path);
       let start = task.offset;
       let end = origin.indexOf("\n", start);
       if (end === -1) end = origin.length;
       else end += 1;
-      await appHelper.replaceRange(path, start, end, "");
-      let newContent = await appHelper.loadFile(path);
+      await shell.replaceRange(path, start, end, "");
+      let newContent = await shell.loadFile(path);
       newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
       await shell.writeFile(path, newContent);
       postsState.setTasks(
-        (await appHelper.getTasks(noteState.currentDailyNote)) ?? [],
+        (await shell.getTasks(noteState.currentDailyNote)) ?? [],
       );
     },
-    [
-      shell,
-      appHelper,
-      noteState.currentDailyNote,
-      isReadOnly,
-      postsState.setTasks,
-    ],
+    [shell, noteState.currentDailyNote, isReadOnly, postsState.setTasks],
   );
 
   return {

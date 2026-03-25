@@ -18,7 +18,7 @@ interface Counts {
 export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   viewedDate,
 }) => {
-  const { shell, appHelper } = useAppContext();
+  const { shell } = useAppContext();
   const {
     date,
     setDate,
@@ -58,12 +58,12 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       const note = resolvePeriodicNote(shell, d, g, activeTopic);
       if (!note) return { posts: 0, tasks: 0 };
 
-      const content = await appHelper.cachedReadFile(note);
+      const content = await shell.cachedReadFile(note);
       const posts = parseThinoEntries(content).length;
-      const tasks = (await appHelper.getTasks(note))?.length || 0;
+      const tasks = (await shell.getTasks(note))?.length || 0;
       return { posts, tasks };
     },
-    [shell, appHelper, activeTopic],
+    [shell, activeTopic],
   );
 
   useEffect(() => {

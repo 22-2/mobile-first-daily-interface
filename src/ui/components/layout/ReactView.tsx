@@ -78,7 +78,7 @@ export const ReactView = ({
 };
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { view, settings, storage, shell, appHelper } = useAppContext();
+  const { view, settings, storage, shell } = useAppContext();
   const store = useCurrentAppStore();
   const viewState = view.getState();
   const capabilities = useMemo(
@@ -87,8 +87,8 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   useEffect(() => {
-    initializeAppStore({ shell, appHelper, settings, storage }, store);
-  }, [settings, storage, shell, appHelper, store]);
+    initializeAppStore({ shell, settings, storage }, store);
+  }, [settings, storage, shell, store]);
 
   const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
     useSettingsStore(

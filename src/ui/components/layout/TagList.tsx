@@ -21,7 +21,7 @@ interface TagListSnapshot {
 }
 
 export const TagList: React.FC = () => {
-  const { appHelper } = useAppContext();
+  const { shell } = useAppContext();
   const { activeTag, setActiveTag } = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -29,10 +29,7 @@ export const TagList: React.FC = () => {
     })),
   );
 
-  const db = useMemo(
-    () => new MFDIDatabase(appHelper.getAppId()),
-    [appHelper],
-  );
+  const db = useMemo(() => new MFDIDatabase(shell.getAppId()), [shell]);
 
   useEffect(() => {
     return () => {

@@ -48,7 +48,7 @@ describe("MiniCalendar", () => {
       get: vi.fn(),
       set: vi.fn(),
     } as any);
-    initializePostsStore({} as any, {} as any);
+    initializePostsStore({} as any);
   });
 
   it("renders without crashing", () => {

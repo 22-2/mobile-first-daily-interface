@@ -1,4 +1,3 @@
-import { AppHelper } from "src/app-helper";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import {
   appStore,
@@ -12,10 +11,9 @@ export const postsStore = appStore;
 
 export function initializePostsStore(
   shell: ObsidianAppShell,
-  appHelper: AppHelper,
   store: AppStoreApi = appStore,
 ) {
-  store.getState().setAppDependencies(shell, appHelper);
+  store.getState().setAppDependencies(shell);
 }
 
 export function usePostsStore<T>(

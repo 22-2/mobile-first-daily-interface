@@ -1,5 +1,46 @@
 import { App, Editor, MarkdownView, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 import { Commands } from "obsidian-typings";
+import { MomentLike } from "src/ui/types";
+import { parseMarkdownList } from "src/utils/strings";
+import { parseTaskTimestamp } from "src/utils/task-parser";
+
+function trimLeadingLineBreaks(text: string): string {
+  return text.replace(/^(?:\r\n|\r|\n)+/, "");
+}
+
+function joinWithSingleBoundaryNewline(content: string, text: string): string {
+  const normalizedText = trimLeadingLineBreaks(text);
+
+  if (normalizedText.length === 0) {
+    return content;
+  }
+
+  if (content.length === 0 || content.endsWith("\n")) {
+    return content + normalizedText;
+  }
+
+  return `${content}\n${normalizedText}`;
+}
+
+function skipImmediateLineBreak(content: string, index: number): number {
+  if (content.slice(index, index + 2) === "\r\n") {
+    return index + 2;
+  }
+
+  if (content[index] === "\n" || content[index] === "\r") {
+    return index + 1;
+  }
+
+  return index;
+}
+
+export interface Task {
+  mark: " " | string;
+  name: string;
+  offset: number;
+  path: string;
+  timestamp: MomentLike;
+}
 
 interface UnsafeAppInterface {
   appId: string;
@@ -64,12 +105,73 @@ export class ObsidianAppShell {
     return this.unsafeApp.vault.adapter.read(path);
   }
 
+  async loadFile(path: string): Promise<string> {
+    return this.readFile(path);
+  }
+
   async writeFile(path: string, content: string): Promise<void> {
     await this.unsafeApp.vault.adapter.write(path, content);
   }
 
   appendFile(path: string, text: string) {
     return this.unsafeApp.vault.adapter.append(path, text);
+  }
+
+  insertTextToEnd(file: TFile, text: string) {
+    return this.appendFile(file.path, text);
+  }
+
+  async replaceRange(
+    path: string,
+    startOffset: number,
+    endOffset: number,
+    replacement: string,
+  ): Promise<void> {
+    const origin = await this.loadFile(path);
+    await this.writeFile(
+      path,
+      origin.slice(0, startOffset) + replacement + origin.slice(endOffset),
+    );
+  }
+
+  async setCheckMark(
+    path: string,
+    mark: "x" | " " | string,
+    offset: number,
+  ): Promise<void> {
+    const origin = await this.loadFile(path);
+    const markOffset = offset + origin.slice(offset).indexOf("[") + 1;
+    await this.writeFile(
+      path,
+      `${origin.slice(0, markOffset)}${mark}${origin.slice(markOffset + 1)}`,
+    );
+  }
+
+  async insertTextAfter(file: TFile, text: string, after: string) {
+    const content = await this.loadFile(file.path);
+
+    if (!after) {
+      await this.writeFile(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
+    }
+
+    const index = content.indexOf(after);
+    if (index === -1) {
+      await this.writeFile(
+        file.path,
+        joinWithSingleBoundaryNewline(content, text),
+      );
+      return;
+    }
+
+    const insertIndex = skipImmediateLineBreak(content, index + after.length);
+    const newContent =
+      joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
+      content.slice(insertIndex);
+    await this.writeFile(file.path, newContent);
   }
 
   async cachedReadFile(file: TFile): Promise<string> {
@@ -114,5 +216,49 @@ export class ObsidianAppShell {
 
   getActiveMarkdownEditor(): Editor | null {
     return this.getActiveMarkdownView()?.editor ?? null;
+  }
+
+  async getTasks(file: TFile): Promise<Task[] | null> {
+    const content = await this.loadFile(file.path);
+    const lines = content.split("\n");
+
+    return (
+      this.getMetadataCache()
+        .getFileCache(file)
+        ?.listItems?.filter((x) => x.task != null)
+        .map((x) => {
+          const startLine = x.position.start.line;
+          const endLine = x.position.end.line;
+
+          let lastLine = endLine;
+          for (let i = endLine + 1; i < lines.length; i++) {
+            const line = lines[i];
+            if (
+              line.trim().length > 0 &&
+              !line.startsWith(" ") &&
+              !line.startsWith("\t")
+            ) {
+              break;
+            }
+            lastLine = i;
+          }
+
+          const taskContent = lines.slice(startLine, lastLine + 1).join("\n");
+          const { content: rawName } = parseMarkdownList(taskContent);
+
+          const { displayName, timestamp } = parseTaskTimestamp(
+            rawName,
+            file.basename,
+          );
+
+          return {
+            mark: x.task!,
+            name: displayName,
+            offset: x.position.start.offset,
+            path: file.path,
+            timestamp,
+          };
+        }) ?? null
+    );
   }
 }

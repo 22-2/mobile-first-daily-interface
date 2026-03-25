@@ -47,7 +47,6 @@ export function useCurrentAppStore(): AppStoreApi {
 export function initializeAppStore(
   params: {
     shell: NonNullable<MFDIStore["shell"]>;
-    appHelper: NonNullable<MFDIStore["appHelper"]>;
     settings: NonNullable<MFDIStore["pluginSettings"]>;
     storage: NonNullable<MFDIStore["storage"]>;
   },

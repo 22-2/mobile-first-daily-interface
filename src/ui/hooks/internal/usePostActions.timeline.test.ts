@@ -121,8 +121,8 @@ describe("timeline note resolution", () => {
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: vi.fn(),
         loadFile: vi.fn(async () => ""),
@@ -489,8 +489,8 @@ describe("timeline note resolution", () => {
     const content = ["## Thino", "- 12:00:00 parent", ""].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -548,8 +548,8 @@ note header
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => shiftedContent),
@@ -610,8 +610,8 @@ note header
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -726,8 +726,8 @@ note header
     ].join("\n");
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -801,8 +801,8 @@ prefix
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => shiftedContent),
@@ -875,8 +875,8 @@ prefix
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,
@@ -958,8 +958,8 @@ prefix
 
     (useAppContext as any).mockReturnValue({
       app: mockApp,
-      shell: mockApp,
-      appHelper: {
+      shell: {
+        ...mockApp,
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,

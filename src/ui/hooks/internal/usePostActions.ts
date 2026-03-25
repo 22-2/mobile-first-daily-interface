@@ -23,7 +23,7 @@ import { useShallow } from "zustand/shallow";
 import { createRefreshPosts } from "./refreshPosts";
 
 export const usePostActions = () => {
-  const { shell, appHelper, settings } = useAppContext();
+  const { shell, settings } = useAppContext();
   const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
@@ -111,7 +111,7 @@ export const usePostActions = () => {
 
   const getLatestPostsForPath = useCallback(
     async (path: string, noteDate: Post["noteDate"]) => {
-      const content = await appHelper.loadFile(path);
+      const content = await shell.loadFile(path);
       return parseThinoEntries(content).map((entry) =>
         buildPostFromEntry({
           ...entry,
@@ -121,7 +121,7 @@ export const usePostActions = () => {
         }),
       );
     },
-    [appHelper],
+    [shell],
   );
 
   const findLatestPost = useCallback(
@@ -183,7 +183,7 @@ export const usePostActions = () => {
         metadata,
       );
 
-      await appHelper.replaceRange(
+      await shell.replaceRange(
         latestPost.path,
         latestPost.startOffset,
         latestPost.endOffset,
@@ -200,7 +200,7 @@ export const usePostActions = () => {
       await refreshPosts(latestPost.path);
     },
     [
-      appHelper,
+      shell,
       settingsState.granularity,
       editorState,
       findLatestPost,
@@ -231,7 +231,7 @@ export const usePostActions = () => {
         metadata,
       );
 
-      await appHelper.replaceRange(
+      await shell.replaceRange(
         latestPost.path,
         latestPost.startOffset,
         latestPost.endOffset,
@@ -248,7 +248,7 @@ export const usePostActions = () => {
       await refreshPosts(latestPost.path);
     },
     [
-      appHelper,
+      shell,
       editorState,
       findLatestPost,
       refreshPosts,
@@ -285,7 +285,7 @@ export const usePostActions = () => {
           },
         );
 
-        await appHelper.replaceRange(
+        await shell.replaceRange(
           post.path,
           post.startOffset,
           post.endOffset,
@@ -309,7 +309,7 @@ export const usePostActions = () => {
       }
     },
     [
-      appHelper,
+      shell,
       editorState,
       findLatestPost,
       refreshPosts,
@@ -361,7 +361,7 @@ export const usePostActions = () => {
         targetTs,
         latestEditingPost.metadata,
       );
-      await appHelper.replaceRange(
+      await shell.replaceRange(
         latestEditingPost.path,
         latestEditingPost.startOffset,
         latestEditingPost.endOffset,
@@ -411,7 +411,7 @@ export const usePostActions = () => {
         return;
       }
 
-      await appHelper.insertTextAfter(noteFile, text, settings.insertAfter);
+      await shell.insertTextAfter(noteFile, text, settings.insertAfter);
       await refreshPosts(rootPost.path);
 
       editorState.clearInput();
@@ -466,12 +466,12 @@ export const usePostActions = () => {
     if (note) {
       // ensure insertAfter marker exists in note; if missing, append it so we can
       // reliably insert after that marker
-      const content = await appHelper.loadFile(note.path);
+      const content = await shell.loadFile(note.path);
       if (settings.insertAfter && !content.includes(settings.insertAfter)) {
-        await appHelper.insertTextAfter(note, settings.insertAfter, "");
+        await shell.insertTextAfter(note, settings.insertAfter, "");
       }
 
-      await appHelper.insertTextAfter(note, text, settings.insertAfter);
+      await shell.insertTextAfter(note, text, settings.insertAfter);
       await refreshPosts(note.path);
     } else {
       new Notice("投稿先ノートを解決できませんでした");
@@ -482,7 +482,6 @@ export const usePostActions = () => {
     editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [
     shell,
-    appHelper,
     settings,
     settingsState,
     postsState,
@@ -547,13 +546,13 @@ export const usePostActions = () => {
           .sort((a, b) => b.startOffset - a.startOffset);
 
         for (const p of sorted) {
-          await appHelper.replaceRange(p.path, p.startOffset, p.endOffset, "");
+          await shell.replaceRange(p.path, p.startOffset, p.endOffset, "");
         }
 
         // ファイル整形: 連続改行を適度に潰す
         const filePath = sorted[0]?.path;
         if (filePath) {
-          let newContent = await appHelper.loadFile(filePath);
+          let newContent = await shell.loadFile(filePath);
           newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
           await shell.writeFile(filePath, newContent);
           await refreshPosts(filePath);
@@ -566,19 +565,19 @@ export const usePostActions = () => {
       }
 
       // 単一投稿の削除
-      await appHelper.replaceRange(
+      await shell.replaceRange(
         latestPost.path,
         latestPost.startOffset,
         latestPost.endOffset,
         "",
       );
-      let newContent = await appHelper.loadFile(latestPost.path);
+      let newContent = await shell.loadFile(latestPost.path);
       newContent = newContent.replace(/\n{4,}/g, "\n\n\n");
       await shell.writeFile(latestPost.path, newContent);
       await refreshPosts(latestPost.path);
     },
     [
-      appHelper,
+      shell,
       findLatestPost,
       findLatestThreadPosts,
       refreshPosts,
@@ -663,12 +662,12 @@ export const usePostActions = () => {
         metadata,
       );
 
-      await appHelper.insertTextAfter(nextNote, text, settings.insertAfter);
+      await shell.insertTextAfter(nextNote, text, settings.insertAfter);
       await deletePost(latestPost);
 
       new Notice("明日に送りました");
     },
-    [shell, appHelper, settings, settingsState, deletePost, store],
+    [shell, settings, settingsState, deletePost, store],
   );
 
   const createThread = useCallback(
@@ -702,7 +701,7 @@ export const usePostActions = () => {
         },
       );
 
-      await appHelper.replaceRange(
+      await shell.replaceRange(
         latestPost.path,
         latestPost.startOffset,
         latestPost.endOffset,
@@ -721,7 +720,7 @@ export const usePostActions = () => {
       new Notice("スレッドを作成しました");
     },
     [
-      appHelper,
+      shell,
       editorState,
       findLatestPost,
       getSerializedTimestamp,
