@@ -158,6 +158,9 @@ export default class MFDIPlugin extends Plugin {
   private convertMarkdownViewStateForFixedNote(viewState: any): any {
     if (!viewState || viewState.type !== "markdown") return viewState;
 
+    // フラグが付与されている場合は強制的にMarkdownビューとして開く意図がある。
+    if (viewState.state?.__mfdi_force_markdown) return viewState;
+
     const filePath =
       typeof viewState.state?.file === "string" ? viewState.state.file : "";
     if (!isMFDIFixedNotePath(filePath)) return viewState;
