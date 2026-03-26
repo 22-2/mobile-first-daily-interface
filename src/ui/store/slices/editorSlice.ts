@@ -16,7 +16,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     inputPersistTimer = setTimeout(() => {
       get().storage?.set(STORAGE_KEYS.INPUT, input);
       inputPersistTimer = null;
-    }, 300);
+    }, 50);
   };
 
   const persistInputImmediately = (input: string) => {
