@@ -2,7 +2,8 @@ import { TFile } from "obsidian";
 import { RefObject } from "react";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import { Settings } from "src/settings";
-import { ObsidianAppShell, Task } from "src/shell/obsidian-shell";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { Task } from "src/core/task-text";
 import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import {
   DateFilter,

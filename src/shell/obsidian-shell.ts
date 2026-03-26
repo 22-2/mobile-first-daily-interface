@@ -7,47 +7,10 @@ import {
   WorkspaceLeaf,
 } from "obsidian";
 import { Commands } from "obsidian-typings";
-import { MomentLike } from "src/ui/types";
+import { joinWithSingleBoundaryNewline, skipImmediateLineBreak } from "src/core/post-utils";
 import { parseMarkdownList } from "src/core/strings";
 import { parseTaskTimestamp } from "src/core/task-parser";
-
-function trimLeadingLineBreaks(text: string): string {
-  return text.replace(/^(?:\r\n|\r|\n)+/, "");
-}
-
-function joinWithSingleBoundaryNewline(content: string, text: string): string {
-  const normalizedText = trimLeadingLineBreaks(text);
-
-  if (normalizedText.length === 0) {
-    return content;
-  }
-
-  if (content.length === 0 || content.endsWith("\n")) {
-    return content + normalizedText;
-  }
-
-  return `${content}\n${normalizedText}`;
-}
-
-function skipImmediateLineBreak(content: string, index: number): number {
-  if (content.slice(index, index + 2) === "\r\n") {
-    return index + 2;
-  }
-
-  if (content[index] === "\n" || content[index] === "\r") {
-    return index + 1;
-  }
-
-  return index;
-}
-
-export interface Task {
-  mark: " " | string;
-  name: string;
-  offset: number;
-  path: string;
-  timestamp: MomentLike;
-}
+import { Task } from "src/core/task-text";
 
 interface UnsafeAppInterface {
   appId: string;

@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { useCallback } from "react";
-import { Task } from "src/shell/obsidian-shell";
+import { Task } from "src/core/task-text";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";

@@ -1,3 +1,5 @@
+import { MomentLike } from "src/ui/types";
+
 export function formatTaskText(input: string, time?: string): string {
   const normalized = input.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   const t =
@@ -24,4 +26,11 @@ export function formatTaskText(input: string, time?: string): string {
     .join("\n");
 
   return `${head}\n${body}`;
+}
+export interface Task {
+  mark: " " | string;
+  name: string;
+  offset: number;
+  path: string;
+  timestamp: MomentLike;
 }

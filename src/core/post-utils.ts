@@ -96,4 +96,31 @@ export function resolveMemoTimestamp(
 
   const parsed = parseTimeWithDate(time, toLocalDateString(noteDay));
   return isNaN(parsed.getTime()) ? noteDay.toISOString() : parsed.toISOString();
+}function trimLeadingLineBreaks(text: string): string {
+  return text.replace(/^(?:\r\n|\r|\n)+/, "");
 }
+export function joinWithSingleBoundaryNewline(content: string, text: string): string {
+  const normalizedText = trimLeadingLineBreaks(text);
+
+  if (normalizedText.length === 0) {
+    return content;
+  }
+
+  if (content.length === 0 || content.endsWith("\n")) {
+    return content + normalizedText;
+  }
+
+  return `${content}\n${normalizedText}`;
+}
+export function skipImmediateLineBreak(content: string, index: number): number {
+  if (content.slice(index, index + 2) === "\r\n") {
+    return index + 2;
+  }
+
+  if (content[index] === "\n" || content[index] === "\r") {
+    return index + 1;
+  }
+
+  return index;
+}
+
