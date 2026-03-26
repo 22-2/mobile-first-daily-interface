@@ -17,8 +17,16 @@ import { getDateFromFile } from "src/lib/daily-notes/utils";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import { ScanWorkerPool } from "src/db/scan-worker-pool";
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 const DEFAULT_QUEUE_CONCURRENCY = 8;
 const DEFAULT_SCAN_CHUNK_SIZE = 100;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface ScanTarget {
   file: TFile;
@@ -29,30 +37,75 @@ interface ScanTarget {
   noteGranularity: (typeof GRANULARITIES)[number];
 }
 
-interface TagIndexerOptions {
+export interface TagIndexerOptions {
   api?: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>;
   queueConcurrency?: number;
   scanChunkSize?: number;
   workerFactory?: () => Worker;
 }
 
-function normalizeTopics(topics: Topic[]): Topic[] {
-  const map = new Map<string, Topic>();
-  map.set(DEFAULT_TOPIC.id, DEFAULT_TOPIC);
+// ---------------------------------------------------------------------------
+// Scan executor abstraction
+// Centralises the "direct API vs worker pool" branching in one place,
+// so the rest of TagIndexer never has to think about it.
+// ---------------------------------------------------------------------------
 
+interface ScanExecutor {
+  scanFiles(files: ScannableNote[]): Promise<Awaited<ReturnType<ScanWorkerAPI["scanFiles"]>>>;
+  scanFile(note: ScannableNote): Promise<Awaited<ReturnType<ScanWorkerAPI["scanFile"]>>>;
+  dispose(): Promise<void>;
+}
+
+class DirectApiExecutor implements ScanExecutor {
+  constructor(private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>) {}
+
+  scanFiles(files: ScannableNote[]) {
+    return this.api.scanFiles(files);
+  }
+
+  scanFile(note: ScannableNote) {
+    return this.api.scanFile(note);
+  }
+
+  async dispose() {
+    // nothing to tear down
+  }
+}
+
+class WorkerPoolExecutor implements ScanExecutor {
+  constructor(private readonly pool: ScanWorkerPool) {}
+
+  scanFiles(files: ScannableNote[]) {
+    return this.pool.next().scanFiles(files);
+  }
+
+  scanFile(note: ScannableNote) {
+    return this.pool.next().scanFile(note);
+  }
+
+  async dispose() {
+    await this.pool.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+function normalizeTopics(topics: Topic[]): Topic[] {
+  const map = new Map<string, Topic>([[DEFAULT_TOPIC.id, DEFAULT_TOPIC]]);
   for (const topic of topics) {
     map.set(topic.id, topic);
   }
-
   return [...map.values()];
 }
 
-function isSameTarget(left: ScanTarget, right: ScanTarget): boolean {
+function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
   return (
-    left.path === right.path &&
-    left.topicId === right.topicId &&
-    left.noteGranularity === right.noteGranularity &&
-    left.noteDate === right.noteDate
+    a.path === b.path &&
+    a.topicId === b.topicId &&
+    a.noteGranularity === b.noteGranularity &&
+    a.noteDate === b.noteDate
   );
 }
 
@@ -62,43 +115,34 @@ function collectScanTargets(
 ): ScanTarget[] {
   const uniqueTargets = new Map<string, ScanTarget>();
   const ambiguousPaths = new Set<string>();
-  const topics = normalizeTopics(settings.topics);
 
-  for (const topic of topics) {
+  for (const topic of normalizeTopics(settings.topics)) {
     for (const granularity of GRANULARITIES) {
       const notes = getAllTopicNotes(shell, granularity, topic.id);
 
       for (const file of Object.values(notes)) {
-        if (ambiguousPaths.has(file.path)) {
-          continue;
-        }
+        if (ambiguousPaths.has(file.path)) continue;
 
-        const nextTarget: ScanTarget = {
+        const noteDate =
+          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "";
+        if (!noteDate) continue;
+
+        const candidate: ScanTarget = {
           file,
           path: file.path,
           noteName: file.basename,
           topicId: topic.id,
           noteGranularity: granularity,
-          noteDate:
-            getDateFromFile(
-              file,
-              granularity,
-              shell,
-              topic.id,
-            )?.toISOString() ?? "",
+          noteDate,
         };
-
-        if (!nextTarget.noteDate) {
-          continue;
-        }
 
         const existing = uniqueTargets.get(file.path);
         if (!existing) {
-          uniqueTargets.set(file.path, nextTarget);
+          uniqueTargets.set(file.path, candidate);
           continue;
         }
 
-        if (!isSameTarget(existing, nextTarget)) {
+        if (!isSameTarget(existing, candidate)) {
           uniqueTargets.delete(file.path);
           ambiguousPaths.add(file.path);
         }
@@ -124,105 +168,85 @@ async function toScannableNote(
   };
 }
 
+// ---------------------------------------------------------------------------
+// TagIndexer
+// ---------------------------------------------------------------------------
+
 export class TagIndexer {
-  private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>;
+  private readonly executor: ScanExecutor;
   private readonly queueConcurrency: number;
   private readonly scanChunkSize: number;
-  private readonly worker?: Worker;
   private readonly db: MFDIDatabase;
-  private readonly workerPool?: ScanWorkerPool;
-  private readonly useDirectApi: boolean;
   private readonly initializePromise: Promise<void>;
 
   constructor(appId: string, options: TagIndexerOptions = {}) {
-    this.queueConcurrency =
-      options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
+    this.queueConcurrency = options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
     this.scanChunkSize = options.scanChunkSize ?? DEFAULT_SCAN_CHUNK_SIZE;
     this.db = new MFDIDatabase(appId);
 
     if (options.api) {
-      this.api = options.api;
-      this.useDirectApi = true;
-      this.workerPool = undefined;
+      this.executor = new DirectApiExecutor(options.api);
     } else {
-      this.useDirectApi = false;
       const hw =
-        typeof navigator !== "undefined" &&
-        (navigator as any).hardwareConcurrency
-          ? (navigator as any).hardwareConcurrency
+        navigator.hardwareConcurrency
+          ? navigator.hardwareConcurrency
           : 4;
       const poolSize = Math.max(1, Math.floor(hw * 0.75));
       const factory = options.workerFactory ?? (() => new ScanWorkerFactory());
-      this.workerPool = new ScanWorkerPool(poolSize, factory);
+      this.executor = new WorkerPoolExecutor(new ScanWorkerPool(poolSize, factory));
     }
 
-    this.initializePromise = (async () => {
-      await this.db.open();
-    })();
+    this.initializePromise = this.db.open().then();
   }
 
-  private async waitUntilReady() {
-    await this.initializePromise;
+  private waitUntilReady(): Promise<void> {
+    return this.initializePromise;
   }
 
-  async scanAllNotes(
-    shell: ObsidianAppShell,
-    settings: Settings,
-  ): Promise<void> {
+  // -------------------------------------------------------------------------
+  // Full scan
+  // -------------------------------------------------------------------------
+
+  async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
     await this.waitUntilReady();
 
     const targets = collectScanTargets(shell, settings);
-    const queue = new PQueue({ concurrency: this.queueConcurrency });
-
-    // Reset index (clear DB) — worker no longer manages DB lifecycle.
-    await this.db.transaction(
-      "rw",
-      this.db.memos,
-      this.db.meta,
-      this.db.tagStats,
-      async () => {
-        await this.db.memos.clear();
-        await this.db.meta.clear();
-        await this.db.tagStats.clear();
-      },
-    );
-
+    const readQueue = new PQueue({ concurrency: this.queueConcurrency });
     const writeQueue = new PQueue({ concurrency: 1 });
 
+    await this.db.transaction("rw", this.db.memos, this.db.meta, this.db.tagStats, async () => {
+      await this.db.memos.clear();
+      await this.db.meta.clear();
+      await this.db.tagStats.clear();
+    });
+
     for (let start = 0; start < targets.length; start += this.scanChunkSize) {
-      const batchTargets = targets.slice(start, start + this.scanChunkSize);
-      const files = await Promise.all(
-        batchTargets.map((target) =>
-          queue.add(() => toScannableNote(shell, target)),
-        ),
+      const batch = targets.slice(start, start + this.scanChunkSize);
+      const notes = await Promise.all(
+        batch.map((t) => readQueue.add(() => toScannableNote(shell, t))),
       );
 
-      if (this.useDirectApi) {
-        const records = await this.api.scanFiles(files);
-        if (records && records.length > 0) {
+      // Kick off parsing immediately, buffer writes to stay sequential on DB.
+      const parsePromise = this.executor.scanFiles(notes);
+      writeQueue.add(async () => {
+        const records = await parsePromise;
+        if (records?.length) {
           await this.db.memos.bulkPut(records);
         }
-      } else {
-        const workerRemote = this.workerPool!.next();
-        const parsePromise = workerRemote.scanFiles(files);
-        writeQueue.add(async () => {
-          const records = await parsePromise;
-          if (records && records.length > 0) {
-            await this.db.memos.bulkPut(records);
-          }
-        });
-      }
+      });
     }
 
-    await queue.onIdle();
+    await readQueue.onIdle();
     await writeQueue.onIdle();
     await this.rebuildTagStats();
-    await this.db.meta.put({
-      key: "lastFullScanAt",
-      value: new Date().toISOString(),
-    });
+    await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
+
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
+
+  // -------------------------------------------------------------------------
+  // Incremental updates
+  // -------------------------------------------------------------------------
 
   async onFileChanged(
     shell: ObsidianAppShell,
@@ -236,12 +260,10 @@ export class TagIndexer {
       normalizeTopics(settings.topics),
       shell,
     );
-    if (!identity) {
-      return;
-    }
+    if (!identity) return;
 
     const content = await shell.cachedReadFile(file);
-    const records = await this.api.scanFile({
+    const records = await this.executor.scanFile({
       path: file.path,
       noteName: file.basename,
       topicId: identity.topicId,
@@ -250,39 +272,26 @@ export class TagIndexer {
       content,
     });
 
-    await this.db.transaction(
-      "rw",
-      this.db.memos,
-      this.db.tagStats,
-      async () => {
-        await this.db.memos.where("path").equals(file.path).delete();
-        if (records && records.length > 0) {
-          await this.db.memos.bulkPut(records);
-        }
-        await this.rebuildTagStats();
-      },
-    );
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(file.path).delete();
+      if (records?.length) {
+        await this.db.memos.bulkPut(records);
+      }
+      await this.rebuildTagStats();
+    });
 
-    window.dispatchEvent(
-      new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
-    );
+    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }));
   }
 
   async onFileDeleted(path: string): Promise<void> {
     await this.waitUntilReady();
-    await this.db.transaction(
-      "rw",
-      this.db.memos,
-      this.db.tagStats,
-      async () => {
-        await this.db.memos.where("path").equals(path).delete();
-        await this.rebuildTagStats();
-      },
-    );
-    // Worker API no longer handles removals; DB change already applied above.
-    window.dispatchEvent(
-      new CustomEvent("mfdi-db-updated", { detail: { path } }),
-    );
+
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(path).delete();
+      await this.rebuildTagStats();
+    });
+
+    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
   }
 
   async onFileRenamed(
@@ -292,36 +301,34 @@ export class TagIndexer {
     settings: Settings,
   ): Promise<void> {
     await this.waitUntilReady();
-    await this.db.transaction(
-      "rw",
-      this.db.memos,
-      this.db.tagStats,
-      async () => {
-        await this.db.memos.where("path").equals(oldPath).delete();
-        await this.rebuildTagStats();
-      },
-    );
+
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(oldPath).delete();
+      await this.rebuildTagStats();
+    });
+
     await this.onFileChanged(shell, file, settings);
   }
+
+  // -------------------------------------------------------------------------
+  // Lifecycle
+  // -------------------------------------------------------------------------
 
   async dispose(): Promise<void> {
     await this.waitUntilReady();
     this.db.close();
-    if (this.workerPool) {
-      await this.workerPool.dispose();
-    }
-    this.worker?.terminate();
+    await this.executor.dispose();
   }
 
+  // -------------------------------------------------------------------------
+  // Private helpers
+  // -------------------------------------------------------------------------
+
   private async rebuildTagStats(): Promise<void> {
-    const memos = await this.db.memos.toArray();
     const counts = new Map<string, number>();
 
-    for (const memo of memos) {
-      if (memo.archived || memo.deleted) {
-        continue;
-      }
-
+    for (const memo of await this.db.memos.toArray()) {
+      if (memo.archived || memo.deleted) continue;
       for (const tag of memo.tags) {
         counts.set(tag, (counts.get(tag) ?? 0) + 1);
       }
@@ -329,14 +336,10 @@ export class TagIndexer {
 
     const updatedAt = new Date().toISOString();
     await this.db.tagStats.clear();
-    if (counts.size === 0) {
-      return;
+    if (counts.size > 0) {
+      await this.db.tagStats.bulkPut(
+        [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt })),
+      );
     }
-
-    await this.db.tagStats.bulkPut(
-      [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt })),
-    );
   }
 }
-
-export type { TagIndexerOptions };
