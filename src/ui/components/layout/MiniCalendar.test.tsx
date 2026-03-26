@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import moment from "moment";
 import { DEFAULT_SETTINGS } from "src/settings";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
@@ -8,7 +8,7 @@ import {
   initializeSettingsStore,
   settingsStore,
 } from "src/ui/store/settingsStore";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("obsidian", () => ({
   setIcon: vi.fn(),
@@ -50,6 +50,9 @@ describe("MiniCalendar", () => {
     } as any);
     initializePostsStore({} as any);
   });
+  afterEach(() => {
+    cleanup();
+  });
 
   it("renders without crashing", () => {
     settingsStore.setState({
@@ -60,7 +63,8 @@ describe("MiniCalendar", () => {
     });
 
     const { getByText } = render(<MiniCalendar />);
-    expect(getByText("2026年 3月")).toBeDefined();
+    expect(getByText("2026年")).toBeDefined();
+    expect(getByText("3月")).toBeDefined();
   });
 
   it("calculates range accurately for 7d dateFilter", () => {
@@ -74,11 +78,12 @@ describe("MiniCalendar", () => {
     // In MiniCalendar, posts are just used to show dots (activityDates)
     // The range calculation is internal to calcSelectedRange and buildWeeksInMonth
 
-    const { getAllByText } = render(<MiniCalendar />);
+    const { getByText, getAllByText } = render(<MiniCalendar />);
     // 3/9 itself should have the selected day class (accent color)
     // 3/3 to 3/8 should be in the selected range (active hover bg)
     // We'll just ensure it renders and doesn't crash, the UI checks are handled by Chakra styles
-    expect(getAllByText("2026年 3月").length).toBeGreaterThan(0);
+    expect(getByText("2026年")).toBeDefined();
+    expect(getByText("3月")).toBeDefined();
 
     // Day 5 should be present
     expect(getAllByText("5").length).toBeGreaterThan(0);
