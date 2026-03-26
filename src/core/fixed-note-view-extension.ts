@@ -7,7 +7,7 @@ import {
 import {
   isMFDIFixedNotePath,
   normalizeFixedNotePath,
-} from "src/utils/fixed-note";
+} from "src/core/fixed-note";
 
 type LeafWithState = WorkspaceLeaf & {
   view: { getState: () => MFDIViewState; file?: { path?: string } };

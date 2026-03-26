@@ -10,9 +10,9 @@ type UpdatePostsForDaysResult = {
   lastSearchedDate: MomentLike;
 };
 
-export type RefreshPosts = (path?: string) => Promise<void>;
+type RefreshPosts = (path?: string) => Promise<void>;
 
-export interface RefreshPostsDeps {
+interface RefreshPostsDeps {
   vault: Vault;
   queryClient: QueryClient;
   dateFilter: DateFilter;

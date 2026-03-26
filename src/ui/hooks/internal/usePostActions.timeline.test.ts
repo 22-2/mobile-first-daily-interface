@@ -10,7 +10,7 @@ import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
-import * as dailyNotes from "src/utils/daily-notes";
+import * as dailyNotes from "src/lib/daily-notes";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -30,9 +30,9 @@ vi.mock("src/ui/context/AppContext", () => ({
   useObsidianApp: vi.fn(),
 }));
 
-vi.mock("src/utils/daily-notes", async () => {
-  const actual = await vi.importActual<typeof import("src/utils/daily-notes")>(
-    "src/utils/daily-notes",
+vi.mock("src/lib/daily-notes", async () => {
+  const actual = await vi.importActual<typeof import("src/lib/daily-notes")>(
+    "src/lib/daily-notes",
   );
   return {
     ...actual,

@@ -3,14 +3,14 @@ import { MFDIStore, PostsSlice } from "src/ui/store/slices/types";
 import { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
-import { resolveTimestamp } from "src/ui/utils/post-utils";
+import { resolveTimestamp } from "src/core/post-utils";
 import {
   buildPostFromEntry,
   memoRecordToPost,
   sortPostsDescending,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { parseThinoEntries } from "src/utils/thino";
+import { parseThinoEntries } from "src/core/thino";
 import { StateCreator } from "zustand/vanilla";
 
 function buildPostsFromContent(

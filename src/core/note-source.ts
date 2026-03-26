@@ -9,16 +9,16 @@ import {
   getDateUID,
   getTopicNote,
   resolveTopicNotePath,
-} from "src/utils/daily-notes";
+} from "src/lib/daily-notes";
 import {
   buildFixedNotePathFromName,
   createNewFixedNote,
   ensureFixedNote,
   normalizeFixedNotePath,
   resolveFixedNote,
-} from "src/utils/fixed-note";
+} from "src/core/fixed-note";
 
-export interface NoteSourceContext {
+interface NoteSourceContext {
   shell: ObsidianAppShell;
   date: MomentLike;
   granularity: Granularity;
@@ -27,19 +27,19 @@ export interface NoteSourceContext {
   fixedNotePath: string | null;
 }
 
-export interface NoteSource {
+interface NoteSource {
   mode: MFDINoteMode;
   resolveCurrentNote: () => TFile | null;
   ensureCurrentNote: () => Promise<TFile | null>;
   matchesPath: (filePath: string, currentNote?: TFile | null) => boolean;
 }
 
-export interface PeriodicNoteEntry {
+interface PeriodicNoteEntry {
   file: TFile;
   dayDate: MomentLike;
 }
 
-export interface PeriodicNoteWindow {
+interface PeriodicNoteWindow {
   entries: PeriodicNoteEntry[];
   hasMore: boolean;
   lastSearchedDate: MomentLike;
@@ -54,7 +54,7 @@ export function resolvePeriodicNote(
   return getTopicNote(shell, date, granularity, activeTopic);
 }
 
-export async function ensurePeriodicNote(
+async function ensurePeriodicNote(
   shell: ObsidianAppShell,
   date: MomentLike,
   granularity: Granularity,
@@ -71,7 +71,7 @@ export function listPeriodicNotes(
   return getAllTopicNotes(shell, granularity, activeTopic);
 }
 
-export function getPeriodicNoteKey(
+function getPeriodicNoteKey(
   date: MomentLike,
   granularity: Granularity,
 ): string {

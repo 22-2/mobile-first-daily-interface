@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { toText } from "src/ui/utils/post-utils";
+import { toText } from "src/core/post-utils";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 beforeEach(() => {

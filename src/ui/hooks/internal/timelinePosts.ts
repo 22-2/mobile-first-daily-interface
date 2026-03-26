@@ -18,7 +18,7 @@ export function resolveTimelineCacheBucket(
   return Math.floor(nowMs / intervalMs);
 }
 
-export interface CreateTimelinePageFetcherDeps {
+interface CreateTimelinePageFetcherDeps {
   db: MFDIDatabase;
 }
 

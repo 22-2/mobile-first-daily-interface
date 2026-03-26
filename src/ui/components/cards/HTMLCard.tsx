@@ -1,6 +1,6 @@
 import { Box, Image, Link, Text } from "@chakra-ui/react";
 import { useState } from "react";
-import { HTMLMeta } from "src/utils/meta";
+import { HTMLMeta } from "src/core/meta";
 
 export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
   const [faviconUrl, setFaviconUrl] = useState(meta.faviconUrl);

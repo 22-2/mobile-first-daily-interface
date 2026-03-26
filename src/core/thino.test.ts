@@ -1,4 +1,4 @@
-import { parseThinoEntries } from "src/utils/thino";
+import { parseThinoEntries } from "src/core/thino";
 import { describe, expect, test } from "vitest";
 
 describe("parseThinoEntries", () => {

@@ -1,4 +1,4 @@
-import { formatTaskText } from "src/utils/task-text";
+import { formatTaskText } from "src/core/task-text";
 import { describe, expect, test } from "vitest";
 
 describe("formatTaskText", () => {

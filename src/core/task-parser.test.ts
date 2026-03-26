@@ -1,4 +1,4 @@
-import { parseTaskTimestamp } from "src/utils/task-parser";
+import { parseTaskTimestamp } from "src/core/task-parser";
 import { describe, expect, test } from "vitest";
 
 describe("parseTaskTimestamp", () => {

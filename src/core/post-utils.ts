@@ -1,10 +1,11 @@
+import { toLocalDateOnly, parseTimeWithDate, toLocalDateString } from "src/core/date-utils";
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
   TIME_FORMAT,
 } from "src/ui/config/date-formats";
 import { Granularity, MomentLike } from "src/ui/types";
-import { formatTaskText } from "src/utils/task-text";
+import { formatTaskText } from "src/core/task-text";
 
 function isFencedCodeBlockStart(line: string): boolean {
   return /^[ \t]*(```|~~~)/.test(line);
@@ -79,4 +80,20 @@ export function resolveTimestamp(
   return hasDate
     ? window.moment(time, DATE_TIME_FORMAT)
     : window.moment(`${date.format(DATE_FORMAT)} ${time}`, DATE_TIME_FORMAT);
+}
+
+export function resolveMemoTimestamp(
+  noteDate: string,
+  time: string,
+  metadata: Record<string, string>): string {
+  if (metadata.posted) {
+    const posted = new Date(metadata.posted);
+    if (!isNaN(posted.getTime())) return posted.toISOString();
+  }
+
+  const noteDay = toLocalDateOnly(noteDate);
+  if (isNaN(noteDay.getTime())) return new Date(0).toISOString();
+
+  const parsed = parseTimeWithDate(time, toLocalDateString(noteDay));
+  return isNaN(parsed.getTime()) ? noteDay.toISOString() : parsed.toISOString();
 }

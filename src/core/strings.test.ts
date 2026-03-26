@@ -7,7 +7,7 @@ import {
   pickUrls,
   replaceDayToJa,
   trimRedundantEmptyLines,
-} from "src/utils/strings";
+} from "src/core/strings";
 
 describe.each`
   text              | expected

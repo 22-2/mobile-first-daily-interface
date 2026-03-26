@@ -1,6 +1,6 @@
 import { requestUrl } from "obsidian";
-import { defineUserAgent } from "src/utils/agent";
-import { forceLowerCaseKeys } from "src/utils/collections";
+import { defineUserAgent } from "src/core/agent";
+import { forceLowerCaseKeys } from "src/core/collections";
 import {
   getCharsetFromMeta,
   getCoverUrl,
@@ -8,10 +8,10 @@ import {
   getMetaByHttpEquiv,
   getMetaByName,
   getMetaByProperty,
-} from "src/utils/meta-helper";
-import { eucJp2String, sjis2String } from "src/utils/strings";
+} from "src/core/meta-helper";
+import { eucJp2String, sjis2String } from "src/core/strings";
 
-export type Meta = HTMLMeta | ImageMeta | TwitterMeta;
+type Meta = HTMLMeta | ImageMeta | TwitterMeta;
 export interface HTMLMeta {
   type: "html";
   siteName: string;

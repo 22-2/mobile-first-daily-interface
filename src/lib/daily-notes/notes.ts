@@ -1,8 +1,8 @@
 import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
-import { getPeriodicSettings } from "src/utils/daily-notes/settings";
-import { getDateFromFile, getDateUID } from "src/utils/daily-notes/utils";
+import { getPeriodicSettings } from "src/lib/daily-notes/settings";
+import { getDateFromFile, getDateUID } from "src/lib/daily-notes/utils";
 
 /**
  * トピックIDとgranularityから、ノートのフルパスを生成する。

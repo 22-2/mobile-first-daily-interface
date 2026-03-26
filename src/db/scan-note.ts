@@ -1,33 +1,8 @@
-import moment from "moment";
-import { MemoRecord } from "src/db/mfdi-db";
-import { ScannableNote } from "src/db/worker-api";
-import { DATE_FORMAT, DATE_TIME_FORMAT } from "src/ui/config/date-formats";
+import type { MemoRecord } from "src/db/mfdi-db";
+import type { ScannableNote } from "src/db/worker-api";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
-import { parseThinoEntries } from "src/utils/thino";
-
-function resolveMemoTimestamp(
-  noteDate: string,
-  time: string,
-  metadata: Record<string, string>,
-): string {
-  if (metadata.posted) {
-    const posted = moment(metadata.posted);
-    if (posted.isValid()) {
-      return posted.toISOString();
-    }
-  }
-
-  const noteDay = moment(noteDate);
-  if (!noteDay.isValid()) {
-    return new Date(0).toISOString();
-  }
-
-  const parsed = time.includes("-")
-    ? moment(time, DATE_TIME_FORMAT, true)
-    : moment(`${noteDay.format(DATE_FORMAT)} ${time}`, DATE_TIME_FORMAT, true);
-
-  return parsed.isValid() ? parsed.toISOString() : noteDay.toISOString();
-}
+import { resolveMemoTimestamp } from "src/core/post-utils";
+import { parseThinoEntries } from "src/core/thino";
 
 export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
   return parseThinoEntries(file.content).map((entry) => {
@@ -50,8 +25,8 @@ export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
       endOffset: entry.endOffset,
       bodyStartOffset: entry.bodyStartOffset,
       createdAt,
-      noteDate: file.noteDate,
       updatedAt: createdAt,
+      noteDate: file.noteDate,
       archived: isArchived(entry.metadata) ? 1 : 0,
       deleted: isDeleted(entry.metadata) ? 1 : 0,
     };

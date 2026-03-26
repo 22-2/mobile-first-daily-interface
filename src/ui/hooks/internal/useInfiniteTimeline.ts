@@ -140,4 +140,4 @@ export const useInfiniteTimeline = () => {
   return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };
 
-export { TIMELINE_CACHE_INVALIDATE_MS, resolveTimelineCacheBucket };
+export {  resolveTimelineCacheBucket };

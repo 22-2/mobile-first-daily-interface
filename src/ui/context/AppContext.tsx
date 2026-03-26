@@ -3,9 +3,9 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 import { Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { MFDIView } from "src/ui/view/MFDIView";
-import { MFDIStorage } from "src/utils/storage";
+import { MFDIStorage } from "src/core/storage";
 
-export interface AppContextValue {
+interface AppContextValue {
   shell: ObsidianAppShell;
   storage: MFDIStorage;
   settings: Settings;

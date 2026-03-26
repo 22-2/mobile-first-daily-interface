@@ -1,7 +1,7 @@
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity } from "src/ui/types";
 
-export interface PeriodicNoteSettings {
+interface PeriodicNoteSettings {
   format: string;
   folder: string;
   template: string;
@@ -99,7 +99,7 @@ export function getDailyNoteSettings(
   }
 }
 
-export function getWeeklyNoteSettings(
+function getWeeklyNoteSettings(
   shell: ObsidianAppShell,
 ): PeriodicNoteSettings {
   try {

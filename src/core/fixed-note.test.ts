@@ -8,7 +8,7 @@ import {
   isMFDIFixedNotePath,
   normalizeFixedNoteFolder,
   normalizeFixedNotePath,
-} from "src/utils/fixed-note";
+} from "src/core/fixed-note";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("fixed note utilities", () => {

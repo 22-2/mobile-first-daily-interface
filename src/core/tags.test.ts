@@ -4,7 +4,7 @@ import {
   parseMfdiTags,
   serializeMfdiTags,
   TAG_METADATA_KEY,
-} from "src/utils/tags";
+} from "src/core/tags";
 import { describe, expect, test } from "vitest";
 
 describe("tags helpers", () => {

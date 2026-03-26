@@ -108,4 +108,4 @@ export const useFilteredPosts = ({
   ]);
 };
 
-export { countVisibleRootPosts };
+;

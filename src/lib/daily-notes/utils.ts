@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { Granularity, MomentLike } from "src/ui/types";
-import { getPeriodicSettings } from "src/utils/daily-notes/settings";
+import { getPeriodicSettings } from "src/lib/daily-notes/settings";
 
 /**
  * dateUID is a way of weekly identifying daily/weekly/monthly notes.

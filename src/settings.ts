@@ -28,7 +28,7 @@ export const postFormatMap = {
   Thino: { type: "thino" },
 } as const;
 export type PostFormatOption = keyof typeof postFormatMap;
-export type PostFormat = (typeof postFormatMap)[PostFormatOption];
+type PostFormat = (typeof postFormatMap)[PostFormatOption];
 
 export class MFDISettingTab extends PluginSettingTab {
   plugin: MFDIPlugin;

@@ -97,7 +97,7 @@ describe("TagIndexer", () => {
     const file = { basename: "2026-03-23", path: "daily/2026-03-23.md" };
     const shell = createShell();
 
-    const dailyNotesModule = await import("src/utils/daily-notes");
+    const dailyNotesModule = await import("src/lib/daily-notes");
     const getAllTopicNotesSpy = vi
       .spyOn(dailyNotesModule, "getAllTopicNotes")
       .mockImplementation(

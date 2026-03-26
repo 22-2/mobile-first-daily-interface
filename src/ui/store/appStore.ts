@@ -60,4 +60,4 @@ export function useAppStore<T>(selector: (state: MFDIStore) => T): T {
   return useStore(store, selector);
 }
 
-export type { MFDIStore } from "./slices/types";
+;

@@ -1,4 +1,4 @@
-export interface ThinoEntry {
+interface ThinoEntry {
   time: string;
   message: string;
   metadata: Record<string, string>;

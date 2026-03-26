@@ -8,8 +8,8 @@ import {
 } from "obsidian";
 import { Commands } from "obsidian-typings";
 import { MomentLike } from "src/ui/types";
-import { parseMarkdownList } from "src/utils/strings";
-import { parseTaskTimestamp } from "src/utils/task-parser";
+import { parseMarkdownList } from "src/core/strings";
+import { parseTaskTimestamp } from "src/core/task-parser";
 
 function trimLeadingLineBreaks(text: string): string {
   return text.replace(/^(?:\r\n|\r|\n)+/, "");

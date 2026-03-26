@@ -13,7 +13,7 @@ export interface ObsidianLiveEditorRef {
   setContent: FakeEditor["setContent"];
 }
 
-export interface ObsidianLiveEditorProps extends Omit<
+interface ObsidianLiveEditorProps extends Omit<
   BoxProps,
   "onChange" | "onSubmit"
 > {

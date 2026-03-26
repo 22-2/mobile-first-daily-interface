@@ -39,6 +39,10 @@ function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
     updatedAt: "2026-03-23T10:00:00.000Z",
     archived: 0,
     deleted: 0,
+    bodyStartOffset: 0,
+    startOffset: 0,
+    endOffset: 0,
+    noteDate: "2026-03-23",
     ...overrides,
   };
 }

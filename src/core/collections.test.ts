@@ -1,4 +1,4 @@
-import { forceLowerCaseKeys } from "src/utils/collections";
+import { forceLowerCaseKeys } from "src/core/collections";
 import { describe, expect, test } from "vitest";
 
 describe.each`

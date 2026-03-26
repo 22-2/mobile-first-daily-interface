@@ -5,7 +5,7 @@ import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
 import { useShallow } from "zustand/shallow";
 
-export interface DraftListManagerProps {
+interface DraftListManagerProps {
   onClose: () => void;
 }
 

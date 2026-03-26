@@ -11,7 +11,7 @@ import {
   getMFDIViewCapabilities,
   MFDIViewState,
 } from "src/ui/view/state";
-import { ensureExtension } from "src/utils/path";
+import { ensureExtension } from "src/core/path";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

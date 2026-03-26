@@ -3,7 +3,7 @@ import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 
 export type MFDINoteMode = "periodic" | "fixed";
 
-export interface MFDIViewCapabilities {
+interface MFDIViewCapabilities {
   supportsDateNavigation: boolean;
   supportsDisplayModeSwitch: boolean;
   supportsSidebar: boolean;

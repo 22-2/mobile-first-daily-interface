@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { parseThinoEntries } from "src/utils/thino";
+import { parseThinoEntries } from "src/core/thino";
 import { describe, expect, it } from "vitest";
 
 describe("Post Offset Discovery", () => {

@@ -44,8 +44,6 @@ import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
 
-export type { Post };
-
 export const ReactView = ({
   app,
   settings,

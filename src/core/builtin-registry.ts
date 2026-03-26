@@ -42,12 +42,12 @@ export interface BuiltinMainContext {
   ) => Promise<WorkspaceLeaf | undefined>;
 }
 
-export interface BuiltinContribution {
+interface BuiltinContribution {
   id: string;
   activate: (context: BuiltinMainContext) => void;
 }
 
-export class BuiltinRegistry {
+class BuiltinRegistry {
   constructor(private readonly contributions: BuiltinContribution[]) {}
 
   activate(context: BuiltinMainContext): void {
@@ -193,7 +193,7 @@ export function createFixedNoteRegistryContribution(): BuiltinContribution {
   };
 }
 
-export function createFixedNoteViewLifecycleContribution(
+function createFixedNoteViewLifecycleContribution(
   fixedNoteViewExtension: FixedNoteViewExtension,
 ): BuiltinContribution {
   return {

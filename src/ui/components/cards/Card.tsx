@@ -30,4 +30,4 @@ export const Card = (props: BoxProps) => {
   );
 };
 
-export default Card;
+

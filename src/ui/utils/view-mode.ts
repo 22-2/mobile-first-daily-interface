@@ -1,7 +1,7 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DisplayMode } from "src/ui/types";
 
-export interface ViewState {
+interface ViewState {
   displayMode: DisplayMode;
   threadFocusRootId: string | null;
 }

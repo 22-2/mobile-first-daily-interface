@@ -20,12 +20,12 @@ export interface MemoRecord {
   deleted: 0 | 1;
 }
 
-export interface MetaRecord {
+interface MetaRecord {
   key: string;
   value: string;
 }
 
-export interface TagStatRecord {
+interface TagStatRecord {
   tag: string;
   count: number;
   updatedAt: string;

@@ -3,7 +3,7 @@
 
 import { Granularity, MomentLike } from "src/ui/types";
 
-export interface GranularityConfigEntry {
+interface GranularityConfigEntry {
   label: string;
   menuLabel: string;
   todayLabel: string;

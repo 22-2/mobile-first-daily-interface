@@ -5,7 +5,7 @@ import {
   useCurrentAppStore,
 } from "src/ui/store/appStore";
 import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
-import { MFDIStorage } from "src/utils/storage";
+import { MFDIStorage } from "src/core/storage";
 import { useStore } from "zustand";
 
 export const settingsStore = appStore;

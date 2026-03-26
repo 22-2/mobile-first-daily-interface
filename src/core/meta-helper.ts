@@ -32,7 +32,7 @@ export function getMetaByHttpEquiv(
   };
 }
 
-export function getSrcById(dom: Document, id: string): string | undefined {
+function getSrcById(dom: Document, id: string): string | undefined {
   return dom.querySelector("#" + id)?.attributes.getNamedItem("src")?.value;
 }
 

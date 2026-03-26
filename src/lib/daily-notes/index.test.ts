@@ -8,7 +8,7 @@ import {
   getTopicNote,
   getYearlyNoteSettings,
   resolveTopicNotePath,
-} from "src/utils/daily-notes/index";
+} from "src/lib/daily-notes/index";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Obsidian module before importing anything

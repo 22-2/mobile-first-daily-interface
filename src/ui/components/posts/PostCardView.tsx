@@ -15,9 +15,9 @@ import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/utils/meta";
-import { pickUrls } from "src/utils/strings";
-import { isPresent } from "src/utils/types";
+import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
+import { pickUrls } from "src/core/strings";
+import { isPresent } from "src/core/types";
 
 export const PostCardView = React.memo(
   ({

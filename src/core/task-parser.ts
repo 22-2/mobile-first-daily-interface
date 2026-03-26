@@ -1,6 +1,6 @@
 import { MomentLike } from "src/ui/types";
 
-export interface ParsedTask {
+interface ParsedTask {
   displayName: string;
   timestamp: MomentLike;
 }
