@@ -1,4 +1,7 @@
+import { useLiveQuery } from "dexie-react-hooks";
 import { FC, useMemo } from "react";
+import { MFDIDatabase } from "src/db/mfdi-db";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -8,7 +11,42 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-export const ResultCount: FC = () => {
+// ---- ヘルパー関数 ----
+
+const queryMemoCount = (
+    db: MFDIDatabase,
+    activeTopic: string | undefined,
+): Promise<number> => {
+    if (activeTopic) {
+        return db.memos
+            .where("[topicId+archived+deleted]")
+            .equals([activeTopic, false, false] as any)
+            .count();
+    }
+    return db.memos
+        .where("[archived+deleted]")
+        .equals([false, false] as any)
+        .count();
+};
+
+const formatCount = (
+    count: number,
+    total: string,
+    asTask: boolean,
+): string => (asTask ? `${count} tasks` : `${count}${total} posts`);
+
+const formatFixedCount = (
+    count: number,
+    noteTitle: string,
+    asTask: boolean,
+): string =>
+    asTask
+        ? `${count} tasks in ${noteTitle}`
+        : `${count} posts in ${noteTitle}`;
+
+// ---- カスタムフック ----
+
+const useResultCountState = () => {
     const settings = useSettingsStore(
         useShallow((s) => ({
             granularity: s.granularity,
@@ -19,18 +57,19 @@ export const ResultCount: FC = () => {
             threadFocusRootId: s.threadFocusRootId,
             viewNoteMode: s.viewNoteMode,
             fixedNotePath: s.fixedNotePath,
+            activeTopic: s.activeTopic,
         })),
     );
     const postsState = usePostsStore(
-        useShallow((s) => ({
-            posts: s.posts,
-            tasks: s.tasks,
-        })),
+        useShallow((s) => ({ posts: s.posts, tasks: s.tasks })),
     );
-    const filteredPosts = useFilteredPosts({
-        posts: postsState.posts,
-        ...settings,
-    });
+    return { settings, postsState };
+};
+
+// ---- コンポーネント ----
+
+export const ResultCount: FC = () => {
+    const { settings, postsState } = useResultCountState();
     const {
         granularity,
         asTask,
@@ -39,16 +78,30 @@ export const ResultCount: FC = () => {
         displayMode,
         viewNoteMode,
         fixedNotePath,
+        activeTopic,
     } = settings;
     const { posts, tasks } = postsState;
 
-    const tasksCount = tasks.length;
-    const filteredPostsCount = filteredPosts.length;
-    const allPostsCount = useMemo(() => countVisibleRootPosts(
-        posts.filter(
-            (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
-        ),
-    ), [posts]);
+    const filteredPosts = useFilteredPosts({ posts, ...settings });
+
+    const { shell } = useAppContext();
+    const db = useMemo(() => new MFDIDatabase(shell.getAppId()), [shell]);
+
+    const dbTotalCount = useLiveQuery(
+        () => queryMemoCount(db, activeTopic),
+        [db, activeTopic],
+    );
+
+    const allPostsCount = useMemo(() => {
+        if (isTimelineView(displayMode) && typeof dbTotalCount === "number") {
+            return dbTotalCount;
+        }
+        return countVisibleRootPosts(
+            posts.filter(
+                (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
+            ),
+        );
+    }, [posts, displayMode, dbTotalCount]);
 
     const showTotal =
         (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
@@ -57,19 +110,11 @@ export const ResultCount: FC = () => {
 
     if (viewNoteMode === "fixed") {
         return (
-            <>
-                {asTask
-                    ? `${tasksCount} tasks in ${getFixedNoteTitle(fixedNotePath)}`
-                    : `${filteredPostsCount} posts in ${getFixedNoteTitle(fixedNotePath)}`}
-            </>
+            <>{formatFixedCount(asTask ? tasks.length : filteredPosts.length, getFixedNoteTitle(fixedNotePath), asTask)}</>
         );
     }
 
     return (
-        <>
-            {asTask
-                ? `${tasksCount} tasks`
-                : `${filteredPostsCount}${totalPart} posts`}
-        </>
+        <>{formatCount(asTask ? tasks.length : filteredPosts.length, totalPart, asTask)}</>
     );
 };
