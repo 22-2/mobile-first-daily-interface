@@ -301,7 +301,7 @@ const InputAreaFooter: FC = memo(() => {
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
       {editingPost && (
         <Button
-          className="min-h-[2.4em] max-h-[2.4em]"
+          className="h-[2.4em]"
           variant="obsidianGhost"
           onClick={cancelEdit}
         >
@@ -310,7 +310,7 @@ const InputAreaFooter: FC = memo(() => {
       )}
       {!isReadOnly && !editingPost && (
         <Button
-          className="min-h-[2.4em] max-h-[2.4em]"
+          className="h-[2.4em]"
           variant="obsidianGhost"
           disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
@@ -320,7 +320,7 @@ const InputAreaFooter: FC = memo(() => {
       )}
       <Button
         disabled={!canSubmit}
-        className={`${submitButtonCls} min-h-[2.4em] max-h-[2.4em]`}
+        className={`${submitButtonCls} h-[2.4em]`}
         onClick={handleSubmit}
       >
         {isReadOnly

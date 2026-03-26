@@ -19,7 +19,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     ghost: "bg-transparent hover:bg-gray-100",
     // Obsidian-themed variants
     // obsidianGhost: transparent background, interactive-normal text, subtle hover
-    obsidianGhost: "bg-transparent text-[var(--text-muted)] hover:bg-[var(--background-modifier-hover)]",
+    obsidianGhost: "bg-[var(--interactive-normal)] text-[var(--text-color)] hover:bg-[var(--interactive-hover)] disabled:opacity-50",
     // obsidianAccent: accent background (primary), on-accent text, accent hover
     obsidianAccent: "bg-[var(--interactive-accent)] text-[var(--text-on-accent)] hover:bg-[var(--interactive-accent-hover)] disabled:opacity-50",
   };
