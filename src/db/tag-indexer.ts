@@ -6,8 +6,7 @@ import {
   inferNoteIdentityFromFile,
 } from "src/db/note-file-identity";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-// @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
-import ScanWorkerFactory from "src/db/scan.worker";
+import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
 import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 import type { Settings } from "src/settings";
 import type { Topic } from "src/core/topic";
