@@ -47,7 +47,12 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
       >
         <Button
           variant="ghost"
-          leftIcon={<ObsidianIcon name="chevron-left" size="var(--mfdi-icon-size-small)" />}
+          leftIcon={
+            <ObsidianIcon
+              name="chevron-left"
+              size="var(--mfdi-icon-size-small)"
+            />
+          }
           onClick={onClose}
           color="var(--text-accent)"
           fontWeight="bold"
@@ -83,7 +88,11 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
             color="var(--text-faint)"
             gap="var(--size-4-6)"
           >
-            <ObsidianIcon name="file-x" size="var(--mfdi-icon-size-xxlarge)" opacity={0.3} />
+            <ObsidianIcon
+              name="file-x"
+              size="var(--mfdi-icon-size-xxlarge)"
+              opacity={0.3}
+            />
             <Text fontSize="md" opacity={0.6} fontWeight="bold">
               下書きはありません
             </Text>
@@ -103,7 +112,11 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                   borderColor: "var(--background-modifier-border)",
                 }}
               >
-                <HStack justify="space-between" mb="var(  --size-4-2)" align="center">
+                <HStack
+                  justify="space-between"
+                  mb="var(  --size-4-2)"
+                  align="center"
+                >
                   <Text
                     fontSize="xs"
                     color="var(--text-muted)"

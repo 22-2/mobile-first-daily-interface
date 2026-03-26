@@ -32,11 +32,7 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
         setIcon(refEl, name);
         const svg = refEl.querySelector("svg");
         if (svg) {
-          const s =
-            size ??
-            props.boxSize ??
-            props.width ??
-            props.height;
+          const s = size ?? props.boxSize ?? props.width ?? props.height;
           if (s) {
             const ss = typeof s === "number" ? `${s}px` : String(s);
             svg.setCssStyles?.({ width: ss, height: ss });

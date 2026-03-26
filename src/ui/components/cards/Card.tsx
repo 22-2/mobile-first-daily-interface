@@ -30,5 +30,3 @@ export const Card = (props: BoxProps) => {
     </Box>
   );
 };
-
-

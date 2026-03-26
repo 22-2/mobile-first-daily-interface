@@ -90,7 +90,9 @@ export const TopicManagerView = ({
         <Button
           marginTop="var(--size-4-3)"
           variant="ghost"
-          leftIcon={<ObsidianIcon name="plus" boxSize="var(--mfdi-icon-size-small)" />}
+          leftIcon={
+            <ObsidianIcon name="plus" boxSize="var(--mfdi-icon-size-small)" />
+          }
           size="sm"
           color="var(--text-muted)"
           _hover={{

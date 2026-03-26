@@ -3,12 +3,14 @@ import type {
   Editor,
   TAbstractFile,
   TFile,
-  WorkspaceLeaf} from "obsidian";
-import {
-  MarkdownView
+  WorkspaceLeaf,
 } from "obsidian";
+import { MarkdownView } from "obsidian";
 import type { Commands } from "obsidian-typings";
-import { joinWithSingleBoundaryNewline, skipImmediateLineBreak } from "src/core/post-utils";
+import {
+  joinWithSingleBoundaryNewline,
+  skipImmediateLineBreak,
+} from "src/core/post-utils";
 import { parseMarkdownList } from "src/core/strings";
 import { parseTaskTimestamp } from "src/core/task-parser";
 import type { Task } from "src/core/task-text";

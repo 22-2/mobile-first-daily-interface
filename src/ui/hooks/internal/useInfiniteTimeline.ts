@@ -1,7 +1,6 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
-import type {
-  TimelinePostsPage} from "src/ui/hooks/internal/timelinePosts";
+import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
@@ -141,4 +140,4 @@ export const useInfiniteTimeline = () => {
   return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };
 
-export {  resolveTimelineCacheBucket };
+export { resolveTimelineCacheBucket };

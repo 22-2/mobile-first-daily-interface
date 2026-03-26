@@ -176,7 +176,10 @@ export const TopicItem = ({
         flexShrink={0}
         onClick={handleOpenMenu}
       >
-        <ObsidianIcon name="more-horizontal" boxSize="var(--mfdi-icon-size-small)" />
+        <ObsidianIcon
+          name="more-horizontal"
+          boxSize="var(--mfdi-icon-size-small)"
+        />
       </Flex>
     </Flex>
   );

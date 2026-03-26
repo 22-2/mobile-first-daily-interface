@@ -51,7 +51,9 @@ export interface TagIndexerOptions {
 // ---------------------------------------------------------------------------
 
 class DirectApiExecutor implements ScanWorkerAPI {
-  constructor(private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>) {}
+  constructor(
+    private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>,
+  ) {}
 
   scanFiles(files: ScannableNote[]) {
     return this.api.scanFiles(files);
@@ -118,7 +120,8 @@ function collectScanTargets(
         if (ambiguousPaths.has(file.path)) continue;
 
         const noteDate =
-          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "";
+          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ??
+          "";
         if (!noteDate) continue;
 
         const candidate: ScanTarget = {
@@ -174,20 +177,22 @@ export class TagIndexer {
   private readonly initializePromise: Promise<void>;
 
   constructor(appId: string, options: TagIndexerOptions = {}) {
-    this.queueConcurrency = options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
+    this.queueConcurrency =
+      options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
     this.scanChunkSize = options.scanChunkSize ?? DEFAULT_SCAN_CHUNK_SIZE;
     this.db = new MFDIDatabase(appId);
 
     if (options.api) {
       this.executor = new DirectApiExecutor(options.api);
     } else {
-      const hw =
-        navigator.hardwareConcurrency
-          ? navigator.hardwareConcurrency
-          : 4;
+      const hw = navigator.hardwareConcurrency
+        ? navigator.hardwareConcurrency
+        : 4;
       const poolSize = Math.max(1, Math.floor(hw * 0.75));
       const factory = options.workerFactory ?? (() => new ScanWorkerFactory());
-      this.executor = new WorkerPoolExecutor(new ScanWorkerPool(poolSize, factory));
+      this.executor = new WorkerPoolExecutor(
+        new ScanWorkerPool(poolSize, factory),
+      );
     }
 
     this.initializePromise = this.db.open().then();
@@ -201,18 +206,27 @@ export class TagIndexer {
   // Full scan
   // -------------------------------------------------------------------------
 
-  async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
+  async scanAllNotes(
+    shell: ObsidianAppShell,
+    settings: Settings,
+  ): Promise<void> {
     await this.waitUntilReady();
 
     const targets = collectScanTargets(shell, settings);
     const readQueue = new PQueue({ concurrency: this.queueConcurrency });
     const writeQueue = new PQueue({ concurrency: 1 });
 
-    await this.db.transaction("rw", this.db.memos, this.db.meta, this.db.tagStats, async () => {
-      await this.db.memos.clear();
-      await this.db.meta.clear();
-      await this.db.tagStats.clear();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.meta,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.clear();
+        await this.db.meta.clear();
+        await this.db.tagStats.clear();
+      },
+    );
 
     for (let start = 0; start < targets.length; start += this.scanChunkSize) {
       const batch = targets.slice(start, start + this.scanChunkSize);
@@ -233,7 +247,10 @@ export class TagIndexer {
     await readQueue.onIdle();
     await writeQueue.onIdle();
     await this.rebuildTagStats();
-    await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
+    await this.db.meta.put({
+      key: "lastFullScanAt",
+      value: new Date().toISOString(),
+    });
 
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
@@ -266,26 +283,40 @@ export class TagIndexer {
       content,
     });
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(file.path).delete();
-      if (records?.length) {
-        await this.db.memos.bulkPut(records);
-      }
-      await this.rebuildTagStats();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(file.path).delete();
+        if (records?.length) {
+          await this.db.memos.bulkPut(records);
+        }
+        await this.rebuildTagStats();
+      },
+    );
 
-    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }));
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
+    );
   }
 
   async onFileDeleted(path: string): Promise<void> {
     await this.waitUntilReady();
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(path).delete();
-      await this.rebuildTagStats();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(path).delete();
+        await this.rebuildTagStats();
+      },
+    );
 
-    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path } }),
+    );
   }
 
   async onFileRenamed(
@@ -296,10 +327,15 @@ export class TagIndexer {
   ): Promise<void> {
     await this.waitUntilReady();
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(oldPath).delete();
-      await this.rebuildTagStats();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(oldPath).delete();
+        await this.rebuildTagStats();
+      },
+    );
 
     await this.onFileChanged(shell, file, settings);
   }
@@ -332,7 +368,11 @@ export class TagIndexer {
     await this.db.tagStats.clear();
     if (counts.size > 0) {
       await this.db.tagStats.bulkPut(
-        [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt })),
+        [...counts.entries()].map(([tag, count]) => ({
+          tag,
+          count,
+          updatedAt,
+        })),
       );
     }
   }

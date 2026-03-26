@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import type { FC} from "react";
+import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";

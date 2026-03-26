@@ -1,5 +1,5 @@
 import { defineProperties, createSprinkles } from "@vanilla-extract/sprinkles";
-import { vars } from "./theme.css";
+import { vars } from "src/styles/theme.css";
 
 // ステップ2: よく使うユーティリティ（スペーシング、表示、色、タイポなど）を定義します。
 // 意図: ChakraのユーティリティPropsに似たDXを提供しつつ、インラインstyleを使わないようにする。

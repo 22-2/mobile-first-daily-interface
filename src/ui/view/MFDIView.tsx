@@ -7,12 +7,11 @@ import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
-import type {
-  MFDIViewState} from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { ensureExtension } from "src/core/path";
 

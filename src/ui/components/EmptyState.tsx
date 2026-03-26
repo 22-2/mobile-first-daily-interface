@@ -18,7 +18,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ granularity }) => {
       color="var(--text-faint)"
       style={{ userSelect: "none", pointerEvents: "none" }}
     >
-      <ObsidianIcon name="feather" boxSize="var(--mfdi-icon-size-large)" opacity={0.35} />
+      <ObsidianIcon
+        name="feather"
+        boxSize="var(--mfdi-icon-size-large)"
+        opacity={0.35}
+      />
       <Box fontSize="var(--font-ui-small)" opacity={0.6} textAlign="center">
         この{GRANULARITY_CONFIG[granularity].label}の記録はまだありません
       </Box>

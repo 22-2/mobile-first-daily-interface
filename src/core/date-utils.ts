@@ -1,4 +1,3 @@
-
 // Workers are detached from UI, so we avoid window.moment.
 // We use native Date with "T" as a separator to force local-time parsing for consistent results.
 // (Mental model: Date("YYYY-MM-DD") is UTC, but Date("YYYY-MM-DDTHH:mm:ss") is local).

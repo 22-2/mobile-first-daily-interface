@@ -1,4 +1,4 @@
-import type { App} from "obsidian";
+import type { App } from "obsidian";
 import { PluginSettingTab, Setting } from "obsidian";
 import type MFDIPlugin from "src/main";
 import type { Topic } from "src/core/topic";

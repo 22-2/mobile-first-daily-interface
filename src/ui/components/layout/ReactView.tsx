@@ -16,8 +16,7 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
-import type {
-  AppStoreApi} from "src/ui/store/appStore";
+import type { AppStoreApi } from "src/ui/store/appStore";
 import {
   AppStoreProvider,
   createAppStore,

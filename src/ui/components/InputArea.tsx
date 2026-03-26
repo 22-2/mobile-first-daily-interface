@@ -1,5 +1,5 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import type { ChangeEvent, FC} from "react";
+import type { ChangeEvent, FC } from "react";
 import { memo, useCallback, useMemo } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
@@ -36,7 +36,10 @@ const NavButton: FC<{
       spacing={0}
       flexDirection={direction === "left" ? "row" : "row-reverse"}
     >
-      <ObsidianIcon name={`chevron-${direction}`} boxSize="var(--mfdi-icon-size-medium)" />
+      <ObsidianIcon
+        name={`chevron-${direction}`}
+        boxSize="var(--mfdi-icon-size-medium)"
+      />
       {step > 1 && (
         <Box fontSize="smaller" fontWeight="bold" color="var(--text-muted)">
           {step}
@@ -179,7 +182,9 @@ const InputAreaControl: FC = memo(() => {
         <ObsidianIcon
           name="home"
           size="var(--mfdi-icon-size-small)"
-          color={isViewDefault ? "var(--mfdi-icon-color)" : "var(--text-accent)"}
+          color={
+            isViewDefault ? "var(--mfdi-icon-color)" : "var(--text-accent)"
+          }
           padding="var(--mfdi-icon-padding)"
           borderRadius="var(--mfdi-icon-radius)"
           _hover={
@@ -234,7 +239,12 @@ const InputAreaControl: FC = memo(() => {
           </>
         )}
       </HStack>
-      <Box flex="1" display="flex" justifyContent="flex-end" gap="var(  --size-4-2)">
+      <Box
+        flex="1"
+        display="flex"
+        justifyContent="flex-end"
+        gap="var(  --size-4-2)"
+      >
         <ObsidianIcon
           name="maximize"
           size="var(--mfdi-icon-size-small)"

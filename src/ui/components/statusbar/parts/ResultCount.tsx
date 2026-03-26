@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import type { FC} from "react";
+import type { FC } from "react";
 import { useMemo } from "react";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";

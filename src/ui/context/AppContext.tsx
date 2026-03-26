@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { createContext, useContext, useMemo } from "react";
 import type { Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";

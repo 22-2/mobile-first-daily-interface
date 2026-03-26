@@ -48,5 +48,3 @@ export function createTagIndexExtension(
 ): TagIndexExtension {
   return adaptTagIndexer(new TagIndexer(appId, options));
 }
-
-;

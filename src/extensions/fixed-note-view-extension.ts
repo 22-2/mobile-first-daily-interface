@@ -1,9 +1,8 @@
 import type { WorkspaceLeaf } from "obsidian";
-import type {
-  MFDIViewState} from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 import {
   createFixedNoteViewState,
-  DEFAULT_MFDI_VIEW_STATE
+  DEFAULT_MFDI_VIEW_STATE,
 } from "src/ui/view/state";
 import {
   isMFDIFixedNotePath,
