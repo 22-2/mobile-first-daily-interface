@@ -14,6 +14,7 @@ import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
+import { MFDIDatabase } from "src/db/mfdi-db";
 
 const DEFAULT_QUEUE_CONCURRENCY = 8;
 const DEFAULT_SCAN_CHUNK_SIZE = 100;
@@ -127,6 +128,7 @@ export class TagIndexer {
   private readonly queueConcurrency: number;
   private readonly scanChunkSize: number;
   private readonly worker?: Worker;
+  private readonly db: MFDIDatabase;
   private readonly initializePromise: Promise<void>;
 
   constructor(appId: string, options: TagIndexerOptions = {}) {
@@ -144,7 +146,12 @@ export class TagIndexer {
       this.api = Comlink.wrap<ScanWorkerAPI>(worker);
     }
 
-    this.initializePromise = this.api.initialize({ appId });
+    this.db = new MFDIDatabase(appId);
+
+    this.initializePromise = (async () => {
+      await this.api.initialize({ appId });
+      await this.db.open();
+    })();
   }
 
   private async waitUntilReady() {
@@ -169,12 +176,16 @@ export class TagIndexer {
           queue.add(() => toScannableNote(shell, target)),
         ),
       );
-      await this.api.scanFiles(files);
+
+      const records = await this.api.scanFiles(files);
+      if (records && records.length > 0) {
+        await this.db.memos.bulkPut(records);
+      }
     }
 
     await queue.onIdle();
-    await this.api.rebuildTagStats();
-    await this.api.setMeta("lastFullScanAt", new Date().toISOString());
+    await this.rebuildTagStats();
+    await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
 
@@ -195,7 +206,7 @@ export class TagIndexer {
     }
 
     const content = await shell.cachedReadFile(file);
-    await this.api.scanFile({
+    const records = await this.api.scanFile({
       path: file.path,
       noteName: file.basename,
       topicId: identity.topicId,
@@ -203,6 +214,15 @@ export class TagIndexer {
       noteDate: identity.noteDate.toISOString(),
       content,
     });
+
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(file.path).delete();
+      if (records && records.length > 0) {
+        await this.db.memos.bulkPut(records);
+      }
+      await this.rebuildTagStats();
+    });
+
     window.dispatchEvent(
       new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
     );
@@ -210,6 +230,11 @@ export class TagIndexer {
 
   async onFileDeleted(path: string): Promise<void> {
     await this.waitUntilReady();
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(path).delete();
+      await this.rebuildTagStats();
+    });
+
     await this.api.removeFile(path);
     window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
   }
@@ -221,16 +246,53 @@ export class TagIndexer {
     settings: Settings,
   ): Promise<void> {
     await this.waitUntilReady();
-    await this.api.removeFile(oldPath);
+    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      await this.db.memos.where("path").equals(oldPath).delete();
+      await this.rebuildTagStats();
+    });
     await this.onFileChanged(shell, file, settings);
   }
 
   async dispose(): Promise<void> {
     await this.waitUntilReady();
     await this.api.dispose();
+    try {
+      this.db.close();
+    } catch {}
     this.worker?.terminate();
+  }
+
+  private async rebuildTagStats(): Promise<void> {
+    const memos = await this.db.memos.toArray();
+    const counts = new Map<string, number>();
+
+    for (const memo of memos) {
+      if (memo.archived || memo.deleted) {
+        continue;
+      }
+
+      for (const tag of memo.tags) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+
+    const updatedAt = new Date().toISOString();
+    await this.db.tagStats.clear();
+    if (counts.size === 0) {
+      return;
+    }
+
+    await this.db.tagStats.bulkPut(
+      [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt })),
+    );
   }
 }
 
 ;
 export type { TagIndexerOptions };
+
+// Internal helper: rebuild tagStats table from memos
+// Keep implementation local to TagIndexer file to avoid duplicating logic elsewhere.
+// (This mirrors the old worker behavior, but runs in main thread now.)
+// eslint-disable-next-line import/no-extraneous-dependencies
+function noop() {}

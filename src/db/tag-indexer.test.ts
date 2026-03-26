@@ -16,8 +16,8 @@ function createApiMock(): ScanWorkerAPI {
   return {
     initialize: vi.fn(async () => {}),
     resetIndex: vi.fn(async () => {}),
-    scanFiles: vi.fn(async () => {}),
-    scanFile: vi.fn(async () => {}),
+    scanFiles: vi.fn(async () => []),
+    scanFile: vi.fn(async () => []),
     removeFile: vi.fn(async () => {}),
     rebuildTagStats: vi.fn(async () => {}),
     setMeta: vi.fn(async () => {}),
@@ -112,7 +112,8 @@ describe("TagIndexer", () => {
 
     expect(api.resetIndex).toHaveBeenCalledTimes(1);
     expect(api.scanFiles).toHaveBeenCalledTimes(1);
-    expect(api.rebuildTagStats).toHaveBeenCalledTimes(1);
+    // TagIndexer now rebuilds tag stats in main thread; worker's rebuildTagStats is not called.
+    expect(api.rebuildTagStats).toHaveBeenCalledTimes(0);
     getAllTopicNotesSpy.mockRestore();
   });
 });
