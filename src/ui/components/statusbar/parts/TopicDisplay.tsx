@@ -5,13 +5,33 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
+const buildTopicMenu = (
+    topics: { id: string; title: string; archived?: boolean }[],
+    activeTopicName: string,
+    onTopicChange: (id: string) => void,
+    e: React.MouseEvent,
+) => {
+    const menu = new Menu();
+    menu.addSeparator();
+    menu.addItem((item) =>
+        item.setTitle("トピック").setIcon("tag").setDisabled(true),
+    );
+    topics
+        .filter((t) => !t.archived)
+        .forEach((topic) => {
+            menu.addItem((item) =>
+                item
+                    .setTitle(topic.title)
+                    .setChecked(topic.title === activeTopicName)
+                    .onClick(() => onTopicChange(topic.id)),
+            );
+        });
+    menu.showAtMouseEvent(e as unknown as MouseEvent);
+};
+
 export const TopicDisplay: FC = () => {
     const { settings } = useAppContext();
-    const {
-        activeTopic,
-        setActiveTopic: onTopicChange,
-        viewNoteMode,
-    } = useSettingsStore(
+    const { activeTopic, setActiveTopic, viewNoteMode } = useSettingsStore(
         useShallow((s) => ({
             activeTopic: s.activeTopic,
             setActiveTopic: s.setActiveTopic,
@@ -24,35 +44,18 @@ export const TopicDisplay: FC = () => {
     const activeTopicName = settings.topics.find(
         (t) => t.id === activeTopic,
     )?.title;
-    const topics = settings.topics;
 
     if (!activeTopicName) return null;
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        buildTopicMenu(settings.topics, activeTopicName, setActiveTopic, e);
+    };
 
     return (
         <>
             {" in "}
-            <UnderlinedClickable
-                onClick={(e: React.MouseEvent) => {
-                    if (!topics || !onTopicChange) return;
-                    e.preventDefault();
-                    const menu = new Menu();
-                    menu.addSeparator();
-                    menu.addItem((item) => {
-                        item.setTitle("トピック").setIcon("tag").setDisabled(true);
-                    });
-                    topics
-                        .filter((t) => !t.archived)
-                        .forEach((topic) => {
-                            menu.addItem((item) =>
-                                item
-                                    .setTitle(topic.title)
-                                    .setChecked(topic.title === activeTopicName)
-                                    .onClick(() => onTopicChange(topic.id)),
-                            );
-                        });
-                    menu.showAtMouseEvent(e as unknown as MouseEvent);
-                }}
-            >
+            <UnderlinedClickable onClick={handleClick}>
                 {activeTopicName}
             </UnderlinedClickable>
         </>
