@@ -84,7 +84,7 @@ export const ResultCount: FC = () => {
   const showTotal =
     (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
     isTimelineView(displayMode);
-  const totalPart = showTotal ? `/${allPostsCount}` : "";
+  const totalPart = showTotal ? ` / ${allPostsCount}` : "";
 
   if (viewNoteMode === "fixed") {
     return (
