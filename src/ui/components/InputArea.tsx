@@ -304,7 +304,7 @@ const InputAreaFooter: FC = memo(() => {
           キャンセル
         </Button>
       )}
-      {!isReadOnly && !editingPost && (
+      {/* {!isReadOnly && !editingPost && (
         <Button
           className="h-[2.4em]"
           variant="ghost"
@@ -313,7 +313,7 @@ const InputAreaFooter: FC = memo(() => {
         >
           下書きに追加
         </Button>
-      )}
+      )} */}
       <Button
         disabled={!canSubmit}
         className="h-[2.4em]"
