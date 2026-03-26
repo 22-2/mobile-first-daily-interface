@@ -10,7 +10,7 @@ import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import ScanWorkerFactory from "src/db/scan.worker";
 import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 import { Settings } from "src/settings";
-import { DEFAULT_TOPIC, Topic } from "src/topic";
+import { DEFAULT_TOPIC, Topic } from "src/core/topic";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
 

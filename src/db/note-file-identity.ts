@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Topic } from "src/topic";
+import { Topic } from "src/core/topic";
 import { Granularity, MomentLike } from "src/ui/types";
 import { getDateFromFilename } from "src/lib/daily-notes/utils";
 

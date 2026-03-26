@@ -9,7 +9,7 @@ import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Topic } from "src/topic";
+import { Topic } from "src/core/topic";
 import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
