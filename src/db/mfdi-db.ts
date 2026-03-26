@@ -84,7 +84,38 @@ export class MFDIDatabase extends Dexie {
 
     return await this.memos
       .where("[archived+deleted]")
-      .equals([0, 0])
+      .equals([0, 0] as any)
       .count();
+  }
+
+  /**
+   * 指定期間内の未アーカイブ・未削除のメモを取得する（インデックス検索）
+   */
+  async getVisibleMemosByDateRange(params: {
+    topicId?: string;
+    startDate: string;
+    endDate: string;
+    limit?: number;
+  }): Promise<MemoRecord[]> {
+    const { topicId, startDate, endDate, limit } = params;
+    let query;
+
+    if (topicId) {
+      query = this.memos
+        .where("[topicId+archived+deleted+createdAt]")
+        .between([topicId, 0, 0, startDate], [topicId, 0, 0, endDate], true, true);
+    } else {
+      query = this.memos
+        .where("[archived+deleted+createdAt]")
+        .between([0, 0, startDate], [0, 0, endDate], true, true);
+    }
+
+    if (limit) {
+      query = query.reverse().limit(limit);
+    } else {
+      query = query.reverse();
+    }
+
+    return await query.toArray();
   }
 }

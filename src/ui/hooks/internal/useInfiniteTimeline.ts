@@ -1,9 +1,10 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { MomentLike } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 import {
@@ -20,7 +21,7 @@ const PAGE_SIZE_DAYS = 14;
  * タイムラインモード（無限スクロール）のデータ取得と管理を担当するHook。
  */
 export const useInfiniteTimeline = () => {
-  const { shell } = useAppContext();
+  const db = useMFDIDB();
   const [cacheBucket, setCacheBucket] = useState(() =>
     resolveTimelineCacheBucket(),
   );
@@ -39,14 +40,6 @@ export const useInfiniteTimeline = () => {
   );
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
-  );
-  const fetchPage = useCallback(
-    createTimelinePageFetcher({
-      shell,
-      // Timeline should prioritize freshness over cached reads around midnight/file-create timing.
-      readFile: (file) => shell.loadFile(file.path),
-    }),
-    [shell],
   );
 
   useEffect(() => {
@@ -71,6 +64,19 @@ export const useInfiniteTimeline = () => {
   }, []);
 
   // ---------------------------------------------------------------------------
+  const fetchPage = useCallback(
+    db
+      ? createTimelinePageFetcher({ db })
+      : async (): Promise<TimelinePostsPage> => ({
+          posts: [],
+          paths: new Set<string>(),
+          hasMore: false,
+          lastSearchedDate: window.moment(),
+        }),
+    [db],
+  );
+
+  // ---------------------------------------------------------------------------
   // 無限クエリ
   // ---------------------------------------------------------------------------
   const {
@@ -91,8 +97,9 @@ export const useInfiniteTimeline = () => {
       displayMode,
       String(cacheBucket),
       timelineDayKey,
+      db ? "db_ready" : "db_pending",
     ],
-    enabled: isTimelineView(displayMode),
+    enabled: isTimelineView(displayMode) && !!db,
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {

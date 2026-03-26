@@ -67,36 +67,26 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForWeek: async (topicId, date) => {
-    const { shell, setPosts } = get();
-    if (!shell) return new Set();
+    const { db, setPosts } = get();
+    if (!db) return new Set();
 
     const weekStart = date.clone().startOf("isoWeek");
-    const weekDates = Array.from({ length: 7 }, (_, index) =>
-      weekStart.clone().add(index, "days"),
-    );
-    const entries = collectPeriodicNoteEntries(
-      shell,
-      "day",
+    const weekEnd = date.clone().endOf("isoWeek");
+
+    const records = await db.getVisibleMemosByDateRange({
       topicId,
-      weekDates,
-    );
+      startDate: weekStart.toISOString(),
+      endDate: weekEnd.toISOString(),
+    });
 
-    const posts = (
-      await Promise.all(
-        entries.map(async ({ file, dayDate }) => {
-          const content = await shell.cachedReadFile(file);
-          return buildPostsFromContent(content, file.path, dayDate);
-        }),
-      )
-    ).flat();
-
+    const posts = records.map(memoRecordToPost);
     setPosts(posts);
-    return new Set(entries.map((entry) => entry.file.path));
+    return new Set(posts.map((p) => p.path));
   },
 
   updatePostsForDays: async (topicId, date, days) => {
-    const { shell, setPosts } = get();
-    if (!shell) {
+    const { db, setPosts } = get();
+    if (!db) {
       return {
         paths: new Set<string>(),
         hasMore: false,
@@ -104,41 +94,24 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       };
     }
 
-    const getPostsRecursive = async (
-      baseDate: MomentLike,
-    ): Promise<{
-      posts: Post[];
-      paths: Set<string>;
-      hasMore: boolean;
-      lastSearchedDate: MomentLike;
-    }> => {
-      const { entries, hasMore, lastSearchedDate } = searchPeriodicDayWindow({
-        shell,
-        activeTopic: topicId,
-        baseDate,
-        days,
-      });
+    const windowStart = date.clone().subtract(days - 1, "days").startOf("day");
+    const windowEnd = date.clone().endOf("day");
 
-      const posts = (
-        await Promise.all(
-          entries.map(async ({ file, dayDate }) => {
-            const content = await shell.cachedReadFile(file);
-            return buildPostsFromContent(content, file.path, dayDate);
-          }),
-        )
-      ).flat();
+    const records = await db.getVisibleMemosByDateRange({
+      topicId,
+      startDate: windowStart.toISOString(),
+      endDate: windowEnd.toISOString(),
+    });
 
-      return {
-        posts,
-        paths: new Set(entries.map((entry) => entry.file.path)),
-        hasMore,
-        lastSearchedDate,
-      };
+    const posts = records.map(memoRecordToPost);
+    setPosts(posts);
+
+    return {
+      posts,
+      paths: new Set(posts.map((p) => p.path)),
+      hasMore: false, // DB 検索時は指定範囲のデータが全て取得されている前提
+      lastSearchedDate: windowStart,
     };
-
-    const result = await getPostsRecursive(date);
-    setPosts(result.posts);
-    return result;
   },
 
   updatePostsFromDB: async ({ topicId, limit = 300 }) => {

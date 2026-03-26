@@ -70,6 +70,10 @@ vi.mock("./timelinePosts", () => ({
     createTimelinePageFetcherMock(...args),
 }));
 
+vi.mock("src/ui/hooks/useMFDIDB", () => ({
+  useMFDIDB: () => ({ id: "mock-db" }),
+}));
+
 describe("useInfiniteTimeline", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -109,6 +113,7 @@ describe("useInfiniteTimeline", () => {
       "timeline",
       "123",
       "2026-03-15",
+      "db_ready",
     ]);
 
     settingsState.date = moment("2026-03-16T00:00:00.000Z");
@@ -121,17 +126,15 @@ describe("useInfiniteTimeline", () => {
       "timeline",
       "123",
       "2026-03-16",
+      "db_ready",
     ]);
   });
 
-  it("タイムライン取得は cachedReadFile ではなく loadFile を使う", async () => {
+  it("createTimelinePageFetcher に DB インスタンスが渡される", async () => {
     renderHook(() => useInfiniteTimeline());
 
     const deps = createTimelinePageFetcherMock.mock.calls[0][0];
-    await deps.readFile({ path: "2026-03-15.md" });
-
-    expect(loadFileMock).toHaveBeenCalledWith("2026-03-15.md");
-    expect(cachedReadFileMock).not.toHaveBeenCalled();
+    expect(deps.db).toEqual({ id: "mock-db" });
   });
 
   it("タイムライン表示中に日付が変わったら setDate を呼ぶ", () => {

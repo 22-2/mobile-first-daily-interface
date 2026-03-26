@@ -1,10 +1,6 @@
-import { TFile } from "obsidian";
-import { searchPeriodicDayWindow } from "src/core/note-source";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { MFDIDatabase } from "src/db/mfdi-db";
 import { MomentLike, Post } from "src/ui/types";
-import { resolveTimestamp } from "src/ui/utils/post-utils";
-import { buildPostFromEntry } from "src/ui/utils/thread-utils";
-import { parseThinoEntries } from "src/utils/thino";
+import { memoRecordToPost } from "src/ui/utils/thread-utils";
 
 export type TimelinePostsPage = {
   posts: Post[];
@@ -23,8 +19,7 @@ export function resolveTimelineCacheBucket(
 }
 
 export interface CreateTimelinePageFetcherDeps {
-  shell: ObsidianAppShell;
-  readFile: (file: TFile) => Promise<string>;
+  db: MFDIDatabase;
 }
 
 export function resolveTimelineBaseDate(
@@ -34,60 +29,38 @@ export function resolveTimelineBaseDate(
   return pageParam ? window.moment(pageParam) : getEffectiveDate().clone();
 }
 
-async function parsePostsFromFile(
-  file: TFile,
-  dayDate: MomentLike,
-  readFile: (file: TFile) => Promise<string>,
-): Promise<Post[]> {
-  const content = await readFile(file);
-  return parseThinoEntries(content).map((entry) =>
-    buildPostFromEntry({
-      ...entry,
-      path: file.path,
-      noteDate: dayDate,
-      resolveTimestamp,
-    }),
-  );
-}
-
 export function createTimelinePageFetcher({
-  shell,
-  readFile,
+  db,
 }: CreateTimelinePageFetcherDeps) {
   return async (
     topicId: string,
     baseDate: MomentLike,
     days: number,
   ): Promise<TimelinePostsPage> => {
-    const { entries, hasMore, lastSearchedDate } = searchPeriodicDayWindow({
-      shell,
-      activeTopic: topicId,
-      baseDate,
-      days,
+    const windowStart = baseDate.clone().subtract(days - 1, "days").startOf("day");
+    const windowEnd = baseDate.clone().endOf("day");
+
+    const records = await db.getVisibleMemosByDateRange({
+      topicId,
+      startDate: windowStart.toISOString(),
+      endDate: windowEnd.toISOString(),
     });
 
-    if (entries.length === 0) {
-      return {
-        posts: [],
-        paths: new Set(),
-        hasMore,
-        lastSearchedDate,
-      };
-    }
+    const posts = records.map(memoRecordToPost);
 
-    const posts = (
-      await Promise.all(
-        entries.map(({ file, dayDate }) =>
-          parsePostsFromFile(file, dayDate, readFile),
-        ),
-      )
-    ).flat();
+    // 次のページがあるかの簡易判定（windowStartより前の投稿が1つでもあるか）
+    const olderRecord = await db.getVisibleMemosByDateRange({
+      topicId,
+      startDate: "0000-01-01T00:00:00.000Z",
+      endDate: windowStart.clone().subtract(1, "ms").toISOString(),
+      limit: 1,
+    });
 
     return {
       posts,
-      paths: new Set(entries.map((entry) => entry.file.path)),
-      hasMore,
-      lastSearchedDate,
+      paths: new Set(posts.map((p) => p.path)),
+      hasMore: olderRecord.length > 0,
+      lastSearchedDate: windowStart,
     };
   };
 }
