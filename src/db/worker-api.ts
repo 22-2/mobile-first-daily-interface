@@ -14,4 +14,5 @@ export interface ScanWorkerAPI {
   // Worker is stateless and only exposes parsing methods.
   scanFiles(files: ScannableNote[]): Promise<MemoRecord[]>;
   scanFile(file: ScannableNote): Promise<MemoRecord[]>;
+  dispose(): Promise<void>;
 }

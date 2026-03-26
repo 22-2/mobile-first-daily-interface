@@ -50,13 +50,7 @@ export interface TagIndexerOptions {
 // so the rest of TagIndexer never has to think about it.
 // ---------------------------------------------------------------------------
 
-interface ScanExecutor {
-  scanFiles(files: ScannableNote[]): Promise<Awaited<ReturnType<ScanWorkerAPI["scanFiles"]>>>;
-  scanFile(note: ScannableNote): Promise<Awaited<ReturnType<ScanWorkerAPI["scanFile"]>>>;
-  dispose(): Promise<void>;
-}
-
-class DirectApiExecutor implements ScanExecutor {
+class DirectApiExecutor implements ScanWorkerAPI {
   constructor(private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>) {}
 
   scanFiles(files: ScannableNote[]) {
@@ -72,7 +66,7 @@ class DirectApiExecutor implements ScanExecutor {
   }
 }
 
-class WorkerPoolExecutor implements ScanExecutor {
+class WorkerPoolExecutor implements ScanWorkerAPI {
   constructor(private readonly pool: ScanWorkerPool) {}
 
   scanFiles(files: ScannableNote[]) {
@@ -173,7 +167,7 @@ async function toScannableNote(
 // ---------------------------------------------------------------------------
 
 export class TagIndexer {
-  private readonly executor: ScanExecutor;
+  private readonly executor: ScanWorkerAPI;
   private readonly queueConcurrency: number;
   private readonly scanChunkSize: number;
   private readonly db: MFDIDatabase;
