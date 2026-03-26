@@ -11,12 +11,7 @@ export interface ScannableNote {
 }
 
 export interface ScanWorkerAPI {
-  initialize(args: { appId: string }): Promise<void>;
-  resetIndex(): Promise<void>;
+  // Worker is stateless and only exposes parsing methods.
   scanFiles(files: ScannableNote[]): Promise<MemoRecord[]>;
   scanFile(file: ScannableNote): Promise<MemoRecord[]>;
-  removeFile(path: string): Promise<void>;
-  rebuildTagStats(): Promise<void>;
-  setMeta(key: string, value: string): Promise<void>;
-  dispose(): Promise<void>;
 }

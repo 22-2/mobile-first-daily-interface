@@ -15,6 +15,7 @@ import { DEFAULT_TOPIC } from "src/core/topic";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
 import { MFDIDatabase } from "src/db/mfdi-db";
+import { ScanWorkerPool } from "src/db/scan-worker-pool";
 
 const DEFAULT_QUEUE_CONCURRENCY = 8;
 const DEFAULT_SCAN_CHUNK_SIZE = 100;
@@ -129,27 +130,33 @@ export class TagIndexer {
   private readonly scanChunkSize: number;
   private readonly worker?: Worker;
   private readonly db: MFDIDatabase;
+  private readonly workerPool?: ScanWorkerPool;
+  private readonly useDirectApi: boolean;
   private readonly initializePromise: Promise<void>;
 
   constructor(appId: string, options: TagIndexerOptions = {}) {
     this.queueConcurrency =
       options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
     this.scanChunkSize = options.scanChunkSize ?? DEFAULT_SCAN_CHUNK_SIZE;
+    this.db = new MFDIDatabase(appId);
 
     if (options.api) {
       this.api = options.api;
+      this.useDirectApi = true;
+      this.workerPool = undefined;
     } else {
-      const worker = (
-        options.workerFactory ?? (() => new ScanWorkerFactory())
-      )();
-      this.worker = worker;
-      this.api = Comlink.wrap<ScanWorkerAPI>(worker);
+      this.useDirectApi = false;
+      const hw =
+        typeof navigator !== "undefined" &&
+        (navigator as any).hardwareConcurrency
+          ? (navigator as any).hardwareConcurrency
+          : 4;
+      const poolSize = Math.max(1, Math.floor(hw * 0.75));
+      const factory = options.workerFactory ?? (() => new ScanWorkerFactory());
+      this.workerPool = new ScanWorkerPool(poolSize, factory);
     }
 
-    this.db = new MFDIDatabase(appId);
-
     this.initializePromise = (async () => {
-      await this.api.initialize({ appId });
       await this.db.open();
     })();
   }
@@ -167,7 +174,20 @@ export class TagIndexer {
     const targets = collectScanTargets(shell, settings);
     const queue = new PQueue({ concurrency: this.queueConcurrency });
 
-    await this.api.resetIndex();
+    // Reset index (clear DB) — worker no longer manages DB lifecycle.
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.meta,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.clear();
+        await this.db.meta.clear();
+        await this.db.tagStats.clear();
+      },
+    );
+
+    const writeQueue = new PQueue({ concurrency: 1 });
 
     for (let start = 0; start < targets.length; start += this.scanChunkSize) {
       const batchTargets = targets.slice(start, start + this.scanChunkSize);
@@ -177,15 +197,30 @@ export class TagIndexer {
         ),
       );
 
-      const records = await this.api.scanFiles(files);
-      if (records && records.length > 0) {
-        await this.db.memos.bulkPut(records);
+      if (this.useDirectApi) {
+        const records = await this.api.scanFiles(files);
+        if (records && records.length > 0) {
+          await this.db.memos.bulkPut(records);
+        }
+      } else {
+        const workerRemote = this.workerPool!.next();
+        const parsePromise = workerRemote.scanFiles(files);
+        writeQueue.add(async () => {
+          const records = await parsePromise;
+          if (records && records.length > 0) {
+            await this.db.memos.bulkPut(records);
+          }
+        });
       }
     }
 
     await queue.onIdle();
+    await writeQueue.onIdle();
     await this.rebuildTagStats();
-    await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
+    await this.db.meta.put({
+      key: "lastFullScanAt",
+      value: new Date().toISOString(),
+    });
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
 
@@ -215,13 +250,18 @@ export class TagIndexer {
       content,
     });
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(file.path).delete();
-      if (records && records.length > 0) {
-        await this.db.memos.bulkPut(records);
-      }
-      await this.rebuildTagStats();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(file.path).delete();
+        if (records && records.length > 0) {
+          await this.db.memos.bulkPut(records);
+        }
+        await this.rebuildTagStats();
+      },
+    );
 
     window.dispatchEvent(
       new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
@@ -230,13 +270,19 @@ export class TagIndexer {
 
   async onFileDeleted(path: string): Promise<void> {
     await this.waitUntilReady();
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(path).delete();
-      await this.rebuildTagStats();
-    });
-
-    await this.api.removeFile(path);
-    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(path).delete();
+        await this.rebuildTagStats();
+      },
+    );
+    // Worker API no longer handles removals; DB change already applied above.
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path } }),
+    );
   }
 
   async onFileRenamed(
@@ -246,19 +292,24 @@ export class TagIndexer {
     settings: Settings,
   ): Promise<void> {
     await this.waitUntilReady();
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      await this.db.memos.where("path").equals(oldPath).delete();
-      await this.rebuildTagStats();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.where("path").equals(oldPath).delete();
+        await this.rebuildTagStats();
+      },
+    );
     await this.onFileChanged(shell, file, settings);
   }
 
   async dispose(): Promise<void> {
     await this.waitUntilReady();
-    await this.api.dispose();
-    try {
-      this.db.close();
-    } catch {}
+    this.db.close();
+    if (this.workerPool) {
+      await this.workerPool.dispose();
+    }
     this.worker?.terminate();
   }
 
@@ -288,11 +339,4 @@ export class TagIndexer {
   }
 }
 
-;
 export type { TagIndexerOptions };
-
-// Internal helper: rebuild tagStats table from memos
-// Keep implementation local to TagIndexer file to avoid duplicating logic elsewhere.
-// (This mirrors the old worker behavior, but runs in main thread now.)
-// eslint-disable-next-line import/no-extraneous-dependencies
-function noop() {}

@@ -14,15 +14,9 @@ function createShell(overrides: Record<string, unknown> = {}) {
 
 function createApiMock(): ScanWorkerAPI {
   return {
-    initialize: vi.fn(async () => {}),
-    resetIndex: vi.fn(async () => {}),
     scanFiles: vi.fn(async () => []),
     scanFile: vi.fn(async () => []),
-    removeFile: vi.fn(async () => {}),
-    rebuildTagStats: vi.fn(async () => {}),
-    setMeta: vi.fn(async () => {}),
-    dispose: vi.fn(async () => {}),
-  };
+  } as any;
 }
 
 describe("TagIndexer", () => {
@@ -30,13 +24,13 @@ describe("TagIndexer", () => {
     vi.restoreAllMocks();
   });
 
-  test("initializes the worker api with appId", async () => {
+  test("constructs with provided api", async () => {
     const api = createApiMock();
 
     new TagIndexer("vault-1", { api });
 
     await Promise.resolve();
-    expect(api.initialize).toHaveBeenCalledWith({ appId: "vault-1" });
+    expect(api.scanFiles).not.toHaveBeenCalled();
   });
 
   test("onFileChanged scans known note files", async () => {
@@ -80,15 +74,15 @@ describe("TagIndexer", () => {
     expect(api.scanFile).not.toHaveBeenCalled();
   });
 
-  test("onFileDeleted and dispose delegate to the worker api", async () => {
+  test("onFileDeleted and dispose operate without delegating to api", async () => {
     const api = createApiMock();
     const indexer = new TagIndexer("vault-1", { api });
 
     await indexer.onFileDeleted("daily/2026-03-23.md");
     await indexer.dispose();
 
-    expect(api.removeFile).toHaveBeenCalledWith("daily/2026-03-23.md");
-    expect(api.dispose).toHaveBeenCalledTimes(1);
+    expect((api as any).removeFile).toBeUndefined();
+    expect((api as any).dispose).toBeUndefined();
   });
 
   test("scanAllNotes rebuilds tag stats after scanning", async () => {
@@ -110,10 +104,7 @@ describe("TagIndexer", () => {
 
     await indexer.scanAllNotes(shell, { topics: [DEFAULT_TOPIC] } as any);
 
-    expect(api.resetIndex).toHaveBeenCalledTimes(1);
     expect(api.scanFiles).toHaveBeenCalledTimes(1);
-    // TagIndexer now rebuilds tag stats in main thread; worker's rebuildTagStats is not called.
-    expect(api.rebuildTagStats).toHaveBeenCalledTimes(0);
     getAllTopicNotesSpy.mockRestore();
   });
 });
