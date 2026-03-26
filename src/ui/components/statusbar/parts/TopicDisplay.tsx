@@ -55,7 +55,7 @@ export const TopicDisplay: FC = () => {
     return (
         <>
             {" in "}
-            <UnderlinedClickable onClick={handleClick}>
+            <UnderlinedClickable className="topic-display" onClick={handleClick}>
                 {activeTopicName}
             </UnderlinedClickable>
         </>

@@ -39,9 +39,9 @@ export class MFDIDatabase extends Dexie {
   constructor(appId: string) {
     super(getMFDIDatabaseName(appId));
 
-    this.version(1).stores({
+    this.version(2).stores({
       memos:
-        "id, path, noteName, topicId, noteGranularity, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity]",
+        "id, path, noteName, topicId, noteGranularity, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity], [archived+deleted], [topicId+archived+deleted]",
       meta: "key",
       tagStats: "tag, count, updatedAt",
     });

@@ -7,12 +7,13 @@ import { BaseLayout } from "./BaseLayout";
 export const TimelineLayout: FC = () => {
     return (
         <BaseLayout
-            left={null}
-            right={
-                <Box>
+            className="timeline-layout"
+            leftItems={null}
+            rightItems={
+                <>
                     <ResultCount />
                     <TopicDisplay />
-                </Box>
+                </>
             }
         />
     );

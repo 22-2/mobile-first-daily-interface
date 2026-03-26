@@ -1,14 +1,17 @@
-import { Box, HStack } from "@chakra-ui/react";
+import { Box, BoxProps, ComponentWithAs, HStack, StackProps } from "@chakra-ui/react";
 import { FC, ReactNode } from "react";
+import { clsx } from "clsx";
 
-interface BaseLayoutProps {
-    left?: ReactNode;
-    right?: ReactNode;
-}
+type BaseLayoutProps = BoxProps & {
+    leftItems?: ReactNode;
+    rightItems?: ReactNode;
+    className?: string;
+};
 
-export const BaseLayout: FC<BaseLayoutProps> = ({ left, right }) => {
+export const BaseLayout: FC<BaseLayoutProps> = ({ leftItems: left, rightItems: right, className, ...props }) => {
     return (
         <HStack
+            className={clsx("base-layout", className)}
             fontSize="var(--font-ui-smaller)"
             color="var(--text-muted)"
             marginX="var(--size-4-4)"
@@ -17,9 +20,10 @@ export const BaseLayout: FC<BaseLayoutProps> = ({ left, right }) => {
             spacing={0}
             justifyContent="space-between"
             width="100%"
+            {...props}
         >
-            <Box>{left}</Box>
-            <Box>{right}</Box>
+            {left && <Box>{left}</Box>}
+            {right && <Box>{right}</Box>}
         </HStack>
     );
 };

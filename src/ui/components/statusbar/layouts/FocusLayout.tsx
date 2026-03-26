@@ -8,8 +8,8 @@ import { BaseLayout } from "./BaseLayout";
 export const FocusLayout: FC = () => {
     return (
         <BaseLayout
-            left={<DateDisplay />}
-            right={
+            leftItems={<DateDisplay />}
+            rightItems={
                 <Box>
                     <ResultCount />
                     <TopicDisplay />

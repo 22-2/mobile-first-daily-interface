@@ -59,6 +59,7 @@
     "@emotion/styled": "^11.14.1",
     "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-virtual": "^3.13.23",
+    "clsx": "^2.1.1",
     "comlink": "^4.4.2",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.2.0",
