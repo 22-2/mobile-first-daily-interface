@@ -61,10 +61,3 @@ export function getDateFromFile(
 ): MomentLike | null {
   return getDateFromFilename(file.basename, granularity, shell, topicId);
 }
-
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}

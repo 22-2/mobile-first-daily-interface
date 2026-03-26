@@ -3,7 +3,7 @@ import path from "path";
 import builtins from "builtin-modules";
 import { obsidianCopyPlugin } from "./vite.plugins";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+// import tailwindcss from "@tailwindcss/vite";
 import { analyzer } from "vite-bundle-analyzer";
 
 export default defineConfig(async ({ mode }) => {
@@ -15,7 +15,7 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       isAnalyze && analyzer(),
       react(),
-      tailwindcss(),
+      // tailwindcss(),
       reactCompilerPreset(),
       obsidianCopyPlugin({
         pluginsDir: [
