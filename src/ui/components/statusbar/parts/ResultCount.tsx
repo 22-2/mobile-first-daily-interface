@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import type { FC} from "react";
+import type { FC } from "react";
 import { useMemo } from "react";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
@@ -64,7 +64,6 @@ export const ResultCount: FC = () => {
   const filteredPosts = useFilteredPosts({ posts, ...settings });
 
   const db = useMFDIDB();
-
   const dbTotalCount = useLiveQuery(
     () => (db ? db.countVisibleMemos(activeTopic) : undefined),
     [db, activeTopic],
@@ -74,37 +73,26 @@ export const ResultCount: FC = () => {
     if (isTimelineView(displayMode) && typeof dbTotalCount === "number") {
       return dbTotalCount;
     }
-    return countVisibleRootPosts(
-      posts.filter(
-        (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
-      ),
+    const visiblePosts = posts.filter(
+      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
     );
+    return countVisibleRootPosts(visiblePosts);
   }, [posts, displayMode, dbTotalCount]);
 
-  const showTotal =
-    (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
-    isTimelineView(displayMode);
-  const totalPart = showTotal ? `/${allPostsCount}` : "";
+  // ---- 表示ロジック ----
+
+  const displayCount = asTask ? tasks.length : filteredPosts.length;
+
+  const isDailyTimeFiltered =
+    dateFilter === "today" && timeFilter !== "all" && granularity === "day";
+  const shouldShowTotal = isDailyTimeFiltered || isTimelineView(displayMode);
+  const totalPart = shouldShowTotal ? `/${allPostsCount}` : "";
 
   if (viewNoteMode === "fixed") {
     return (
-      <>
-        {formatFixedCount(
-          asTask ? tasks.length : filteredPosts.length,
-          getFixedNoteTitle(fixedNotePath),
-          asTask,
-        )}
-      </>
+      <>{formatFixedCount(displayCount, getFixedNoteTitle(fixedNotePath), asTask)}</>
     );
   }
 
-  return (
-    <>
-      {formatCount(
-        asTask ? tasks.length : filteredPosts.length,
-        totalPart,
-        asTask,
-      )}
-    </>
-  );
+  return <>{formatCount(displayCount, totalPart, asTask)}</>;
 };
