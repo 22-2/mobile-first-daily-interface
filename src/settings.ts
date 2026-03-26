@@ -1,6 +1,8 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
-import MFDIPlugin from "src/main";
-import { DEFAULT_TOPIC, Topic } from "src/topic";
+import type { App} from "obsidian";
+import { PluginSettingTab, Setting } from "obsidian";
+import type MFDIPlugin from "src/main";
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
 
 export interface Settings {
   postFormatOption: PostFormatOption;
@@ -28,7 +30,7 @@ export const postFormatMap = {
   Thino: { type: "thino" },
 } as const;
 export type PostFormatOption = keyof typeof postFormatMap;
-export type PostFormat = (typeof postFormatMap)[PostFormatOption];
+type PostFormat = (typeof postFormatMap)[PostFormatOption];
 
 export class MFDISettingTab extends PluginSettingTab {
   plugin: MFDIPlugin;

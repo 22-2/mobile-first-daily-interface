@@ -1,9 +1,9 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import type { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
 
 export type MFDINoteMode = "periodic" | "fixed";
 
-export interface MFDIViewCapabilities {
+interface MFDIViewCapabilities {
   supportsDateNavigation: boolean;
   supportsDisplayModeSwitch: boolean;
   supportsSidebar: boolean;

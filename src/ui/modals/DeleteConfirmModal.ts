@@ -1,4 +1,4 @@
-import { App } from "obsidian";
+import type { App } from "obsidian";
 import { MFDIBaseModal } from "src/ui/modals/MFDIBaseModal";
 
 export async function showDeleteConfirmModal(

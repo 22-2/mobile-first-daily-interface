@@ -7,7 +7,7 @@ import {
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { parseThinoEntries } from "src/utils/thino";
+import { parseThinoEntries } from "src/core/thino";
 import { useShallow } from "zustand/shallow";
 
 interface Counts {

@@ -1,8 +1,8 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { App } from "obsidian";
+import type { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Settings } from "src/settings";
+import type { Settings } from "src/settings";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
@@ -16,8 +16,9 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
+import type {
+  AppStoreApi} from "src/ui/store/appStore";
 import {
-  AppStoreApi,
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
@@ -27,7 +28,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import {
+import type {
   DateFilter,
   DisplayMode,
   Granularity,
@@ -35,7 +36,7 @@ import {
   TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { MFDIView } from "src/ui/view/MFDIView";
+import type { MFDIView } from "src/ui/view/MFDIView";
 import {
   createDefaultMFDIViewState,
   getMFDIViewCapabilities,
@@ -43,8 +44,6 @@ import {
 import { useShallow } from "zustand/shallow";
 
 const queryClient = new QueryClient();
-
-export type { Post };
 
 export const ReactView = ({
   app,

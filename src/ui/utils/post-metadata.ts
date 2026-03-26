@@ -1,4 +1,4 @@
-import { parseMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
+import { parseMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
 
 export function getPostTags(metadata: Record<string, string>): string[] {
   return parseMfdiTags(metadata);
@@ -12,7 +12,7 @@ export function isDeleted(metadata: Record<string, string>): boolean {
   return metadata.deleted != null && metadata.deleted.length > 0;
 }
 
-export function getPostedAt(metadata: Record<string, string>): string | null {
+function getPostedAt(metadata: Record<string, string>): string | null {
   return metadata.posted ?? null;
 }
 

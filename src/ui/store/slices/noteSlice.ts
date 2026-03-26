@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import { resolveNoteSource } from "src/core/note-source";
-import { MFDIStore, NoteSlice } from "src/ui/store/slices/types";
-import { StateCreator } from "zustand/vanilla";
+import type { MFDIStore, NoteSlice } from "src/ui/store/slices/types";
+import type { StateCreator } from "zustand/vanilla";
 
 export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   set,

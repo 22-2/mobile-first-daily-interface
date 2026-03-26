@@ -1,4 +1,4 @@
-import { DateFilter, Granularity, Post, TimeFilter } from "src/ui/types";
+import type { DateFilter, Granularity, Post, TimeFilter } from "src/ui/types";
 
 export function filterPostsByRelativeWindow(
   posts: Post[],

@@ -1,15 +1,16 @@
+import type {
+  AppStoreApi} from "src/ui/store/appStore";
 import {
   appStore,
-  AppStoreApi,
   useCurrentAppStore,
 } from "src/ui/store/appStore";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
-import { MFDIStorage } from "src/utils/storage";
+import type { MFDIStorage } from "src/core/storage";
 import { useStore } from "zustand";
 
 export const editorStore = appStore;
 
-export function initializeEditorStore(
+function initializeEditorStore(
   storage: MFDIStorage,
   store: AppStoreApi = appStore,
 ) {

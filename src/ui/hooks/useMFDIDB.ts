@@ -1,4 +1,4 @@
-import { MFDIDatabase } from "src/db/mfdi-db";
+import type { MFDIDatabase } from "src/db/mfdi-db";
 import { useAppStore } from "src/ui/store/appStore";
 
 /**

@@ -1,6 +1,7 @@
 import { type FakeEditor } from "@22-2/obsidian-magical-editor";
-import { Box, BoxProps } from "@chakra-ui/react";
-import { App, WorkspaceLeaf } from "obsidian";
+import type { BoxProps } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
+import type { App, WorkspaceLeaf } from "obsidian";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "src/ui/components/editor/hooks";
 
@@ -13,7 +14,7 @@ export interface ObsidianLiveEditorRef {
   setContent: FakeEditor["setContent"];
 }
 
-export interface ObsidianLiveEditorProps extends Omit<
+interface ObsidianLiveEditorProps extends Omit<
   BoxProps,
   "onChange" | "onSubmit"
 > {

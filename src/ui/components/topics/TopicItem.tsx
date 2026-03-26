@@ -1,6 +1,6 @@
 import { Badge, Box, Flex, HStack, Input, Text } from "@chakra-ui/react";
 import { Menu } from "obsidian";
-import { Topic } from "src/topic";
+import type { Topic } from "src/core/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 
 interface TopicItemProps {

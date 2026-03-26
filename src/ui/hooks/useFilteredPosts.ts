@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import {
+import type {
   DateFilter,
   DisplayMode,
   Granularity,
@@ -15,7 +15,7 @@ import {
   sortThreadPosts,
 } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
-import { MFDINoteMode } from "src/ui/view/state";
+import type { MFDINoteMode } from "src/ui/view/state";
 
 interface UseFilteredPostsProps {
   posts: Post[];
@@ -108,4 +108,4 @@ export const useFilteredPosts = ({
   ]);
 };
 
-export { countVisibleRootPosts };
+;

@@ -1,6 +1,6 @@
 import { STORAGE_KEYS } from "src/ui/config/consntants";
-import { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
-import { StateCreator } from "zustand/vanilla";
+import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
+import type { StateCreator } from "zustand/vanilla";
 
 export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   set,

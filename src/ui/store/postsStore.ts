@@ -1,7 +1,8 @@
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type {
+  AppStoreApi} from "src/ui/store/appStore";
 import {
   appStore,
-  AppStoreApi,
   useCurrentAppStore,
 } from "src/ui/store/appStore";
 import type { MFDIStore, PostsSlice } from "src/ui/store/slices/types";

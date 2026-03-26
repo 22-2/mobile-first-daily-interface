@@ -6,9 +6,10 @@ import {
 } from "src/ui/modals/DeleteConfirmModal";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { showInputModal } from "src/ui/modals/InputModal";
+import type {
+  MFDIEditorModalOptions} from "src/ui/modals/MFDIEditorModal";
 import {
-  MFDIEditorModal,
-  MFDIEditorModalOptions,
+  MFDIEditorModal
 } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 

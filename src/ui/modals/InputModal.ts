@@ -1,4 +1,4 @@
-import { App } from "obsidian";
+import type { App } from "obsidian";
 import { MFDIBaseModal } from "src/ui/modals/MFDIBaseModal";
 
 export async function showInputModal(
@@ -17,7 +17,7 @@ export async function showInputModal(
   ).show();
 }
 
-export class InputModal extends MFDIBaseModal<string | null> {
+class InputModal extends MFDIBaseModal<string | null> {
   private inputEl!: HTMLInputElement;
   private submitted = false;
 

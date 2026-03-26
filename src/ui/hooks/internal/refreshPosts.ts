@@ -1,7 +1,8 @@
-import { QueryClient } from "@tanstack/react-query";
-import { TFile, Vault } from "obsidian";
+import type { QueryClient } from "@tanstack/react-query";
+import type { Vault } from "obsidian";
+import { TFile } from "obsidian";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
-import { DateFilter, DisplayMode, MomentLike } from "src/ui/types";
+import type { DateFilter, DisplayMode, MomentLike } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 
 type UpdatePostsForDaysResult = {
@@ -10,9 +11,9 @@ type UpdatePostsForDaysResult = {
   lastSearchedDate: MomentLike;
 };
 
-export type RefreshPosts = (path?: string) => Promise<void>;
+type RefreshPosts = (path?: string) => Promise<void>;
 
-export interface RefreshPostsDeps {
+interface RefreshPostsDeps {
   vault: Vault;
   queryClient: QueryClient;
   dateFilter: DateFilter;

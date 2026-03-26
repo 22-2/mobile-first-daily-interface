@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { BaseLayout } from "src/ui/components/statusbar/layouts/BaseLayout";
 import { ResultCount } from "src/ui/components/statusbar/parts/ResultCount";
 import { TopicDisplay } from "src/ui/components/statusbar/parts/TopicDisplay";

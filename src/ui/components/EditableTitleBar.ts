@@ -1,6 +1,7 @@
-import { Scope, type ItemView } from "obsidian";
+import type { Scope} from "obsidian";
+import { type ItemView } from "obsidian";
 
-export interface EditableItemView extends ItemView {
+interface EditableItemView extends ItemView {
   getDisplayText(): string;
 }
 

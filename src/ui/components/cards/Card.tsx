@@ -1,4 +1,5 @@
-import { Box, BoxProps } from "@chakra-ui/react";
+import type { BoxProps } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 
 export const Card = (props: BoxProps) => {
   const { children, onContextMenu, onDoubleClick, ...rest } = props;
@@ -30,4 +31,4 @@ export const Card = (props: BoxProps) => {
   );
 };
 
-export default Card;
+

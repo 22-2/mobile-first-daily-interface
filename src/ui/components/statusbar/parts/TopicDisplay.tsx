@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { FC } from "react";
+import type { FC } from "react";
 import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";

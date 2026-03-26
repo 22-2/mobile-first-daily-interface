@@ -12,7 +12,7 @@ function updateVersion(version: string) {
   writeFileSync("manifest.json", JSON.stringify(manifest, null, "  "));
 
   // update versions.json with target version and minAppVersion from manifest.json
-  let versions = JSON.parse(readFileSync("versions.json", "utf8"));
+  const versions = JSON.parse(readFileSync("versions.json", "utf8"));
   versions[version] = minAppVersion;
   writeFileSync("versions.json", JSON.stringify(versions, null, "  "));
 }

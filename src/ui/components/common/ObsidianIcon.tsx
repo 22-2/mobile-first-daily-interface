@@ -1,4 +1,5 @@
-import { Box, BoxProps } from "@chakra-ui/react";
+import type { BoxProps } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { setIcon } from "obsidian";
 import React, { useEffect, useRef } from "react";
 

@@ -1,17 +1,20 @@
 import { around } from "monkey-around";
-import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
+import type { App, Command, EventRef} from "obsidian";
+import { TFile, WorkspaceLeaf } from "obsidian";
+import type {
+  FixedNoteViewExtension} from "src/extensions/fixed-note-view-extension";
 import {
-  createFixedNoteViewExtension,
-  FixedNoteViewExtension,
-} from "src/core/fixed-note-view-extension";
+  createFixedNoteViewExtension
+} from "src/extensions/fixed-note-view-extension";
+import type {
+  TagIndexExtension} from "src/extensions/tag-index-extension";
 import {
-  createTagIndexExtension,
-  TagIndexExtension,
-} from "src/core/tag-index-extension";
-import { Settings } from "src/settings";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+  createTagIndexExtension
+} from "src/extensions/tag-index-extension";
+import type { Settings } from "src/settings";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
-import { MFDIViewState } from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -42,12 +45,12 @@ export interface BuiltinMainContext {
   ) => Promise<WorkspaceLeaf | undefined>;
 }
 
-export interface BuiltinContribution {
+interface BuiltinContribution {
   id: string;
   activate: (context: BuiltinMainContext) => void;
 }
 
-export class BuiltinRegistry {
+class BuiltinRegistry {
   constructor(private readonly contributions: BuiltinContribution[]) {}
 
   activate(context: BuiltinMainContext): void {
@@ -193,7 +196,7 @@ export function createFixedNoteRegistryContribution(): BuiltinContribution {
   };
 }
 
-export function createFixedNoteViewLifecycleContribution(
+function createFixedNoteViewLifecycleContribution(
   fixedNoteViewExtension: FixedNoteViewExtension,
 ): BuiltinContribution {
   return {

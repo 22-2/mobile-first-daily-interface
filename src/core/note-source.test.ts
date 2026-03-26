@@ -7,7 +7,7 @@ import {
 } from "src/core/note-source";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("src/utils/daily-notes", () => ({
+vi.mock("src/lib/daily-notes", () => ({
   getTopicNote: vi.fn((shell: any, date: any, _g: any, _topicId: any) =>
     shell.getAbstractFileByPath(`daily/${date.format("YYYY-MM-DD")}.md`),
   ),

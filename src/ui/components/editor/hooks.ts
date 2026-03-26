@@ -1,5 +1,5 @@
 import { FakeEditor } from "@22-2/obsidian-magical-editor";
-import { App, WorkspaceLeaf } from "obsidian";
+import type { App, WorkspaceLeaf } from "obsidian";
 import { useCallback, useEffect, useRef } from "react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
