@@ -1,0 +1,14 @@
+/* FIXME: 読み込むと、別ウィンドウで表示が崩れる */
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
+  display: none !important;
+}
+
+[data-type="mfdi-view"] :is(.ͼ1 .cm-cursor, .ͼ1 .cm-dropCursor) {
+  margin-left: initial !important;
+  width: 1px !important;
+}
+
+[data-type="mfdi-view"] :is(.HyperMD-codeblock-bg, .markdown-rendered pre) {
+  --code-background: var(--bg3) !important;
+}

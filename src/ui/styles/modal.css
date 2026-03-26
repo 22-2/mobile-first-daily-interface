@@ -1,0 +1,51 @@
+
+.mfdi-modal__body {
+  display: grid;
+  gap: var(--size-4-3);
+  margin-top: var(--size-4-2);
+}
+
+.mfdi-modal__input {
+  width: 100%;
+  min-height: 40px;
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: var(--input-radius);
+  background: var(--background-modifier-form-field);
+  padding: 0 var(--size-4-3);
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  transition:
+    border-color var(--anim-duration-fast) ease,
+    box-shadow var(--anim-duration-fast) ease,
+    background-color var(--anim-duration-fast) ease;
+}
+
+.mfdi-modal__input::placeholder {
+  color: var(--text-muted);
+}
+
+.mfdi-modal__input:hover {
+  border-color: var(--background-modifier-border-hover);
+  background: var(--background-modifier-form-field-hover);
+}
+
+.mfdi-modal__input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.mfdi-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  margin-top: var(--size-2-2);
+}
+
+.mfdi-modal__button {
+  min-width: 92px;
+}
+
+.mfdi-modal .modal-content {
+  padding-top: 0;
+}

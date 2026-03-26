@@ -17,6 +17,10 @@ import {
 import { ensureExtension } from "src/core/path";
 import "src/ui/styles/global.css"
 import "src/ui/styles/mfdi.css"
+import "src/ui/styles/draft.css"
+import "src/ui/styles/input.css"
+import "src/ui/styles/modal.css"
+// import "src/ui/styles/editor.css"
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

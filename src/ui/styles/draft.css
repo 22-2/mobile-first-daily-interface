@@ -1,0 +1,20 @@
+
+.mfdi-draft-list-modal {
+  width: 100% !important;
+  max-width: 90vw !important;
+  height: 700px !important;
+  max-height: 85vh !important;
+  padding: 0 !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+}
+
+.mfdi-draft-list-modal .modal-content {
+  height: 100%;
+  padding: 0;
+  background-color: var(--background-primary);
+}
+
+.mfdi-draft-list-modal .modal-close-button {
+  display: none; /* We have our own Back button */
+}

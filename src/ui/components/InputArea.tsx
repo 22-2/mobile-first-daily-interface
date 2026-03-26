@@ -201,7 +201,7 @@ const InputAreaControl: FC = memo(() => {
             />
             <HStack className="mfdi-date-controls gap-[0.2em]">
               <Input
-                className={`mfdi-date-input h-[28px] text-[90%] px-[0.5em] ${
+                className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${
                   granularity === "year" ? "w-[6.5em]" : "w-[10em]"
                 }`}
                 type={GRANULARITY_CONFIG[granularity].inputType}
@@ -294,7 +294,7 @@ const InputAreaFooter: FC = memo(() => {
   const { handleSubmit } = usePostActions();
 
   const submitButtonCls = canSubmit
-    ? "bg-[var(--color-accent)] text-[var(--text-on-accent)] cursor-pointer hover:bg-[var(--color-accent-2)]"
+    ? "bg-[var(--interactive-accent)] text-[var(--text-on-accent)] hover:bg-[var(--interactive-accent-hover)] cursor-pointer"
     : "bg-[var(--background-modifier-border)] text-[var(--text-muted)] cursor-default hover:bg-[var(--background-modifier-border)]";
 
   return (
@@ -302,7 +302,7 @@ const InputAreaFooter: FC = memo(() => {
       {editingPost && (
         <Button
           className="min-h-[2.4em] max-h-[2.4em]"
-          variant="ghost"
+          variant="obsidianGhost"
           onClick={cancelEdit}
         >
           キャンセル
@@ -311,7 +311,7 @@ const InputAreaFooter: FC = memo(() => {
       {!isReadOnly && !editingPost && (
         <Button
           className="min-h-[2.4em] max-h-[2.4em]"
-          variant="ghost"
+          variant="obsidianGhost"
           disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
         >

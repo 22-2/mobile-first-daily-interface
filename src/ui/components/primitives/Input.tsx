@@ -10,7 +10,7 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const { className, ...rest } = props;
   const classes = cn(
-    "block w-full rounded-md border bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1",
+    "block w-full rounded-md border py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1",
     className,
   );
 
