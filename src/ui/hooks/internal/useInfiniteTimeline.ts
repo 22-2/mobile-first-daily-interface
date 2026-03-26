@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
@@ -10,7 +10,7 @@ import {
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 
@@ -21,9 +21,7 @@ const PAGE_SIZE_DAYS = 14;
  */
 export const useInfiniteTimeline = () => {
   const db = useMFDIDB();
-  const [cacheBucket, setCacheBucket] = useState(() =>
-    resolveTimelineCacheBucket(),
-  );
+  const queryClient = useQueryClient();
 
   const { activeTopic, displayMode, date } = useSettingsStore(
     useShallow((s) => ({
@@ -51,16 +49,25 @@ export const useInfiniteTimeline = () => {
         }
       }
 
-      const nextBucket = resolveTimelineCacheBucket();
-      setCacheBucket((current) =>
-        current === nextBucket ? current : nextBucket,
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["posts", activeTopic, displayMode],
+      });
     }, 30 * 1000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, []);
+  }, [queryClient, activeTopic, displayMode]);
+
+  useEffect(() => {
+    const handleDbUpdate = () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts", activeTopic, displayMode],
+      });
+    };
+    window.addEventListener("mfdi-db-updated", handleDbUpdate);
+    return () => window.removeEventListener("mfdi-db-updated", handleDbUpdate);
+  }, [queryClient, activeTopic, displayMode]);
 
   // ---------------------------------------------------------------------------
   const fetchPage = useCallback(
@@ -94,7 +101,6 @@ export const useInfiniteTimeline = () => {
       "posts",
       activeTopic,
       displayMode,
-      String(cacheBucket),
       timelineDayKey,
       db ? "db_ready" : "db_pending",
     ],

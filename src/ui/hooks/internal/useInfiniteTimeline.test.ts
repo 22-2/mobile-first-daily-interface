@@ -12,6 +12,7 @@ const setPostsMock = vi.fn();
 const setDateMock = vi.fn();
 const loadFileMock = vi.fn(async (_path: string) => "");
 const cachedReadFileMock = vi.fn(async () => "");
+const invalidateQueriesMock = vi.fn();
 
 const settingsState = {
   activeTopic: "topic-a",
@@ -23,6 +24,7 @@ const settingsState = {
 
 vi.mock("@tanstack/react-query", () => ({
   useInfiniteQuery: (...args: unknown[]) => useInfiniteQueryMock(...args),
+  useQueryClient: () => ({ invalidateQueries: invalidateQueriesMock }),
 }));
 
 vi.mock("src/ui/context/AppContext", () => ({
@@ -111,7 +113,6 @@ describe("useInfiniteTimeline", () => {
       "posts",
       "topic-a",
       "timeline",
-      "123",
       "2026-03-15",
       "db_ready",
     ]);
@@ -124,7 +125,6 @@ describe("useInfiniteTimeline", () => {
       "posts",
       "topic-a",
       "timeline",
-      "123",
       "2026-03-16",
       "db_ready",
     ]);

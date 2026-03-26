@@ -174,6 +174,7 @@ export class TagIndexer {
     await queue.onIdle();
     await this.api.rebuildTagStats();
     await this.api.setMeta("lastFullScanAt", new Date().toISOString());
+    window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
 
   async onFileChanged(
@@ -201,11 +202,15 @@ export class TagIndexer {
       noteDate: identity.noteDate.toISOString(),
       content,
     });
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
+    );
   }
 
   async onFileDeleted(path: string): Promise<void> {
     await this.waitUntilReady();
     await this.api.removeFile(path);
+    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
   }
 
   async onFileRenamed(
