@@ -1,15 +1,18 @@
-import { ItemView, Menu, Scope, TFile, WorkspaceLeaf } from "obsidian";
-import { createRoot, Root } from "react-dom/client";
-import { Settings } from "src/settings";
+import type { Menu, WorkspaceLeaf } from "obsidian";
+import { ItemView, Scope, TFile } from "obsidian";
+import type { Root } from "react-dom/client";
+import { createRoot } from "react-dom/client";
+import type { Settings } from "src/settings";
 import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import type {
+  MFDIViewState} from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
-  getMFDIViewCapabilities,
-  MFDIViewState,
+  getMFDIViewCapabilities
 } from "src/ui/view/state";
 import { ensureExtension } from "src/core/path";
 

@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { useCallback } from "react";
-import { Task } from "src/core/task-text";
+import type { Task } from "src/core/task-text";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
@@ -80,7 +80,7 @@ export const useTaskActions = () => {
       if (!noteState.currentDailyNote) return;
       const path = noteState.currentDailyNote.path;
       const origin = await shell.loadFile(path);
-      let start = task.offset;
+      const start = task.offset;
       let end = origin.indexOf("\n", start);
       if (end === -1) end = origin.length;
       else end += 1;

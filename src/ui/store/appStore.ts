@@ -5,7 +5,7 @@ import { createEnvironmentSlice } from "src/ui/store/slices/environmentSlice";
 import { createNoteSlice } from "src/ui/store/slices/noteSlice";
 import { createPostsSlice } from "src/ui/store/slices/postsSlice";
 import { createSettingsSlice } from "src/ui/store/slices/settingsSlice";
-import { MFDIStore } from "src/ui/store/slices/types";
+import type { MFDIStore } from "src/ui/store/slices/types";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 

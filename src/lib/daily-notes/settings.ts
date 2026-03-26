@@ -1,5 +1,5 @@
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Granularity } from "src/ui/types";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Granularity } from "src/ui/types";
 
 interface PeriodicNoteSettings {
   format: string;

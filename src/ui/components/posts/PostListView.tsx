@@ -12,7 +12,7 @@ import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { MomentLike, Post } from "src/ui/types";
+import type { MomentLike, Post } from "src/ui/types";
 import { getRawTagMetadata } from "src/ui/utils/post-metadata";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";

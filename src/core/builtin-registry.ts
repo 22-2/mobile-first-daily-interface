@@ -1,17 +1,20 @@
 import { around } from "monkey-around";
-import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
+import type { App, Command, EventRef} from "obsidian";
+import { TFile, WorkspaceLeaf } from "obsidian";
+import type {
+  FixedNoteViewExtension} from "src/extensions/fixed-note-view-extension";
 import {
-  createFixedNoteViewExtension,
-  FixedNoteViewExtension,
+  createFixedNoteViewExtension
 } from "src/extensions/fixed-note-view-extension";
+import type {
+  TagIndexExtension} from "src/extensions/tag-index-extension";
 import {
-  createTagIndexExtension,
-  TagIndexExtension,
+  createTagIndexExtension
 } from "src/extensions/tag-index-extension";
-import { Settings } from "src/settings";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Settings } from "src/settings";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
-import { MFDIViewState } from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 

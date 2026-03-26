@@ -1,6 +1,8 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
-import MFDIPlugin from "src/main";
-import { DEFAULT_TOPIC, Topic } from "src/core/topic";
+import type { App} from "obsidian";
+import { PluginSettingTab, Setting } from "obsidian";
+import type MFDIPlugin from "src/main";
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
 
 export interface Settings {
   postFormatOption: PostFormatOption;

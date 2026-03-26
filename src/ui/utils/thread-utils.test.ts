@@ -1,5 +1,5 @@
 import moment from "moment";
-import { Post } from "src/ui/types";
+import type { Post } from "src/ui/types";
 import {
   countVisibleRootPosts,
   createThreadId,

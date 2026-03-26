@@ -1,7 +1,7 @@
 import * as Comlink from "comlink";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import { buildMemoRecordsForNote } from "src/db/scan-note";
-import { ScanWorkerAPI } from "src/db/worker-api";
+import type { ScanWorkerAPI } from "src/db/worker-api";
 
 let database: MFDIDatabase | null = null;
 

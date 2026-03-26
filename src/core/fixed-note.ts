@@ -1,5 +1,5 @@
 import { normalizePath, TFile } from "obsidian";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { ensureExtension } from "src/core/path";
 
 export function normalizeFixedNoteFolder(path: string): string {

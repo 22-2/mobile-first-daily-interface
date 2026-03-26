@@ -4,7 +4,7 @@ import {
   DATE_TIME_FORMAT,
   TIME_FORMAT,
 } from "src/ui/config/date-formats";
-import { Granularity, MomentLike } from "src/ui/types";
+import type { Granularity, MomentLike } from "src/ui/types";
 import { formatTaskText } from "src/core/task-text";
 
 function isFencedCodeBlockStart(line: string): boolean {

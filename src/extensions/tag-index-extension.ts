@@ -1,7 +1,8 @@
-import { TFile } from "obsidian";
-import { TagIndexer, TagIndexerOptions } from "src/db/tag-indexer";
-import { Settings } from "src/settings";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { TFile } from "obsidian";
+import type { TagIndexerOptions } from "src/db/tag-indexer";
+import { TagIndexer } from "src/db/tag-indexer";
+import type { Settings } from "src/settings";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 export interface TagIndexExtension {
   fullScan: (shell: ObsidianAppShell, settings: Settings) => Promise<void>;

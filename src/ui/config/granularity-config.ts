@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────
 // UI display config — granularity ごとの表示設定
 
-import { Granularity, MomentLike } from "src/ui/types";
+import type { Granularity, MomentLike } from "src/ui/types";
 
 interface GranularityConfigEntry {
   label: string;

@@ -1,4 +1,4 @@
-import { Granularity } from "src/ui/types";
+import type { Granularity } from "src/ui/types";
 
 export interface ScannableNote {
   path: string;

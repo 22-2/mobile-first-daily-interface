@@ -1,5 +1,5 @@
 import { TagIndexer } from "src/db/tag-indexer";
-import { ScanWorkerAPI } from "src/db/worker-api";
+import type { ScanWorkerAPI } from "src/db/worker-api";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import { afterEach, describe, expect, test, vi } from "vitest";
 

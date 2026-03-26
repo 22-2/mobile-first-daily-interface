@@ -40,7 +40,7 @@ export function getFaviconUrl(dom: Document, url: string): string {
   const toIconHref = (selector: string) =>
     dom.querySelector(selector)?.attributes.getNamedItem("href")?.value;
 
-  let iconHref =
+  const iconHref =
     toIconHref("link[rel~='icon'][href$='.svg']") ??
     toIconHref("link[rel~='icon'][href$='.png']") ??
     toIconHref("link[rel~='icon'][href$='.ico']") ??

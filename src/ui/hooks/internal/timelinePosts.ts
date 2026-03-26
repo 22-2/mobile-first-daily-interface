@@ -1,5 +1,5 @@
-import { MFDIDatabase } from "src/db/mfdi-db";
-import { MomentLike, Post } from "src/ui/types";
+import type { MFDIDatabase } from "src/db/mfdi-db";
+import type { MomentLike, Post } from "src/ui/types";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 
 export type TimelinePostsPage = {

@@ -1,4 +1,5 @@
-import { FC, useMemo } from "react";
+import type { FC} from "react";
+import { useMemo } from "react";
 import { FocusLayout } from "src/ui/components/statusbar/layouts/FocusLayout";
 import { TagLayout } from "src/ui/components/statusbar/layouts/TagLayout";
 import { ThreadLayout } from "src/ui/components/statusbar/layouts/ThreadLayout";

@@ -1,16 +1,17 @@
-import {
+import type {
   App,
   Editor,
-  MarkdownView,
   TAbstractFile,
   TFile,
-  WorkspaceLeaf,
+  WorkspaceLeaf} from "obsidian";
+import {
+  MarkdownView
 } from "obsidian";
-import { Commands } from "obsidian-typings";
+import type { Commands } from "obsidian-typings";
 import { joinWithSingleBoundaryNewline, skipImmediateLineBreak } from "src/core/post-utils";
 import { parseMarkdownList } from "src/core/strings";
 import { parseTaskTimestamp } from "src/core/task-parser";
-import { Task } from "src/core/task-text";
+import type { Task } from "src/core/task-text";
 
 interface UnsafeAppInterface {
   appId: string;

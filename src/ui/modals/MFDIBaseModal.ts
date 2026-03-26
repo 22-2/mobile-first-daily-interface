@@ -1,4 +1,5 @@
-import { App, Modal } from "obsidian";
+import type { App} from "obsidian";
+import { Modal } from "obsidian";
 
 export abstract class MFDIBaseModal<T = void> extends Modal {
   protected resolvePromise!: (value: T) => void;

@@ -1,16 +1,17 @@
 import * as Comlink from "comlink";
-import { TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import PQueue from "p-queue";
 import {
   GRANULARITIES,
   inferNoteIdentityFromFile,
 } from "src/db/note-file-identity";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 // @ts-expect-error esbuild-plugin-inline-worker rewrites this module to a Worker factory at build time.
 import ScanWorkerFactory from "src/db/scan.worker";
-import { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
-import { Settings } from "src/settings";
-import { DEFAULT_TOPIC, Topic } from "src/core/topic";
+import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
+import type { Settings } from "src/settings";
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
 

@@ -1,6 +1,7 @@
 import { Box, Button, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
-import { DEFAULT_TOPIC, Topic } from "src/core/topic";
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { TopicAddForm } from "src/ui/components/topics/TopicAddForm";
 import { TopicItem } from "src/ui/components/topics/TopicItem";

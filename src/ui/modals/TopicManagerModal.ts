@@ -1,7 +1,9 @@
-import { App, Modal } from "obsidian";
+import type { App} from "obsidian";
+import { Modal } from "obsidian";
 import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import { Topic } from "src/core/topic";
+import type { Root } from "react-dom/client";
+import { createRoot } from "react-dom/client";
+import type { Topic } from "src/core/topic";
 import { TopicManagerView } from "src/ui/components/topics/TopicManagerView";
 
 export class TopicManagerModal extends Modal {

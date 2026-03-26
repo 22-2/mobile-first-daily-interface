@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
-import { Granularity } from "src/ui/types";
+import type { Granularity } from "src/ui/types";
 
 export interface MemoRecord {
   id: string;

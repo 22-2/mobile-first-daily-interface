@@ -1,7 +1,8 @@
-import { Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import path from "node:path";
-import { expect, ObsidianAPI, test } from "obsidian-e2e-toolkit";
-import { MFDIView } from "src/ui/view/MFDIView";
+import type { ObsidianAPI} from "obsidian-e2e-toolkit";
+import { expect, test } from "obsidian-e2e-toolkit";
+import type { MFDIView } from "src/ui/view/MFDIView";
 
 const PLUGIN_PATH = path.resolve(".");
 const HOST_FILE_PATH = "mfdi-e2e-host.md";

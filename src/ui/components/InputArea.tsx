@@ -1,5 +1,6 @@
 import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import { ChangeEvent, FC, memo, useCallback, useMemo } from "react";
+import type { ChangeEvent, FC} from "react";
+import { memo, useCallback, useMemo } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import {

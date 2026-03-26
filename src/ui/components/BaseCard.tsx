@@ -3,7 +3,7 @@ import {
   DISPLAY_DATE_TIME_FORMAT,
   DISPLAY_TIME_FORMAT,
 } from "src/ui/config/date-formats";
-import { DateFilter, Granularity, MomentLike } from "src/ui/types";
+import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
 interface BaseCardProps {
   timestamp: MomentLike;

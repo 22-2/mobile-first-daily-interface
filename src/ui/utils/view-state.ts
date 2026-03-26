@@ -1,6 +1,6 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { DEFAULT_VIEW_STATE } from "src/ui/store/slices/settingsSlice";
-import { SettingsSlice } from "src/ui/store/slices/types";
+import type { SettingsSlice } from "src/ui/store/slices/types";
 
 type ResettableViewState = Pick<
   SettingsSlice,

@@ -1,6 +1,7 @@
-import { Box, BoxProps, HStack } from "@chakra-ui/react";
+import type { BoxProps} from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import { clsx } from "clsx";
-import { FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 
 type BaseLayoutProps = BoxProps & {
   leftItems?: ReactNode;

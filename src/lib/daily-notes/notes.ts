@@ -1,6 +1,6 @@
 import { normalizePath, TFile, TFolder, Vault } from "obsidian";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Granularity, MomentLike } from "src/ui/types";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Granularity, MomentLike } from "src/ui/types";
 import { getPeriodicSettings } from "src/lib/daily-notes/settings";
 import { getDateFromFile, getDateUID } from "src/lib/daily-notes/utils";
 

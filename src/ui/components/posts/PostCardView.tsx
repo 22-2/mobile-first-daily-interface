@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
-import { DateFilter, Granularity, Post } from "src/ui/types";
+import type { DateFilter, Granularity, Post } from "src/ui/types";
 import { getPostTags } from "src/ui/utils/post-metadata";
 
 import { BaseCard } from "src/ui/components/BaseCard";
@@ -15,7 +15,8 @@ import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
+import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
+import { createMeta } from "src/core/meta";
 import { pickUrls } from "src/core/strings";
 import { isPresent } from "src/core/types";
 

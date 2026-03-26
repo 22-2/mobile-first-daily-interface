@@ -1,4 +1,4 @@
-import { Settings } from "src/settings";
+import type { Settings } from "src/settings";
 import {
   DISPLAY_MODE,
   MOVE_STEP,
@@ -6,8 +6,8 @@ import {
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
-import {
+import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
+import type {
   DateFilter,
   DisplayMode,
   Granularity,
@@ -15,7 +15,7 @@ import {
   TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { StateCreator } from "zustand/vanilla";
+import type { StateCreator } from "zustand/vanilla";
 
 export const DEFAULT_VIEW_STATE = {
   displayMode: DISPLAY_MODE.TIMELINE,

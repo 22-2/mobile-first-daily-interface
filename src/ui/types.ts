@@ -1,6 +1,6 @@
-import { Moment } from "moment";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
-import {
+import type { Moment } from "moment";
+import type { DISPLAY_MODE } from "src/ui/config/consntants";
+import type {
   DATE_FILTER_OPTIONS,
   TIME_FILTER_OPTIONS,
 } from "src/ui/config/filter-config";

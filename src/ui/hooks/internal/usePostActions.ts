@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { MarkdownView, Notice, TFile } from "obsidian";
+import type { MarkdownView} from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -9,7 +10,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { Post } from "src/ui/types";
+import type { Post } from "src/ui/types";
 import { resolveTimestamp, toText } from "src/core/post-utils";
 import {
   buildPostFromEntry,

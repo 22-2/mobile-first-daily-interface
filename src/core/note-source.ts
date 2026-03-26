@@ -1,7 +1,7 @@
-import { TFile } from "obsidian";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { Granularity, MomentLike } from "src/ui/types";
-import { MFDINoteMode } from "src/ui/view/state";
+import type { TFile } from "obsidian";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Granularity, MomentLike } from "src/ui/types";
+import type { MFDINoteMode } from "src/ui/view/state";
 import {
   createTopicNote,
   getAllTopicNotes,

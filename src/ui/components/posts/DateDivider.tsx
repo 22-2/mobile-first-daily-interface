@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
-import { MomentLike } from "src/ui/types";
+import type { MomentLike } from "src/ui/types";
 import { replaceDayToJa } from "src/core/strings";
 
 interface DateDividerProps {
