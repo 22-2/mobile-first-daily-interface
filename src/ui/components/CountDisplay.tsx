@@ -1,280 +1,48 @@
-import { Box, HStack } from "@chakra-ui/react";
-import { Menu } from "obsidian";
-import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-
-import { FC, useEffect, useMemo, useState } from "react";
-import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
-import { useAppContext } from "src/ui/context/AppContext";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
-import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
-import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
-import { usePostsStore } from "src/ui/store/postsStore";
+import { FC, useMemo } from "react";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
-import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { getFixedNoteTitle, getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import { FocusLayout } from "./CountDisplay/layouts/FocusLayout";
+import { TagLayout } from "./CountDisplay/layouts/TagLayout";
+import { ThreadLayout } from "./CountDisplay/layouts/ThreadLayout";
+import { TimelineLayout } from "./CountDisplay/layouts/TimelineLayout";
 
-const DateSection: FC = () => {
-  const { date, granularity, dateFilter, displayMode, viewNoteMode } =
-    useSettingsStore(
-      useShallow((s) => ({
-        date: s.date,
-        granularity: s.granularity,
-        dateFilter: s.dateFilter,
-        displayMode: s.displayMode,
-        viewNoteMode: s.viewNoteMode,
-      })),
-    );
-  const onClick = useFilterMenu();
-  const onContextMenu = useGranularityMenu();
-  const isFixedNote = viewNoteMode === "fixed";
-  const [currentTime, setCurrentTime] = useState(() => window.moment());
-  const capabilities = useMemo(
-    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
-    [viewNoteMode],
-  );
-
-  useEffect(() => {
-    if (!isFixedNote) return;
-
-    const timer = window.setInterval(() => {
-      setCurrentTime(window.moment());
-    }, 30_000);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, [isFixedNote]);
-
-  if (
-    isTimelineView(displayMode) ||
-    (!capabilities.supportsDateNavigation && !capabilities.supportsPeriodMenus)
-  )
-    return null;
-
-  const dateLabel = useMemo(() => {
-    // fixedノートでは選択日ではなく「いま」を基準に絞るため、見出しも現在日時を表示する。
-    if (isFixedNote) {
-      return currentTime.format("YYYY-MM-DD HH:mm");
-    }
-
-    if (granularity !== "day" || dateFilter === "today") {
-      return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
-    }
-
-    const format = GRANULARITY_CONFIG.day.displayFormat;
-    if (dateFilter === "this_week") {
-      const start = date.clone().startOf("isoWeek");
-      const end = date.clone().endOf("isoWeek");
-      return `${start.format(format)} - ${end.format(format)}`;
-    }
-
-    const days = parseInt(dateFilter);
-    if (!isNaN(days)) {
-      const start = date.clone().subtract(days - 1, "days");
-      const end = date.clone();
-      return `${start.format(format)} - ${end.format(format)}`;
-    }
-    return date.format(GRANULARITY_CONFIG[granularity].displayFormat);
-  }, [currentTime, date, granularity, dateFilter, isFixedNote]);
-
-  return (
-    <Box>
-      <UnderlinedClickable
-        onClick={onClick}
-        onContextMenu={
-          capabilities.supportsDateNavigation ? onContextMenu : undefined
-        }
-      >
-        {dateLabel}
-      </UnderlinedClickable>
-    </Box>
-  );
-};
-
-const useGranularityMenu = () => {
-  const { granularity, setGranularity } = useSettingsStore(
-    useShallow((s) => ({
-      granularity: s.granularity,
-      setGranularity: s.setGranularity,
-    })),
-  );
-
-  return (e: React.MouseEvent) => {
-    if (!setGranularity) return;
-    e.preventDefault();
-    const menu = new Menu();
-    addGranularityMenuItems(menu, granularity, (g) => setGranularity(g));
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
-  };
-};
-
-const useFilterMenu = () => {
-  const state = useSettingsStore(
-    useShallow((s) => ({
-      granularity: s.granularity,
-      date: s.date,
-      timeFilter: s.timeFilter,
-      dateFilter: s.dateFilter,
-      displayMode: s.displayMode,
-      asTask: s.asTask,
-      activeTopic: s.activeTopic,
-      setTimeFilter: s.setTimeFilter,
-      setDateFilter: s.setDateFilter,
-    })),
-  );
-  const { setTimeFilter, setDateFilter } = state;
-
-  return (e: React.MouseEvent) => {
-    e.preventDefault();
-    const menu = new Menu();
-    addPeriodMenuItems(menu, state, {
-      onChangeTimeFilter: (f) => setTimeFilter?.(f),
-      onChangeDateFilter: (f) => setDateFilter?.(f),
-    });
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
-  };
-};
-
-const CountSection: FC = () => {
-  const settings = useSettingsStore(
-    useShallow((s) => ({
-      granularity: s.granularity,
-      asTask: s.asTask,
-      dateFilter: s.dateFilter,
-      timeFilter: s.timeFilter,
-      displayMode: s.displayMode,
-      threadFocusRootId: s.threadFocusRootId,
-      viewNoteMode: s.viewNoteMode,
-      fixedNotePath: s.fixedNotePath,
-    })),
-  );
-  const postsState = usePostsStore(
-    useShallow((s) => ({
-      posts: s.posts,
-      tasks: s.tasks,
-    })),
-  );
-  const filteredPosts = useFilteredPosts({
-    posts: postsState.posts,
-    ...settings,
-  });
-  const {
-    granularity,
-    asTask,
-    dateFilter,
-    timeFilter,
-    displayMode,
-    viewNoteMode,
-    fixedNotePath,
-  } = settings;
-  const { posts, tasks } = postsState;
-  // const onClick = usePostModeMenu();
-
-  const tasksCount = tasks.length;
-  const filteredPostsCount = filteredPosts.length;
-  const allPostsCount = countVisibleRootPosts(
-    posts.filter(
-      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
-    ),
-  );
-
-  const showTotal =
-    (dateFilter === "today" && timeFilter !== "all" && granularity === "day") ||
-    isTimelineView(displayMode);
-  const totalPart = showTotal ? `/${allPostsCount}` : "";
-
-  if (viewNoteMode === "fixed") {
-    return (
-      <>
-        {asTask
-          ? `${tasksCount} tasks in ${getFixedNoteTitle(fixedNotePath)}`
-          : `${filteredPostsCount} posts in ${getFixedNoteTitle(fixedNotePath)}`}
-      </>
-    );
-  }
-
-  return (
-    <>
-      {asTask
-        ? `${tasksCount} tasks`
-        : `${filteredPostsCount}${totalPart} posts`}
-    </>
-  );
-};
-
-const TopicSection: FC = () => {
-  const { settings } = useAppContext();
-  const {
-    activeTopic,
-    setActiveTopic: onTopicChange,
-    viewNoteMode,
-  } = useSettingsStore(
-    useShallow((s) => ({
-      activeTopic: s.activeTopic,
-      setActiveTopic: s.setActiveTopic,
-      viewNoteMode: s.viewNoteMode,
-    })),
-  );
-
-  if (viewNoteMode === "fixed") return null;
-
-  const activeTopicName = settings.topics.find(
-    (t) => t.id === activeTopic,
-  )?.title;
-  const topics = settings.topics;
-
-  if (!activeTopicName) return null;
-
-  return (
-    <>
-      {" in "}
-      <UnderlinedClickable
-        onClick={(e: React.MouseEvent) => {
-          if (!topics || !onTopicChange) return;
-          e.preventDefault();
-          const menu = new Menu();
-          menu.addSeparator();
-          menu.addItem((item) => {
-            item.setTitle("トピック").setIcon("tag").setDisabled(true);
-          });
-          topics
-            .filter((t) => !t.archived)
-            .forEach((topic) => {
-              menu.addItem((item) =>
-                item
-                  .setTitle(topic.title)
-                  .setChecked(topic.title === activeTopicName)
-                  .onClick(() => onTopicChange(topic.id)),
-              );
-            });
-          menu.showAtMouseEvent(e as unknown as MouseEvent);
-        }}
-      >
-        {activeTopicName}
-      </UnderlinedClickable>
-    </>
-  );
-};
-
+/**
+ * 下部のステータス表示（件数、日付、トピックなど）を管理するコントローラー
+ *
+ * コンポーネント（部品）、レイアウト（配置）、制御ロジックを分離して構成しています。
+ */
 export const CountDisplay: FC = () => {
-  return (
-    <HStack
-      fontSize="var(--font-ui-smaller)"
-      color="var(--text-muted)"
-      marginX="var(--size-4-4)"
-      marginY="var(--size-4-2)"
-      opacity={0.8}
-      spacing={0}
-      justifyContent="space-between"
-    >
-      <DateSection />
-      <Box>
-        <CountSection />
-        <TopicSection />
-      </Box>
-    </HStack>
-  );
+    const { displayMode, threadFocusRootId, activeTopic } = useSettingsStore(
+        useShallow((s) => ({
+            displayMode: s.displayMode,
+            threadFocusRootId: s.threadFocusRootId,
+            activeTopic: s.activeTopic,
+        })),
+    );
+
+    /**
+     * 現在の状態から表示すべきレイアウトを決定するロジック（コントローラー部）
+     */
+    const layout = useMemo(() => {
+        // 1. タイムラインモード: 全期間の投稿を表示
+        if (isTimelineView(displayMode)) {
+            return <TimelineLayout />;
+        }
+
+        // 2. スレッドモード: 特定の投稿以下のツリーを表示
+        if (threadFocusRootId) {
+            return <ThreadLayout />;
+        }
+
+        // 3. タグモード: 特定のトピック/タグで絞り込み中
+        if (activeTopic) {
+            return <TagLayout />;
+        }
+
+        // 4. フォーカスモード: 通常のデイリー/期間表示
+        return <FocusLayout />;
+    }, [displayMode, threadFocusRootId, activeTopic]);
+
+    return layout;
 };
