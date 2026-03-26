@@ -1,4 +1,4 @@
-import { adaptTagIndexer } from "src/core/tag-index-extension";
+import { adaptTagIndexer } from "src/extensions/tag-index-extension";
 import { describe, expect, it, vi } from "vitest";
 
 describe("tag index extension adapter", () => {

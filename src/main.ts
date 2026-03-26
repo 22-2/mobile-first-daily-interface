@@ -5,7 +5,7 @@ import {
   createBuiltinContributions,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
-import { findExistingMFDILeaf } from "src/core/fixed-note-view-extension";
+import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import { DEFAULT_SETTINGS, MFDISettingTab, Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";

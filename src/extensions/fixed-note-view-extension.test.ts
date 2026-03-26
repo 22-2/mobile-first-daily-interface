@@ -2,7 +2,7 @@ import { WorkspaceLeaf } from "obsidian";
 import {
   createFixedNoteViewExtension,
   findExistingMFDILeaf,
-} from "src/core/fixed-note-view-extension";
+} from "src/extensions/fixed-note-view-extension";
 import { describe, expect, it, vi } from "vitest";
 
 describe("fixed note view extension", () => {

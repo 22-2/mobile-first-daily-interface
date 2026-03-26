@@ -3,11 +3,11 @@ import { App, Command, EventRef, TFile, WorkspaceLeaf } from "obsidian";
 import {
   createFixedNoteViewExtension,
   FixedNoteViewExtension,
-} from "src/core/fixed-note-view-extension";
+} from "src/extensions/fixed-note-view-extension";
 import {
   createTagIndexExtension,
   TagIndexExtension,
-} from "src/core/tag-index-extension";
+} from "src/extensions/tag-index-extension";
 import { Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
