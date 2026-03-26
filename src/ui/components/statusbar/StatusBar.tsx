@@ -2,10 +2,10 @@ import { FC, useMemo } from "react";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
-import { FocusLayout } from "./statusbar/layouts/FocusLayout";
-import { TagLayout } from "./statusbar/layouts/TagLayout";
-import { ThreadLayout } from "./statusbar/layouts/ThreadLayout";
-import { TimelineLayout } from "./statusbar/layouts/TimelineLayout";
+import { FocusLayout } from "./layouts/FocusLayout";
+import { TagLayout } from "./layouts/TagLayout";
+import { ThreadLayout } from "./layouts/ThreadLayout";
+import { TimelineLayout } from "./layouts/TimelineLayout";
 
 /**
  * 下部のステータス表示（件数、日付、トピックなど）を管理するコントローラー
