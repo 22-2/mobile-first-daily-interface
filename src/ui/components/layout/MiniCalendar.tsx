@@ -1,10 +1,11 @@
 import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
+import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
-import { usePostsStore } from "src/ui/store/postsStore";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
@@ -134,10 +135,15 @@ function useMiniCalendar() {
     })),
   );
 
-  const { posts } = usePostsStore(
-    useShallow((s) => ({
-      posts: s.posts,
-    })),
+  const db = useMFDIDB();
+  const dbActiveDates = useLiveQuery(
+    async () => {
+      if (!db) return new Set<string>();
+      const dates = await db.getAllActiveDates();
+      return new Set(dates);
+    },
+    [db],
+    new Set<string>(),
   );
 
   const [viewDate, setViewDate] = useState(() =>
@@ -193,20 +199,15 @@ function useMiniCalendar() {
 
   const activityDates = useMemo(() => {
     const notes = listPeriodicNotes(shell, "day", activeTopic);
-    const dates = new Set<string>();
+    const dates = new Set<string>(dbActiveDates);
 
     Object.values(notes).forEach((file) => {
       const d = getPeriodicNoteDate(file, "day", shell, activeTopic);
       if (d) dates.add(d.format("YYYY-MM-DD"));
     });
 
-    for (const post of posts ?? []) {
-      if (post.timestamp) {
-        dates.add(post.timestamp.format("YYYY-MM-DD"));
-      }
-    }
     return dates;
-  }, [shell, activeTopic, posts]);
+  }, [shell, activeTopic, dbActiveDates]);
 
   const weeks = useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
   const { rangeStart, rangeEnd } = calcSelectedRange(

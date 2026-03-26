@@ -129,11 +129,6 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })),
   );
 
-  useEffect(() => {
-    if (!isTimelineView(displayMode)) return;
-
-    updatePostsFromDB({ topicId: activeTopic });
-  }, [displayMode, activeTopic, updatePostsFromDB]);
 
   const { inputRef, scrollContainerRef } = useEditorStore(
     useShallow((state) => ({

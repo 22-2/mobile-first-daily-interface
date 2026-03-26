@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
@@ -119,13 +119,11 @@ export const useInfiniteTimeline = () => {
   });
 
   // ---------------------------------------------------------------------------
-  // ページデータを postsStore に同期
+  // ページデータを取得
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (isTimelineView(displayMode) && infiniteData) {
-      setPosts(infiniteData.pages.flatMap((p) => p.posts));
-    }
-  }, [displayMode, infiniteData, setPosts]);
+  const allPosts = useMemo(() => {
+    return infiniteData?.pages.flatMap((p) => p.posts) ?? [];
+  }, [infiniteData]);
 
   // ---------------------------------------------------------------------------
   // 次ページ読み込みトリガー
@@ -134,7 +132,7 @@ export const useInfiniteTimeline = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  return { loadMore, hasMore: hasNextPage, isFetchingNextPage };
+  return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };
 
 export { TIMELINE_CACHE_INVALIDATE_MS, resolveTimelineCacheBucket };

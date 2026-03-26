@@ -14,6 +14,7 @@ export interface MemoRecord {
   endOffset: number;
   bodyStartOffset: number;
   createdAt: string;
+  noteDate: string; // YYYY-MM-DD
   updatedAt: string;
   archived: 0 | 1;
   deleted: 0 | 1;
@@ -42,12 +43,26 @@ export class MFDIDatabase extends Dexie {
   constructor(appId: string) {
     super(getMFDIDatabaseName(appId));
 
-    this.version(5).stores({
+    this.version(6).stores({
       memos:
-        "id, path, noteName, topicId, noteGranularity, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity], [archived+deleted], [topicId+archived+deleted], [archived+deleted+createdAt], [topicId+archived+deleted+createdAt]",
+        "id, path, noteName, topicId, noteGranularity, noteDate, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity], [archived+deleted], [topicId+archived+deleted], [archived+deleted+createdAt], [topicId+archived+deleted+createdAt]",
       meta: "key",
       tagStats: "tag, count, updatedAt",
     });
+  }
+
+  /**
+   * 投稿が存在する日付をすべて取得する
+   */
+  async getAllActiveDates(): Promise<string[]> {
+    const activeMemos = await this.memos
+      .where("archived")
+      .equals(0)
+      .and((m) => m.deleted === 0)
+      .toArray();
+
+    const dateSet = new Set(activeMemos.map((m) => m.noteDate));
+    return Array.from(dateSet).sort();
   }
 
   /**

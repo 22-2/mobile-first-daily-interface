@@ -56,7 +56,7 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { loadMore, hasMore } = useInfiniteTimeline();
+  const { allPosts, loadMore, hasMore } = useInfiniteTimeline();
   const {
     handleClickTime,
     deletePost,
@@ -67,8 +67,10 @@ export const PostListView: React.FC = memo(() => {
     setPostTags,
   } = usePostActions();
 
+  const timelineView = isTimelineView(settings.displayMode);
+
   const filteredPosts = useFilteredPosts({
-    posts,
+    posts: timelineView ? allPosts : posts,
     ...settings,
     includeThreadReplies: true,
   });
@@ -88,7 +90,6 @@ export const PostListView: React.FC = memo(() => {
     threadFocusRootId,
     setThreadFocusRootId,
   } = settings;
-  const timelineView = isTimelineView(displayMode);
   const threadView = isThreadView({ displayMode, threadFocusRootId });
 
   const showPostContextMenu = useCallback(

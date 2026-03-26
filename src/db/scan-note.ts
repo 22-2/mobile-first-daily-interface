@@ -50,6 +50,7 @@ export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
       endOffset: entry.endOffset,
       bodyStartOffset: entry.bodyStartOffset,
       createdAt,
+      noteDate: file.noteDate,
       updatedAt: createdAt,
       archived: isArchived(entry.metadata) ? 1 : 0,
       deleted: isDeleted(entry.metadata) ? 1 : 0,
