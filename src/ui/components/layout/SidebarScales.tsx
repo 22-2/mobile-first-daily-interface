@@ -26,6 +26,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     setDateFilter,
     granularity,
     activeTopic,
+    handleClickHome,
   } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -34,6 +35,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       setDateFilter: s.setDateFilter,
       granularity: s.granularity,
       activeTopic: s.activeTopic,
+      handleClickHome: s.handleClickHome,
     })),
   );
 
@@ -200,9 +202,16 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 isMuted={!yHasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-year ${isSelected ? "is-selected" : ""}`}
                 onClick={() => {
-                  setGranularity("year");
-                  setDateFilter("today");
-                  setDate(baseDate.clone());
+                  // メンタルモデル: タグのON/OFFトグルのように、
+                  // すでに選択されている期間（年）を再度クリックした場合は
+                  // ホーム状態（デフォルトの日ビューなど）にリセットする
+                  if (isSelected) {
+                    handleClickHome();
+                  } else {
+                    setGranularity("year");
+                    setDateFilter("today");
+                    setDate(baseDate.clone());
+                  }
                 }}
               >
                 <HStack spacing={0} justify="space-between" w="100%">
@@ -227,9 +236,16 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 isMuted={!mHasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-month ${isSelected ? "is-selected" : ""}`}
                 onClick={() => {
-                  setGranularity("month");
-                  setDateFilter("today");
-                  setDate(baseDate.clone());
+                  // メンタルモデル: タグのON/OFFトグルのように、
+                  // すでに選択されている期間（月）を再度クリックした場合は
+                  // ホーム状態（デフォルトの日ビューなど）にリセットする
+                  if (isSelected) {
+                    handleClickHome();
+                  } else {
+                    setGranularity("month");
+                    setDateFilter("today");
+                    setDate(baseDate.clone());
+                  }
                 }}
               >
                 <HStack spacing={0} justify="space-between" w="100%">
@@ -255,12 +271,19 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 isMuted={!hasActivity}
                 className={`mfdi-scale-item mfdi-scale-item-week ${isSelected ? "is-selected" : ""}`}
                 onClick={() => {
-                  setGranularity("week");
-                  setDateFilter("today");
-                  const targetDay = w.isBefore(monthStart)
-                    ? monthStart.clone()
-                    : w.clone();
-                  setDate(targetDay);
+                  // メンタルモデル: タグのON/OFFトグルのように、
+                  // すでに選択されている期間（週）を再度クリックした場合は
+                  // ホーム状態（デフォルトの日ビューなど）にリセットする
+                  if (isSelected) {
+                    handleClickHome();
+                  } else {
+                    setGranularity("week");
+                    setDateFilter("today");
+                    const targetDay = w.isBefore(monthStart)
+                      ? monthStart.clone()
+                      : w.clone();
+                    setDate(targetDay);
+                  }
                 }}
               >
                 <HStack spacing={0} justify="space-between" w="100%">
