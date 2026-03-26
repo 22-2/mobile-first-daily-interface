@@ -1,7 +1,3 @@
-import {
-  collectPeriodicNoteEntries,
-  searchPeriodicDayWindow,
-} from "src/core/note-source";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
