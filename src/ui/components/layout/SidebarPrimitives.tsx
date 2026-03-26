@@ -43,7 +43,7 @@ export const SidebarTextButton: React.FC<{
   return (
     <Box
       px={3}
-      py={1.5}
+      py={0}
       borderRadius="6px"
       bg={isSelected ? activeBg : "transparent"}
       color={
@@ -53,10 +53,15 @@ export const SidebarTextButton: React.FC<{
             ? "var(--text-muted)"
             : "var(--text-normal)"
       }
+      display="flex"
+      alignItems="center"
+      height="24px"
       cursor={onClick ? "pointer" : "default"}
       fontSize="xs"
+      lineHeight="1.2"
       fontWeight={isSelected ? "bold" : "normal"}
       transition="background-color 0.1s ease"
+      whiteSpace="nowrap"
       _hover={
         onClick
           ? {
@@ -69,5 +74,22 @@ export const SidebarTextButton: React.FC<{
     >
       {children}
     </Box>
+  );
+};
+
+export const SidebarItemCount: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  return (
+    <Text
+      fontSize="10px"
+      lineHeight="1"
+      color="var(--text-muted)"
+      fontWeight="normal"
+      ml={1}
+      flexShrink={0}
+    >
+      {children}
+    </Text>
   );
 };

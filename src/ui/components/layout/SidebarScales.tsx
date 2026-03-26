@@ -4,6 +4,7 @@ import { resolvePeriodicNote } from "src/core/note-source";
 import {
   SidebarSectionHeader,
   SidebarTextButton,
+  SidebarItemCount,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -106,15 +107,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   const renderCountBadge = (counts?: Counts) => {
     if (!counts || (counts.posts === 0 && counts.tasks === 0)) return null;
     return (
-      <Text
-        fontSize="10px"
-        color="var(--text-muted)"
-        fontWeight="normal"
-        ml={1}
-        display="inline"
-      >
+      <SidebarItemCount>
         ({counts.posts}p / {counts.tasks}t)
-      </Text>
+      </SidebarItemCount>
     );
   };
 
@@ -124,7 +119,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     onClick: () => void;
   }> = ({ label, isActive, onClick }) => (
     <Text
-      fontSize="var(--font-ui-small);"
+      fontSize="var(--font-ui-small)"
       fontWeight={isActive ? "bold" : "normal"}
       color={isActive ? "var(--color-accent)" : "var(--text-muted)"}
       cursor="pointer"
@@ -154,7 +149,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     <VStack
       align="stretch"
       spacing={0}
-      p={2}
+      pt={2}
       mt={2}
       className="mfdi-sidebar-scales"
     >
@@ -208,7 +203,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 setDate(baseDate.clone());
               }}
             >
-              <HStack spacing={0} justify="space-between">
+              <HStack spacing={0} justify="space-between" w="100%">
                 <Text as="span">{baseDate.format("YYYY")}</Text>
                 {renderCountBadge(yCounts)}
               </HStack>
@@ -234,7 +229,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 setDate(baseDate.clone());
               }}
             >
-              <HStack spacing={0} justify="space-between">
+              <HStack spacing={0} justify="space-between" w="100%">
                 <Text as="span">{baseDate.format("YYYY-MM")}</Text>
                 {renderCountBadge(mCounts)}
               </HStack>
@@ -265,7 +260,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   setDate(targetDay);
                 }}
               >
-                <HStack spacing={0} justify="space-between">
+                <HStack spacing={0} justify="space-between" w="100%">
                   <Text as="span">W{w.isoWeek()}</Text>
                   {renderCountBadge(counts)}
                 </HStack>

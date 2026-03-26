@@ -5,6 +5,7 @@ import { MFDIDatabase } from "src/db/mfdi-db";
 import {
   SidebarSectionHeader,
   SidebarTextButton,
+  SidebarItemCount,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -96,15 +97,14 @@ export const TagList: React.FC = () => {
             <SidebarTextButton
               key={item.tag}
               isSelected={isActive}
+              className={`mfdi-scale-item mfdi-scale-item-tag ${isActive ? "is-selected" : ""}`}
               onClick={() => {
                 setActiveTag(isActive ? null : item.tag);
               }}
             >
-              <HStack spacing={0} justify="space-between">
+              <HStack spacing={0} justify="space-between" w="100%">
                 <Text as="span">{item.tag}</Text>
-                <Text as="span" color="var(--text-muted)">
-                  {item.count}
-                </Text>
+                <SidebarItemCount>{item.count}</SidebarItemCount>
               </HStack>
             </SidebarTextButton>
           );
