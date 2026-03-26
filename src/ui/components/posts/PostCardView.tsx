@@ -17,7 +17,7 @@ import { isThreadRoot } from "src/ui/utils/thread-utils";
 import { HTMLMeta, ImageMeta, TwitterMeta, createMeta } from "src/utils/meta";
 import { pickUrls } from "src/utils/strings";
 import { isPresent } from "src/utils/types";
-import { MarkedMarkdown } from "../MarkedMarkdown";
+import { ObsidianMarkdown } from "../ObsidianMarkdown";
 
 export const PostCardView = React.memo(
   ({
@@ -112,7 +112,7 @@ export const PostCardView = React.memo(
           <VStack align="stretch" gap={3}>
             {/* Message Body */}
             <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
-              <MarkedMarkdown content={post.message} />
+              <ObsidianMarkdown content={post.message} />
             </Box>
 
             {settings.enabledCardView && (

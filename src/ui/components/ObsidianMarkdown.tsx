@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { Component, MarkdownRenderer } from "obsidian";
 import { useEffect, useRef } from "react";
-import { useObsidianApp } from "src/ui/context/AppContext";
+import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
 
 interface Props {
   content: string;
@@ -16,27 +16,21 @@ export const ObsidianMarkdown: React.FC<Props> = ({
 }) => {
   const app = useObsidianApp();
   const rootRef = useRef<HTMLDivElement>(null);
+  const { view } = useAppContext();
 
   useEffect(() => {
     if (!rootRef.current) return;
 
-    const component = new Component();
-    component.load();
-
-    rootRef.current.innerHTML = "";
+    rootRef.current.empty();
 
     MarkdownRenderer.render(
       app,
       content,
       rootRef.current,
       sourcePath ?? "",
-      component,
+      view,
     ).catch((e) => console.error("Failed to render markdown", e));
-
-    return () => {
-      component.unload();
-    };
-  }, [content, sourcePath, app, inline]);
+  }, [content, sourcePath, app, inline, view]);
 
   return (
     <Box

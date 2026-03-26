@@ -64,7 +64,6 @@
     "dexie-react-hooks": "^4.2.0",
     "es-toolkit": "^1.45.1",
     "framer-motion": "^12.38.0",
-    "marked-react": "^4.0.0",
     "monkey-around": "^3.0.0",
     "p-queue": "^9.1.0",
     "preact": "^10.29.0",
