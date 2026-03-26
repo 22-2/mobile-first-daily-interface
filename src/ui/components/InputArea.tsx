@@ -293,16 +293,12 @@ const InputAreaFooter: FC = memo(() => {
 
   const { handleSubmit } = usePostActions();
 
-  const submitButtonCls = canSubmit
-    ? "bg-[var(--interactive-accent)] text-[var(--text-on-accent)] hover:bg-[var(--interactive-accent-hover)] cursor-pointer"
-    : "bg-[var(--background-modifier-border)] text-[var(--text-muted)] cursor-default hover:bg-[var(--background-modifier-border)]";
-
   return (
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
       {editingPost && (
         <Button
           className="h-[2.4em]"
-          variant="obsidianGhost"
+          variant="ghost"
           onClick={cancelEdit}
         >
           キャンセル
@@ -311,7 +307,7 @@ const InputAreaFooter: FC = memo(() => {
       {!isReadOnly && !editingPost && (
         <Button
           className="h-[2.4em]"
-          variant="obsidianGhost"
+          variant="ghost"
           disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
         >
@@ -320,7 +316,8 @@ const InputAreaFooter: FC = memo(() => {
       )}
       <Button
         disabled={!canSubmit}
-        className={`${submitButtonCls} h-[2.4em]`}
+        className="h-[2.4em]"
+        variant="accent"
         onClick={handleSubmit}
       >
         {isReadOnly
