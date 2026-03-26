@@ -1,13 +1,13 @@
 import * as React from "react";
+import { createDraftSlice } from "src/ui/store/slices/draftSlice";
+import { createEditorSlice } from "src/ui/store/slices/editorSlice";
+import { createEnvironmentSlice } from "src/ui/store/slices/environmentSlice";
+import { createNoteSlice } from "src/ui/store/slices/noteSlice";
+import { createPostsSlice } from "src/ui/store/slices/postsSlice";
+import { createSettingsSlice } from "src/ui/store/slices/settingsSlice";
+import { MFDIStore } from "src/ui/store/slices/types";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
-import { createDraftSlice } from "./slices/draftSlice";
-import { createEditorSlice } from "./slices/editorSlice";
-import { createEnvironmentSlice } from "./slices/environmentSlice";
-import { createNoteSlice } from "./slices/noteSlice";
-import { createPostsSlice } from "./slices/postsSlice";
-import { createSettingsSlice } from "./slices/settingsSlice";
-import { MFDIStore } from "./slices/types";
 
 export function createAppStore() {
   return createStore<MFDIStore>((set, get, store) => ({

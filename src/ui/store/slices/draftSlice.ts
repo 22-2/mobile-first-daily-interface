@@ -1,6 +1,6 @@
+import { DraftSlice, MFDIStore } from "src/ui/store/slices/types";
 import { Draft } from "src/ui/types";
 import { StateCreator } from "zustand";
-import { DraftSlice, MFDIStore } from "./types";
 
 export const createDraftSlice: StateCreator<MFDIStore, [], [], DraftSlice> = (
   set,

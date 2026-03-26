@@ -1,6 +1,7 @@
 import { ItemView, Menu, Scope, TFile, WorkspaceLeaf } from "obsidian";
 import { createRoot, Root } from "react-dom/client";
 import { Settings } from "src/settings";
+import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
@@ -11,7 +12,6 @@ import {
   MFDIViewState,
 } from "src/ui/view/state";
 import { ensureExtension } from "src/utils/path";
-import { EditableTitleBar } from "../components/EditableTitleBar";
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -67,15 +67,18 @@ export class MFDIView extends ItemView {
       menu.addSeparator();
       menu.addItem((item) => {
         item
-        .setTitle("削除")
-        .setIcon("trash")
-        .setWarning(true)
-        .onClick(async () => {
-          const file = this.app.metadataCache.getFirstLinkpathDest(this.state.fixedNotePath!, "");
-          if (file instanceof TFile) {
-            this.app.fileManager.trashFile(file);
-          }
-        });
+          .setTitle("削除")
+          .setIcon("trash")
+          .setWarning(true)
+          .onClick(async () => {
+            const file = this.app.metadataCache.getFirstLinkpathDest(
+              this.state.fixedNotePath!,
+              "",
+            );
+            if (file instanceof TFile) {
+              this.app.fileManager.trashFile(file);
+            }
+          });
       });
     }
     super.onPaneMenu(menu, prev);

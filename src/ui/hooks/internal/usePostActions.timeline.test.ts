@@ -3,6 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { TFile } from "obsidian";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
+import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { editorStore } from "src/ui/store/editorStore";
 import { noteStore } from "src/ui/store/noteStore";
@@ -11,7 +12,6 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import * as dailyNotes from "src/utils/daily-notes";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createRefreshPosts } from "./refreshPosts";
 
 vi.mock("@tanstack/react-query", async () => {
   const actual = await vi.importActual<typeof import("@tanstack/react-query")>(

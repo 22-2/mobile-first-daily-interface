@@ -12,12 +12,12 @@ import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
+import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import { HTMLMeta, ImageMeta, TwitterMeta, createMeta } from "src/utils/meta";
+import { createMeta, HTMLMeta, ImageMeta, TwitterMeta } from "src/utils/meta";
 import { pickUrls } from "src/utils/strings";
 import { isPresent } from "src/utils/types";
-import { ObsidianMarkdown } from "../ObsidianMarkdown";
 
 export const PostCardView = React.memo(
   ({

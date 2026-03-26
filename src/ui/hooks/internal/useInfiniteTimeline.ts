@@ -1,19 +1,18 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
-import { useNoteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
-import { MomentLike } from "src/ui/types";
-import { isTimelineView } from "src/ui/utils/view-mode";
-import { useShallow } from "zustand/shallow";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
   TimelinePostsPage,
   TIMELINE_CACHE_INVALIDATE_MS,
-} from "./timelinePosts";
+} from "src/ui/hooks/internal/timelinePosts";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
+import { useNoteStore } from "src/ui/store/noteStore";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { isTimelineView } from "src/ui/utils/view-mode";
+import { useShallow } from "zustand/shallow";
 
 const PAGE_SIZE_DAYS = 14;
 

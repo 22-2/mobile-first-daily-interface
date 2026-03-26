@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import moment from "moment";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useInfiniteTimeline } from "./useInfiniteTimeline";
 
 const useInfiniteQueryMock = vi.fn();
 const createTimelinePageFetcherMock = vi.fn();

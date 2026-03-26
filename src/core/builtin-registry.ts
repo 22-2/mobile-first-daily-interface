@@ -118,10 +118,7 @@ export function createTagIndexLifecycleContribution(
       });
 
       context.app.workspace.onLayoutReady(() => {
-        void tagIndexExtension.fullScan(
-          context.shell,
-          context.getSettings(),
-        );
+        void tagIndexExtension.fullScan(context.shell, context.getSettings());
       });
 
       context.registerEvent(
@@ -207,9 +204,7 @@ export function createFixedNoteViewLifecycleContribution(
           setViewState(original: Function) {
             return function (this: WorkspaceLeaf, viewState, eState) {
               const nextState =
-                fixedNoteViewExtension.convertMarkdownViewState(
-                  viewState,
-                );
+                fixedNoteViewExtension.convertMarkdownViewState(viewState);
               return original.call(this, nextState, eState);
             };
           },

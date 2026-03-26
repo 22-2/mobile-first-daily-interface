@@ -1,5 +1,5 @@
 import { App } from "obsidian";
-import { MFDIBaseModal } from "./MFDIBaseModal";
+import { MFDIBaseModal } from "src/ui/modals/MFDIBaseModal";
 
 export async function showInputModal(
   app: App,

@@ -37,7 +37,10 @@ export function createTimelinePageFetcher({
     baseDate: MomentLike,
     days: number,
   ): Promise<TimelinePostsPage> => {
-    const windowStart = baseDate.clone().subtract(days - 1, "days").startOf("day");
+    const windowStart = baseDate
+      .clone()
+      .subtract(days - 1, "days")
+      .startOf("day");
     const windowEnd = baseDate.clone().endOf("day");
 
     const records = await db.getVisibleMemosByDateRange({

@@ -1,9 +1,9 @@
 import moment from "moment";
 import { MemoRecord } from "src/db/mfdi-db";
+import { ScannableNote } from "src/db/worker-api";
 import { DATE_FORMAT, DATE_TIME_FORMAT } from "src/ui/config/date-formats";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { parseThinoEntries } from "src/utils/thino";
-import { ScannableNote } from "./worker-api";
 
 function resolveMemoTimestamp(
   noteDate: string,

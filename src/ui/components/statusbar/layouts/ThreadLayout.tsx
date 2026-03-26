@@ -1,20 +1,20 @@
 import { Box } from "@chakra-ui/react";
 import { FC } from "react";
-import { DateDisplay } from "../parts/DateDisplay";
-import { ResultCount } from "../parts/ResultCount";
-import { TopicDisplay } from "../parts/TopicDisplay";
-import { BaseLayout } from "./BaseLayout";
+import { BaseLayout } from "src/ui/components/statusbar/layouts/BaseLayout";
+import { DateDisplay } from "src/ui/components/statusbar/parts/DateDisplay";
+import { ResultCount } from "src/ui/components/statusbar/parts/ResultCount";
+import { TopicDisplay } from "src/ui/components/statusbar/parts/TopicDisplay";
 
 export const ThreadLayout: FC = () => {
-    return (
-        <BaseLayout
-            leftItems={<DateDisplay />}
-            rightItems={
-                <Box>
-                    <ResultCount />
-                    <TopicDisplay />
-                </Box>
-            }
-        />
-    );
+  return (
+    <BaseLayout
+      leftItems={<DateDisplay />}
+      rightItems={
+        <Box>
+          <ResultCount />
+          <TopicDisplay />
+        </Box>
+      }
+    />
+  );
 };

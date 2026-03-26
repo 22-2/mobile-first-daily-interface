@@ -3,13 +3,13 @@ import { TFile } from "obsidian";
 import { useCallback, useEffect } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { useAppContext } from "src/ui/context/AppContext";
+import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
-import { createRefreshPosts } from "./internal/refreshPosts";
 
 /**
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。

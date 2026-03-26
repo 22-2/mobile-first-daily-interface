@@ -68,7 +68,10 @@ export class MFDIDatabase extends Dexie {
   /**
    * 未アーカイブ・未削除のメモを最新順に取得する（インデックス検索）
    */
-  async getLatestVisibleMemos(topicId?: string, limit = 300): Promise<MemoRecord[]> {
+  async getLatestVisibleMemos(
+    topicId?: string,
+    limit = 300,
+  ): Promise<MemoRecord[]> {
     if (topicId) {
       return await this.memos
         .where("[topicId+archived+deleted+createdAt]")
@@ -118,7 +121,12 @@ export class MFDIDatabase extends Dexie {
     if (topicId) {
       query = this.memos
         .where("[topicId+archived+deleted+createdAt]")
-        .between([topicId, 0, 0, startDate], [topicId, 0, 0, endDate], true, true);
+        .between(
+          [topicId, 0, 0, startDate],
+          [topicId, 0, 0, endDate],
+          true,
+          true,
+        );
     } else {
       query = this.memos
         .where("[archived+deleted+createdAt]")

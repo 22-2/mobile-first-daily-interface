@@ -1,4 +1,5 @@
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
+import { MFDIStore, PostsSlice } from "src/ui/store/slices/types";
 import { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
@@ -11,7 +12,6 @@ import {
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { parseThinoEntries } from "src/utils/thino";
 import { StateCreator } from "zustand/vanilla";
-import { MFDIStore, PostsSlice } from "./types";
 
 function buildPostsFromContent(
   content: string,
@@ -90,7 +90,10 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       };
     }
 
-    const windowStart = date.clone().subtract(days - 1, "days").startOf("day");
+    const windowStart = date
+      .clone()
+      .subtract(days - 1, "days")
+      .startOf("day");
     const windowEnd = date.clone().endOf("day");
 
     const records = await db.getVisibleMemosByDateRange({

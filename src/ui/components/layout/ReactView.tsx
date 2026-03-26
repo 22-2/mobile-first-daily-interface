@@ -3,13 +3,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Settings } from "src/settings";
-import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
+import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -128,7 +128,6 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       displayMode: state.displayMode,
     })),
   );
-
 
   const { inputRef, scrollContainerRef } = useEditorStore(
     useShallow((state) => ({

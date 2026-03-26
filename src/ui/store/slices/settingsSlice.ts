@@ -6,6 +6,7 @@ import {
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
+import { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
 import {
   DateFilter,
   DisplayMode,
@@ -15,7 +16,6 @@ import {
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { StateCreator } from "zustand/vanilla";
-import { MFDIStore, SettingsSlice } from "./types";
 
 export const DEFAULT_VIEW_STATE = {
   displayMode: DISPLAY_MODE.TIMELINE,

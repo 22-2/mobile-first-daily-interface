@@ -1,13 +1,11 @@
 import { HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useEffect, useMemo, useState } from "react";
-import { MFDIDatabase } from "src/db/mfdi-db";
+import { useEffect, useState } from "react";
 import {
+  SidebarItemCount,
   SidebarSectionHeader,
   SidebarTextButton,
-  SidebarItemCount,
 } from "src/ui/components/layout/SidebarPrimitives";
-import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 

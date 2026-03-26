@@ -2,9 +2,8 @@ import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
 import {
-  SidebarSectionHeader,
-  SidebarTextButton,
   SidebarItemCount,
+  SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -53,7 +52,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   const [countsMap, setCountsMap] = useState<Record<string, Counts>>({});
   const [loading, setLoading] = useState(false);
 
-  const [filter, setFilter] = useState<"all" | "year" | "month" | "week">("all");
+  const [filter, setFilter] = useState<"all" | "year" | "month" | "week">(
+    "all",
+  );
 
   // 指定した期間の投稿数とタスク数を取得する関数
   const getCountsForPeriod = useCallback(
@@ -185,57 +186,59 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       </HStack>
 
       <VStack align="stretch" spacing={0} className="mfdi-scale-list-unified">
-        {(filter === "all" || filter === "year") && (() => {
-          const yKey = `year-${baseDate.format("YYYY")}`;
-          const yCounts = countsMap[yKey];
-          const yHasActivity =
-            yCounts && (yCounts.posts > 0 || yCounts.tasks > 0);
-          const isSelected = granularity === "year";
+        {(filter === "all" || filter === "year") &&
+          (() => {
+            const yKey = `year-${baseDate.format("YYYY")}`;
+            const yCounts = countsMap[yKey];
+            const yHasActivity =
+              yCounts && (yCounts.posts > 0 || yCounts.tasks > 0);
+            const isSelected = granularity === "year";
 
-          return (
-            <SidebarTextButton
-              isSelected={isSelected}
-              isMuted={!yHasActivity}
-              className={`mfdi-scale-item mfdi-scale-item-year ${isSelected ? "is-selected" : ""}`}
-              onClick={() => {
-                setGranularity("year");
-                setDateFilter("today");
-                setDate(baseDate.clone());
-              }}
-            >
-              <HStack spacing={0} justify="space-between" w="100%">
-                <Text as="span">{baseDate.format("YYYY")}</Text>
-                {renderCountBadge(yCounts)}
-              </HStack>
-            </SidebarTextButton>
-          );
-        })()}
+            return (
+              <SidebarTextButton
+                isSelected={isSelected}
+                isMuted={!yHasActivity}
+                className={`mfdi-scale-item mfdi-scale-item-year ${isSelected ? "is-selected" : ""}`}
+                onClick={() => {
+                  setGranularity("year");
+                  setDateFilter("today");
+                  setDate(baseDate.clone());
+                }}
+              >
+                <HStack spacing={0} justify="space-between" w="100%">
+                  <Text as="span">{baseDate.format("YYYY")}</Text>
+                  {renderCountBadge(yCounts)}
+                </HStack>
+              </SidebarTextButton>
+            );
+          })()}
 
-        {(filter === "all" || filter === "month") && (() => {
-          const mKey = `month-${baseDate.format("YYYY-MM")}`;
-          const mCounts = countsMap[mKey];
-          const mHasActivity =
-            mCounts && (mCounts.posts > 0 || mCounts.tasks > 0);
-          const isSelected = granularity === "month";
+        {(filter === "all" || filter === "month") &&
+          (() => {
+            const mKey = `month-${baseDate.format("YYYY-MM")}`;
+            const mCounts = countsMap[mKey];
+            const mHasActivity =
+              mCounts && (mCounts.posts > 0 || mCounts.tasks > 0);
+            const isSelected = granularity === "month";
 
-          return (
-            <SidebarTextButton
-              isSelected={isSelected}
-              isMuted={!mHasActivity}
-              className={`mfdi-scale-item mfdi-scale-item-month ${isSelected ? "is-selected" : ""}`}
-              onClick={() => {
-                setGranularity("month");
-                setDateFilter("today");
-                setDate(baseDate.clone());
-              }}
-            >
-              <HStack spacing={0} justify="space-between" w="100%">
-                <Text as="span">{baseDate.format("YYYY-MM")}</Text>
-                {renderCountBadge(mCounts)}
-              </HStack>
-            </SidebarTextButton>
-          );
-        })()}
+            return (
+              <SidebarTextButton
+                isSelected={isSelected}
+                isMuted={!mHasActivity}
+                className={`mfdi-scale-item mfdi-scale-item-month ${isSelected ? "is-selected" : ""}`}
+                onClick={() => {
+                  setGranularity("month");
+                  setDateFilter("today");
+                  setDate(baseDate.clone());
+                }}
+              >
+                <HStack spacing={0} justify="space-between" w="100%">
+                  <Text as="span">{baseDate.format("YYYY-MM")}</Text>
+                  {renderCountBadge(mCounts)}
+                </HStack>
+              </SidebarTextButton>
+            );
+          })()}
 
         {(filter === "all" || filter === "week") &&
           weeks.map((w) => {

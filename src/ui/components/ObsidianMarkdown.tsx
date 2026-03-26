@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react";
-import { Component, MarkdownRenderer } from "obsidian";
+import { MarkdownRenderer } from "obsidian";
 import { useEffect, useRef } from "react";
 import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
 

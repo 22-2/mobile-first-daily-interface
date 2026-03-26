@@ -1,6 +1,6 @@
 import { MFDIDatabase } from "src/db/mfdi-db";
+import { EnvironmentSlice, MFDIStore } from "src/ui/store/slices/types";
 import { StateCreator } from "zustand/vanilla";
-import { EnvironmentSlice, MFDIStore } from "./types";
 
 export const createEnvironmentSlice: StateCreator<
   MFDIStore,

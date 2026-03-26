@@ -3,6 +3,7 @@ import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { useAppContext } from "src/ui/context/AppContext";
+import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -20,7 +21,6 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/utils/tags";
 import { parseThinoEntries } from "src/utils/thino";
 import { useShallow } from "zustand/shallow";
-import { createRefreshPosts } from "./refreshPosts";
 
 export const usePostActions = () => {
   const { shell, settings } = useAppContext();

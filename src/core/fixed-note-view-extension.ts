@@ -37,7 +37,6 @@ export function findExistingMFDILeaf(
   leaves: WorkspaceLeaf[],
   state: Partial<MFDIViewState>,
 ): WorkspaceLeaf | undefined {
-
   const isFixedMode = state.noteMode === "fixed";
   const fixedPath = normalizeFixedNotePath(
     typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
@@ -72,7 +71,6 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
 
       // TODO: ここでファイルの存在チェックを入れたい
       // app.vault.adapter.exists(filePath) で存在チェックできるはずだが、app をこの関数に渡す必要があるため、実装が少し面倒。
-
 
       return {
         ...candidate,

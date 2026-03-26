@@ -1,5 +1,6 @@
 import { TFile } from "obsidian";
 import { RefObject } from "react";
+import { MFDIDatabase } from "src/db/mfdi-db";
 import { Settings } from "src/settings";
 import { ObsidianAppShell, Task } from "src/shell/obsidian-shell";
 import { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
@@ -13,7 +14,6 @@ import {
   TimeFilter,
 } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
-import { MFDIDatabase } from "src/db/mfdi-db";
 import { MFDIStorage } from "src/utils/storage";
 
 export interface EnvironmentSlice {

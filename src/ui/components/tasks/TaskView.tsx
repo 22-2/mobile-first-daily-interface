@@ -2,8 +2,8 @@ import { Box, Checkbox, HStack } from "@chakra-ui/react";
 import { memo } from "react";
 import { Task } from "src/shell/obsidian-shell";
 import { BaseCard } from "src/ui/components/BaseCard";
-import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { Card } from "src/ui/components/cards/Card";
+import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { Granularity, TimeFilter } from "src/ui/types";
 import { excludeWikiLink } from "src/utils/strings";
 
@@ -46,9 +46,7 @@ export const TaskView = memo(
               wordBreak={"break-word"}
               flex="1"
             >
-              <ObsidianMarkdown
-                content={excludeWikiLink(task.name)}
-              />
+              <ObsidianMarkdown content={excludeWikiLink(task.name)} />
             </Box>
           </HStack>
         </BaseCard>
