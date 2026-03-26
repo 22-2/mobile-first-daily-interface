@@ -12,8 +12,8 @@ export interface MemoRecord {
   metadataJson: string;
   createdAt: string;
   updatedAt: string;
-  archived: boolean;
-  deleted: boolean;
+  archived: 0 | 1;
+  deleted: 0 | 1;
 }
 
 export interface MetaRecord {
@@ -39,7 +39,7 @@ export class MFDIDatabase extends Dexie {
   constructor(appId: string) {
     super(getMFDIDatabaseName(appId));
 
-    this.version(2).stores({
+    this.version(3).stores({
       memos:
         "id, path, noteName, topicId, noteGranularity, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity], [archived+deleted], [topicId+archived+deleted]",
       meta: "key",

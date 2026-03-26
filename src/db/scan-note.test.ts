@@ -26,12 +26,12 @@ describe("buildMemoRecordsForNote", () => {
       noteGranularity: "day",
       content: "hello",
       tags: ["IT", "Later"],
-      archived: false,
-      deleted: false,
+      archived: 0,
+      deleted: 0,
     });
     expect(records[1]).toMatchObject({
       content: "hidden",
-      archived: true,
+      archived: 1,
     });
   });
 

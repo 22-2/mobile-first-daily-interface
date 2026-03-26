@@ -37,8 +37,8 @@ function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
     metadataJson: JSON.stringify({ mfditags: "IT, Later" }),
     createdAt: "2026-03-23T10:00:00.000Z",
     updatedAt: "2026-03-23T10:00:00.000Z",
-    archived: false,
-    deleted: false,
+    archived: 0,
+    deleted: 0,
     ...overrides,
   };
 }

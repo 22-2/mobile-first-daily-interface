@@ -48,8 +48,8 @@ export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
       metadataJson: JSON.stringify(entry.metadata),
       createdAt,
       updatedAt: createdAt,
-      archived: isArchived(entry.metadata),
-      deleted: isDeleted(entry.metadata),
+      archived: isArchived(entry.metadata) ? 1 : 0,
+      deleted: isDeleted(entry.metadata) ? 1 : 0,
     };
   });
 }

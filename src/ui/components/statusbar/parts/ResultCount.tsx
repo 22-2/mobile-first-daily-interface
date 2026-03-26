@@ -20,12 +20,12 @@ const queryMemoCount = (
     if (activeTopic) {
         return db.memos
             .where("[topicId+archived+deleted]")
-            .equals([activeTopic, false, false] as any)
+            .equals([activeTopic, 0, 0])
             .count();
     }
     return db.memos
         .where("[archived+deleted]")
-        .equals([false, false] as any)
+        .equals([0, 0])
         .count();
 };
 
