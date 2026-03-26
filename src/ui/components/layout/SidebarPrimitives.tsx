@@ -14,7 +14,7 @@ export const SidebarSectionHeader: React.FC<{
   return (
     <HStack justify="space-between" px={2} mb={1} className={className}>
       <Text
-        fontSize="11px"
+        fontSize="var(--font-ui-small);"
         fontWeight="bold"
         color="var(--text-muted)"
         textTransform="uppercase"

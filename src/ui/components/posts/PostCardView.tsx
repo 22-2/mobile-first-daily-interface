@@ -71,7 +71,7 @@ export const PostCardView = React.memo(
           onDoubleClick={() => !isDimmed && onEdit?.(post)}
           footerAddon={
             tags.length > 0 ? (
-              <HStack gap={1} flexWrap="wrap">
+              <HStack gap="var(--size-2-3);" flexWrap="wrap">
                 {tags.map((tag) => (
                   <Tag
                     key={tag}

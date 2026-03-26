@@ -31,7 +31,7 @@ export const TaskView = memo(
           isDimmed={disabled}
           onContextMenu={(e) => onContextMenu?.(task, e)}
         >
-          <HStack align="flex-start" gap={3}>
+          <HStack align="flex-start" gap="var(--size-2-1);">
             <Checkbox
               isChecked={task.mark !== " "}
               onChange={(ev) => onChange(ev.target.checked)}

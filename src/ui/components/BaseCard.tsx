@@ -77,7 +77,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       >
         {footerAddon}
         <Spacer />
-        <HStack gap={2}>
+        <HStack gap="var(--size-2-1);">
           {footerRightAddon}
           <Tag
             size="sm"
