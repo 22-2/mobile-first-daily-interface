@@ -241,53 +241,85 @@ function useMiniCalendar() {
 
 const CalendarHeader: React.FC<{
   viewDate: moment.Moment;
+  date: moment.Moment;
+  granularity: string;
   onPrev: (e: React.MouseEvent) => void;
   onNext: (e: React.MouseEvent) => void;
-}> = ({ viewDate, onPrev, onNext }) => (
-  <Flex
-    className="mini-calendar__header"
-    w="100%"
-    justify="space-between"
-    align="center"
-    px={1}
-  >
-    <Text
-      className="mini-calendar__month-label"
-      fontWeight="bold"
-      fontSize="lg"
-      color="var(--text-normal)"
-      marginLeft="var(--size-4-2)"
-    >
-      {viewDate.format("YYYY年 M月")}
-    </Text>
-    <HStack className="mini-calendar__nav" spacing={1}>
-      {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
-        <Box
-          className="mini-calendar__nav-button"
-          key={icon}
-          onClick={i === 0 ? onPrev : onNext}
-          p={1.5}
-          borderRadius="4px"
-          _hover={{ bg: "var(--background-modifier-hover)" }}
-        >
-          <ObsidianIcon name={icon} size="1.2em" />
-        </Box>
-      ))}
-    </HStack>
-  </Flex>
-);
+}> = ({ viewDate, date, granularity, onPrev, onNext }) => {
+  // 表示中の年月が選択中の年月と一致するかチェック
+  const isSameYear = viewDate.isSame(date, "year");
+  const isSameMonth = viewDate.isSame(date, "month");
 
-const DayCell: React.FC<DayCellProps> = ({
+  // アクティブハイライトの判定
+  // 年と月がアクティブ（月スケール）のときは全体、年のときは年のみ
+  const highlightYear =
+    (granularity === "year" && isSameYear) ||
+    (granularity === "month" && isSameMonth);
+  const highlightMonth = granularity === "month" && isSameMonth;
+
+  return (
+    <Flex
+      className="mini-calendar__header"
+      w="100%"
+      justify="space-between"
+      align="center"
+      px={1}
+    >
+      <HStack
+        className="mini-calendar__month-label"
+        spacing={1}
+        marginLeft="var(--size-4-2)"
+      >
+        <Text
+          as="span"
+          fontWeight="bold"
+          fontSize="lg"
+          color={highlightYear ? "var(--color-accent)" : "var(--text-normal)"}
+        >
+          {viewDate.format("YYYY年")}
+        </Text>
+        <Text
+          as="span"
+          fontWeight="bold"
+          fontSize="lg"
+          color={highlightMonth ? "var(--color-accent)" : "var(--text-normal)"}
+        >
+          {viewDate.format("M月")}
+        </Text>
+      </HStack>
+      <HStack className="mini-calendar__nav" spacing={1}>
+        {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
+          <Box
+            className="mini-calendar__nav-button"
+            key={icon}
+            onClick={i === 0 ? onPrev : onNext}
+            p={1.5}
+            borderRadius="4px"
+            _hover={{ bg: "var(--background-modifier-hover)" }}
+          >
+            <ObsidianIcon name={icon} size="1.2em" />
+          </Box>
+        ))}
+      </HStack>
+    </Flex>
+  );
+};
+
+const DayCell: React.FC<DayCellProps & { showRangeHighlight: boolean }> = ({
   day,
   isSelectedDay,
   isInSelectedRange,
   isCurrentMonth,
   hasPost,
+  showRangeHighlight,
   onClick,
 }) => {
   const isToday = day.isSame(window.moment(), "day");
   const isForeground =
     isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
+
+  // 選択範囲のハイライトを適用するかどうか
+  const effectiveInRange = showRangeHighlight && isInSelectedRange;
 
   // 青背景（アクセントカラー）は「今日」のみに適用
   // 背景色の決定：今日 > 選択範囲・ホバー
@@ -297,23 +329,23 @@ const DayCell: React.FC<DayCellProps> = ({
 
   const bg = isToday
     ? "var(--color-accent)!important"
-    : isInSelectedRange
+    : effectiveInRange
       ? rangeBg
       : "transparent";
 
   const color = isToday
     ? "var(--text-on-accent)"
-    : isInSelectedRange
+    : effectiveInRange
       ? "var(--color-accent)"
       : isForeground
         ? "var(--text-normal)"
         : "var(--text-faint)";
 
-  const fontWeight = isToday || isInSelectedRange ? "bold" : "normal";
+  const fontWeight = isToday || effectiveInRange ? "bold" : "normal";
 
   const dotColor = isToday
     ? "var(--text-on-accent)"
-    : isInSelectedRange
+    : effectiveInRange
       ? "var(--color-accent)"
       : "var(--text-muted)";
 
@@ -368,6 +400,9 @@ const WeekRow: React.FC<WeekRowProps> = ({
       (granularity === "day" && dateFilter === "this_week")) &&
     week[0].isSame(date, "isoWeek");
 
+  // 月・年スケールの時はグリッド内の範囲ハイライトを表示しない（ヘッダーで表現するため）
+  const showRangeHighlight = granularity !== "month" && granularity !== "year";
+
   return (
     <React.Fragment>
       {/* 週番号 */}
@@ -399,6 +434,7 @@ const WeekRow: React.FC<WeekRowProps> = ({
           isInSelectedRange={day.isBetween(rangeStart, rangeEnd, "day", "[]")}
           isCurrentMonth={day.isSame(viewDate, "month")}
           hasPost={activityDates.has(day.format("YYYY-MM-DD"))}
+          showRangeHighlight={showRangeHighlight}
           onClick={onSelectDay}
         />
       ))}
@@ -446,6 +482,8 @@ export const MiniCalendar: React.FC<{
     >
       <CalendarHeader
         viewDate={viewDate}
+        date={date}
+        granularity={granularity}
         onPrev={handlePrevMonth}
         onNext={handleNextMonth}
       />
