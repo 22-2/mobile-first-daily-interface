@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Settings } from "src/settings";
-import { CountDisplay } from "src/ui/components/CountDisplay";
+import { StatusBar } from "src/ui/components/StatusBar";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
 import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
@@ -389,7 +389,7 @@ const ReactViewContent = () => {
         overflow="hidden"
       >
         <InputArea />
-        <CountDisplay />
+        <StatusBar />
 
         <Box
           className="mfdi-scroll-container"

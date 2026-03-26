@@ -2,17 +2,17 @@ import { FC, useMemo } from "react";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
-import { FocusLayout } from "./CountDisplay/layouts/FocusLayout";
-import { TagLayout } from "./CountDisplay/layouts/TagLayout";
-import { ThreadLayout } from "./CountDisplay/layouts/ThreadLayout";
-import { TimelineLayout } from "./CountDisplay/layouts/TimelineLayout";
+import { FocusLayout } from "./statusbar/layouts/FocusLayout";
+import { TagLayout } from "./statusbar/layouts/TagLayout";
+import { ThreadLayout } from "./statusbar/layouts/ThreadLayout";
+import { TimelineLayout } from "./statusbar/layouts/TimelineLayout";
 
 /**
  * 下部のステータス表示（件数、日付、トピックなど）を管理するコントローラー
  *
  * コンポーネント（部品）、レイアウト（配置）、制御ロジックを分離して構成しています。
  */
-export const CountDisplay: FC = () => {
+export const StatusBar: FC = () => {
     const { displayMode, threadFocusRootId, activeTopic } = useSettingsStore(
         useShallow((s) => ({
             displayMode: s.displayMode,
