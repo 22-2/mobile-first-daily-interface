@@ -9,6 +9,7 @@ import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import { resolveTimestamp } from "src/ui/utils/post-utils";
 import {
   buildPostFromEntry,
+  memoRecordToPost,
   sortPostsDescending,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
@@ -138,6 +139,14 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     const result = await getPostsRecursive(date);
     setPosts(result.posts);
     return result;
+  },
+
+  updatePostsFromDB: async ({ topicId, limit = 300 }) => {
+    const { db, setPosts } = get();
+    if (!db) return;
+
+    const records = await db.getLatestVisibleMemos(topicId, limit);
+    setPosts(records.map(memoRecordToPost));
   },
 
   getFilteredPosts: () => {

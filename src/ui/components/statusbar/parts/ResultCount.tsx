@@ -1,8 +1,8 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { FC, useMemo } from "react";
-import { MFDIDatabase } from "src/db/mfdi-db";
-import { useAppContext } from "src/ui/context/AppContext";
+import { MFDIDatabase, MemoRecord } from "src/db/mfdi-db";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
@@ -12,22 +12,6 @@ import { getFixedNoteTitle } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 // ---- ヘルパー関数 ----
-
-const queryMemoCount = (
-    db: MFDIDatabase,
-    activeTopic: string | undefined,
-): Promise<number> => {
-    if (activeTopic) {
-        return db.memos
-            .where("[topicId+archived+deleted]")
-            .equals([activeTopic, 0, 0])
-            .count();
-    }
-    return db.memos
-        .where("[archived+deleted]")
-        .equals([0, 0])
-        .count();
-};
 
 const formatCount = (
     count: number,
@@ -84,11 +68,10 @@ export const ResultCount: FC = () => {
 
     const filteredPosts = useFilteredPosts({ posts, ...settings });
 
-    const { shell } = useAppContext();
-    const db = useMemo(() => new MFDIDatabase(shell.getAppId()), [shell]);
+    const db = useMFDIDB();
 
     const dbTotalCount = useLiveQuery(
-        () => queryMemoCount(db, activeTopic),
+        () => (db ? db.countVisibleMemos(activeTopic) : undefined),
         [db, activeTopic],
     );
 

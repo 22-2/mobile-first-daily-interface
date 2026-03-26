@@ -1,3 +1,4 @@
+import { MemoRecord } from "src/db/mfdi-db";
 import { MomentLike, Post } from "src/ui/types";
 
 export const THREAD_METADATA_KEYS = {
@@ -109,5 +110,23 @@ export function buildPostFromEntry(params: {
     bodyStartOffset,
     kind: "thino" as const,
     path,
+  };
+}
+
+export function memoRecordToPost(record: MemoRecord): Post {
+  const metadata = JSON.parse(record.metadataJson);
+  return {
+    id: record.id,
+    threadRootId: resolveThreadRootId(metadata),
+    timestamp: window.moment(record.createdAt),
+    noteDate: window.moment(record.createdAt).startOf("day"),
+    message: record.content,
+    metadata,
+    offset: record.startOffset,
+    startOffset: record.startOffset,
+    endOffset: record.endOffset,
+    bodyStartOffset: record.bodyStartOffset,
+    kind: "thino" as const,
+    path: record.path,
   };
 }

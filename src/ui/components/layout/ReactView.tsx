@@ -111,6 +111,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updateTasks,
     updatePostsForWeek,
     updatePostsForDays,
+    updatePostsFromDB,
   } = usePostsStore(
     useShallow((state) => ({
       posts: state.posts,
@@ -118,8 +119,21 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       updateTasks: state.updateTasks,
       updatePostsForWeek: state.updatePostsForWeek,
       updatePostsForDays: state.updatePostsForDays,
+      updatePostsFromDB: state.updatePostsFromDB,
     })),
   );
+
+  const { displayMode } = useSettingsStore(
+    useShallow((state) => ({
+      displayMode: state.displayMode,
+    })),
+  );
+
+  useEffect(() => {
+    if (!isTimelineView(displayMode)) return;
+
+    updatePostsFromDB({ topicId: activeTopic });
+  }, [displayMode, activeTopic, updatePostsFromDB]);
 
   const { inputRef, scrollContainerRef } = useEditorStore(
     useShallow((state) => ({

@@ -1,3 +1,4 @@
+import { MFDIDatabase } from "src/db/mfdi-db";
 import { StateCreator } from "zustand/vanilla";
 import { EnvironmentSlice, MFDIStore } from "./types";
 
@@ -9,6 +10,7 @@ export const createEnvironmentSlice: StateCreator<
 > = (set, get) => ({
   shell: null,
   storage: null,
+  db: null,
   pluginSettings: null,
   viewNoteMode: "periodic",
   fixedNotePath: null,
@@ -30,10 +32,16 @@ export const createEnvironmentSlice: StateCreator<
   },
 
   initializeAppStore: ({ shell, settings, storage }) => {
+    const oldDb = get().db;
+    if (oldDb) {
+      oldDb.close();
+    }
+
     set({
       shell,
       pluginSettings: settings,
       storage,
+      db: new MFDIDatabase(shell.getAppId()),
       viewNoteMode: "periodic",
       fixedNotePath: null,
     });

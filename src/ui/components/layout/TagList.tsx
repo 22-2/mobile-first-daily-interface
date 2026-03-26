@@ -10,6 +10,8 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
+
 interface TagCountItem {
   tag: string;
   count: number;
@@ -21,7 +23,6 @@ interface TagListSnapshot {
 }
 
 export const TagList: React.FC = () => {
-  const { shell } = useAppContext();
   const { activeTag, setActiveTag } = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -29,16 +30,14 @@ export const TagList: React.FC = () => {
     })),
   );
 
-  const db = useMemo(() => new MFDIDatabase(shell.getAppId()), [shell]);
-
-  useEffect(() => {
-    return () => {
-      db.close();
-    };
-  }, [db]);
+  const db = useMFDIDB();
 
   const snapshot = useLiveQuery(
     async (): Promise<TagListSnapshot> => {
+      if (!db) {
+        return { items: null, hasCompletedFullScan: false };
+      }
+
       const [tagStats, lastFullScanAt] = await Promise.all([
         db.tagStats.toArray(),
         db.meta.get("lastFullScanAt"),

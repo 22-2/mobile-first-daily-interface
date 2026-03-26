@@ -13,11 +13,13 @@ import {
   TimeFilter,
 } from "src/ui/types";
 import { MFDINoteMode } from "src/ui/view/state";
+import { MFDIDatabase } from "src/db/mfdi-db";
 import { MFDIStorage } from "src/utils/storage";
 
 export interface EnvironmentSlice {
   shell: ObsidianAppShell | null;
   storage: MFDIStorage | null;
+  db: MFDIDatabase | null;
   pluginSettings: Settings | null;
   viewNoteMode: MFDINoteMode;
   fixedNotePath: string | null;
@@ -89,6 +91,10 @@ export interface PostsSlice {
     hasMore: boolean;
     lastSearchedDate: MomentLike;
   }>;
+  updatePostsFromDB: (params: {
+    topicId?: string;
+    limit?: number;
+  }) => Promise<void>;
   getFilteredPosts: () => Post[];
 }
 
