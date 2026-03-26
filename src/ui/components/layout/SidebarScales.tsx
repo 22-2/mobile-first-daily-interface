@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
 import {
   SidebarItemCount,
+  SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -156,7 +157,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       mt={2}
       className="mfdi-sidebar-scales"
     >
-      <HStack spacing={0} px={2} mb={2} justify="space-between" align="center">
+      <SidebarSectionHeader className="sidebar-section-header">
         <HStack spacing={6} align="center">
           <FilterButton
             label="すべて"
@@ -185,7 +186,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
         {loading && (
           <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />
         )}
-      </HStack>
+      </SidebarSectionHeader>
 
       <VStack align="stretch" spacing={0} className="mfdi-scale-list-unified">
         {(filter === "all" || filter === "year") &&

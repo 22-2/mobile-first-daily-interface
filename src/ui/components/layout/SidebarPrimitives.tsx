@@ -1,4 +1,5 @@
 import { Box, HStack, Text } from "@chakra-ui/react";
+import { clsx } from "clsx";
 
 const activeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
 const activeHoverBg =
@@ -12,7 +13,7 @@ export const SidebarSectionHeader: React.FC<{
   className?: string;
 }> = ({ children, rightAddon, className }) => {
   return (
-    <HStack justify="space-between" px={2} mb={1} className={className}>
+    <HStack justify="space-between" px={2} py="var(--size-4-1)" mb={1} mt="var(--size-4-2)" className={clsx("sidebar-section-header", className)}>
       <Text
         fontSize="var(--font-ui-small);"
         fontWeight="bold"
@@ -57,7 +58,7 @@ export const SidebarTextButton: React.FC<{
       alignItems="center"
       height="24px"
       cursor={onClick ? "pointer" : "default"}
-      fontSize="xs"
+      fontSize="var(--font-ui-small)"
       lineHeight="1.2"
       fontWeight={isSelected ? "bold" : "normal"}
       transition="background-color 0.1s ease"
@@ -69,7 +70,7 @@ export const SidebarTextButton: React.FC<{
             }
           : undefined
       }
-      className={className}
+      className={clsx("sidebar-text-button", className)}
       onClick={onClick}
     >
       {children}
@@ -82,6 +83,7 @@ export const SidebarItemCount: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   return (
     <Text
+      className="sidebar-item-count"
       fontSize="10px"
       lineHeight="1"
       color="var(--text-muted)"
