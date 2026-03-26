@@ -8,8 +8,13 @@ import { analyzer } from "vite-bundle-analyzer";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
-  const isProd = mode === "production";
   const isAnalyze = process.argv.includes("--analyze");
+  // watchモードはCLIフラグ(--watch)か環境変数(VITE_WATCH=true)で有効化する
+  // 理由: 開発中にファイル変更を監視して自動で再ビルドしたいケースがあるため。
+  // `vite build --watch` の代替として使えるようにし、既存のdevサーバーと干渉しない挙動にする。
+  const isWatch = process.argv.includes("--watch") || process.env.VITE_WATCH === "true";
+  const isDev = mode === "development" || isWatch;
+  const isProd = !isDev;
 
   return {
     plugins: [
@@ -45,6 +50,9 @@ export default defineConfig(async ({ mode }) => {
       },
       minify: isProd,
       sourcemap: isProd ? false : "inline",
+      // watchモード時はRollupのwatch設定を渡す
+      // ここではsrc配下のファイルを監視対象にしておく（必要に応じて調整してください）
+      watch: isWatch ? { include: "src/**" } : undefined,
       cssCodeSplit: false,
       emptyOutDir: false,
       outDir: "",
