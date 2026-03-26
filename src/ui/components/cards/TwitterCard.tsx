@@ -31,13 +31,13 @@ export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
             src="https://abs.twimg.com/favicons/twitter.3.ico"
             className="mfdi-html-card-site-icon"
             objectFit="contain"
-            height="1em"
+            height="var(--mfdi-favicon-size)"
             marginRight="var(--size-2-3)"
           />
           <Text
             className="mfdi-html-card-site-name"
-            height="1em"
-            lineHeight="1em"
+            height="var(--mfdi-line-height-1)"
+            lineHeight="var(--mfdi-line-height-1)"
           >
             X / Twitter
           </Text>

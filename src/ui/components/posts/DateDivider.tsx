@@ -26,7 +26,7 @@ export const DateDivider: React.FC<DateDividerProps> = ({ date }) => {
         fontWeight="600"
         color="var(--text-muted)"
         whiteSpace="nowrap"
-        letterSpacing="0.05em"
+        letterSpacing="var(--mfdi-letter-spacing-tight)"
         textTransform="uppercase"
       >
         {replaceDayToJa(date.format("YYYY-MM-DD (ddd)"))}

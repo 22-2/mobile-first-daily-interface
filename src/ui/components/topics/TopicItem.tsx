@@ -94,8 +94,8 @@ export const TopicItem = ({
     >
       <Box
         width="3px"
-        height="2.5em"
-        borderRadius="2px"
+        height="calc(var(--size-4-1) * 10)"
+        borderRadius="calc(var(--radius-s) / 2)"
         backgroundColor={
           isActive ? "var(--color-accent)" : "var(--background-secondary)"
         }
@@ -133,8 +133,8 @@ export const TopicItem = ({
               {isActive && (
                 <Badge
                   colorScheme="blue"
-                  fontSize="0.65em"
-                  paddingX="0.4em"
+                  fontSize="var(--mfdi-badge-font-size)"
+                  paddingX="var(--mfdi-badge-padding-x)"
                   borderRadius="4px"
                   backgroundColor="var(--color-accent)"
                   color="var(--text-on-accent)"
@@ -144,8 +144,8 @@ export const TopicItem = ({
               )}
               {topic.archived && !isActive && (
                 <Badge
-                  fontSize="0.65em"
-                  paddingX="0.4em"
+                  fontSize="var(--mfdi-badge-font-size)"
+                  paddingX="var(--mfdi-badge-padding-x)"
                   borderRadius="4px"
                   variant="outline"
                   color="var(--text-faint)"
@@ -176,7 +176,7 @@ export const TopicItem = ({
         flexShrink={0}
         onClick={handleOpenMenu}
       >
-        <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
+        <ObsidianIcon name="more-horizontal" boxSize="var(--mfdi-icon-size-small)" />
       </Flex>
     </Flex>
   );

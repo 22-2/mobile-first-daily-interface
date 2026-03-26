@@ -28,26 +28,20 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
     useEffect(() => {
       const refEl = innerRef.current;
       if (refEl) {
-        if (typeof (refEl as any).empty === "function") {
-          (refEl as any).empty();
-        } else {
-          refEl.innerHTML = "";
-        }
-        try {
-          setIcon(refEl, name);
-        } catch (e) {}
+        refEl.empty();
+        setIcon(refEl, name);
         const svg = refEl.querySelector("svg");
         if (svg) {
           const s =
             size ??
-            (props as any).boxSize ??
-            (props as any).width ??
-            (props as any).height;
+            props.boxSize ??
+            props.width ??
+            props.height;
           if (s) {
             const ss = typeof s === "number" ? `${s}px` : String(s);
-            (svg as any).setCssStyles?.({ width: ss, height: ss });
+            svg.setCssStyles?.({ width: ss, height: ss });
           } else {
-            (svg as any).setCssStyles?.({ width: "100%", height: "100%" });
+            svg.setCssStyles?.({ width: "100%", height: "100%" });
           }
         }
       }

@@ -90,7 +90,7 @@ export const TopicManagerView = ({
         <Button
           marginTop="var(--size-4-3)"
           variant="ghost"
-          leftIcon={<ObsidianIcon name="plus" boxSize="1em" />}
+          leftIcon={<ObsidianIcon name="plus" boxSize="var(--mfdi-icon-size-small)" />}
           size="sm"
           color="var(--text-muted)"
           _hover={{
@@ -110,11 +110,11 @@ export const TopicManagerView = ({
           <Flex align="center" paddingX="var(--size-4-3)">
             <Heading
               size="xs"
-              fontSize="0.75rem"
+              fontSize="var(--font-ui-small)"
               fontWeight="600"
               color="var(--text-faint)"
               textTransform="uppercase"
-              letterSpacing="0.05em"
+              letterSpacing="var(--mfdi-letter-spacing-tight)"
             >
               アーカイブ済み ({archivedTopics.length})
             </Heading>

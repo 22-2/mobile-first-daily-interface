@@ -56,13 +56,13 @@ export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
             onError={handleFaviconImageError}
             className="mfdi-html-card-site-icon"
             objectFit="contain"
-            height="1em"
+              height="var(--mfdi-favicon-size)"
             marginRight="var(--size-2-3)"
           />
           <Text
-            className="mfdi-html-card-site-name"
-            height="1em"
-            lineHeight="1em"
+              className="mfdi-html-card-site-name"
+              height="var(--mfdi-line-height-1)"
+              lineHeight="var(--mfdi-line-height-1)"
           >
             {meta.siteName}
           </Text>

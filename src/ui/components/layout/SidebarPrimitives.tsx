@@ -14,11 +14,11 @@ export const SidebarSectionHeader: React.FC<{
   return (
     <HStack justify="space-between" px={2} mb={1} className={className}>
       <Text
-        fontSize="var(--font-ui-small);"
+        fontSize="var(--font-ui-small)"
         fontWeight="bold"
         color="var(--text-muted)"
         textTransform="uppercase"
-        letterSpacing="0.05em"
+        letterSpacing="var(--mfdi-letter-spacing-tight)"
       >
         {children}
       </Text>

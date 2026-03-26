@@ -289,7 +289,7 @@ const CalendarHeader: React.FC<{
       </HStack>
       <HStack className="mini-calendar__nav" spacing={1}>
         {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
-          <Box
+            <Box
             className="mini-calendar__nav-button"
             key={icon}
             onClick={i === 0 ? onPrev : onNext}
@@ -297,7 +297,7 @@ const CalendarHeader: React.FC<{
             borderRadius="4px"
             _hover={{ bg: "var(--background-modifier-hover)" }}
           >
-            <ObsidianIcon name={icon} size="1.2em" />
+            <ObsidianIcon name={icon} size="var(--mfdi-icon-size-small)" />
           </Box>
         ))}
       </HStack>

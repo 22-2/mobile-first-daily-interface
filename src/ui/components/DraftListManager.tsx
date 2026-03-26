@@ -41,13 +41,13 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
       <Box
         display="flex"
         alignItems="center"
-        padding="1em"
+        padding="var(--size-4-4)"
         borderBottom="1px solid var(--background-modifier-border)"
         position="relative"
       >
         <Button
           variant="ghost"
-          leftIcon={<ObsidianIcon name="chevron-left" size="1.2em" />}
+          leftIcon={<ObsidianIcon name="chevron-left" size="var(--mfdi-icon-size-small)" />}
           onClick={onClose}
           color="var(--text-accent)"
           fontWeight="bold"
@@ -68,7 +68,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
       </Box>
 
       <Flex
-        padding="1.2em"
+        padding="var(--size-4-5)"
         overflowY="auto"
         flex="1"
         flexDirection="column"
@@ -81,19 +81,19 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
             justifyContent="center"
             flex="1"
             color="var(--text-faint)"
-            gap="1.5em"
+            gap="var(--size-4-6)"
           >
-            <ObsidianIcon name="file-x" size="4em" opacity={0.3} />
+            <ObsidianIcon name="file-x" size="var(--mfdi-icon-size-xxlarge)" opacity={0.3} />
             <Text fontSize="md" opacity={0.6} fontWeight="bold">
               下書きはありません
             </Text>
           </Flex>
         ) : (
-          <VStack spacing="1em" align="stretch">
+          <VStack spacing="var(--size-4-4)" align="stretch">
             {drafts.map((draft) => (
               <Box
                 key={draft.id}
-                p="1.2em"
+                p="var(--size-4-5)"
                 bg="var(--background-secondary)"
                 borderRadius="15px"
                 transition="all 0.2s"
@@ -103,7 +103,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                   borderColor: "var(--background-modifier-border)",
                 }}
               >
-                <HStack justify="space-between" mb="0.4em" align="center">
+                <HStack justify="space-between" mb="var(  --size-4-2)" align="center">
                   <Text
                     fontSize="xs"
                     color="var(--text-muted)"
@@ -113,7 +113,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                   </Text>
                   <ObsidianIcon
                     name="more-horizontal"
-                    size="1.2em"
+                    size="var(--mfdi-icon-size-small)"
                     onClick={(e) => {
                       const menu = new Menu();
                       menu.addItem((item) => {

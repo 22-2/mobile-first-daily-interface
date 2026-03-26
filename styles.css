@@ -7,9 +7,28 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-:root {
+[data-type="mfdi-view"] {
   --mfdi-icon-color: var(--text-muted);
   --mfdi-icon-color-hover: var(--text-normal);
+  --mfdi-icon-size-small: var(--icon-m);
+  --mfdi-icon-size-medium: var(--size-4-6);
+  --mfdi-icon-size-large: var(--size-4-10);
+  --mfdi-icon-size-xxlarge: calc(var(--size-4-4) * 4);
+  --mfdi-icon-padding: var(--size-4-1);
+  --mfdi-icon-radius: var(--size-4-1);
+
+  --mfdi-date-input-width-default: calc(var(--size-4-4) * 10);
+  --mfdi-date-input-width-year: calc(var(--size-4-1) * 26);
+
+  --mfdi-button-min-height: var(--size-4-8);
+  --mfdi-control-height: var(--size-4-7);
+
+  --mfdi-favicon-size: var(--size-4-5);
+  --mfdi-line-height-1: var(--size-4-4);
+  --mfdi-letter-spacing-tight: 0.8px;
+
+  --mfdi-badge-font-size: 11px;
+  --mfdi-badge-padding-x: var(--size-2-3);
 }
 
 .item-enter {

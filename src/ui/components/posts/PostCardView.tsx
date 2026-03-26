@@ -99,9 +99,9 @@ export const PostCardView = React.memo(
                   e.stopPropagation();
                   onToggleThreadFocus?.(post);
                 }}
-                padding="4px"
+                padding="var(--mfdi-icon-padding)"
                 cursor="pointer"
-                size="1.1em"
+                size="var(--mfdi-icon-size-small)"
                 display="inline-flex"
                 alignItems="center"
                 justifyContent="center"

@@ -36,7 +36,7 @@ const NavButton: FC<{
       spacing={0}
       flexDirection={direction === "left" ? "row" : "row-reverse"}
     >
-      <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />
+      <ObsidianIcon name={`chevron-${direction}`} boxSize="var(--mfdi-icon-size-medium)" />
       {step > 1 && (
         <Box fontSize="smaller" fontWeight="bold" color="var(--text-muted)">
           {step}
@@ -170,18 +170,18 @@ const InputAreaControl: FC = memo(() => {
   return (
     <Flex
       align="center"
-      paddingX="1em"
+      paddingX="var(--size-4-4)"
       marginY="var(--size-4-4)"
       className="mfdi-input-area-control"
-      height="28px"
+      height="var(--mfdi-control-height)"
     >
       {capabilities.supportsDateNavigation && (
         <ObsidianIcon
           name="home"
-          size="1.1em"
-          color={isViewDefault ? undefined : "var(--text-accent)"}
-          padding="4px"
-          borderRadius="4px"
+          size="var(--mfdi-icon-size-small)"
+          color={isViewDefault ? "var(--mfdi-icon-color)" : "var(--text-accent)"}
+          padding="var(--mfdi-icon-padding)"
+          borderRadius="var(--mfdi-icon-radius)"
           _hover={
             isViewDefault
               ? { bg: "var(--background-modifier-hover)" }
@@ -209,7 +209,7 @@ const InputAreaControl: FC = memo(() => {
               onClick={handleClickMovePrevious}
               step={step}
             />
-            <HStack spacing="0.2em" className="mfdi-date-controls">
+            <HStack spacing="var(--size-4-1)" className="mfdi-date-controls">
               <Input
                 className="mfdi-date-input"
                 size="sm"
@@ -218,8 +218,12 @@ const InputAreaControl: FC = memo(() => {
                 type={GRANULARITY_CONFIG[granularity].inputType}
                 value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
                 onChange={handleChangeCalendarDate}
-                width={granularity === "year" ? "6.5em" : "10em"}
-                paddingX="0.5em"
+                width={
+                  granularity === "year"
+                    ? "var(--mfdi-date-input-width-year)"
+                    : "var(--mfdi-date-input-width-default)"
+                }
+                paddingX="var(  --size-4-2)"
               />
             </HStack>
             <NavButton
@@ -230,10 +234,10 @@ const InputAreaControl: FC = memo(() => {
           </>
         )}
       </HStack>
-      <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
+      <Box flex="1" display="flex" justifyContent="flex-end" gap="var(  --size-4-2)">
         <ObsidianIcon
           name="maximize"
-          size="1.1em"
+          size="var(--mfdi-icon-size-small)"
           cursor={isReadOnly ? "default" : "pointer"}
           opacity={isReadOnly ? 0.3 : 1}
           padding="4px"
@@ -324,14 +328,14 @@ const InputAreaFooter: FC = memo(() => {
     <HStack
       justify="flex-end"
       alignItems="center"
-      paddingY={"0.5em"}
-      paddingBottom={"1em"}
-      marginRight={"1.2em"}
+      paddingY={"var(--size-4-2)"}
+      paddingBottom={"var(--size-4-4)"}
+      marginRight={"var(--size-4-5)"}
     >
       {editingPost && (
         <Button
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
+          minHeight={"var(--mfdi-button-min-height)"}
+          maxHeight={"var(--mfdi-button-min-height)"}
           variant="ghost"
           onClick={cancelEdit}
         >
@@ -340,8 +344,8 @@ const InputAreaFooter: FC = memo(() => {
       )}
       {!isReadOnly && !editingPost && (
         <Button
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
+          minHeight={"var(--mfdi-button-min-height)"}
+          maxHeight={"var(--mfdi-button-min-height)"}
           variant="ghost"
           disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
@@ -352,8 +356,8 @@ const InputAreaFooter: FC = memo(() => {
       <Button
         disabled={!canSubmit}
         {...submitButtonProps}
-        minHeight={"2.4em"}
-        maxHeight={"2.4em"}
+        minHeight={"var(--mfdi-button-min-height)"}
+        maxHeight={"var(--mfdi-button-min-height)"}
         onClick={handleSubmit}
       >
         {isReadOnly

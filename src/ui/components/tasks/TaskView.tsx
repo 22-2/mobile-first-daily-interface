@@ -37,7 +37,7 @@ export const TaskView = memo(
               onChange={(ev) => onChange(ev.target.checked)}
               isDisabled={disabled}
               colorScheme="blue"
-              marginTop="0.2em"
+              marginTop="var(--size-4-1)"
               size="md"
             />
             <Box
