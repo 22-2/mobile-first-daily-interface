@@ -15,7 +15,8 @@
     "strictPropertyInitialization": false,
     "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
-    "types": ["obsidian-typings"]
+    "types": ["obsidian-typings"],
+    "skipLibCheck": true
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }
