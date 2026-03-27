@@ -1,5 +1,6 @@
 import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
+import { WorkerClient } from "src/db/worker-client";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import type { MFDIStore, PostsSlice } from "src/ui/store/slices/types";
 import type { MomentLike, Post } from "src/ui/types";
@@ -63,13 +64,13 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForWeek: async (topicId, date) => {
-    const { db, setPosts } = get();
-    if (!db) return new Set();
+    const { setPosts } = get();
+    const db = WorkerClient.get();
 
     const weekStart = date.clone().startOf("isoWeek");
     const weekEnd = date.clone().endOf("isoWeek");
 
-    const records = await db.getVisibleMemosByDateRange({
+    const records = await db.getMemos({
       topicId,
       startDate: weekStart.toISOString(),
       endDate: weekEnd.toISOString(),
@@ -81,14 +82,8 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForDays: async (topicId, date, days) => {
-    const { db, setPosts } = get();
-    if (!db) {
-      return {
-        paths: new Set<string>(),
-        hasMore: false,
-        lastSearchedDate: date,
-      };
-    }
+    const { setPosts } = get();
+    const db = WorkerClient.get();
 
     const windowStart = date
       .clone()
@@ -96,7 +91,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       .startOf("day");
     const windowEnd = date.clone().endOf("day");
 
-    const records = await db.getVisibleMemosByDateRange({
+    const records = await db.getMemos({
       topicId,
       startDate: windowStart.toISOString(),
       endDate: windowEnd.toISOString(),
@@ -108,16 +103,16 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
     return {
       posts,
       paths: new Set(posts.map((p) => p.path)),
-      hasMore: false, // DB 検索時は指定範囲のデータが全て取得されている前提
+      hasMore: false,
       lastSearchedDate: windowStart,
     };
   },
 
   updatePostsFromDB: async ({ topicId, limit = 300 }) => {
-    const { db, setPosts } = get();
-    if (!db) return;
+    const { setPosts } = get();
+    const db = WorkerClient.get();
 
-    const records = await db.getLatestVisibleMemos(topicId, limit);
+    const records = await db.getMemos({ topicId, limit });
     setPosts(records.map(memoRecordToPost));
   },
 

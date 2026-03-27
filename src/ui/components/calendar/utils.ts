@@ -1,4 +1,4 @@
-import { useLiveQuery } from "dexie-react-hooks";
+import { useQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/shallow";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -96,16 +96,15 @@ export function useMiniCalendar() {
     })),
   );
 
-  const db = useMFDIDB();
-  const dbActiveDates = useLiveQuery(
-    async () => {
-      if (!db) return new Set<string>();
-      const dates = await db.getAllActiveDates();
+  const dbService = useMFDIDB();
+  const { data: dbActiveDates = new Set<string>() } = useQuery({
+    queryKey: ["activeDates"],
+    queryFn: async () => {
+      const dates = await dbService.getAllActiveDates();
       return new Set(dates);
     },
-    [db],
-    new Set<string>(),
-  );
+    staleTime: Infinity,
+  });
 
   const [viewDate, setViewDate] = useState(() =>
     window.moment(date).startOf("month"),

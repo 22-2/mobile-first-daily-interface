@@ -2,16 +2,15 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
-  createTimelinePageFetcher,
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
 } from "src/ui/hooks/internal/timelinePosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
+import { memoRecordToPost } from "src/ui/utils/thread-utils";
 
 const PAGE_SIZE_DAYS = 14;
 
@@ -19,7 +18,7 @@ const PAGE_SIZE_DAYS = 14;
  * タイムラインモード（無限スクロール）のデータ取得と管理を担当するHook。
  */
 export const useInfiniteTimeline = () => {
-  const db = useMFDIDB();
+  const dbService = useMFDIDB();
   const queryClient = useQueryClient();
 
   const { activeTopic, displayMode, date } = useSettingsStore(
@@ -31,9 +30,6 @@ export const useInfiniteTimeline = () => {
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
 
-  const { setPosts } = usePostsStore(
-    useShallow((s) => ({ setPosts: s.setPosts })),
-  );
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
   );
@@ -58,29 +54,6 @@ export const useInfiniteTimeline = () => {
     };
   }, [queryClient, activeTopic, displayMode]);
 
-  useEffect(() => {
-    const handleDbUpdate = () => {
-      queryClient.invalidateQueries({
-        queryKey: ["posts", activeTopic, displayMode],
-      });
-    };
-    window.addEventListener("mfdi-db-updated", handleDbUpdate);
-    return () => window.removeEventListener("mfdi-db-updated", handleDbUpdate);
-  }, [queryClient, activeTopic, displayMode]);
-
-  // ---------------------------------------------------------------------------
-  const fetchPage = useCallback(
-    db
-      ? createTimelinePageFetcher({ db })
-      : async (): Promise<TimelinePostsPage> => ({
-          posts: [],
-          paths: new Set<string>(),
-          hasMore: false,
-          lastSearchedDate: window.moment(),
-        }),
-    [db],
-  );
-
   // ---------------------------------------------------------------------------
   // 無限クエリ
   // ---------------------------------------------------------------------------
@@ -101,9 +74,8 @@ export const useInfiniteTimeline = () => {
       activeTopic,
       displayMode,
       timelineDayKey,
-      db ? "db_ready" : "db_pending",
     ],
-    enabled: isTimelineView(displayMode) && !!db,
+    enabled: isTimelineView(displayMode),
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {
@@ -111,15 +83,32 @@ export const useInfiniteTimeline = () => {
         pageParam,
         settingsStore.getState().getEffectiveDate,
       );
-      const result = await fetchPage(activeTopic, baseDate, PAGE_SIZE_DAYS);
-      addPaths(result.paths);
+
+      const endDate = baseDate.clone().endOf("day");
+      const startDate = baseDate.clone().subtract(PAGE_SIZE_DAYS - 1, "day").startOf("day");
+
+      const records = await dbService.getMemos({
+        topicId: activeTopic,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      });
+
+      const posts = records.map(memoRecordToPost);
+      const paths = new Set(posts.map((p) => p.path));
+      addPaths(paths);
+
+      const result: TimelinePostsPage = {
+        posts,
+        paths,
+        hasMore: true, // 常に次ページを許可し、スクロールに応じて日付を遡る
+        lastSearchedDate: startDate,
+      };
+
       return result;
     },
 
     getNextPageParam: (lastPage) =>
-      lastPage.hasMore
-        ? lastPage.lastSearchedDate.clone().subtract(1, "day").format()
-        : undefined,
+      lastPage.lastSearchedDate.clone().subtract(1, "day").format(),
   });
 
   // ---------------------------------------------------------------------------
