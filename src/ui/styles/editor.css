@@ -10,3 +10,7 @@
 [data-type="mfdi-view"] :is(.HyperMD-codeblock-bg, .markdown-rendered pre) {
   --code-background: var(--bg3) !important;
 }
+
+[data-type="mfdi-view"] .cm-scroller {
+	max-height: 500px;
+}
