@@ -1,6 +1,7 @@
 
 // src/db/scan.worker.ts
 import * as Comlink from "comlink";
+import { isDev } from "src/core/constants";
 import { DexieDBService } from "src/db/impl/DexieDBService";
 import type { IDBService } from "src/db/interfaces/IDBService";
 import type { ScannableNote } from "src/db/worker-api";
@@ -28,6 +29,11 @@ async function withLogging<T>(
   meta: Record<string, unknown>,
   fn: () => Promise<T>,
 ): Promise<T> {
+
+  if (!isDev) {
+    return await fn();
+  }
+
   console.log(TAG, `${method} called`, meta);
   const start = Date.now();
   try {
@@ -94,7 +100,7 @@ try {
     getAllActiveDates: () =>
       withLogging("getAllActiveDates", {}, async () => {
         const res = await db().getAllActiveDates();
-        console.log(TAG, "getAllActiveDates count:", res?.length);
+        // console.log(TAG, "getAllActiveDates count:", res?.length);
         return res;
       }),
 
@@ -111,14 +117,14 @@ try {
     getMemos: (params) =>
       withLogging("getMemos", { params }, async () => {
         const res = await db().getMemos(params);
-        console.log(TAG, "getMemos count:", res?.length);
+        // console.log(TAG, "getMemos count:", res?.length);
         return res;
       }),
 
     countMemos: (topicId) =>
       withLogging("countMemos", { topicId }, async () => {
         const res = await db().countMemos(topicId);
-        console.log(TAG, "countMemos result:", res);
+        // console.log(TAG, "countMemos result:", res);
         return res;
       }),
 
@@ -139,7 +145,7 @@ try {
     // ignore — non-critical
   }
 
-  console.log(TAG, "Worker exposed!");
+  // console.log(TAG, "Worker exposed!");
 } catch (e) {
   console.error(TAG, "Worker init error:", e);
 }
