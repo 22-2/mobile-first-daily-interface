@@ -14,8 +14,9 @@ export const DayCell: React.FC<Props> = ({
   showRangeHighlight,
   onClick,
 }) => {
-  const isToday        = day.isSame(window.moment(), "day");
-  const isForeground   = isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
+  const isToday = day.isSame(window.moment(), "day");
+  const isForeground =
+    isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
   const effectiveInRange = showRangeHighlight && isInSelectedRange;
 
   // ---- className helpers ----
@@ -46,30 +47,28 @@ export const DayCell: React.FC<Props> = ({
   // ---- render ----
 
   return (
-    <Box
+    <div
       className={cn(
         "mini-calendar__day-cell relative cursor-pointer",
-        "flex items-center justify-center",   // ← 追加
-        "w-full aspect-square",               // ← 正方形に統一
+        "flex flex-col items-center justify-center gap-0.5", // ← col に変更
+        "w-full aspect-square",
         "transition-all duration-100 ease-in-out",
-        (isToday || effectiveInRange) ? "font-bold" : "font-normal",
+        isToday || effectiveInRange ? "font-bold" : "font-normal",
         backgroundCx,
         textCx,
         hoverCx,
       )}
       onClick={() => onClick(day)}
     >
-      {day.date()}
+      <span className="leading-none">{day.date()}</span>
 
-      {hasPost && (
-        <Box
-          className={cn(
-            "mini-calendar__dot absolute bottom-1 left-1/2 -translate-x-1/2",
-            "w-1 h-1 rounded-full",
-            dotColorCx,
-          )}
-        />
-      )}
-    </Box>
+      {
+        hasPost ? (
+          <div className={cn("w-1 h-1 rounded-full", dotColorCx)} />
+        ) : (
+          <div className="w-1 h-1" />
+        ) /* 常に高さを確保してレイアウトを安定させる */
+      }
+    </div>
   );
 };
