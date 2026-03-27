@@ -1,7 +1,13 @@
 import { DEFAULT_TOPIC } from "src/core/topic";
 import { TagIndexer } from "src/db/indexer/tag-indexer";
-import type { ScanWorkerAPI } from "src/db/worker-api";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { WorkerClient } from "src/db/worker-client";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
+vi.mock("src/db/worker-client", () => ({
+  WorkerClient: {
+    get: vi.fn(),
+  },
+}));
 
 function createShell(overrides: Record<string, unknown> = {}) {
   return {
@@ -12,30 +18,29 @@ function createShell(overrides: Record<string, unknown> = {}) {
   } as any;
 }
 
-function createApiMock(): ScanWorkerAPI {
+function createApiMock() {
   return {
-    scanFiles: vi.fn(async () => []),
-    scanFile: vi.fn(async () => []),
+    scanAllNotes: vi.fn(async () => []),
+    onFileChanged: vi.fn(async () => []),
+    onFileDeleted: vi.fn(async () => []),
+    onFileRenamed: vi.fn(async () => []),
   } as any;
 }
 
 describe("TagIndexer", () => {
+  let api: any;
+
+  beforeEach(() => {
+    api = createApiMock();
+    vi.mocked(WorkerClient.get).mockReturnValue(api);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  test("constructs with provided api", async () => {
-    const api = createApiMock();
-
-    new TagIndexer("vault-1", { api });
-
-    await Promise.resolve();
-    expect(api.scanFiles).not.toHaveBeenCalled();
-  });
-
   test("onFileChanged scans known note files", async () => {
-    const api = createApiMock();
-    const indexer = new TagIndexer("vault-1", { api });
+    const indexer = new TagIndexer("vault-1");
     const shell = createShell();
     const file = {
       path: "daily/writing-2026-03.md",
@@ -47,8 +52,8 @@ describe("TagIndexer", () => {
     } as any);
 
     expect(shell.cachedReadFile).toHaveBeenCalledWith(file);
-    expect(api.scanFile).toHaveBeenCalledTimes(1);
-    expect(api.scanFile).toHaveBeenCalledWith(
+    expect(api.onFileChanged).toHaveBeenCalledTimes(1);
+    expect(api.onFileChanged).toHaveBeenCalledWith(
       expect.objectContaining({
         path: "daily/writing-2026-03.md",
         noteName: "writing-2026-03",
@@ -60,8 +65,7 @@ describe("TagIndexer", () => {
   });
 
   test("onFileChanged ignores non-note files", async () => {
-    const api = createApiMock();
-    const indexer = new TagIndexer("vault-1", { api });
+    const indexer = new TagIndexer("vault-1");
     const shell = createShell();
 
     await indexer.onFileChanged(
@@ -71,23 +75,19 @@ describe("TagIndexer", () => {
     );
 
     expect(shell.cachedReadFile).not.toHaveBeenCalled();
-    expect(api.scanFile).not.toHaveBeenCalled();
+    expect(api.onFileChanged).not.toHaveBeenCalled();
   });
 
-  test("onFileDeleted and dispose operate without delegating to api", async () => {
-    const api = createApiMock();
-    const indexer = new TagIndexer("vault-1", { api });
+  test("onFileDeleted delegates to api", async () => {
+    const indexer = new TagIndexer("vault-1");
 
     await indexer.onFileDeleted("daily/2026-03-23.md");
-    await indexer.dispose();
 
-    expect((api as any).removeFile).toBeUndefined();
-    expect((api as any).dispose).toBeUndefined();
+    expect(api.onFileDeleted).toHaveBeenCalledWith("daily/2026-03-23.md");
   });
 
-  test("scanAllNotes rebuilds tag stats after scanning", async () => {
-    const api = createApiMock();
-    const indexer = new TagIndexer("vault-1", { api, scanChunkSize: 1 });
+  test("scanAllNotes delegates to api", async () => {
+    const indexer = new TagIndexer("vault-1", { scanChunkSize: 1 });
     const file = { basename: "2026-03-23", path: "daily/2026-03-23.md" };
     const shell = createShell();
 
@@ -104,7 +104,7 @@ describe("TagIndexer", () => {
 
     await indexer.scanAllNotes(shell, { topics: [DEFAULT_TOPIC] } as any);
 
-    expect(api.scanFiles).toHaveBeenCalledTimes(1);
+    expect(api.scanAllNotes).toHaveBeenCalledTimes(1);
     getAllTopicNotesSpy.mockRestore();
   });
 });

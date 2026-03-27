@@ -1,10 +1,10 @@
-import type { MFDIDatabase } from "src/db/mfdi-db";
-import { useAppStore } from "src/ui/store/appStore";
+import type { IDBService } from "src/db/interfaces/IDBService";
+import type * as Comlink from "comlink";
+import { WorkerClient } from "src/db/worker-client";
 
 /**
- * シングルソース化されたデータベースインスタンスを取得するフック。
- * アプリ全体で一つのインスタンスを使い回すことで、コネクション過多とパース重複を避けます。
+ * シングルソース化されたWorker内のデータベースサービスを取得するフック。
  */
-export function useMFDIDB(): MFDIDatabase | null {
-  return useAppStore((state) => state.db);
+export function useMFDIDB(): Comlink.Remote<IDBService> {
+  return WorkerClient.get();
 }

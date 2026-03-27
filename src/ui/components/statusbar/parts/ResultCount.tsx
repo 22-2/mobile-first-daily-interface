@@ -65,7 +65,7 @@ export const ResultCount: FC = () => {
 
   const db = useMFDIDB();
   const dbTotalCount = useLiveQuery(
-    () => (db ? db.countVisibleMemos(activeTopic) : undefined),
+    () => (db ? db.countMemos(activeTopic) : undefined),
     [db, activeTopic],
   );
 

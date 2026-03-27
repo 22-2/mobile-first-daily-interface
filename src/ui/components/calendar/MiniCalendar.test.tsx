@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import moment from "moment";
 import { DEFAULT_SETTINGS } from "src/settings";
@@ -36,10 +37,18 @@ vi.mock("src/ui/context/AppContext", () => ({
   useObsidianApp: vi.fn(() => ({ vault: { getFiles: () => [] } })),
 }));
 
+vi.mock("src/ui/hooks/useMFDIDB", () => ({
+  useMFDIDB: vi.fn(() => ({
+    getAllActiveDates: vi.fn(async () => []),
+  })),
+}));
+
 vi.mock("src/core/note-source", () => ({
   listPeriodicNotes: vi.fn(() => ({})),
   getPeriodicNoteDate: vi.fn(),
 }));
+
+const queryClient = new QueryClient();
 
 describe("MiniCalendar", () => {
   beforeEach(() => {
@@ -62,7 +71,11 @@ describe("MiniCalendar", () => {
       activeTopic: "",
     });
 
-    const { getByText } = render(<MiniCalendar />);
+    const { getByText } = render(
+      <QueryClientProvider client={queryClient}>
+        <MiniCalendar />
+      </QueryClientProvider>,
+    );
     expect(getByText("2026年")).toBeDefined();
     expect(getByText("3月")).toBeDefined();
   });
@@ -78,7 +91,11 @@ describe("MiniCalendar", () => {
     // In MiniCalendar, posts are just used to show dots (activityDates)
     // The range calculation is internal to calcSelectedRange and buildWeeksInMonth
 
-    const { getByText, getAllByText } = render(<MiniCalendar />);
+    const { getByText, getAllByText } = render(
+      <QueryClientProvider client={queryClient}>
+        <MiniCalendar />
+      </QueryClientProvider>,
+    );
     // 3/9 itself should have the selected day class (accent color)
     // 3/3 to 3/8 should be in the selected range (active hover bg)
     // We'll just ensure it renders and doesn't crash, the UI checks are handled by Chakra styles
@@ -100,7 +117,11 @@ describe("MiniCalendar", () => {
       activeTopic: "",
     });
 
-    const { container } = render(<MiniCalendar />);
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MiniCalendar />
+      </QueryClientProvider>,
+    );
     const dayCell = container.querySelector(".mini-calendar__day-cell");
 
     expect(dayCell).toBeTruthy();

@@ -1,10 +1,7 @@
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
-import { WorkerPoolExecutor } from "src/db/indexer/executors";
 import type { ScanTarget } from "src/db/indexer/types";
 import { GRANULARITIES } from "src/db/note-file-identity";
-import { ScanWorkerPool } from "src/db/scan-worker-pool";
-import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
 import type { ScannableNote } from "src/db/worker-api";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
@@ -106,12 +103,4 @@ export function estimateBytes(notes: ScannableNote[]): number {
   } catch {
     return notes.reduce((sum, n) => sum + n.content.length, 0);
   }
-}
-
-export function buildWorkerPool(factory?: () => Worker): WorkerPoolExecutor {
-  const hw = navigator.hardwareConcurrency ?? 4;
-  const poolSize = Math.max(1, Math.floor(hw * 0.75));
-  return new WorkerPoolExecutor(
-    new ScanWorkerPool(poolSize, factory ?? (() => new ScanWorkerFactory())),
-  );
 }

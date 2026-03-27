@@ -2,6 +2,7 @@
 import { act, renderHook } from "@testing-library/react";
 import moment from "moment";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const useInfiniteQueryMock = vi.fn();
@@ -73,13 +74,15 @@ vi.mock("./timelinePosts", () => ({
 }));
 
 vi.mock("src/ui/hooks/useMFDIDB", () => ({
-  useMFDIDB: () => ({ id: "mock-db" }),
+  useMFDIDB: vi.fn(() => ({ id: "mock-db" })),
 }));
 
 describe("useInfiniteTimeline", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    // モック環境で Obsidian の `activeDocument.hasFocus()` を安定させる
+    vi.stubGlobal("activeDocument", { hasFocus: vi.fn(() => true) });
 
     settingsState.activeTopic = "topic-a";
     settingsState.displayMode = "timeline";
@@ -114,7 +117,6 @@ describe("useInfiniteTimeline", () => {
       "topic-a",
       "timeline",
       "2026-03-15",
-      "db_ready",
     ]);
 
     settingsState.date = moment("2026-03-16T00:00:00.000Z");
@@ -126,15 +128,19 @@ describe("useInfiniteTimeline", () => {
       "topic-a",
       "timeline",
       "2026-03-16",
-      "db_ready",
     ]);
   });
 
-  it("createTimelinePageFetcher に DB インスタンスが渡される", async () => {
+  it("queryFn で getMemos が呼ばれる", async () => {
+    const getMemosMock = vi.fn().mockResolvedValue([]);
+    vi.mocked(useMFDIDB).mockReturnValue({ getMemos: getMemosMock } as any);
+
     renderHook(() => useInfiniteTimeline());
 
-    const deps = createTimelinePageFetcherMock.mock.calls[0][0];
-    expect(deps.db).toEqual({ id: "mock-db" });
+    const firstOptions = useInfiniteQueryMock.mock.calls[0][0];
+    await firstOptions.queryFn({ pageParam: null });
+
+    expect(getMemosMock).toHaveBeenCalled();
   });
 
   it("タイムライン表示中に日付が変わったら setDate を呼ぶ", () => {
