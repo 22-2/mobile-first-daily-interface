@@ -1,6 +1,7 @@
 import type React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 import type { DayCellProps } from "./types";
+import { Box } from "../primitives";
 
 type Props = DayCellProps & { showRangeHighlight: boolean };
 
@@ -45,9 +46,12 @@ export const DayCell: React.FC<Props> = ({
   // ---- render ----
 
   return (
-    <div
+    <Box
       className={cn(
-        "mini-calendar__day-cell relative cursor-pointer p-1.5 transition-all duration-100 ease-in-out",
+        "mini-calendar__day-cell relative cursor-pointer",
+        "flex items-center justify-center",   // ← 追加
+        "w-full aspect-square",               // ← 正方形に統一
+        "transition-all duration-100 ease-in-out",
         (isToday || effectiveInRange) ? "font-bold" : "font-normal",
         backgroundCx,
         textCx,
@@ -58,13 +62,14 @@ export const DayCell: React.FC<Props> = ({
       {day.date()}
 
       {hasPost && (
-        <div
+        <Box
           className={cn(
-            "mini-calendar__dot absolute bottom-[2px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full",
+            "mini-calendar__dot absolute bottom-1 left-1/2 -translate-x-1/2",
+            "w-1 h-1 rounded-full",
             dotColorCx,
           )}
         />
       )}
-    </div>
+    </Box>
   );
 };

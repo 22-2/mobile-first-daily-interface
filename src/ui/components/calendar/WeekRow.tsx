@@ -1,7 +1,8 @@
-import type React from "node_modules/@types/react";
-import { cn } from "../primitives/utils";
-import { DayCell } from "./DayCell";
-import type { WeekRowProps } from "./MiniCalendar";
+import type React from "react";
+import { cn } from "src/ui/components/primitives/utils";
+import { DayCell } from "src/ui/components/calendar/DayCell";
+import type { WeekRowProps } from "src/ui/components/calendar/types";
+import { Box } from "src/ui/components/primitives";
 
 export const WeekRow: React.FC<WeekRowProps> = ({
   week, date, granularity, rangeStart, rangeEnd, viewDate, dateFilter, activityDates, onSelectDay, onSelectWeek,
@@ -12,8 +13,8 @@ export const WeekRow: React.FC<WeekRowProps> = ({
   const showRangeHighlight = granularity !== "month" && granularity !== "year";
 
   return (
-    <React.Fragment>
-      <div
+    <>
+      <Box
         className={cn(
           "mini-calendar__week-number cursor-pointer py-1.5 text-xs flex items-center justify-center border rounded-[6px] transition-colors",
           "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_75%)]",
@@ -24,7 +25,7 @@ export const WeekRow: React.FC<WeekRowProps> = ({
         onClick={() => onSelectWeek(week[0])}
       >
         {week[0].isoWeek()}
-      </div>
+      </Box>
 
       {week.map((day) => (
         <DayCell
@@ -37,6 +38,6 @@ export const WeekRow: React.FC<WeekRowProps> = ({
           showRangeHighlight={showRangeHighlight}
           onClick={onSelectDay} />
       ))}
-    </React.Fragment>
+    </>
   );
 };

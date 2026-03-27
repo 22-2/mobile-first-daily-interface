@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useMemo } from "node_modules/@types/react";
-import { useLiveQuery } from "node_modules/dexie-react-hooks/dist/useLiveQuery";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
 import { listPeriodicNotes, getPeriodicNoteDate } from "src/core/note-source";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
