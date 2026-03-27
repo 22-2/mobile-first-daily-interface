@@ -28,21 +28,23 @@ export default class MFDIPlugin extends Plugin {
   view?: MFDIView;
 
   async onload() {
-    this.shell = new ObsidianAppShell(this.app);
-    await this.loadSettings();
+    this.app.workspace.onLayoutReady(async () => {
+      this.shell = new ObsidianAppShell(this.app);
+      await this.loadSettings();
 
-    this.addSettingTab(new MFDISettingTab(this.app, this));
+      this.addSettingTab(new MFDISettingTab(this.app, this));
 
-    // Worker 側の DB サービスを初期化しておく。
-    // TagIndexer 等は WorkerClient 経由で DB を使うため、プラグイン起動時に初期化しておく。
-    try {
-      const db = WorkerClient.get();
-      await db.initialize({ appId: this.shell.getAppId() });
-    } catch (e) {
-      console.error("Failed to initialize DB worker:", e);
-    }
+      // Worker 側の DB サービスを初期化しておく。
+      // TagIndexer 等は WorkerClient 経由で DB を使うため、プラグイン起動時に初期化しておく。
+      try {
+        const db = WorkerClient.get();
+        await db.initialize({ appId: this.shell.getAppId() });
+      } catch (e) {
+        console.error("Failed to initialize DB worker:", e);
+      }
 
-    this.activateBuiltinRegistry();
+      this.activateBuiltinRegistry();
+    });
   }
 
   // ---------------------------------------------------------------------------
