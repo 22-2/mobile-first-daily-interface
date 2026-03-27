@@ -23,6 +23,7 @@ export interface TagIndexerOptions {
   scanChunkSize?: number;
   workerFactory?: () => Worker;
 }
+
 // ---------------------------------------------------------------------------
 // TagIndexer
 // ---------------------------------------------------------------------------
