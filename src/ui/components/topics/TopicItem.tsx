@@ -1,7 +1,9 @@
-import { Badge, Box, Flex, HStack, Input, Text } from "@chakra-ui/react";
 import { Menu } from "obsidian";
+import React from "react";
 import type { Topic } from "src/core/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { Box, HStack, Text } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 
 interface TopicItemProps {
   topic: Topic;
@@ -73,42 +75,35 @@ export const TopicItem = ({
   };
 
   return (
-    <Flex
-      align="center"
-      paddingX="var(--size-4-3)"
-      paddingY="var(--size-4-2)"
-      cursor="pointer"
-      borderRadius="var(--radius-m)"
-      backgroundColor={
+    <Box
+      className={cn(
+        "flex items-center px-[var(--size-4-3)] py-[var(--size-4-2)] cursor-pointer rounded-[var(--radius-m)] transition-all duration-150",
         isActive
-          ? "var(--background-modifier-active-hover)"
-          : "var(--background-secondary)"
-      }
-      opacity={topic.archived ? 0.6 : 1}
-      _hover={{
-        backgroundColor: "var(--background-modifier-hover)",
-        opacity: 1,
-      }}
+          ? "bg-[var(--background-modifier-active-hover)]"
+          : "bg-[var(--background-secondary)]",
+        topic.archived ? "opacity-60" : "opacity-100",
+        "hover:bg-[var(--background-modifier-hover)] hover:opacity-100",
+      )}
       onDoubleClick={() => onSwitch(topic.id)}
-      transition="all 0.15s"
     >
+      {/* Indicator Bar */}
       <Box
-        width="3px"
-        height="2.5em"
-        borderRadius="2px"
-        backgroundColor={
-          isActive ? "var(--color-accent)" : "var(--background-secondary)"
-        }
-        marginRight="var(--size-4-3)"
-        flexShrink={0}
-        transition="background 0.15s"
+        className={cn(
+          "w-[3px] h-[2.5em] rounded-[2px] mr-[var(--size-4-3)] shrink-0 transition-[background] duration-150",
+          isActive
+            ? "bg-[var(--color-accent)]"
+            : "bg-[var(--background-secondary)]",
+        )}
       />
 
-      <Box flex={1} minWidth={0}>
+      <Box className={cn("flex-1 min-w-0")}>
         {isEditing ? (
-          <Input
+          <input
             ref={editInputRef}
-            size="sm"
+            className={cn(
+              "w-full text-sm px-2 py-1 bg-[var(--background-primary)] text-[var(--text-normal)]",
+              "border border-[var(--color-accent)] rounded outline-none",
+            )}
             value={editingTitle}
             onChange={(e) => onEditingTitleChange(e.target.value)}
             onBlur={onCommitEdit}
@@ -117,49 +112,41 @@ export const TopicItem = ({
               if (e.key === "Escape") onCancelEdit();
             }}
             autoFocus
-            borderColor="var(--color-accent)"
           />
         ) : (
           <>
-            <HStack spacing="var(--size-4-2)" align="center">
+            <HStack className={cn("gap-[var(--size-4-2)] items-center")}>
               <Text
-                fontWeight={isActive ? "600" : "400"}
-                color="var(--text-normal)"
-                lineHeight="1.4"
-                isTruncated
+                className={cn(
+                  "truncate leading-[1.4] text-[var(--text-normal)]",
+                  isActive ? "font-semibold" : "font-normal",
+                )}
               >
                 {topic.title}
               </Text>
               {isActive && (
-                <Badge
-                  colorScheme="blue"
-                  fontSize="0.65em"
-                  paddingX="0.4em"
-                  borderRadius="4px"
-                  backgroundColor="var(--color-accent)"
-                  color="var(--text-on-accent)"
+                <Box
+                  className={cn(
+                    "text-[0.65em] px-[0.4em] rounded-[4px] bg-[var(--color-accent)] text-[var(--text-on-accent)] whitespace-nowrap",
+                  )}
                 >
                   使用中
-                </Badge>
+                </Box>
               )}
               {topic.archived && !isActive && (
-                <Badge
-                  fontSize="0.65em"
-                  paddingX="0.4em"
-                  borderRadius="4px"
-                  variant="outline"
-                  color="var(--text-faint)"
-                  borderColor="var(--background-modifier-border)"
+                <Box
+                  className={cn(
+                    "text-[0.65em] px-[0.4em] rounded-[4px] border border-[var(--background-modifier-border)] text-[var(--text-faint)] whitespace-nowrap",
+                  )}
                 >
                   アーカイブ
-                </Badge>
+                </Box>
               )}
             </HStack>
             <Text
-              fontSize="var(--font-ui-smaller)"
-              color="var(--text-muted)"
-              lineHeight="1.4"
-              marginTop="1px"
+              className={cn(
+                "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)] leading-[1.4] mt-[1px]",
+              )}
             >
               {topic.id === "" ? "(デフォルト)" : topic.id}
             </Text>
@@ -167,17 +154,15 @@ export const TopicItem = ({
         )}
       </Box>
 
-      <Flex
+      <Box
         aria-label="メニュー"
-        height="24px"
-        width="24px"
-        justifyContent="center"
-        alignItems="center"
-        flexShrink={0}
+        className={cn(
+          "h-6 w-6 flex items-center justify-center shrink-0 cursor-pointer",
+        )}
         onClick={handleOpenMenu}
       >
-        <ObsidianIcon name="more-horizontal" boxSize="1.1em" />
-      </Flex>
-    </Flex>
+        <ObsidianIcon name="more-horizontal" size="1.1em" />
+      </Box>
+    </Box>
   );
 };

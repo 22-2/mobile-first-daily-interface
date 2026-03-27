@@ -1,8 +1,8 @@
 import type { TFile } from "obsidian";
-import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { Topic } from "src/core/topic";
-import type { Granularity, MomentLike } from "src/ui/types";
 import { getDateFromFilename } from "src/lib/daily-notes/utils";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Granularity, MomentLike } from "src/ui/types";
 
 const GRANULARITIES: Granularity[] = ["day", "week", "month", "year"];
 

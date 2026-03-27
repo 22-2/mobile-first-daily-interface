@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import moment from "moment";
 import { DEFAULT_SETTINGS } from "src/settings";
-import { MiniCalendar } from "src/ui/components/layout/MiniCalendar";
+import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { initializePostsStore } from "src/ui/store/postsStore";
 import {

@@ -1,0 +1,91 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+[data-type="mfdi-view"] {
+  --mfdi-icon-color: var(--text-muted);
+  --mfdi-icon-color-hover: var(--text-normal);
+}
+
+/* Scroll area used by BaseCard and similar components */
+.mfdi-scroll-area::-webkit-scrollbar {
+  width: var(--size-4-1);
+}
+.mfdi-scroll-area::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: var(--size-2-5);
+}
+.mfdi-scroll-area:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
+}
+.mfdi-scroll-area {
+  scrollbar-width: none; /* Firefox */
+}
+.mfdi-scroll-area:hover {
+  scrollbar-width: thin;
+}
+
+.item-enter {
+  opacity: 0 !important;
+  transform: translateY(-20px);
+}
+
+.item-enter-active {
+  opacity: 1 !important;
+  transform: translateY(0);
+  transition:
+    opacity var(--anim-duration-fast) ease-out,
+    transform var(--anim-duration-fast) ease-out;
+}
+
+.item-exit {
+  opacity: 1 !important;
+}
+
+.item-exit-active {
+  opacity: 0 !important;
+  transform: scale(0.95);
+  transition:
+    opacity var(--mfdi-app-transition-ms) ease-in,
+    transform var(--mfdi-app-transition-ms) ease-in;
+}
+
+[data-type="mfdi-view"] .view-content {
+  padding-bottom: 0;
+  background-color: transparent !important;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .view-header {
+  display: none;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .cm-content {
+  padding-bottom: 0 !important;
+}
+
+[data-type="mfdi-view"]
+  :is(
+    .markdown-preview-view.is-readable-line-width .markdown-preview-sizer > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-contentContainer.cm-contentContainer
+      > .cm-content
+      > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .embedded-backlinks,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .inline-title,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .metadata-container
+  ) {
+  max-width: initial !important;
+  width: initial !important;
+  margin-inline: initial !important;
+}

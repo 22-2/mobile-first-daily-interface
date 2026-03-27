@@ -16,11 +16,13 @@ export class ScanWorkerPool {
     }
   }
 
-  next(): Comlink.Remote<ScanWorkerAPI> {
+  next(): { remote: Comlink.Remote<ScanWorkerAPI>; worker: Worker } {
     if (this.remotes.length === 0) throw new Error("No workers in pool");
-    const r = this.remotes[this.idx % this.remotes.length];
+    const pos = this.idx % this.remotes.length;
+    const r = this.remotes[pos];
+    const w = this.workers[pos];
     this.idx += 1;
-    return r;
+    return { remote: r, worker: w };
   }
 
   async dispose(): Promise<void> {

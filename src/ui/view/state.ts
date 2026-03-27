@@ -1,5 +1,10 @@
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import type { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import type {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  TimeFilter,
+} from "src/ui/types";
 
 export type MFDINoteMode = "periodic" | "fixed";
 

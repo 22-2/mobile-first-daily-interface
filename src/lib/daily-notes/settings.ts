@@ -99,9 +99,7 @@ export function getDailyNoteSettings(
   }
 }
 
-function getWeeklyNoteSettings(
-  shell: ObsidianAppShell,
-): PeriodicNoteSettings {
+function getWeeklyNoteSettings(shell: ObsidianAppShell): PeriodicNoteSettings {
   try {
     const calendarSettings =
       shell.getCommunityPlugin<CalendarPlugin>("calendar")?.options;

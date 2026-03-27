@@ -3,7 +3,12 @@ import {
   DATE_FILTER_OPTIONS,
   TIME_FILTER_OPTIONS,
 } from "src/ui/config/filter-config";
-import type { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import type {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  TimeFilter,
+} from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 
 export function addPeriodMenuItems(

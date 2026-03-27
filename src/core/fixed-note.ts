@@ -1,6 +1,6 @@
 import { normalizePath, TFile } from "obsidian";
-import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { ensureExtension } from "src/core/path";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 export function normalizeFixedNoteFolder(path: string): string {
   const trimmed = path.trim();

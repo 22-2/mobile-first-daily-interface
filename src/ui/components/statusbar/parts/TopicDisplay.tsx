@@ -1,6 +1,6 @@
 import { Menu } from "obsidian";
 import type { FC } from "react";
-import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
+import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";

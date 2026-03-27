@@ -1,0 +1,61 @@
+[data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
+  margin: var(--size-4-2) var(--size-4-4) !important;
+  padding: 0 !important;
+  max-height: 50vh !important;
+}
+
+[data-type="mfdi-view"] .task-list-container .markdown-rendered {
+  user-select: text !important;
+}
+
+[data-type="mfdi-view"] .mfdi-date-input,
+[data-type="mfdi-view"] input[type="month"],
+[data-type="mfdi-view"] input[type="week"] {
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  padding: var(--input-padding);
+  font-size: var(--font-ui-small);
+  border-radius: var(--input-radius);
+  outline: none;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+  padding-left: var(--size-4-6);
+}
+
+@media (hover: hover) {
+  [data-type="mfdi-view"] .mfdi-date-input:hover,
+  [data-type="mfdi-view"] input[type="month"]:hover,
+  [data-type="mfdi-view"] input[type="week"]:hover {
+    background-color: var(--background-modifier-form-field-hover);
+    border-color: var(--background-modifier-border-hover);
+    transition:
+      box-shadow var(--anim-duration-fast) ease-in-out,
+      border var(--anim-duration-fast) ease-in-out;
+  }
+}
+
+[data-type="mfdi-view"] .mfdi-date-input:focus,
+[data-type="mfdi-view"] input[type="month"]:focus,
+[data-type="mfdi-view"] input[type="week"]:focus {
+  border-color: var(--background-modifier-border-focus);
+}
+
+/* Picker indicators and textsegments styling to match Obsidian */
+[data-type="mfdi-view"] .mfdi-date-input::-webkit-calendar-picker-indicator,
+[data-type="mfdi-view"] input[type="month"]::-webkit-calendar-picker-indicator,
+[data-type="mfdi-view"] input[type="week"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  left: var(--size-4-1);
+  right: auto;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+[data-type="mfdi-view"] .mfdi-date-input::-webkit-datetime-edit-text,
+[data-type="mfdi-view"] input[type="month"]::-webkit-datetime-edit-text,
+[data-type="mfdi-view"] input[type="week"]::-webkit-datetime-edit-text {
+  color: var(--input-date-separator);
+  padding-inline-end: 0;
+}

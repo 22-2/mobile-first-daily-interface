@@ -1,8 +1,8 @@
+import { resolveMemoTimestamp } from "src/core/post-utils";
+import { parseThinoEntries } from "src/core/thino";
 import type { MemoRecord } from "src/db/mfdi-db";
 import type { ScannableNote } from "src/db/worker-api";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
-import { resolveMemoTimestamp } from "src/core/post-utils";
-import { parseThinoEntries } from "src/core/thino";
 
 export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
   return parseThinoEntries(file.content).map((entry) => {

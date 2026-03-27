@@ -1,0 +1,117 @@
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
+import { WorkerPoolExecutor } from "src/db/indexer/executors";
+import type { ScanTarget } from "src/db/indexer/types";
+import { GRANULARITIES } from "src/db/note-file-identity";
+import { ScanWorkerPool } from "src/db/scan-worker-pool";
+import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
+import type { ScannableNote } from "src/db/worker-api";
+import { getAllTopicNotes } from "src/lib/daily-notes";
+import { getDateFromFile } from "src/lib/daily-notes/utils";
+import type { Settings } from "src/settings";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+export function normalizeTopics(topics: Topic[]): Topic[] {
+  const map = new Map<string, Topic>([[DEFAULT_TOPIC.id, DEFAULT_TOPIC]]);
+  for (const topic of topics) {
+    map.set(topic.id, topic);
+  }
+  return [...map.values()];
+}
+
+export function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
+  return (
+    a.path === b.path &&
+    a.topicId === b.topicId &&
+    a.noteGranularity === b.noteGranularity &&
+    a.noteDate === b.noteDate
+  );
+}
+
+export function collectScanTargets(
+  shell: ObsidianAppShell,
+  settings: Settings,
+): ScanTarget[] {
+  const uniqueTargets = new Map<string, ScanTarget>();
+  const ambiguousPaths = new Set<string>();
+
+  for (const topic of normalizeTopics(settings.topics)) {
+    for (const granularity of GRANULARITIES) {
+      const notes = getAllTopicNotes(shell, granularity, topic.id);
+
+      for (const file of Object.values(notes)) {
+        if (ambiguousPaths.has(file.path)) continue;
+
+        const noteDate =
+          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ??
+          "";
+        if (!noteDate) continue;
+
+        const candidate: ScanTarget = {
+          file,
+          path: file.path,
+          noteName: file.basename,
+          topicId: topic.id,
+          noteGranularity: granularity,
+          noteDate,
+        };
+
+        const existing = uniqueTargets.get(file.path);
+        if (!existing) {
+          uniqueTargets.set(file.path, candidate);
+          continue;
+        }
+
+        if (!isSameTarget(existing, candidate)) {
+          uniqueTargets.delete(file.path);
+          ambiguousPaths.add(file.path);
+        }
+      }
+    }
+  }
+
+  return [...uniqueTargets.values()];
+}
+
+export async function toScannableNote(
+  shell: ObsidianAppShell,
+  target: ScanTarget,
+): Promise<ScannableNote> {
+  const content = await shell.cachedReadFile(target.file);
+  return {
+    path: target.path,
+    noteName: target.noteName,
+    topicId: target.topicId,
+    noteGranularity: target.noteGranularity,
+    noteDate: target.noteDate,
+    content,
+  };
+}
+
+export function generateBatchId(): string {
+  return typeof crypto !== "undefined" &&
+    typeof (crypto as any).randomUUID === "function"
+    ? (crypto as any).randomUUID()
+    : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function estimateBytes(notes: ScannableNote[]): number {
+  try {
+    const enc = new TextEncoder();
+    return notes.reduce((sum, n) => sum + enc.encode(n.content).length, 0);
+  } catch {
+    return notes.reduce((sum, n) => sum + n.content.length, 0);
+  }
+}
+
+export function buildWorkerPool(factory?: () => Worker): WorkerPoolExecutor {
+  const hw = navigator.hardwareConcurrency ?? 4;
+  const poolSize = Math.max(1, Math.floor(hw * 0.75));
+  return new WorkerPoolExecutor(
+    new ScanWorkerPool(poolSize, factory ?? (() => new ScanWorkerFactory())),
+  );
+}

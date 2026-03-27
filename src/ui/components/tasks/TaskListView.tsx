@@ -1,7 +1,7 @@
-import { Box } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import { memo, useCallback, useMemo } from "react";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { Box } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { TaskView } from "src/ui/components/tasks/TaskView";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
@@ -50,7 +50,7 @@ export const TaskListView: React.FC = memo(() => {
       );
       menu.showAtMouseEvent(e as unknown as MouseEvent);
     },
-    [confirmDeleteAction, deleteTask, isReadOnly, openTaskInEditor, tasks],
+    [confirmDeleteAction, deleteTask, isReadOnly, openTaskInEditor],
   );
 
   const incompleteTasks = useMemo(
@@ -62,58 +62,31 @@ export const TaskListView: React.FC = memo(() => {
     [tasks],
   );
 
+  // タスクレンダラー（未完了・完了で共通）
+  const renderTaskList = (taskList: typeof tasks) => (
+    <Box className={cn("flex flex-col py-[var(--size-4-4)]")}>
+      {taskList.map((task) => (
+        <Box
+          key={date.format() + String(task.offset)}
+          className={cn("m-10")} // 元の Box className="m-10" を継承
+        >
+          <TaskView
+            task={task}
+            granularity={granularity}
+            timeFilter={timeFilter}
+            onChange={(c) => updateTaskChecked(task, c)}
+            onContextMenu={showTaskContextMenu}
+            disabled={isReadOnly}
+          />
+        </Box>
+      ))}
+    </Box>
+  );
+
   return (
-    <>
-      {incompleteTasks.length > 0 && (
-        <TransitionGroup
-          className="list"
-          style={{ padding: "var(--size-4-4) 0" }}
-        >
-          {incompleteTasks.map((x) => (
-            <CSSTransition
-              key={date.format() + String(x.offset)}
-              timeout={100}
-              classNames="item"
-            >
-              <Box m={10}>
-                <TaskView
-                  task={x}
-                  granularity={granularity}
-                  timeFilter={timeFilter}
-                  onChange={(c) => updateTaskChecked(x, c)}
-                  onContextMenu={showTaskContextMenu}
-                  disabled={isReadOnly}
-                />
-              </Box>
-            </CSSTransition>
-          ))}
-        </TransitionGroup>
-      )}
-      {completedTasks.length > 0 && (
-        <TransitionGroup
-          className="list"
-          style={{ padding: "var(--size-4-4) 0" }}
-        >
-          {completedTasks.map((x) => (
-            <CSSTransition
-              key={date.format() + String(x.offset)}
-              timeout={100}
-              classNames="item"
-            >
-              <Box m={10}>
-                <TaskView
-                  task={x}
-                  granularity={granularity}
-                  timeFilter={timeFilter}
-                  onChange={(c) => updateTaskChecked(x, c)}
-                  onContextMenu={showTaskContextMenu}
-                  disabled={isReadOnly}
-                />
-              </Box>
-            </CSSTransition>
-          ))}
-        </TransitionGroup>
-      )}
-    </>
+    <Box className="task-list-container flex flex-col w-full">
+      {incompleteTasks.length > 0 && renderTaskList(incompleteTasks)}
+      {completedTasks.length > 0 && renderTaskList(completedTasks)}
+    </Box>
   );
 });

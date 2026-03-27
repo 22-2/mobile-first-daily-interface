@@ -1,13 +1,21 @@
-import { Box, HStack, Spinner, Text, VStack } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
+import { parseThinoEntries } from "src/core/thino";
 import {
   SidebarItemCount,
+  SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
+import {
+  Box,
+  HStack,
+  Spinner,
+  Text,
+  VStack,
+} from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { parseThinoEntries } from "src/core/thino";
 import { useShallow } from "zustand/shallow";
 
 interface Counts {
@@ -43,7 +51,6 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   const monthStart = baseDate.clone().startOf("month");
   const monthEnd = baseDate.clone().endOf("month");
 
-  // 当月の週（月曜始まり）をすべてリストアップ
   const weeks: moment.Moment[] = [];
   const cursor = monthStart.clone().startOf("isoWeek");
   while (cursor.isBefore(monthEnd) || cursor.isSame(monthEnd, "day")) {
@@ -53,12 +60,10 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
 
   const [countsMap, setCountsMap] = useState<Record<string, Counts>>({});
   const [loading, setLoading] = useState(false);
-
   const [filter, setFilter] = useState<"all" | "year" | "month" | "week">(
     "all",
   );
 
-  // 指定した期間の投稿数とタスク数を取得する関数
   const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
       const note = resolvePeriodicNote(shell, d, g, activeTopic);
@@ -78,7 +83,6 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       setLoading(true);
       const newCounts: Record<string, Counts> = {};
 
-      // 月と年のカウント
       const [mCounts, yCounts] = await Promise.all([
         getCountsForPeriod(baseDate, "month"),
         getCountsForPeriod(baseDate, "year"),
@@ -122,12 +126,12 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     onClick: () => void;
   }> = ({ label, isActive, onClick }) => (
     <Text
-      fontSize="var(--font-ui-small)"
-      fontWeight={isActive ? "bold" : "normal"}
-      color={isActive ? "var(--color-accent)" : "var(--text-muted)"}
-      cursor="pointer"
-      transition="color 0.1s ease"
-      _hover={{ color: "var(--text-normal)" }}
+      className={cn(
+        "text-[length:var(--font-ui-small)] cursor-pointer transition-colors duration-100 ease-in-out hover:text-[var(--text-normal)]",
+        isActive
+          ? "font-bold text-[var(--color-accent)]"
+          : "font-normal text-[var(--text-muted)]",
+      )}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -140,24 +144,14 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   const Separator = () => (
     <Box
       as="span"
-      mx={2}
-      h="10px"
-      w="1px"
-      bg="var(--background-modifier-border)"
-      display="inline-block"
+      className="mx-2 h-[10px] w-px bg-[var(--background-modifier-border)] inline-block"
     />
   );
 
   return (
-    <VStack
-      align="stretch"
-      spacing={0}
-      pt={2}
-      mt={2}
-      className="mfdi-sidebar-scales"
-    >
-      <HStack spacing={0} px={2} mb={2} justify="space-between" align="center">
-        <HStack spacing={6} align="center">
+    <VStack className="mfdi-sidebar-scales items-stretch gap-0 pt-2 mt-2">
+      <SidebarSectionHeader className="sidebar-section-header">
+        <HStack className="gap-2 items-center">
           <FilterButton
             label="すべて"
             isActive={filter === "all"}
@@ -183,11 +177,11 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
           />
         </HStack>
         {loading && (
-          <Spinner size="xs" color="var(--text-faint)" speed="0.8s" />
+          <Spinner className="size-3 text-[var(--text-faint)] animate-spin [animation-duration:0.8s]" />
         )}
-      </HStack>
+      </SidebarSectionHeader>
 
-      <VStack align="stretch" spacing={0} className="mfdi-scale-list-unified">
+      <VStack className="mfdi-scale-list-unified items-stretch gap-0">
         {(filter === "all" || filter === "year") &&
           (() => {
             const yKey = `year-${baseDate.format("YYYY")}`;
@@ -200,11 +194,11 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
               <SidebarTextButton
                 isSelected={isSelected}
                 isMuted={!yHasActivity}
-                className={`mfdi-scale-item mfdi-scale-item-year ${isSelected ? "is-selected" : ""}`}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-year",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
-                  // メンタルモデル: タグのON/OFFトグルのように、
-                  // すでに選択されている期間（年）を再度クリックした場合は
-                  // ホーム状態（デフォルトの日ビューなど）にリセットする
                   if (isSelected) {
                     handleClickHome();
                   } else {
@@ -214,7 +208,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   }
                 }}
               >
-                <HStack spacing={0} justify="space-between" w="100%">
+                <HStack className="gap-0 justify-between w-full">
                   <Text as="span">{baseDate.format("YYYY")}</Text>
                   {renderCountBadge(yCounts)}
                 </HStack>
@@ -234,11 +228,11 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
               <SidebarTextButton
                 isSelected={isSelected}
                 isMuted={!mHasActivity}
-                className={`mfdi-scale-item mfdi-scale-item-month ${isSelected ? "is-selected" : ""}`}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-month",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
-                  // メンタルモデル: タグのON/OFFトグルのように、
-                  // すでに選択されている期間（月）を再度クリックした場合は
-                  // ホーム状態（デフォルトの日ビューなど）にリセットする
                   if (isSelected) {
                     handleClickHome();
                   } else {
@@ -248,7 +242,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   }
                 }}
               >
-                <HStack spacing={0} justify="space-between" w="100%">
+                <HStack className="gap-0 justify-between w-full">
                   <Text as="span">{baseDate.format("YYYY-MM")}</Text>
                   {renderCountBadge(mCounts)}
                 </HStack>
@@ -269,11 +263,11 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                 key={w.format("YYYY-WW")}
                 isSelected={isSelected}
                 isMuted={!hasActivity}
-                className={`mfdi-scale-item mfdi-scale-item-week ${isSelected ? "is-selected" : ""}`}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-week",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
-                  // メンタルモデル: タグのON/OFFトグルのように、
-                  // すでに選択されている期間（週）を再度クリックした場合は
-                  // ホーム状態（デフォルトの日ビューなど）にリセットする
                   if (isSelected) {
                     handleClickHome();
                   } else {
@@ -286,7 +280,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
                   }
                 }}
               >
-                <HStack spacing={0} justify="space-between" w="100%">
+                <HStack className="gap-0 justify-between w-full">
                   <Text as="span">W{w.isoWeek()}</Text>
                   {renderCountBadge(counts)}
                 </HStack>

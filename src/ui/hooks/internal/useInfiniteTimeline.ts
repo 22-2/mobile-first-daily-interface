@@ -1,17 +1,15 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
-import type {
-  TimelinePostsPage} from "src/ui/hooks/internal/timelinePosts";
+import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
   createTimelinePageFetcher,
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
-  TIMELINE_CACHE_INVALIDATE_MS,
 } from "src/ui/hooks/internal/timelinePosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useSettingsStore, settingsStore } from "src/ui/store/settingsStore";
+import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
 
@@ -141,4 +139,4 @@ export const useInfiniteTimeline = () => {
   return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };
 
-export {  resolveTimelineCacheBucket };
+export { resolveTimelineCacheBucket };

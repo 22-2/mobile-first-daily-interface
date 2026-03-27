@@ -1,9 +1,9 @@
-import type { App} from "obsidian";
+import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { DraftListManager } from "src/ui/components/DraftListManager";
-import type { AppStoreApi} from "src/ui/store/appStore";
+import type { AppStoreApi } from "src/ui/store/appStore";
 import { AppStoreProvider } from "src/ui/store/appStore";
 
 export class DraftListModal extends Modal {

@@ -2,19 +2,24 @@ import type { Menu, WorkspaceLeaf } from "obsidian";
 import { ItemView, Scope, TFile } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
+import { ensureExtension } from "src/core/path";
 import type { Settings } from "src/settings";
 import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
+import "src/ui/styles/draft.css";
+import "src/ui/styles/global.css";
+import "src/ui/styles/input.css";
+import "src/ui/styles/mfdi.css";
+import "src/ui/styles/modal.css";
 import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
-import type {
-  MFDIViewState} from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
-  getMFDIViewCapabilities
+  getMFDIViewCapabilities,
 } from "src/ui/view/state";
-import { ensureExtension } from "src/core/path";
+// import "src/ui/styles/editor.css"
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 

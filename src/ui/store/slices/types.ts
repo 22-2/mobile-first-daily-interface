@@ -1,9 +1,10 @@
 import type { TFile } from "obsidian";
 import type { RefObject } from "react";
+import type { MFDIStorage } from "src/core/storage";
+import type { Task } from "src/core/task-text";
 import type { MFDIDatabase } from "src/db/mfdi-db";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { Task } from "src/core/task-text";
 import type { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import type {
   DateFilter,
@@ -15,7 +16,6 @@ import type {
   TimeFilter,
 } from "src/ui/types";
 import type { MFDINoteMode } from "src/ui/view/state";
-import type { MFDIStorage } from "src/core/storage";
 
 export interface EnvironmentSlice {
   shell: ObsidianAppShell | null;

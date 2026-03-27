@@ -1,4 +1,3 @@
-import { HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import {
@@ -6,6 +5,7 @@ import {
   SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
+import { HStack, Text, VStack } from "src/ui/components/primitives";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
@@ -85,9 +85,9 @@ export const TagList: React.FC = () => {
   }
 
   return (
-    <VStack align="stretch" spacing={1} pt={2} className="mfdi-tag-section">
+    <VStack className="mfdi-tag-section gap-2 pt-2 items-stretch">
       <SidebarSectionHeader>タグ</SidebarSectionHeader>
-      <VStack align="stretch" spacing={0} className="mfdi-tag-list">
+      <VStack className="mfdi-tag-list gap-0 items-stretch">
         {items.map((item) => {
           const isActive = activeTag === item.tag;
 
@@ -100,7 +100,7 @@ export const TagList: React.FC = () => {
                 setActiveTag(isActive ? null : item.tag);
               }}
             >
-              <HStack spacing={0} justify="space-between" w="100%">
+              <HStack className="w-full gap-0 justify-between">
                 <Text as="span">{item.tag}</Text>
                 <SidebarItemCount>{item.count}</SidebarItemCount>
               </HStack>

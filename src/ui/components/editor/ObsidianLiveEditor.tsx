@@ -1,9 +1,9 @@
 import { type FakeEditor } from "@22-2/obsidian-magical-editor";
-import type { BoxProps } from "@chakra-ui/react";
-import { Box } from "@chakra-ui/react";
 import type { App, WorkspaceLeaf } from "obsidian";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "src/ui/components/editor/hooks";
+import { Box } from "src/ui/components/primitives/Box";
+import { cn } from "src/ui/components/primitives/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface ObsidianLiveEditorRef {
@@ -14,10 +14,7 @@ export interface ObsidianLiveEditorRef {
   setContent: FakeEditor["setContent"];
 }
 
-interface ObsidianLiveEditorProps extends Omit<
-  BoxProps,
-  "onChange" | "onSubmit"
-> {
+interface ObsidianLiveEditorProps {
   leaf: WorkspaceLeaf;
   app: App;
   initialValue: string;
@@ -26,6 +23,7 @@ interface ObsidianLiveEditorProps extends Omit<
   placeholder?: string;
   isReadOnly?: boolean;
   readonlyPlaceholder?: string;
+  className?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -44,6 +42,7 @@ export const ObsidianLiveEditor = forwardRef<
       placeholder,
       isReadOnly,
       readonlyPlaceholder,
+      className,
       ...boxProps
     },
     ref,
@@ -82,8 +81,11 @@ export const ObsidianLiveEditor = forwardRef<
     }, [placeholder, readonlyPlaceholder]);
 
     return (
-      <Box position="relative" {...boxProps}>
-        <Box ref={containerRef} height="100%" width="100%" />
+      <Box className={cn(className)} {...boxProps}>
+        <Box
+          ref={containerRef}
+          className="h-full w-full mfdi-live-editor-container"
+        />
       </Box>
     );
   },

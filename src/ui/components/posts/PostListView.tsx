@@ -1,9 +1,9 @@
-import { Box } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
+import { Box } from "src/ui/components/primitives/Box";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -335,11 +335,9 @@ export const PostListView: React.FC = memo(() => {
 
   return (
     <Box
-      className="list"
+      className="list w-full relative"
       style={{
         height: `${rowVirtualizer.getTotalSize()}px`,
-        width: "100%",
-        position: "relative",
       }}
     >
       {virtualItems.map((virtualItem) => {

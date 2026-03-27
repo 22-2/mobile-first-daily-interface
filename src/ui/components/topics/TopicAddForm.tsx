@@ -1,15 +1,4 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  FormLabel,
-  HStack,
-  Input,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+// import {
 
 interface TopicAddFormProps {
   newTitle: string;
@@ -30,83 +19,86 @@ export const TopicAddForm = ({
   onSubmit,
   onCancel,
 }: TopicAddFormProps) => {
-  return (
-    <Box
-      marginTop="var(--size-4-3)"
-      padding="var(--size-4-3)"
-      borderRadius="var(--radius-m)"
-      border="1px solid var(--background-modifier-border)"
-      backgroundColor="var(--background-secondary)"
-    >
-      <VStack align="stretch" spacing="var(--size-4-2)">
-        <FormControl>
-          <FormLabel
-            fontSize="var(--font-ui-smaller)"
-            color="var(--text-muted)"
-            marginBottom="2px"
-          >
-            タイトル
-          </FormLabel>
-          <Input
-            size="sm"
-            placeholder="例: 小説"
-            value={newTitle}
-            onChange={(e) => onTitleChange(e.target.value)}
-            autoFocus
-          />
-        </FormControl>
+  return null;
+  // return (
+  //   <Box
+  //     className={cn(
+  //       "mt-[var(--size-4-3)] p-[var(--size-4-3)] rounded-[var(--radius-m)]",
+  //       "border border-[var(--background-modifier-border)] bg-[var(--background-secondary)]"
+  //     )}
+  //   >
+  //     <VStack className={cn("flex flex-col items-stretch space-y-[var(--size-4-2)]")}>
+  //       <FormControl>
+  //         <FormLabel
+  //           className={cn(
+  //             "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)] mb-[2px] block"
+  //           )}
+  //         >
+  //           タイトル
+  //         </FormLabel>
+  //         <Input
+  //           className={cn("text-sm")}
+  //           placeholder="例: 小説"
+  //           value={newTitle}
+  //           onChange={(e) => onTitleChange(e.target.value)}
+  //           autoFocus
+  //         />
+  //       </FormControl>
 
-        <FormControl isInvalid={!!idError}>
-          <FormLabel
-            fontSize="var(--font-ui-smaller)"
-            color="var(--text-muted)"
-            marginBottom="2px"
-          >
-            ID{" "}
-            <Text as="span" color="var(--text-faint)">
-              (作成後変更不可)
-            </Text>
-          </FormLabel>
-          <Input
-            size="sm"
-            placeholder="例: novel"
-            value={newId}
-            onChange={(e) => onIdChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") onSubmit();
-              if (e.key === "Escape") onCancel();
-            }}
-            fontFamily="var(--font-monospace)"
-          />
-          {idError ? (
-            <FormErrorMessage fontSize="var(--font-ui-smaller)">
-              {idError}
-            </FormErrorMessage>
-          ) : (
-            <FormHelperText
-              fontSize="var(--font-ui-smaller)"
-              color="var(--text-faint)"
-            >
-              英小文字・数字・ハイフンのみ。ファイル名のプレフィックスになります。
-            </FormHelperText>
-          )}
-        </FormControl>
+  //       <FormControl isInvalid={!!idError}>
+  //         <FormLabel
+  //           className={cn(
+  //             "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)] mb-[2px] block"
+  //           )}
+  //         >
+  //           ID{" "}
+  //           <Text as="span" className={cn("text-[length:var(--font-ui-smaller)] text-[var(--text-faint)]")}>
+  //             (作成後変更不可)
+  //           </Text>
+  //         </FormLabel>
+  //         <Input
+  //           className={cn("text-[length:var(--font-ui-smaller)] font-mono")}
+  //           placeholder="例: novel"
+  //           value={newId}
+  //           onChange={(e) => onIdChange(e.target.value)}
+  //           onKeyDown={(e) => {
+  //             if (e.key === "Enter") onSubmit();
+  //             if (e.key === "Escape") onCancel();
+  //           }}
+  //         />
+  //         {idError ? (
+  //           <FormErrorMessage className={cn("text-[length:var(--font-ui-smaller)] mt-1")}>
+  //             {idError}
+  //           </FormErrorMessage>
+  //         ) : (
+  //           <FormHelperText
+  //             className={cn("text-[length:var(--font-ui-smaller)] text-[var(--text-faint)] mt-1")}
+  //           >
+  //             英小文字・数字・ハイフンのみ。ファイル名のプレフィックスになります。
+  //           </FormHelperText>
+  //         )}
+  //       </FormControl>
 
-        <HStack justify="flex-end" spacing="var(--size-4-2)">
-          <Button size="sm" variant="ghost" onClick={onCancel}>
-            キャンセル
-          </Button>
-          <Button
-            size="sm"
-            backgroundColor="var(--color-accent)"
-            color="var(--text-on-accent)"
-            _hover={{ backgroundColor: "var(--color-accent-2)" }}
-            onClick={onSubmit}
-          >
-            追加
-          </Button>
-        </HStack>
-      </VStack>
-    </Box>
-  );
+  //       <HStack className={cn("flex flex-row items-center justify-end space-x-[var(--size-4-2)]")}>
+  //         <Button
+  //           onClick={onCancel}
+  //           className={cn(
+  //             "text-sm bg-transparent hover:bg-[var(--background-modifier-hover)] transition-colors"
+  //           )}
+  //         >
+  //           キャンセル
+  //         </Button>
+  //         <Button
+  //           onClick={onSubmit}
+  //           className={cn(
+  //             "text-sm bg-[var(--color-accent)] text-[var(--text-on-accent)]",
+  //             "hover:bg-[var(--color-accent-2)] transition-colors"
+  //           )}
+  //         >
+  //           追加
+  //         </Button>
+  //       </HStack>
+  //     </VStack>
+  //   </Box>
+  // );
 };

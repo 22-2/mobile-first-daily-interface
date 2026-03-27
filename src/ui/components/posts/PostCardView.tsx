@@ -1,12 +1,16 @@
-import { Box, HStack, Tag, VStack } from "@chakra-ui/react";
 import { setTooltip } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import type { DateFilter, Granularity, Post } from "src/ui/types";
 import { getPostTags } from "src/ui/utils/post-metadata";
 
+import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
+import { createMeta } from "src/core/meta";
+import { pickUrls } from "src/core/strings";
+import { isPresent } from "src/core/types";
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
@@ -15,10 +19,6 @@ import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
-import { createMeta } from "src/core/meta";
-import { pickUrls } from "src/core/strings";
-import { isPresent } from "src/core/types";
 
 export const PostCardView = React.memo(
   ({
@@ -72,14 +72,11 @@ export const PostCardView = React.memo(
           onDoubleClick={() => !isDimmed && onEdit?.(post)}
           footerAddon={
             tags.length > 0 ? (
-              <HStack gap="var(--size-2-3);" flexWrap="wrap">
+              <HStack className="flex-wrap gap-[var(--size-2-3)]">
                 {tags.map((tag) => (
                   <Tag
                     key={tag}
-                    size="sm"
-                    variant="subtle"
-                    colorScheme="gray"
-                    borderRadius="md"
+                    className="text-xs px-2 py-0.5 rounded-md bg-[var(--tag-bg)] text-[var(--tag-fg)]"
                   >
                     {tag}
                   </Tag>
@@ -99,25 +96,20 @@ export const PostCardView = React.memo(
                   e.stopPropagation();
                   onToggleThreadFocus?.(post);
                 }}
-                padding="4px"
-                cursor="pointer"
                 size="1.1em"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                color={isThreadFocused ? "var(--text-normal)" : undefined}
+                // color={isThreadFocused ? "var(--text-normal)" : undefined}
               />
             ) : undefined
           }
         >
           <VStack align="stretch" gap={3}>
             {/* Message Body */}
-            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
+            <Box className="text-[93%] px-1 break-words">
               <ObsidianMarkdown content={post.message} />
             </Box>
 
             {settings.enabledCardView && (
-              <Box paddingX={1}>
+              <Box className="px-1">
                 {htmlMetas.map((meta) => (
                   <HTMLCard key={meta.originUrl} meta={meta} />
                 ))}

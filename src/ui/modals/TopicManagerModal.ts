@@ -1,4 +1,4 @@
-import type { App} from "obsidian";
+import type { App } from "obsidian";
 import { Modal } from "obsidian";
 import React from "react";
 import type { Root } from "react-dom/client";

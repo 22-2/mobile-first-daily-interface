@@ -1,8 +1,8 @@
-import { Box, Button, Flex, HStack, Input } from "@chakra-ui/react";
-import type { ChangeEvent, FC} from "react";
+import type { ChangeEvent, FC } from "react";
 import { memo, useCallback, useMemo } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
+import { Box, Button, Flex, HStack, Input } from "src/ui/components/primitives";
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
@@ -30,17 +30,14 @@ const NavButton: FC<{
 }> = ({ direction, onClick, step }) => {
   return (
     <HStack
-      className={`mfdi-nav-button mfdi-nav-button-${direction}`}
-      cursor="pointer"
+      className={`mfdi-nav-button mfdi-nav-button-${direction} cursor-pointer ${
+        direction === "left" ? "flex-row" : "flex-row-reverse"
+      } gap-0`}
       onClick={onClick}
-      spacing={0}
-      flexDirection={direction === "left" ? "row" : "row-reverse"}
     >
       <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />
       {step > 1 && (
-        <Box fontSize="smaller" fontWeight="bold" color="var(--text-muted)">
-          {step}
-        </Box>
+        <Box className="text-sm font-bold text-[var(--text-muted)]">{step}</Box>
       )}
     </HStack>
   );
@@ -59,10 +56,7 @@ const DisplayModeIndicator: FC<{
   });
   return (
     <Box
-      fontSize="var(--font-ui-smaller)"
-      fontWeight="bold"
-      color="var(--text-accent)"
-      cursor="pointer"
+      className="text-[length:var(--font-ui-small)] font-bold text-[var(--text-accent)] cursor-pointer"
       onClick={onClick}
     >
       {text}
@@ -169,32 +163,22 @@ const InputAreaControl: FC = memo(() => {
 
   return (
     <Flex
-      align="center"
-      paddingX="1em"
-      marginY="var(--size-4-4)"
-      className="mfdi-input-area-control"
-      height="28px"
+      className={`mfdi-input-area-control items-center px-[1em] my-[var(--size-4-4)] h-[28px]`}
     >
       {capabilities.supportsDateNavigation && (
         <ObsidianIcon
           name="home"
           size="1.1em"
-          color={isViewDefault ? undefined : "var(--text-accent)"}
-          padding="4px"
-          borderRadius="4px"
-          _hover={
+          className={
             isViewDefault
-              ? { bg: "var(--background-modifier-hover)" }
-              : {
-                  color: "var(--text-normal)",
-                  bg: "var(--background-modifier-hover)",
-                }
+              ? "hover:bg-[var(--background-modifier-hover)]"
+              : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={handleClickHome}
         />
       )}
-      <Box flex="1" />
-      <HStack justify="center" flex="0 0 auto" className="mfdi-control-center">
+      <Box className="flex-1" />
+      <HStack className="mfdi-control-center justify-center flex-none">
         {!capabilities.supportsDateNavigation ? null : isStatusIndicatorVisible ? (
           <DisplayModeIndicator
             displayMode={displayMode}
@@ -209,17 +193,14 @@ const InputAreaControl: FC = memo(() => {
               onClick={handleClickMovePrevious}
               step={step}
             />
-            <HStack spacing="0.2em" className="mfdi-date-controls">
+            <HStack className="mfdi-date-controls gap-[0.2em]">
               <Input
-                className="mfdi-date-input"
-                size="sm"
-                height="28px"
-                fontSize="90%"
+                className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${
+                  granularity === "year" ? "w-[6.5em]" : "w-[10em]"
+                }`}
                 type={GRANULARITY_CONFIG[granularity].inputType}
                 value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
                 onChange={handleChangeCalendarDate}
-                width={granularity === "year" ? "6.5em" : "10em"}
-                paddingX="0.5em"
               />
             </HStack>
             <NavButton
@@ -230,20 +211,14 @@ const InputAreaControl: FC = memo(() => {
           </>
         )}
       </HStack>
-      <Box flex="1" display="flex" justifyContent="flex-end" gap="0.5em">
+      <Box className="flex-1 flex justify-end gap-[0.5em]">
         <ObsidianIcon
           name="maximize"
           size="1.1em"
-          cursor={isReadOnly ? "default" : "pointer"}
-          opacity={isReadOnly ? 0.3 : 1}
-          padding="4px"
-          borderRadius="4px"
-          _hover={
+          className={
             isReadOnly
-              ? {}
-              : {
-                  bg: "var(--background-modifier-hover)",
-                }
+              ? "cursor-default opacity-30"
+              : "hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={() => {
             if (isReadOnly) return;
@@ -306,54 +281,27 @@ const InputAreaFooter: FC = memo(() => {
 
   const { handleSubmit } = usePostActions();
 
-  const submitButtonProps = canSubmit
-    ? {
-        bg: "var(--color-accent)!important;",
-        color: "var(--text-on-accent)!important;",
-        cursor: "pointer",
-        _hover: { bg: "var(--color-accent-2)" },
-      }
-    : {
-        bg: "var(--background-modifier-border)",
-        color: "var(--text-muted)",
-        cursor: "default",
-        _hover: { bg: "var(--background-modifier-border)" },
-      };
-
   return (
-    <HStack
-      justify="flex-end"
-      alignItems="center"
-      paddingY={"0.5em"}
-      paddingBottom={"1em"}
-      marginRight={"1.2em"}
-    >
+    <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
       {editingPost && (
-        <Button
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
-          variant="ghost"
-          onClick={cancelEdit}
-        >
+        <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル
         </Button>
       )}
-      {!isReadOnly && !editingPost && (
+      {/* {!isReadOnly && !editingPost && (
         <Button
-          minHeight={"2.4em"}
-          maxHeight={"2.4em"}
+          className="h-[2.4em]"
           variant="ghost"
           disabled={!inputSnapshot.trim()}
           onClick={handleCreateDraft}
         >
           下書きに追加
         </Button>
-      )}
+      )} */}
       <Button
         disabled={!canSubmit}
-        {...submitButtonProps}
-        minHeight={"2.4em"}
-        maxHeight={"2.4em"}
+        className="h-[2.4em]"
+        variant="accent"
         onClick={handleSubmit}
       >
         {isReadOnly
@@ -387,14 +335,7 @@ export const InputArea: FC = memo(() => {
 
   return (
     <Flex
-      flexDirection="column"
-      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""}`}
-      borderRadius="22px 22px 0 0"
-      margin={0}
-      marginRight="var(--size-4-3)"
-      padding={0}
-      backgroundColor="var(--background-secondary)"
-      border="1px solid var(--table-border-color)"
+      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} flex flex-col rounded-t-[22px] mr-[var(--size-4-3)] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`}
     >
       <InputAreaControl />
 
@@ -405,8 +346,7 @@ export const InputArea: FC = memo(() => {
         initialValue={inputSnapshot}
         onChange={syncInputSession}
         onSubmit={handleSubmit}
-        minHeight="var(--size-4-18)"
-        marginX="var(--size-4-4)"
+        className="min-h-[var(--size-4-18)] mx-[var(--size-4-4)]"
         placeholder={PLACEHOLDER_TEXT}
         isReadOnly={isReadOnly}
         readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}

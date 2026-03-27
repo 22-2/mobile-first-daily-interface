@@ -1,27 +1,12 @@
-import type { BoxProps } from "@chakra-ui/react";
-import { Box } from "@chakra-ui/react";
+import type React from "react";
+import { Box } from "src/ui/components/primitives";
 
-export const Card = (props: BoxProps) => {
-  const { children, onContextMenu, onDoubleClick, ...rest } = props;
+export const Card = (props: React.ComponentPropsWithoutRef<"div">) => {
+  const { children, onContextMenu, onDoubleClick, className, ...rest } = props;
 
   return (
     <Box
-      className="mfdi-card"
-      position="relative"
-      borderRadius={"22px"}
-      borderBottomRightRadius={"6px"}
-      borderStyle={"solid"}
-      borderWidth={"1px"}
-      borderColor={"var(--table-border-color)"}
-      background={"var(--background-primary)"}
-      color={"var(--text-normal)"}
-      marginY="var(--size-4-1)"
-      transition="all 0.18s ease"
-      boxShadow={"0 4px 12px rgba(0,0,0,0.06)"}
-      _hover={{
-        boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
-        backgroundColor: "var(--background-secondary)",
-      }}
+      className={`mfdi-card relative rounded-[var(--radius-xl)] [border-bottom-right-radius:6px] border border-[var(--table-border-color)] text-[var(--text-normal)] my-[var(--size-4-1)] transition-all duration-150 shadow-[var(--shadow-xs)] hover:bg-[var(--background-secondary)] ${className ?? ""}`}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
       {...rest}
@@ -30,5 +15,3 @@ export const Card = (props: BoxProps) => {
     </Box>
   );
 };
-
-
