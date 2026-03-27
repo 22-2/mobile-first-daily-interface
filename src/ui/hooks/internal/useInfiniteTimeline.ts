@@ -29,6 +29,7 @@ export const useInfiniteTimeline = () => {
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
+  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
   const shouldFetchDb = isTimelineView(displayMode) && activeDocument.hasFocus();
 
   const { addPaths } = useNoteStore(
@@ -101,10 +102,19 @@ export const useInfiniteTimeline = () => {
       const paths = new Set(posts.map((p) => p.path));
       addPaths(paths);
 
+      // 判定ロジック: このウィンドウより前に投稿が存在するかを確認して
+      // 次ページの有無を決定する（timelinePosts.createTimelinePageFetcher と同等）。
+      const older = await dbService.getMemos({
+        topicId: activeTopic,
+        startDate: "0000-01-01T00:00:00.000Z",
+        endDate: startDate.clone().subtract(1, "ms").toISOString(),
+        limit: 1,
+      });
+
       const result: TimelinePostsPage = {
         posts,
         paths,
-        hasMore: true, // 常に次ページを許可し、スクロールに応じて日付を遡る
+        hasMore: (older?.length ?? 0) > 0,
         lastSearchedDate: startDate,
       };
 
@@ -112,7 +122,9 @@ export const useInfiniteTimeline = () => {
     },
 
     getNextPageParam: (lastPage) =>
-      lastPage.lastSearchedDate.clone().subtract(1, "day").format(),
+      lastPage.hasMore
+        ? lastPage.lastSearchedDate.clone().subtract(1, "day").format()
+        : undefined,
   });
 
   // ---------------------------------------------------------------------------
