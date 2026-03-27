@@ -1,4 +1,4 @@
-import { Box, HStack, Tag, VStack } from "@chakra-ui/react";
+import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { setTooltip } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
@@ -72,14 +72,11 @@ export const PostCardView = React.memo(
           onDoubleClick={() => !isDimmed && onEdit?.(post)}
           footerAddon={
             tags.length > 0 ? (
-              <HStack gap="var(--size-2-3);" flexWrap="wrap">
+              <HStack className="flex-wrap gap-[var(--size-2-3)]">
                 {tags.map((tag) => (
                   <Tag
                     key={tag}
-                    size="sm"
-                    variant="subtle"
-                    colorScheme="gray"
-                    borderRadius="md"
+                    className="text-xs px-2 py-0.5 rounded-md bg-[var(--tag-bg)] text-[var(--tag-fg)]"
                   >
                     {tag}
                   </Tag>
@@ -110,14 +107,14 @@ export const PostCardView = React.memo(
             ) : undefined
           }
         >
-          <VStack align="stretch" gap={3}>
+            <VStack align="stretch" gap={3}>
             {/* Message Body */}
-            <Box fontSize={"93%"} paddingX={1} wordBreak={"break-word"}>
+            <Box className="text-[93%] px-1 break-words">
               <ObsidianMarkdown content={post.message} />
             </Box>
 
             {settings.enabledCardView && (
-              <Box paddingX={1}>
+              <Box className="px-1">
                 {htmlMetas.map((meta) => (
                   <HTMLCard key={meta.originUrl} meta={meta} />
                 ))}

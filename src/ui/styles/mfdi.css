@@ -13,6 +13,24 @@ If your plugin does not need CSS, delete this file.
   --mfdi-icon-color-hover: var(--text-normal);
 }
 
+/* Scroll area used by BaseCard and similar components */
+.mfdi-scroll-area::-webkit-scrollbar {
+  width: var(--size-4-1);
+}
+.mfdi-scroll-area::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: var(--size-2-5);
+}
+.mfdi-scroll-area:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg, rgba(0,0,0,0.1));
+}
+.mfdi-scroll-area {
+  scrollbar-width: none; /* Firefox */
+}
+.mfdi-scroll-area:hover {
+  scrollbar-width: thin;
+}
+
 .item-enter {
   opacity: 0 !important;
   transform: translateY(-20px);
