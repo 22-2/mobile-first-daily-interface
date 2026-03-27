@@ -22,9 +22,9 @@ export const DayCell: React.FC<Props> = ({
   // ---- className helpers ----
 
   const backgroundCx = isToday
-    ? "bg-[var(--color-accent)]! text-[var(--text-on-accent)]"
+    ? "bg-[var(--interactive-accent)] text-[var(--text-on-accent)]"
     : effectiveInRange
-      ? "bg-[color-mix(in_srgb,var(--color-accent),transparent_85%)] text-[var(--color-accent)]"
+      ? "bg-[var(--interactive-normal)] text-[var(--text-color)]"
       : "bg-transparent";
 
   const textCx =
@@ -35,8 +35,8 @@ export const DayCell: React.FC<Props> = ({
       : undefined;
 
   const hoverCx = isToday
-    ? "hover:bg-[var(--color-accent-2)]"
-    : "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_75%)]";
+    ? "hover:bg-[var(--interactive-accent-hover)]"
+    : "hover:bg-[var(--interactive-normal)]";
 
   const dotColorCx = isToday
     ? "bg-[var(--text-on-accent)]"
