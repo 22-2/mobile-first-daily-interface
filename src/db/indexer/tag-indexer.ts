@@ -15,26 +15,9 @@ import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import { ScanWorkerPool } from "src/db/scan-worker-pool";
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const DEFAULT_QUEUE_CONCURRENCY = 8;
-const DEFAULT_SCAN_CHUNK_SIZE = 100;
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface ScanTarget {
-  file: TFile;
-  path: string;
-  noteName: string;
-  topicId: string;
-  noteDate: string;
-  noteGranularity: (typeof GRANULARITIES)[number];
-}
+import { DirectApiExecutor, WorkerPoolExecutor } from "./executors";
+import { DEFAULT_QUEUE_CONCURRENCY, DEFAULT_SCAN_CHUNK_SIZE } from "./types";
+import { collectScanTargets, toScannableNote, normalizeTopics } from "./utils";
 
 export interface TagIndexerOptions {
   api?: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>;
@@ -43,125 +26,6 @@ export interface TagIndexerOptions {
   workerFactory?: () => Worker;
 }
 
-// ---------------------------------------------------------------------------
-// Scan executor abstraction
-// Centralises the "direct API vs worker pool" branching in one place,
-// so the rest of TagIndexer never has to think about it.
-// ---------------------------------------------------------------------------
-
-class DirectApiExecutor implements ScanWorkerAPI {
-  constructor(private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>) {}
-
-  scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {
-    return (this.api as any).scanFiles(files, meta);
-  }
-
-  scanFile(note: ScannableNote, meta?: { batchId?: string }) {
-    return (this.api as any).scanFile(note, meta);
-  }
-
-  async dispose() {
-    // nothing to tear down
-  }
-}
-
-class WorkerPoolExecutor implements ScanWorkerAPI {
-  constructor(private readonly pool: ScanWorkerPool) {}
-
-  scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {
-    const { remote } = this.pool.next();
-    return (remote as any).scanFiles(files, meta);
-  }
-
-  scanFile(note: ScannableNote, meta?: { batchId?: string }) {
-    const { remote } = this.pool.next();
-    return (remote as any).scanFile(note, meta);
-  }
-
-  async dispose() {
-    await this.pool.dispose();
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Pure helpers
-// ---------------------------------------------------------------------------
-
-function normalizeTopics(topics: Topic[]): Topic[] {
-  const map = new Map<string, Topic>([[DEFAULT_TOPIC.id, DEFAULT_TOPIC]]);
-  for (const topic of topics) {
-    map.set(topic.id, topic);
-  }
-  return [...map.values()];
-}
-
-function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
-  return (
-    a.path === b.path &&
-    a.topicId === b.topicId &&
-    a.noteGranularity === b.noteGranularity &&
-    a.noteDate === b.noteDate
-  );
-}
-
-function collectScanTargets(
-  shell: ObsidianAppShell,
-  settings: Settings,
-): ScanTarget[] {
-  const uniqueTargets = new Map<string, ScanTarget>();
-  const ambiguousPaths = new Set<string>();
-
-  for (const topic of normalizeTopics(settings.topics)) {
-    for (const granularity of GRANULARITIES) {
-      const notes = getAllTopicNotes(shell, granularity, topic.id);
-
-      for (const file of Object.values(notes)) {
-        if (ambiguousPaths.has(file.path)) continue;
-
-        const noteDate =
-          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "";
-        if (!noteDate) continue;
-
-        const candidate: ScanTarget = {
-          file,
-          path: file.path,
-          noteName: file.basename,
-          topicId: topic.id,
-          noteGranularity: granularity,
-          noteDate,
-        };
-
-        const existing = uniqueTargets.get(file.path);
-        if (!existing) {
-          uniqueTargets.set(file.path, candidate);
-          continue;
-        }
-
-        if (!isSameTarget(existing, candidate)) {
-          uniqueTargets.delete(file.path);
-          ambiguousPaths.add(file.path);
-        }
-      }
-    }
-  }
-
-  return [...uniqueTargets.values()];
-}
-
-async function toScannableNote(
-  shell: ObsidianAppShell,
-  target: ScanTarget,
-): Promise<ScannableNote> {
-  const content = await shell.cachedReadFile(target.file);
-  return {
-    path: target.path,
-    noteName: target.noteName,
-    topicId: target.topicId,
-    noteGranularity: target.noteGranularity,
-    noteDate: target.noteDate,
-    content,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // TagIndexer
@@ -311,11 +175,18 @@ export class TagIndexer {
     const records = result?.records ?? [];
 
     await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      const removedTagCounts = await this.collectTagCountsForPath(file.path);
+
+      // Replace memos for this path.
       await this.db.memos.where("path").equals(file.path).delete();
       if (records?.length) {
         await this.db.memos.bulkPut(records);
       }
-      await this.rebuildTagStats();
+
+      // Compute added tags from new records.
+      const addedTagCounts = this.collectTagCountsFromRecords(records);
+
+      await this.applyTagDeltas(removedTagCounts, addedTagCounts);
     });
 
     window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }));
@@ -325,8 +196,9 @@ export class TagIndexer {
     await this.waitUntilReady();
 
     await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      const removedTagCounts = await this.collectTagCountsForPath(path);
       await this.db.memos.where("path").equals(path).delete();
-      await this.rebuildTagStats();
+      await this.applyTagDeltas(removedTagCounts, new Map());
     });
 
     window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
@@ -340,9 +212,19 @@ export class TagIndexer {
   ): Promise<void> {
     await this.waitUntilReady();
 
+    // For rename, delete old path memos (collecting their tags), then
+    // let onFileChanged insert the new records and apply deltas.
+    // Note: this first transaction deletes memos at the old path and
+    // applies tag removals. If the process crashes after this transaction
+    // and before `onFileChanged` completes, `tagStats` may temporarily be
+    // missing the counts for the renamed file until `onFileChanged` finishes.
+    // Making the rename fully atomic would require performing the new-file
+    // scan+insert inside the same transaction; we avoid that here because
+    // `onFileChanged` performs side-effects (events) and scanning.
     await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
+      const removedTagCounts = await this.collectTagCountsForPath(oldPath);
       await this.db.memos.where("path").equals(oldPath).delete();
-      await this.rebuildTagStats();
+      await this.applyTagDeltas(removedTagCounts, new Map());
     });
 
     await this.onFileChanged(shell, file, settings);
@@ -379,5 +261,60 @@ export class TagIndexer {
         [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt })),
       );
     }
+  }
+  private async applyTagDeltas(
+    removed: Map<string, number>,
+    added: Map<string, number>,
+  ): Promise<void> {
+    const tags = [...new Set([...removed.keys(), ...added.keys()])];
+    if (tags.length === 0) return;
+
+    // Fetch existing rows in a single call.
+    const existingRows = await this.db.tagStats.bulkGet(tags as any);
+    const updatedAt = new Date().toISOString();
+
+    const toPut: { tag: string; count: number; updatedAt: string }[] = [];
+    const toDelete: string[] = [];
+
+    for (let i = 0; i < tags.length; i++) {
+      const tag = tags[i];
+      const existingCount = existingRows[i]?.count ?? 0;
+      const newCount = existingCount - (removed.get(tag) ?? 0) + (added.get(tag) ?? 0);
+
+      if (newCount > 0) {
+        toPut.push({ tag, count: newCount, updatedAt });
+      } else {
+        if (existingCount > 0) toDelete.push(tag);
+      }
+    }
+
+    const ops: Promise<unknown>[] = [];
+    if (toPut.length) ops.push(this.db.tagStats.bulkPut(toPut));
+    if (toDelete.length) ops.push(this.db.tagStats.bulkDelete(toDelete));
+
+    await Promise.all(ops);
+  }
+
+  private async collectTagCountsForPath(path: string): Promise<Map<string, number>> {
+    const memos = await this.db.memos.where("path").equals(path).toArray();
+    const counts = new Map<string, number>();
+    for (const m of memos) {
+      if (m.archived || m.deleted) continue;
+      for (const t of m.tags) {
+        counts.set(t, (counts.get(t) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }
+
+  private collectTagCountsFromRecords(records: any[]): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const r of records ?? []) {
+      if (r.archived || r.deleted) continue;
+      for (const t of r.tags ?? []) {
+        counts.set(t, (counts.get(t) ?? 0) + 1);
+      }
+    }
+    return counts;
   }
 }

@@ -1,6 +1,6 @@
 import type { TFile } from "obsidian";
-import type { TagIndexerOptions } from "src/db/tag-indexer";
-import { TagIndexer } from "src/db/tag-indexer";
+import type { TagIndexerOptions } from "src/db/indexer/tag-indexer";
+import { TagIndexer } from "src/db/indexer/tag-indexer";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 

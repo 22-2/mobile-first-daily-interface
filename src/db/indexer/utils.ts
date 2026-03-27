@@ -1,0 +1,98 @@
+import * as Comlink from "comlink";
+import type { TFile } from "obsidian";
+import PQueue from "p-queue";
+import {
+  GRANULARITIES,
+  inferNoteIdentityFromFile,
+} from "src/db/note-file-identity";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
+import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
+import type { Settings } from "src/settings";
+import type { Topic } from "src/core/topic";
+import { DEFAULT_TOPIC } from "src/core/topic";
+import { getAllTopicNotes } from "src/lib/daily-notes";
+import { getDateFromFile } from "src/lib/daily-notes/utils";
+import { MFDIDatabase } from "src/db/mfdi-db";
+import { ScanWorkerPool } from "src/db/scan-worker-pool";
+import type { ScanTarget } from "./types";
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+export function normalizeTopics(topics: Topic[]): Topic[] {
+  const map = new Map<string, Topic>([[DEFAULT_TOPIC.id, DEFAULT_TOPIC]]);
+  for (const topic of topics) {
+    map.set(topic.id, topic);
+  }
+  return [...map.values()];
+}
+
+export function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
+  return (
+    a.path === b.path &&
+    a.topicId === b.topicId &&
+    a.noteGranularity === b.noteGranularity &&
+    a.noteDate === b.noteDate
+  );
+}
+
+export function collectScanTargets(
+  shell: ObsidianAppShell,
+  settings: Settings,
+): ScanTarget[] {
+  const uniqueTargets = new Map<string, ScanTarget>();
+  const ambiguousPaths = new Set<string>();
+
+  for (const topic of normalizeTopics(settings.topics)) {
+    for (const granularity of GRANULARITIES) {
+      const notes = getAllTopicNotes(shell, granularity, topic.id);
+
+      for (const file of Object.values(notes)) {
+        if (ambiguousPaths.has(file.path)) continue;
+
+        const noteDate =
+          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "";
+        if (!noteDate) continue;
+
+        const candidate: ScanTarget = {
+          file,
+          path: file.path,
+          noteName: file.basename,
+          topicId: topic.id,
+          noteGranularity: granularity,
+          noteDate,
+        };
+
+        const existing = uniqueTargets.get(file.path);
+        if (!existing) {
+          uniqueTargets.set(file.path, candidate);
+          continue;
+        }
+
+        if (!isSameTarget(existing, candidate)) {
+          uniqueTargets.delete(file.path);
+          ambiguousPaths.add(file.path);
+        }
+      }
+    }
+  }
+
+  return [...uniqueTargets.values()];
+}
+
+export async function toScannableNote(
+  shell: ObsidianAppShell,
+  target: ScanTarget,
+): Promise<ScannableNote> {
+  const content = await shell.cachedReadFile(target.file);
+  return {
+    path: target.path,
+    noteName: target.noteName,
+    topicId: target.topicId,
+    noteGranularity: target.noteGranularity,
+    noteDate: target.noteDate,
+    content,
+  };
+}
