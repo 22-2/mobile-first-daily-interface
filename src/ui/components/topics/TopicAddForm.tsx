@@ -1,15 +1,18 @@
 import {
-  Box,
-  Button,
   FormControl,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
+} from "@chakra-ui/react";
+import {
+  Box,
+  Button,
   HStack,
   Input,
   Text,
   VStack,
-} from "@chakra-ui/react";
+} from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 
 interface TopicAddFormProps {
   newTitle: string;
@@ -32,23 +35,22 @@ export const TopicAddForm = ({
 }: TopicAddFormProps) => {
   return (
     <Box
-      marginTop="var(--size-4-3)"
-      padding="var(--size-4-3)"
-      borderRadius="var(--radius-m)"
-      border="1px solid var(--background-modifier-border)"
-      backgroundColor="var(--background-secondary)"
+      className={cn(
+        "mt-[var(--size-4-3)] p-[var(--size-4-3)] rounded-[var(--radius-m)]",
+        "border border-[var(--background-modifier-border)] bg-[var(--background-secondary)]"
+      )}
     >
-      <VStack align="stretch" spacing="var(--size-4-2)">
+      <VStack className={cn("flex flex-col items-stretch space-y-[var(--size-4-2)]")}>
         <FormControl>
           <FormLabel
-            fontSize="var(--font-ui-smaller)"
-            color="var(--text-muted)"
-            marginBottom="2px"
+            className={cn(
+              "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)] mb-[2px] block"
+            )}
           >
             タイトル
           </FormLabel>
           <Input
-            size="sm"
+            className={cn("text-sm")}
             placeholder="例: 小説"
             value={newTitle}
             onChange={(e) => onTitleChange(e.target.value)}
@@ -58,17 +60,17 @@ export const TopicAddForm = ({
 
         <FormControl isInvalid={!!idError}>
           <FormLabel
-            fontSize="var(--font-ui-smaller)"
-            color="var(--text-muted)"
-            marginBottom="2px"
+            className={cn(
+              "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)] mb-[2px] block"
+            )}
           >
             ID{" "}
-            <Text as="span" color="var(--text-faint)">
+            <Text as="span" className={cn("text-[length:var(--font-ui-smaller)] text-[var(--text-faint)]")}>
               (作成後変更不可)
             </Text>
           </FormLabel>
           <Input
-            size="sm"
+            className={cn("text-[length:var(--font-ui-smaller)] font-mono")}
             placeholder="例: novel"
             value={newId}
             onChange={(e) => onIdChange(e.target.value)}
@@ -76,32 +78,35 @@ export const TopicAddForm = ({
               if (e.key === "Enter") onSubmit();
               if (e.key === "Escape") onCancel();
             }}
-            fontFamily="var(--font-monospace)"
           />
           {idError ? (
-            <FormErrorMessage fontSize="var(--font-ui-smaller)">
+            <FormErrorMessage className={cn("text-[length:var(--font-ui-smaller)] mt-1")}>
               {idError}
             </FormErrorMessage>
           ) : (
             <FormHelperText
-              fontSize="var(--font-ui-smaller)"
-              color="var(--text-faint)"
+              className={cn("text-[length:var(--font-ui-smaller)] text-[var(--text-faint)] mt-1")}
             >
               英小文字・数字・ハイフンのみ。ファイル名のプレフィックスになります。
             </FormHelperText>
           )}
         </FormControl>
 
-        <HStack justify="flex-end" spacing="var(--size-4-2)">
-          <Button size="sm" variant="ghost" onClick={onCancel}>
+        <HStack className={cn("flex flex-row items-center justify-end space-x-[var(--size-4-2)]")}>
+          <Button
+            onClick={onCancel}
+            className={cn(
+              "text-sm bg-transparent hover:bg-[var(--background-modifier-hover)] transition-colors"
+            )}
+          >
             キャンセル
           </Button>
           <Button
-            size="sm"
-            backgroundColor="var(--color-accent)"
-            color="var(--text-on-accent)"
-            _hover={{ backgroundColor: "var(--color-accent-2)" }}
             onClick={onSubmit}
+            className={cn(
+              "text-sm bg-[var(--color-accent)] text-[var(--text-on-accent)]",
+              "hover:bg-[var(--color-accent-2)] transition-colors"
+            )}
           >
             追加
           </Button>

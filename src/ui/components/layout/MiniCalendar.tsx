@@ -1,4 +1,3 @@
-import { Box, Flex, Grid, HStack, Text, VStack } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
@@ -8,6 +7,9 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
+import { cn } from "src/ui/components/primitives/utils";
+
+const WEEK_DAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"] as const;
 
 // ─────────────────────────────────────────────
 // 型定義
@@ -39,10 +41,9 @@ interface WeekRowProps {
 }
 
 // ─────────────────────────────────────────────
-// 純粋な計算関数
+// 純粋な計算関数 (変更なし)
 // ─────────────────────────────────────────────
 
-/** 月の全週（月曜始まり・日曜終わり）を返す */
 function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
   const startDay = viewDate.clone().startOf("month").startOf("isoWeek");
   const endDay = viewDate.clone().endOf("month").endOf("isoWeek");
@@ -61,7 +62,6 @@ function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
   return weeks;
 }
 
-/** dateFilter に応じた選択範囲を返す */
 function calcSelectedRange(
   date: moment.Moment,
   granularity: string,
@@ -73,34 +73,25 @@ function calcSelectedRange(
       rangeEnd: date.clone().endOf("isoWeek"),
     };
   }
-
   if (granularity !== "day" || dateFilter === "today") {
     return {
-      rangeStart: date
-        .clone()
-        .startOf(granularity as moment.unitOfTime.StartOf),
+      rangeStart: date.clone().startOf(granularity as moment.unitOfTime.StartOf),
       rangeEnd: date.clone().endOf(granularity as moment.unitOfTime.StartOf),
     };
   }
-
   if (dateFilter === "this_week") {
     return {
       rangeStart: date.clone().startOf("isoWeek"),
       rangeEnd: date.clone().endOf("isoWeek"),
     };
   }
-
   const days = parseInt(dateFilter, 10);
   if (!isNaN(days)) {
     return {
-      rangeStart: date
-        .clone()
-        .subtract(days - 1, "days")
-        .startOf("day"),
+      rangeStart: date.clone().subtract(days - 1, "days").startOf("day"),
       rangeEnd: date.clone().endOf("day"),
     };
   }
-
   return {
     rangeStart: date.clone().startOf("day"),
     rangeEnd: date.clone().endOf("day"),
@@ -108,7 +99,7 @@ function calcSelectedRange(
 }
 
 // ─────────────────────────────────────────────
-// カスタムフック
+// カスタムフック (変更なし)
 // ─────────────────────────────────────────────
 
 function useMiniCalendar() {
@@ -153,7 +144,6 @@ function useMiniCalendar() {
   const prevDateRef = useRef(date);
   const skipNextViewUpdate = useRef(false);
 
-  // 外部からの date 変更時のみ表示月を追従
   useEffect(() => {
     if (skipNextViewUpdate.current) {
       skipNextViewUpdate.current = false;
@@ -182,7 +172,7 @@ function useMiniCalendar() {
     }
     setDisplayMode(DISPLAY_MODE.FOCUS);
     setGranularity("day");
-    setDateFilter("today"); // 1日表示に戻す
+    setDateFilter("today");
     setDate(day.clone());
   };
 
@@ -191,7 +181,6 @@ function useMiniCalendar() {
       skipNextViewUpdate.current = true;
     }
     setDisplayMode(DISPLAY_MODE.FOCUS);
-    // 週スケール（週ノート）に切り替える（SidebarScales とは挙動を分離）
     setGranularity("day");
     setDateFilter("this_week");
     setDate(weekStart.clone());
@@ -200,12 +189,10 @@ function useMiniCalendar() {
   const activityDates = useMemo(() => {
     const notes = listPeriodicNotes(shell, "day", activeTopic);
     const dates = new Set<string>(dbActiveDates);
-
     Object.values(notes).forEach((file) => {
       const d = getPeriodicNoteDate(file, "day", shell, activeTopic);
       if (d) dates.add(d.format("YYYY-MM-DD"));
     });
-
     return dates;
   }, [shell, activeTopic, dbActiveDates]);
 
@@ -236,7 +223,7 @@ function useMiniCalendar() {
 }
 
 // ─────────────────────────────────────────────
-// サブコンポーネント
+// サブコンポーネント (Tailwind化)
 // ─────────────────────────────────────────────
 
 const CalendarHeader: React.FC<{
@@ -246,62 +233,46 @@ const CalendarHeader: React.FC<{
   onPrev: (e: React.MouseEvent) => void;
   onNext: (e: React.MouseEvent) => void;
 }> = ({ viewDate, date, granularity, onPrev, onNext }) => {
-  // 表示中の年月が選択中の年月と一致するかチェック
   const isSameYear = viewDate.isSame(date, "year");
   const isSameMonth = viewDate.isSame(date, "month");
 
-  // アクティブハイライトの判定
-  // 年と月がアクティブ（月スケール）のときは全体、年のときは年のみ
   const highlightYear =
     (granularity === "year" && isSameYear) ||
     (granularity === "month" && isSameMonth);
   const highlightMonth = granularity === "month" && isSameMonth;
 
   return (
-    <Flex
-      className="mini-calendar__header"
-      w="100%"
-      justify="space-between"
-      align="center"
-      px={1}
-    >
-      <HStack
-        className="mini-calendar__month-label"
-        spacing={1}
-        marginLeft="var(--size-4-2)"
-      >
-        <Text
-          as="span"
-          fontWeight="bold"
-          fontSize="lg"
-          color={highlightYear ? "var(--color-accent)" : "var(--text-normal)"}
+    <div className="mini-calendar__header flex w-full justify-between items-center px-1">
+      <div className="mini-calendar__month-label flex items-center gap-1 ml-[var(--size-4-2)]">
+        <span
+          className={cn(
+            "font-bold text-lg",
+            highlightYear ? "text-[var(--color-accent)]" : "text-[var(--text-normal)]"
+          )}
         >
           {viewDate.format("YYYY年")}
-        </Text>
-        <Text
-          as="span"
-          fontWeight="bold"
-          fontSize="lg"
-          color={highlightMonth ? "var(--color-accent)" : "var(--text-normal)"}
+        </span>
+        <span
+          className={cn(
+            "font-bold text-lg",
+            highlightMonth ? "text-[var(--color-accent)]" : "text-[var(--text-normal)]"
+          )}
         >
           {viewDate.format("M月")}
-        </Text>
-      </HStack>
-      <HStack className="mini-calendar__nav" spacing={1}>
+        </span>
+      </div>
+      <div className="mini-calendar__nav flex items-center gap-1">
         {(["chevron-left", "chevron-right"] as const).map((icon, i) => (
-          <Box
-            className="mini-calendar__nav-button"
+          <div
             key={icon}
+            className="mini-calendar__nav-button p-1.5 rounded-[4px] hover:bg-[var(--background-modifier-hover)] cursor-pointer"
             onClick={i === 0 ? onPrev : onNext}
-            p={1.5}
-            borderRadius="4px"
-            _hover={{ bg: "var(--background-modifier-hover)" }}
           >
             <ObsidianIcon name={icon} size="1.2em" />
-          </Box>
+          </div>
         ))}
-      </HStack>
-    </Flex>
+      </div>
+    </div>
   );
 };
 
@@ -315,71 +286,39 @@ const DayCell: React.FC<DayCellProps & { showRangeHighlight: boolean }> = ({
   onClick,
 }) => {
   const isToday = day.isSame(window.moment(), "day");
-  const isForeground =
-    isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
-
-  // 選択範囲のハイライトを適用するかどうか
+  const isForeground = isCurrentMonth || isSelectedDay || isInSelectedRange || isToday;
   const effectiveInRange = showRangeHighlight && isInSelectedRange;
 
-  // 青背景（アクセントカラー）は「今日」のみに適用
-  // 背景色の決定：今日 > 選択範囲・ホバー
-  // 視認性を高めるため、アクセントカラーを薄く混ぜた色を使用
-  const rangeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
-  const hoverBg = "color-mix(in srgb, var(--color-accent), transparent 75%)";
-
-  const bg = isToday
-    ? "var(--color-accent)!important"
-    : effectiveInRange
-      ? rangeBg
-      : "transparent";
-
-  const color = isToday
-    ? "var(--text-on-accent)"
-    : effectiveInRange
-      ? "var(--color-accent)"
-      : isForeground
-        ? "var(--text-normal)"
-        : "var(--text-faint)";
-
-  const fontWeight = isToday || effectiveInRange ? "bold" : "normal";
-
-  const dotColor = isToday
-    ? "var(--text-on-accent)"
-    : effectiveInRange
-      ? "var(--color-accent)"
-      : "var(--text-muted)";
-
   return (
-    <Box
-      className="mini-calendar__day-cell"
-      cursor="pointer"
+    <div
+      className={cn(
+        "mini-calendar__day-cell relative cursor-pointer p-1.5 transition-all duration-100 ease-in-out",
+        // Background logic
+        isToday
+          ? "bg-[var(--color-accent)]! text-[var(--text-on-accent)]"
+          : effectiveInRange
+            ? "bg-[color-mix(in_srgb,var(--color-accent),transparent_85%)] text-[var(--color-accent)]"
+            : "bg-transparent",
+        // Text Color & Weight
+        !isToday && !effectiveInRange && (isForeground ? "text-[var(--text-normal)]" : "text-[var(--text-faint)]"),
+        (isToday || effectiveInRange) ? "font-bold" : "font-normal",
+        // Hover
+        isToday
+          ? "hover:bg-[var(--color-accent-2)]"
+          : "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_75%)]"
+      )}
       onClick={() => onClick(day)}
-      py={1.5}
-      position="relative"
-      color={color}
-      bg={bg}
-      borderRadius="full"
-      fontWeight={fontWeight}
-      _hover={{
-        bg: isToday ? "var(--color-accent-2)" : hoverBg,
-      }}
-      transition="all 0.1s ease-in-out"
     >
       {day.date()}
       {hasPost && (
-        <Box
-          className="mini-calendar__dot"
-          position="absolute"
-          bottom="2px"
-          left="50%"
-          transform="translateX(-50%)"
-          w="4px"
-          h="4px"
-          borderRadius="full"
-          bg={dotColor}
+        <div
+          className={cn(
+            "mini-calendar__dot absolute bottom-[2px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full",
+            isToday ? "bg-[var(--text-on-accent)]" : effectiveInRange ? "bg-[var(--color-accent)]" : "bg-[var(--text-muted)]"
+          )}
         />
       )}
-    </Box>
+    </div>
   );
 };
 
@@ -396,36 +335,26 @@ const WeekRow: React.FC<WeekRowProps> = ({
   onSelectWeek,
 }) => {
   const isWeekSelected =
-    (granularity === "week" ||
-      (granularity === "day" && dateFilter === "this_week")) &&
+    (granularity === "week" || (granularity === "day" && dateFilter === "this_week")) &&
     week[0].isSame(date, "isoWeek");
 
-  // 月・年スケールの時はグリッド内の範囲ハイライトを表示しない（ヘッダーで表現するため）
   const showRangeHighlight = granularity !== "month" && granularity !== "year";
 
   return (
     <React.Fragment>
-      {/* 週番号 */}
-      <Box
-        className="mini-calendar__week-number"
-        cursor="pointer"
+      <div
+        className={cn(
+          "mini-calendar__week-number cursor-pointer py-1.5 text-xs flex items-center justify-center border rounded-[6px] transition-colors",
+          "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_75%)]",
+          isWeekSelected
+            ? "text-[var(--color-accent)] border-[var(--color-accent)]"
+            : "text-[var(--text-muted)] border-transparent"
+        )}
         onClick={() => onSelectWeek(week[0])}
-        py={1.5}
-        color={isWeekSelected ? "var(--color-accent)" : "var(--text-muted)"}
-        fontSize="xs"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        border={`1px solid ${isWeekSelected ? "var(--color-accent)" : "transparent"}`}
-        borderRadius="6px"
-        _hover={{
-          bg: "color-mix(in srgb, var(--color-accent), transparent 75%)",
-        }}
       >
         {week[0].isoWeek()}
-      </Box>
+      </div>
 
-      {/* 各日 */}
       {week.map((day) => (
         <DayCell
           key={day.format("YYYY-MM-DD")}
@@ -442,10 +371,8 @@ const WeekRow: React.FC<WeekRowProps> = ({
   );
 };
 
-const WEEK_DAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"] as const;
-
 // ─────────────────────────────────────────────
-// メインコンポーネント
+// メインコンポーネント (Tailwind化)
 // ─────────────────────────────────────────────
 
 export const MiniCalendar: React.FC<{
@@ -471,14 +398,8 @@ export const MiniCalendar: React.FC<{
   }, [viewDate, onViewDateChange]);
 
   return (
-    <VStack
-      className="mini-calendar"
-      w="100%"
-      spacing={4}
-      p={4}
-      borderRadius="22px"
-      bg="var(--background-secondary)"
-      border="1px solid var(--table-border-color)"
+    <div
+      className="mini-calendar flex flex-col w-full gap-4 p-4 rounded-[22px] bg-[var(--background-secondary)] border border-[var(--table-border-color)]"
     >
       <CalendarHeader
         viewDate={viewDate}
@@ -488,26 +409,18 @@ export const MiniCalendar: React.FC<{
         onNext={handleNextMonth}
       />
 
-      <Grid
-        className="mini-calendar__grid"
-        templateColumns="repeat(8, 1fr)"
-        gap={1}
-        w="100%"
-        textAlign="center"
-        fontSize="sm"
+      <div
+        className="mini-calendar__grid grid grid-cols-8 gap-1 w-full text-center text-sm"
       >
         {/* 曜日ヘッダー */}
-        <Box /> {/* 週番号列のスペーサー */}
+        <div /> {/* 週番号列のスペーサー */}
         {WEEK_DAY_LABELS.map((label) => (
-          <Box
+          <div
             key={label}
-            className="mini-calendar__weekday-label"
-            color="var(--text-muted)"
-            fontSize="xs"
-            py={1.5}
+            className="mini-calendar__weekday-label text-[var(--text-muted)] text-xs py-1.5"
           >
             {label}
-          </Box>
+          </div>
         ))}
         {/* 週ごとの行 */}
         {weeks.map((week, wIdx) => (
@@ -526,7 +439,7 @@ export const MiniCalendar: React.FC<{
             onSelectWeek={handleSelectWeek}
           />
         ))}
-      </Grid>
-    </VStack>
+      </div>
+    </div>
   );
 };
