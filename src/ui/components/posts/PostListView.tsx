@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box } from "src/ui/components/primitives/Box";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo } from "react";
@@ -335,11 +335,9 @@ export const PostListView: React.FC = memo(() => {
 
   return (
     <Box
-      className="list"
+      className="list w-full relative"
       style={{
         height: `${rowVirtualizer.getTotalSize()}px`,
-        width: "100%",
-        position: "relative",
       }}
     >
       {virtualItems.map((virtualItem) => {

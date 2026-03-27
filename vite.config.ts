@@ -8,7 +8,12 @@ import { analyzer } from "vite-bundle-analyzer";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
-  const isAnalyze = process.argv.includes("--analyze");
+  // ビルド解析 (analyze) の有効化は CLI フラグではなく環境変数で制御する。
+  // 理由: Vite の CLI は未定義のオプションを受け取ると起動時にエラーを投げるため、
+  // `pnpm build -- --analyze` のようにスクリプト経由で渡しても Vite が拒否してしまう。
+  // そのため、CIやローカルで `ANALYZE=true pnpm build`（または PowerShell では
+  // `$env:ANALYZE = 'true'; pnpm build'`）のように環境変数で切り替える方式に変更する。
+  const isAnalyze = process.env.ANALYZE === "true" || process.env.VITE_ANALYZE === "true";
   // watchモードはCLIフラグ(--watch)か環境変数(VITE_WATCH=true)で有効化する
   // 理由: 開発中にファイル変更を監視して自動で再ビルドしたいケースがあるため。
   // `vite build --watch` の代替として使えるようにし、既存のdevサーバーと干渉しない挙動にする。

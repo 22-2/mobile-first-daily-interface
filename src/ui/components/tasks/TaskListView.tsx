@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box } from "src/ui/components/primitives/Box";
 import { Menu } from "obsidian";
 import { memo, useCallback, useMemo } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
@@ -75,7 +75,7 @@ export const TaskListView: React.FC = memo(() => {
               timeout={100}
               classNames="item"
             >
-              <Box m={10}>
+              <Box className="m-10">
                 <TaskView
                   task={x}
                   granularity={granularity}
@@ -100,7 +100,7 @@ export const TaskListView: React.FC = memo(() => {
               timeout={100}
               classNames="item"
             >
-              <Box m={10}>
+              <Box className="m-10">
                 <TaskView
                   task={x}
                   granularity={granularity}

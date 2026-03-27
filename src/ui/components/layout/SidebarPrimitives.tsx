@@ -1,11 +1,5 @@
-import { Box, HStack, Text } from "@chakra-ui/react";
-import { clsx } from "clsx";
-
-const activeBg = "color-mix(in srgb, var(--color-accent), transparent 85%)";
-const activeHoverBg =
-  "color-mix(in srgb, var(--color-accent), transparent 80%)";
-const activeColor = "var(--color-accent)";
-const hoverBg = "var(--background-modifier-hover)";
+import { Box, HStack, Text } from "src/ui/components/primitives";
+import { cn } from "../primitives/utils";
 
 export const SidebarSectionHeader: React.FC<{
   children: React.ReactNode;
@@ -13,14 +7,14 @@ export const SidebarSectionHeader: React.FC<{
   className?: string;
 }> = ({ children, rightAddon, className }) => {
   return (
-    <HStack justify="space-between" px={2} py="var(--size-4-1)" mb={1} mt="var(--size-4-2)" className={clsx("sidebar-section-header", className)}>
-      <Text
-        fontSize="var(--font-ui-small);"
-        fontWeight="bold"
-        color="var(--text-muted)"
-        textTransform="uppercase"
-        letterSpacing="0.05em"
-      >
+    <HStack
+      className={cn(
+        "sidebar-section-header",
+        "justify-between px-2 py-[var(--size-4-1)] mb-1 mt-[var(--size-4-2)]",
+        className,
+      )}
+    >
+      <Text className="text-[length:var(--font-ui-small)] text-[var(--text-muted)] font-bold uppercase tracking-wider">
         {children}
       </Text>
       {rightAddon}
@@ -43,34 +37,23 @@ export const SidebarTextButton: React.FC<{
 }) => {
   return (
     <Box
-      px={3}
-      py={0}
-      borderRadius="6px"
-      bg={isSelected ? activeBg : "transparent"}
-      color={
+      className={cn(
+        "sidebar-text-button",
+        "flex items-center px-3 h-[24px]",
+        "rounded-[var(--radius-s)] text-[length:var(--font-ui-small)]",
+        "leading-[1.2] whitespace-nowrap",
+        "transition-colors duration-100 ease-in-out",
         isSelected
-          ? activeColor
+          ? "font-bold text-[var(--color-accent)] sidebar-text-button--selected"
           : isMuted
-            ? "var(--text-muted)"
-            : "var(--text-normal)"
-      }
-      display="flex"
-      alignItems="center"
-      height="24px"
-      cursor={onClick ? "pointer" : "default"}
-      fontSize="var(--font-ui-small)"
-      lineHeight="1.2"
-      fontWeight={isSelected ? "bold" : "normal"}
-      transition="background-color 0.1s ease"
-      whiteSpace="nowrap"
-      _hover={
-        onClick
-          ? {
-              bg: isSelected ? activeHoverBg : hoverBg,
-            }
-          : undefined
-      }
-      className={clsx("sidebar-text-button", className)}
+            ? "font-normal text-[var(--text-muted)]"
+            : "font-normal text-[var(--text-normal)]",
+        isMuted && "sidebar-text-button--muted",
+        onClick ? "cursor-pointer" : "cursor-default",
+        onClick && isSelected && "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_80%)]",
+        onClick && !isSelected && "hover:bg-[var(--background-modifier-hover)]",
+        className,
+      )}
       onClick={onClick}
     >
       {children}
@@ -82,15 +65,7 @@ export const SidebarItemCount: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   return (
-    <Text
-      className="sidebar-item-count"
-      fontSize="10px"
-      lineHeight="1"
-      color="var(--text-muted)"
-      fontWeight="normal"
-      ml={1}
-      flexShrink={0}
-    >
+    <Text className="sidebar-item-count text-xs text-[var(--text-muted)] ml-1 flex-shrink-0 leading-none">
       {children}
     </Text>
   );
