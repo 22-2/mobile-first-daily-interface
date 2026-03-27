@@ -43,7 +43,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       </Box>
 
       {/* Footer */}
-      <HStack className="text-[var(--text-muted)] text-[80%] p-[var(--size-4-3)] pt-0 pr-[var(--size-4-4)] items-center gap-[var(--size-2-3)]">
+      <HStack className="text-[var(--text-muted)] text-[80%] pt-0 items-center gap-[var(--size-2-3)]">
         {footerAddon}
         <Spacer />
         <HStack className="gap-[var(--size-2-1)]">

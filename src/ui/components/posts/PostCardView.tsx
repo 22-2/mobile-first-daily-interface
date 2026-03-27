@@ -96,13 +96,8 @@ export const PostCardView = React.memo(
                   e.stopPropagation();
                   onToggleThreadFocus?.(post);
                 }}
-                padding="4px"
-                cursor="pointer"
                 size="1.1em"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                color={isThreadFocused ? "var(--text-normal)" : undefined}
+                // color={isThreadFocused ? "var(--text-normal)" : undefined}
               />
             ) : undefined
           }
