@@ -1,4 +1,3 @@
-import { Box, Checkbox, HStack } from "@chakra-ui/react";
 import { memo } from "react";
 import type { Task } from "src/core/task-text";
 import { BaseCard } from "src/ui/components/BaseCard";
@@ -6,6 +5,8 @@ import { Card } from "src/ui/components/cards/Card";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import type { Granularity, TimeFilter } from "src/ui/types";
 import { excludeWikiLink } from "src/core/strings";
+import { Box, HStack, Checkbox } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 
 export const TaskView = memo(
   ({
@@ -31,20 +32,20 @@ export const TaskView = memo(
           isDimmed={disabled}
           onContextMenu={(e) => onContextMenu?.(task, e)}
         >
-          <HStack align="flex-start" gap="var(--size-2-1);">
+          <HStack className={cn("items-start gap-[var(--size-2-1)]")}>
             <Checkbox
-              isChecked={task.mark !== " "}
+              checked={task.mark !== " "}
               onChange={(ev) => onChange(ev.target.checked)}
-              isDisabled={disabled}
-              colorScheme="blue"
-              marginTop="0.2em"
-              size="md"
+              disabled={disabled}
+              className={cn(
+                "mt-[0.2em] w-4 h-4 cursor-pointer shrink-0 accent-[var(--color-accent)]",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              )}
             />
             <Box
-              fontSize={"93%"}
-              paddingX={1}
-              wordBreak={"break-word"}
-              flex="1"
+              className={cn(
+                "text-[93%] px-1 break-words flex-1",
+              )}
             >
               <ObsidianMarkdown content={excludeWikiLink(task.name)} />
             </Box>
