@@ -1,10 +1,11 @@
-import { Box, Button, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
+import { Box, Button, Divider, Flex, Heading, VStack } from "src/ui/components/primitives";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { TopicAddForm } from "src/ui/components/topics/TopicAddForm";
 import { TopicItem } from "src/ui/components/topics/TopicItem";
+import { cn } from "src/ui/components/primitives/utils";
 
 const TOPIC_ID_REGEX = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -51,9 +52,9 @@ export const TopicManagerView = ({
   const archivedTopics = topics.filter((t) => t.archived);
 
   return (
-    <VStack align="stretch" spacing={0} paddingBottom="var(--size-4-4)">
+    <VStack className={cn("flex flex-col items-stretch space-y-0 pb-[var(--size-4-4)]")}>
       {/* 通常トピック一覧 */}
-      <VStack align="stretch" spacing={2}>
+      <VStack className={cn("flex flex-col items-stretch space-y-2")}>
         {activeTopics.map((topic) => (
           <TopicItem
             key={topic.id}
@@ -88,44 +89,36 @@ export const TopicManagerView = ({
         />
       ) : (
         <Button
-          marginTop="var(--size-4-3)"
-          variant="ghost"
-          leftIcon={<ObsidianIcon name="plus" boxSize="1em" />}
-          size="sm"
-          color="var(--text-muted)"
-          _hover={{
-            color: "var(--text-normal)",
-            backgroundColor: "var(--background-modifier-hover)",
-          }}
-          justifyContent="flex-start"
           onClick={() => setShowAddForm(true)}
+          className={cn(
+            "mt-[var(--size-4-3)] flex items-center justify-start text-sm text-[var(--text-muted)]",
+            "bg-transparent hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]",
+            "transition-colors"
+          )}
         >
+          <ObsidianIcon name="plus" className={cn("mr-2 h-[1em] w-[1em]")} />
           新しいトピックを追加
         </Button>
       )}
 
       {/* アーカイブ済み一覧 */}
       {archivedTopics.length > 0 && (
-        <VStack align="stretch" spacing={2} marginTop="var(--size-4-6)">
-          <Flex align="center" paddingX="var(--size-4-3)">
+        <VStack className={cn("flex flex-col items-stretch space-y-2 mt-[var(--size-4-6)]")}>
+          <Flex className={cn("flex items-center px-[var(--size-4-3)]")}>
             <Heading
-              size="xs"
-              fontSize="0.75rem"
-              fontWeight="600"
-              color="var(--text-faint)"
-              textTransform="uppercase"
-              letterSpacing="0.05em"
+              className={cn(
+                "text-[0.75rem] font-semibold text-[var(--text-faint)] uppercase tracking-wider"
+              )}
             >
               アーカイブ済み ({archivedTopics.length})
             </Heading>
-            <Box flex={1} marginLeft="var(--size-4-2)">
+            <Box className={cn("flex-1 ml-[var(--size-4-2)]")}>
               <Divider
-                borderColor="var(--background-modifier-border)"
-                opacity={0.5}
+                className={cn("border-t border-[var(--background-modifier-border)] opacity-50")}
               />
             </Box>
           </Flex>
-          <VStack align="stretch" spacing={2}>
+          <VStack className={cn("flex flex-col items-stretch space-y-2")}>
             {archivedTopics.map((topic) => (
               <TopicItem
                 key={topic.id}
@@ -151,17 +144,16 @@ export const TopicManagerView = ({
 
       {/* 完了ボタン */}
       <Box
-        marginTop="var(--size-4-6)"
-        borderTop="1px solid var(--background-modifier-border)"
-        paddingTop="var(--size-4-4)"
+        className={cn(
+          "mt-[var(--size-4-6)] border-t border-[var(--background-modifier-border)] pt-[var(--size-4-4)]"
+        )}
       >
         <Button
-          width="100%"
-          variant="solid"
-          backgroundColor="var(--color-accent)"
-          color="var(--text-on-accent)"
-          _hover={{ backgroundColor: "var(--color-accent-2)" }}
           onClick={onSave}
+          className={cn(
+            "w-full bg-[var(--color-accent)] text-[var(--text-on-accent)]",
+            "hover:bg-[var(--color-accent-2)] transition-colors py-2 rounded"
+          )}
         >
           完了
         </Button>
@@ -170,6 +162,7 @@ export const TopicManagerView = ({
   );
 };
 
+// ... useTopicManagerViewState はロジック部分なので変更なし ...
 const useTopicManagerViewState = (
   initialTopics: Topic[],
   initialActiveTopic: string,
