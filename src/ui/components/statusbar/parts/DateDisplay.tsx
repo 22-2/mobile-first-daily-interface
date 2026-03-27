@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import { Menu } from "obsidian";
 import type { FC} from "react";
 import { useEffect, useMemo, useState } from "react";
-import { UnderlinedClickable } from "src/ui/components/UnderlinedClickable";
+import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
