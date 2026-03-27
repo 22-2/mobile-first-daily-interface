@@ -346,8 +346,7 @@ export const InputArea: FC = memo(() => {
         initialValue={inputSnapshot}
         onChange={syncInputSession}
         onSubmit={handleSubmit}
-        minHeight="var(--size-4-18)"
-        marginX="var(--size-4-4)"
+        className="min-h-[var(--size-4-18)] mx-[var(--size-4-4)]"
         placeholder={PLACEHOLDER_TEXT}
         isReadOnly={isReadOnly}
         readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}

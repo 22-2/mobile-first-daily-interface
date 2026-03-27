@@ -1,4 +1,4 @@
-import { Box, Image, Link, Text } from "@chakra-ui/react";
+import { Box, Image, Link, Text } from "src/ui/components/primitives";
 import { useState } from "react";
 import type { HTMLMeta } from "src/core/meta";
 
@@ -16,75 +16,34 @@ export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
   };
 
   return (
-    <Box
-      className="mfdi-html-card"
-      position="relative"
-      zIndex={1}
-      border="1px dotted #b5890077"
-      backdropFilter="brightness(101%)"
-      marginBottom="var(--size-4-4)"
-      borderRadius="16px"
-      overflow="hidden"
-      transition="backdrop-filter 0.2s"
-      _hover={{
-        cursor: "pointer",
-        border: "1px solid #b58900",
-        backdropFilter: "brightness(98%)",
-      }}
-    >
+    <Box className="mfdi-html-card relative z-[1] border-dotted border-[#b5890077] backdrop-brightness-[101%] mb-[var(--size-4-4)] rounded-[16px] overflow-hidden transition-[backdrop-filter] duration-200 hover:cursor-pointer hover:border-[#b58900] hover:backdrop-brightness-[98%]">
       {coverUrl && (
         <Image
           src={coverUrl}
           onError={handleCoverImageError}
-          className="mfdi-html-card-image"
-          width="100%"
-          objectFit="contain"
-          borderTopLeftRadius="16px"
-          borderTopRightRadius="16px"
+          className="mfdi-html-card-image w-full object-contain rounded-t-[16px]"
         />
       )}
-      <Box className="mfdi-html-card-content" padding="var(--size-4-4)">
-        <Box
-          className="mfdi-html-card-header"
-          marginBottom="var(--size-4-2)"
-          color="var(--text-muted)"
-          display="flex"
-          alignItems="center"
-        >
+      <Box className="mfdi-html-card-content p-[var(--size-4-4)]">
+        <Box className="mfdi-html-card-header mb-[var(--size-4-2)] text-[var(--text-muted)] flex items-center">
           <Image
             src={faviconUrl}
             onError={handleFaviconImageError}
-            className="mfdi-html-card-site-icon"
-            objectFit="contain"
-            height="1em"
-            marginRight="var(--size-2-3)"
+            className="mfdi-html-card-site-icon object-contain h-[1em] mr-[var(--size-2-3)]"
           />
-          <Text
-            className="mfdi-html-card-site-name"
-            height="1em"
-            lineHeight="1em"
-          >
+          <Text className="mfdi-html-card-site-name h-[1em] leading-[1em]">
             {meta.siteName}
           </Text>
         </Box>
-        <Box
-          className="mfdi-html-card-body"
-          marginBottom="var(--size-4-2)"
-          fontWeight="semibold"
-        >
+        <Box className="mfdi-html-card-body mb-[var(--size-4-2)] font-semibold">
           {meta.title}
         </Box>
       </Box>
       <Link
         href={meta.originUrl}
-        isExternal
-        position="absolute"
-        top={0}
-        left={0}
-        width="100%"
-        height="100%"
-        textIndent="-9999px"
-        zIndex={2}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-0 left-0 w-full h-full -indent-[9999px] z-[2]"
       />
     </Box>
   );
