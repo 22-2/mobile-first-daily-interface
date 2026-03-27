@@ -8,7 +8,6 @@ export class WorkerClient {
 
   static get(): Comlink.Remote<IDBService> {
     if (!this.instance) {
-      // @ts-ignore - Vite handled worker import
       this.worker = new ScanWorkerFactory();
       this.instance = Comlink.wrap<IDBService>(this.worker);
     }

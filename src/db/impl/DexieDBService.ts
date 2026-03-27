@@ -13,7 +13,7 @@ export class DexieDBService implements IDBService {
 
   async initialize(options: DBServiceOptions): Promise<void> {
     if (this.db) {
-      await this.db.close();
+      this.db.close();
     }
     this.db = new MFDIDatabase(options.appId);
     this.memoRepo = new DexieMemoRepository(this.db);

@@ -6,6 +6,7 @@ import {
   createBuiltinContributions,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
+import { WorkerClient } from "src/db/worker-client";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
 import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
@@ -31,6 +32,15 @@ export default class MFDIPlugin extends Plugin {
     await this.loadSettings();
 
     this.addSettingTab(new MFDISettingTab(this.app, this));
+
+    // Worker 側の DB サービスを初期化しておく。
+    // TagIndexer 等は WorkerClient 経由で DB を使うため、プラグイン起動時に初期化しておく。
+    try {
+      const db = WorkerClient.get();
+      await db.initialize({ appId: this.shell.getAppId() });
+    } catch (e) {
+      console.error("Failed to initialize DB worker:", e);
+    }
 
     this.activateBuiltinRegistry();
   }
