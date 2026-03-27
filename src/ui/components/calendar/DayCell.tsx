@@ -1,6 +1,6 @@
 import type React from "node_modules/@types/react";
 import { cn } from "../primitives/utils";
-import type { DayCellProps } from "../calendar/MiniCalendar";
+import type { DayCellProps } from "./types";
 
 export const DayCell: React.FC<DayCellProps & { showRangeHighlight: boolean; }> = ({
   day, isSelectedDay, isInSelectedRange, isCurrentMonth, hasPost, showRangeHighlight, onClick,
