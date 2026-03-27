@@ -1,3 +1,4 @@
+
 // src/db/scan.worker.ts
 import * as Comlink from "comlink";
 import { DexieDBService } from "src/db/impl/DexieDBService";
@@ -6,19 +7,41 @@ import type { ScannableNote } from "src/db/worker-api";
 
 const TAG = "[scan.worker]";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 function estimateNotesBytes(notes?: ScannableNote[]): number {
-  if (!notes || notes.length === 0) return 0;
+  if (!notes?.length) return 0;
   try {
     const enc = new TextEncoder();
     return notes.reduce((sum, n) => sum + (n.content ? enc.encode(n.content).length : 0), 0);
   } catch {
-    return notes.reduce((sum, n) => sum + (n.content ? n.content.length : 0), 0);
+    return notes.reduce((sum, n) => sum + (n.content?.length ?? 0), 0);
   }
 }
 
-console.log(TAG, "Worker loading...");
+/**
+ * Wraps an async operation with structured start/done/error logging.
+ * Re-throws the original error after logging.
+ */
+async function withLogging<T>(
+  method: string,
+  meta: Record<string, unknown>,
+  fn: () => Promise<T>,
+): Promise<T> {
+  console.log(TAG, `${method} called`, meta);
+  const start = Date.now();
+  try {
+    const result = await fn();
+    console.log(TAG, `${method} completed`, { durationMs: Date.now() - start });
+    return result;
+  } catch (err) {
+    console.error(TAG, `${method} failed:`, err);
+    throw err;
+  }
+}
 
-// add global handlers to capture errors/unhandled rejections inside the worker
+// ── Global error handlers ─────────────────────────────────────────────────────
+
 self.addEventListener("error", (ev: ErrorEvent) => {
   try {
     console.error(TAG, "Uncaught error in worker:", ev.message, ev.filename, ev.lineno, ev.colno, ev.error);
@@ -35,158 +58,87 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
   }
 });
 
+// ── Worker bootstrap ──────────────────────────────────────────────────────────
+
+console.log(TAG, "Worker loading...");
+
 try {
-  const dbService = new DexieDBService();
+  let dbService: DexieDBService | null = null;
+
+  const db = (): DexieDBService => (dbService ??= new DexieDBService());
 
   const api: IDBService = {
-    initialize: async (options) => {
-      console.log(TAG, "initialize called", { appId: options?.appId });
-      const start = Date.now();
-      try {
-        const res = await dbService.initialize(options);
-        console.log(TAG, "initialize completed", { durationMs: Date.now() - start });
-        return res;
-      } catch (err) {
-        console.error(TAG, "initialize failed:", err);
-        throw err;
-      }
-    },
+    initialize: (options) =>
+      withLogging("initialize", { appId: options?.appId }, () => db().initialize(options)),
 
-    scanAllNotes: async (notes) => {
-      const count = notes?.length ?? 0;
-      const bytes = estimateNotesBytes(notes);
-      console.log(TAG, "scanAllNotes called", { count, approxBytes: bytes });
-      const start = Date.now();
-      try {
-        const res = await dbService.scanAllNotes(notes);
-        console.log(TAG, "scanAllNotes completed", { durationMs: Date.now() - start, count });
-        return res;
-      } catch (err) {
-        console.error(TAG, "scanAllNotes failed:", err);
-        throw err;
-      }
-    },
+    scanAllNotes: (notes) =>
+      withLogging(
+        "scanAllNotes",
+        { count: notes?.length ?? 0, approxBytes: estimateNotesBytes(notes) },
+        () => db().scanAllNotes(notes),
+      ),
 
-    onFileChanged: async (note) => {
-      console.log(TAG, "onFileChanged called", { path: note?.path, len: note?.content?.length ?? 0 });
-      const start = Date.now();
-      try {
-        const res = await dbService.onFileChanged(note);
-        console.log(TAG, "onFileChanged completed", { durationMs: Date.now() - start });
-        return res;
-      } catch (err) {
-        console.error(TAG, "onFileChanged failed:", err);
-        throw err;
-      }
-    },
+    onFileChanged: (note) =>
+      withLogging("onFileChanged", { path: note?.path, len: note?.content?.length ?? 0 }, () =>
+        db().onFileChanged(note),
+      ),
 
-    onFileDeleted: async (path) => {
-      console.log(TAG, "onFileDeleted called", { path });
-      const start = Date.now();
-      try {
-        const res = await dbService.onFileDeleted(path);
-        console.log(TAG, "onFileDeleted completed", { durationMs: Date.now() - start });
-        return res;
-      } catch (err) {
-        console.error(TAG, "onFileDeleted failed:", err);
-        throw err;
-      }
-    },
+    onFileDeleted: (path) =>
+      withLogging("onFileDeleted", { path }, () => db().onFileDeleted(path)),
 
-    onFileRenamed: async (note, oldPath) => {
-      console.log(TAG, "onFileRenamed called", { oldPath, newPath: note?.path });
-      const start = Date.now();
-      try {
-        const res = await dbService.onFileRenamed(note, oldPath);
-        console.log(TAG, "onFileRenamed completed", { durationMs: Date.now() - start });
-        return res;
-      } catch (err) {
-        console.error(TAG, "onFileRenamed failed:", err);
-        throw err;
-      }
-    },
+    onFileRenamed: (note, oldPath) =>
+      withLogging("onFileRenamed", { oldPath, newPath: note?.path }, () =>
+        db().onFileRenamed(note, oldPath),
+      ),
 
-    getAllActiveDates: async () => {
-      console.log(TAG, "getAllActiveDates called");
-      const start = Date.now();
-      try {
-        const res = await dbService.getAllActiveDates();
-        console.log(TAG, "getAllActiveDates completed", { durationMs: Date.now() - start, count: res?.length });
+    getAllActiveDates: () =>
+      withLogging("getAllActiveDates", {}, async () => {
+        const res = await db().getAllActiveDates();
+        console.log(TAG, "getAllActiveDates count:", res?.length);
         return res;
-      } catch (err) {
-        console.error(TAG, "getAllActiveDates failed:", err);
-        throw err;
-      }
-    },
+      }),
 
-    getTagStats: async () => {
-      console.log(TAG, "getTagStats called");
-      const start = Date.now();
-      try {
-        const res = await dbService.getTagStats();
-        // ensure plain objects
-        const plain = Array.isArray(res) ? res.map((r) => ({ ...r })) : res;
-        console.log(TAG, "getTagStats completed", { durationMs: Date.now() - start, count: plain?.length });
-        return plain;
-      } catch (err) {
-        console.error(TAG, "getTagStats failed:", err);
-        throw err;
-      }
-    },
+    getTagStats: () =>
+      withLogging("getTagStats", {}, async () => {
+        const res = await db().getTagStats();
+        // Ensure transferable plain objects (no Proxy / class instances)
+        return Array.isArray(res) ? res.map((r) => ({ ...r })) : res;
+      }),
 
-    getMeta: async (key) => {
-      console.log(TAG, "getMeta called", { key });
-      const start = Date.now();
-      try {
-        const res = await dbService.getMeta(key);
-        console.log(TAG, "getMeta completed", { durationMs: Date.now() - start });
+    getMeta: (key) =>
+      withLogging("getMeta", { key }, () => db().getMeta(key)),
+
+    getMemos: (params) =>
+      withLogging("getMemos", { params }, async () => {
+        const res = await db().getMemos(params);
+        console.log(TAG, "getMemos count:", res?.length);
         return res;
-      } catch (err) {
-        console.error(TAG, "getMeta failed:", err);
-        throw err;
-      }
-    },
+      }),
 
-    getMemos: async (params) => {
-      console.log(TAG, "getMemos called", { params });
-      const start = Date.now();
-      try {
-        const res = await dbService.getMemos(params);
-        console.log(TAG, "getMemos completed", { durationMs: Date.now() - start, count: res?.length });
+    countMemos: (topicId) =>
+      withLogging("countMemos", { topicId }, async () => {
+        const res = await db().countMemos(topicId);
+        console.log(TAG, "countMemos result:", res);
         return res;
-      } catch (err) {
-        console.error(TAG, "getMemos failed:", err);
-        throw err;
-      }
-    },
+      }),
 
-    countMemos: async (topicId) => {
-      console.log(TAG, "countMemos called", { topicId });
-      const start = Date.now();
-      try {
-        const res = await dbService.countMemos(topicId);
-        console.log(TAG, "countMemos completed", { durationMs: Date.now() - start, result: res });
+    dispose: () =>
+      withLogging("dispose", {}, async () => {
+        const res = await dbService?.dispose();
+        dbService = null;
         return res;
-      } catch (err) {
-        console.error(TAG, "countMemos failed:", err);
-        throw err;
-      }
-    },
-
-    dispose: async () => {
-      console.log(TAG, "dispose called");
-      try {
-        const res = await dbService.dispose();
-        console.log(TAG, "dispose completed");
-        return res;
-      } catch (err) {
-        console.error(TAG, "dispose failed:", err);
-        throw err;
-      }
-    },
+      }),
   };
 
   Comlink.expose(api);
+
+  // Signal that the worker is ready to receive messages
+  try {
+    self.postMessage?.({ type: "mfdi-worker-ready" });
+  } catch {
+    // ignore — non-critical
+  }
+
   console.log(TAG, "Worker exposed!");
 } catch (e) {
   console.error(TAG, "Worker init error:", e);
