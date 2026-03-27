@@ -5,7 +5,7 @@
   max-height: 50vh !important;
 }
 
-[data-type="mfdi-view"] .list .markdown-rendered {
+[data-type="mfdi-view"] .task-list-container .markdown-rendered {
   user-select: text !important;
 }
 
