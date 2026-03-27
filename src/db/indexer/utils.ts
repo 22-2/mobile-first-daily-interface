@@ -16,6 +16,7 @@ import { getDateFromFile } from "src/lib/daily-notes/utils";
 import { MFDIDatabase } from "src/db/mfdi-db";
 import { ScanWorkerPool } from "src/db/scan-worker-pool";
 import type { ScanTarget } from "./types";
+import { WorkerPoolExecutor } from "./executors";
 
 // ---------------------------------------------------------------------------
 // Pure helpers
@@ -96,3 +97,27 @@ export async function toScannableNote(
     content,
   };
 }
+
+export function generateBatchId(): string {
+  return typeof crypto !== "undefined" && typeof (crypto as any).randomUUID === "function"
+    ? (crypto as any).randomUUID()
+    : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function estimateBytes(notes: ScannableNote[]): number {
+  try {
+    const enc = new TextEncoder();
+    return notes.reduce((sum, n) => sum + enc.encode(n.content).length, 0);
+  } catch {
+    return notes.reduce((sum, n) => sum + n.content.length, 0);
+  }
+}
+
+export function buildWorkerPool(factory?: () => Worker): WorkerPoolExecutor {
+  const hw = navigator.hardwareConcurrency ?? 4;
+  const poolSize = Math.max(1, Math.floor(hw * 0.75));
+  return new WorkerPoolExecutor(
+    new ScanWorkerPool(poolSize, factory ?? (() => new ScanWorkerFactory())),
+  );
+}
+
