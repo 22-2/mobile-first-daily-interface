@@ -8,7 +8,7 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-:root {
+[data-type="mfdi-view"] {
   --mfdi-icon-color: var(--text-muted);
   --mfdi-icon-color-hover: var(--text-normal);
 }

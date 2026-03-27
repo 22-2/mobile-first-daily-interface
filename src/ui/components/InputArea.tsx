@@ -56,7 +56,7 @@ const DisplayModeIndicator: FC<{
   });
   return (
     <Box
-      className="text-[12px] font-bold text-[var(--text-accent)] cursor-pointer"
+      className="text-[length:var(--font-ui-small)] font-bold text-[var(--text-accent)] cursor-pointer"
       onClick={onClick}
     >
       {text}
