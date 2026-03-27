@@ -1,10 +1,8 @@
-/* FIXME: 読み込むと、別ウィンドウで表示が崩れる */
-
 [data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
   display: none !important;
 }
 
-[data-type="mfdi-view"] :is(.ͼ1 .cm-cursor, .ͼ1 .cm-dropCursor) {
+[data-type="mfdi-view"] .cm-cursor.cm-cursor-secondary {
   margin-left: initial !important;
   width: 1px !important;
 }

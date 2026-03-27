@@ -19,7 +19,7 @@ import {
   getFixedNoteTitle,
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
-// import "src/ui/styles/editor.css"
+import "src/ui/styles/editor.css"
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
