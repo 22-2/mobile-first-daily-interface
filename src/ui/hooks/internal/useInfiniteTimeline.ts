@@ -29,7 +29,7 @@ export const useInfiniteTimeline = () => {
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
-  const shouldFetchDb = isTimelineView(displayMode);
+  const shouldFetchDb = isTimelineView(displayMode) && activeDocument.hasFocus();
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
