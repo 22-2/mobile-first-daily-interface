@@ -1,5 +1,5 @@
-import React, { forwardRef } from "react";
-import type { ComponentPropsWithRef, ElementType } from "react";
+import type { ComponentPropsWithRef, ElementType, ReactNode, Ref } from "react";
+import { createElement, forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // HStack: 横並びのスタック（Tailwind クラスで表現）。埋め込み style を使わない。
@@ -9,10 +9,14 @@ export type HStackProps<T extends ElementType = "div"> = {
   align?: "center" | "start" | "end" | string;
   justify?: "center" | "start" | "end" | "between" | string;
   className?: string;
-} & Omit<ComponentPropsWithRef<T>, "className" | "style">;
+  children?: ReactNode;
+} & Omit<ComponentPropsWithRef<T>, "className" | "style" | "as">;
 
-export const HStack = forwardRef<HTMLElement, HStackProps>((props, ref) => {
-  const { as: Comp = "div", gap = "0.5rem", align = "center", justify, className, children, ...rest } = props as any;
+function HStackInner<T extends ElementType = "div">(
+  { as, gap = "0.5rem", align = "center", justify, className, children, ...rest }: HStackProps<T>,
+  ref: Ref<unknown>
+) {
+  const Comp = as ?? "div";
 
   const gapClass = typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
   const alignMap: Record<string, string> = {
@@ -27,10 +31,15 @@ export const HStack = forwardRef<HTMLElement, HStackProps>((props, ref) => {
     between: "justify-between",
   };
 
-  const classes = cn("flex flex-row", gapClass, alignMap[align] ?? "", justifyMap[justify] ?? "", className);
+  const classes = cn("flex flex-row", gapClass, alignMap[align] ?? "", justifyMap[justify ?? ""] ?? "", className);
 
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return React.createElement(Comp, { ref, className: classes, ...rest }, children);
-});
+  return createElement(Comp, { ref, className: classes, ...rest }, children);
+}
 
-HStack.displayName = "HStack";
+export const HStack = forwardRef(HStackInner) as <T extends ElementType = "div">(
+  props: HStackProps<T> & { ref?: Ref<unknown> }
+) => ReactNode;
+
+Object.defineProperty(HStack, "displayName", { value: "HStack" });
+

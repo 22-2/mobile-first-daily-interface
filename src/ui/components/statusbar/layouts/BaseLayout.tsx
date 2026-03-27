@@ -1,7 +1,7 @@
-import type { BoxProps} from "@chakra-ui/react";
-import { Box, HStack } from "@chakra-ui/react";
 import { clsx } from "clsx";
 import type { FC, ReactNode } from "react";
+import { Box, HStack } from "src/ui/components/primitives";
+import type { BoxProps } from "src/ui/components/primitives/Box";
 
 type BaseLayoutProps = BoxProps & {
   leftItems?: ReactNode;
@@ -17,15 +17,15 @@ export const BaseLayout: FC<BaseLayoutProps> = ({
 }) => {
   return (
     <HStack
-      className={clsx("base-layout", className)}
-      fontSize="var(--font-ui-smaller)"
-      color="var(--text-muted)"
-      marginX="var(--size-4-4)"
-      marginY="var(--size-4-2)"
-      opacity={0.8}
-      spacing={0}
-      justifyContent="space-between"
-      width="100%"
+      className={clsx(
+        "base-layout",
+        "w-full opacity-80",
+        "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)]",
+        "mx-[var(--size-4-4)] my-[var(--size-4-2)]",
+        className,
+      )}
+      gap={0}
+      justify="between"
       {...props}
     >
       {left && <Box>{left}</Box>}

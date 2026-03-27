@@ -1,10 +1,13 @@
-import type { BoxProps } from "@chakra-ui/react";
-import { Box } from "@chakra-ui/react";
+import { clsx } from "clsx";
+import type { FC } from "react";
+import { Box } from "src/ui/components/primitives";
+import type { BoxProps } from "src/ui/components/primitives/Box";
 
-interface UnderlinedClickableProps extends BoxProps {}
+interface UnderlinedClickableProps extends BoxProps<"span"> {}
 
-export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
+export const UnderlinedClickable: FC<UnderlinedClickableProps> = ({
   children,
+  className,
   onContextMenu,
   onClick,
   ...props
@@ -12,8 +15,7 @@ export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
   return (
     <Box
       as="span"
-      cursor="pointer"
-      _hover={{ textDecoration: "underline" }}
+      className={clsx("cursor-pointer hover:underline", className)}
       onContextMenu={onContextMenu}
       onClick={onClick}
       {...props}
@@ -22,3 +24,4 @@ export const UnderlinedClickable: React.FC<UnderlinedClickableProps> = ({
     </Box>
   );
 };
+
