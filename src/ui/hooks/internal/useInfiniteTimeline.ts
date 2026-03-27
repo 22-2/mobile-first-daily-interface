@@ -29,20 +29,24 @@ export const useInfiniteTimeline = () => {
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
+  const shouldFetchDb = isTimelineView(displayMode);
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
   );
 
   useEffect(() => {
+    // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
     const timer = window.setInterval(() => {
+      if (!shouldFetchDb) {
+        return;
+      }
+
       const state = settingsStore.getState();
-      if (isTimelineView(state.displayMode)) {
         const now = window.moment();
         if (!state.date.isSame(now, "day")) {
           state.setDate(now);
         }
-      }
 
       queryClient.invalidateQueries({
         queryKey: ["posts", activeTopic, displayMode],
@@ -75,7 +79,7 @@ export const useInfiniteTimeline = () => {
       displayMode,
       timelineDayKey,
     ],
-    enabled: isTimelineView(displayMode),
+    enabled: shouldFetchDb,
     initialPageParam: null,
 
     queryFn: async ({ pageParam }) => {
