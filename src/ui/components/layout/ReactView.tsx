@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex } from "src/ui/components/primitives";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +42,7 @@ import {
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import { cn } from "../primitives/utils";
 
 const queryClient = new QueryClient();
 
@@ -377,34 +378,18 @@ const ReactViewContent = () => {
 
   return (
     <Flex
-      h="100%"
-      position="relative"
-      w="100%"
-      overflow="hidden"
+      className="root h-full w-full overflow-hidden relative"
       ref={containerRef}
     >
       {/* Main Content */}
       <Flex
-        flexDirection="column"
-        height="100%"
-        className="root"
-        position="relative"
-        backgroundColor="transparent"
-        flexGrow={1}
-        marginLeft="var(--size-4-2)"
-        marginRight={effectivelyOpen ? 0 : "var(--size-4-2)"}
-        overflow="hidden"
+        className={cn("flex-col h-full relative flex-grow ml-[var(--size-4-2)] overflow-hidden", !effectivelyOpen && "mr-[var(--size-4-2)]")}
       >
         <InputArea />
         <StatusBar />
 
-        <Box
-          className="mfdi-scroll-container"
-          flexGrow={1}
-          overflowY="scroll"
-          overflowX="hidden"
-          display="flex"
-          flexDirection={"column"}
+        <Flex
+          className="mfdi-scroll-container flex-col flex-grow overflow-y-scroll overflow-x-hidden"
           ref={scrollContainerRef}
         >
           {isEmpty ? (
@@ -414,23 +399,13 @@ const ReactViewContent = () => {
           ) : (
             <PostListView />
           )}
-        </Box>
+        </Flex>
       </Flex>
 
       {/* Sidebar: MiniCalendar (Moved to Right) */}
       {capabilities.supportsSidebar && (
         <Box
-          w={effectivelyOpen ? "260px" : "0px"}
-          minW={effectivelyOpen ? "260px" : "0px"}
-          h="100%"
-          display={effectivelyOpen ? "flex" : "none"}
-          flexDirection="column"
-          py="var(--size-4-2)"
-          px={0}
-          ml={effectivelyOpen ? "var(--size-4-2)" : 0}
-          mr="var(--size-4-2)"
-          transition="all 0.2s ease-in-out"
-          overflow="hidden"
+          className={`${effectivelyOpen ? "flex w-[260px] min-w-[260px] ml-[var(--size-4-2)]" : "hidden w-0 min-w-0"} h-full flex-col py-[var(--size-4-2)] px-0 mr-[var(--size-4-2)] transition-all duration-200 overflow-hidden`}
         >
           <MiniCalendar onViewDateChange={setSideBarViewDate} />
           <SidebarScales viewedDate={sideBarViewDate} />
