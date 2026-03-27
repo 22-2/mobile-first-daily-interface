@@ -1,14 +1,15 @@
-import { Box, Flex } from "src/ui/components/primitives";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Settings } from "src/settings";
+import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/InputArea";
-import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
+import { Box, Flex } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
@@ -16,8 +17,7 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
-import type {
-  AppStoreApi} from "src/ui/store/appStore";
+import type { AppStoreApi } from "src/ui/store/appStore";
 import {
   AppStoreProvider,
   createAppStore,
@@ -42,7 +42,6 @@ import {
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
-import { cn } from "../primitives/utils";
 
 const queryClient = new QueryClient();
 
@@ -383,7 +382,10 @@ const ReactViewContent = () => {
     >
       {/* Main Content */}
       <Flex
-        className={cn("flex-col h-full relative flex-grow ml-[var(--size-4-2)] overflow-hidden", !effectivelyOpen && "mr-[var(--size-4-2)]")}
+        className={cn(
+          "flex-col h-full relative flex-grow ml-[var(--size-4-2)] overflow-hidden",
+          !effectivelyOpen && "mr-[var(--size-4-2)]",
+        )}
       >
         <InputArea />
         <StatusBar />

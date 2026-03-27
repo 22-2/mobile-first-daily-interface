@@ -1,12 +1,12 @@
 import { memo } from "react";
+import { excludeWikiLink } from "src/core/strings";
 import type { Task } from "src/core/task-text";
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
-import type { Granularity, TimeFilter } from "src/ui/types";
-import { excludeWikiLink } from "src/core/strings";
-import { Box, HStack, Checkbox } from "src/ui/components/primitives";
+import { Box, Checkbox, HStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
+import type { Granularity, TimeFilter } from "src/ui/types";
 
 export const TaskView = memo(
   ({
@@ -42,11 +42,7 @@ export const TaskView = memo(
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             />
-            <Box
-              className={cn(
-                "text-[93%] px-1 break-words flex-1",
-              )}
-            >
+            <Box className={cn("text-[93%] px-1 break-words flex-1")}>
               <ObsidianMarkdown content={excludeWikiLink(task.name)} />
             </Box>
           </HStack>

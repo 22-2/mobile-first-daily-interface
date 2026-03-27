@@ -59,5 +59,3 @@ export function useAppStore<T>(selector: (state: MFDIStore) => T): T {
   const store = useCurrentAppStore();
   return useStore(store, selector);
 }
-
-;

@@ -1,11 +1,15 @@
-import { toLocalDateOnly, parseTimeWithDate, toLocalDateString } from "src/core/date-utils";
+import {
+  parseTimeWithDate,
+  toLocalDateOnly,
+  toLocalDateString,
+} from "src/core/date-utils";
+import { formatTaskText } from "src/core/task-text";
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
   TIME_FORMAT,
 } from "src/ui/config/date-formats";
 import type { Granularity, MomentLike } from "src/ui/types";
-import { formatTaskText } from "src/core/task-text";
 
 function isFencedCodeBlockStart(line: string): boolean {
   return /^[ \t]*(```|~~~)/.test(line);
@@ -85,7 +89,8 @@ export function resolveTimestamp(
 export function resolveMemoTimestamp(
   noteDate: string,
   time: string,
-  metadata: Record<string, string>): string {
+  metadata: Record<string, string>,
+): string {
   if (metadata.posted) {
     const posted = new Date(metadata.posted);
     if (!isNaN(posted.getTime())) return posted.toISOString();
@@ -96,10 +101,14 @@ export function resolveMemoTimestamp(
 
   const parsed = parseTimeWithDate(time, toLocalDateString(noteDay));
   return isNaN(parsed.getTime()) ? noteDay.toISOString() : parsed.toISOString();
-}function trimLeadingLineBreaks(text: string): string {
+}
+function trimLeadingLineBreaks(text: string): string {
   return text.replace(/^(?:\r\n|\r|\n)+/, "");
 }
-export function joinWithSingleBoundaryNewline(content: string, text: string): string {
+export function joinWithSingleBoundaryNewline(
+  content: string,
+  text: string,
+): string {
   const normalizedText = trimLeadingLineBreaks(text);
 
   if (normalizedText.length === 0) {
@@ -123,4 +132,3 @@ export function skipImmediateLineBreak(content: string, index: number): number {
 
   return index;
 }
-

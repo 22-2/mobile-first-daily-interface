@@ -1,13 +1,24 @@
 import type React from "react";
-import { cn } from "src/ui/components/primitives/utils";
 import { DayCell } from "src/ui/components/calendar/DayCell";
 import type { WeekRowProps } from "src/ui/components/calendar/types";
 import { Box } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 
 export const WeekRow: React.FC<WeekRowProps> = ({
-  week, date, granularity, rangeStart, rangeEnd, viewDate, dateFilter, activityDates, onSelectDay, onSelectWeek,
+  week,
+  date,
+  granularity,
+  rangeStart,
+  rangeEnd,
+  viewDate,
+  dateFilter,
+  activityDates,
+  onSelectDay,
+  onSelectWeek,
 }) => {
-  const isWeekSelected = (granularity === "week" || (granularity === "day" && dateFilter === "this_week")) &&
+  const isWeekSelected =
+    (granularity === "week" ||
+      (granularity === "day" && dateFilter === "this_week")) &&
     week[0].isSame(date, "isoWeek");
 
   const showRangeHighlight = granularity !== "month" && granularity !== "year";
@@ -20,7 +31,7 @@ export const WeekRow: React.FC<WeekRowProps> = ({
           "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_75%)]",
           isWeekSelected
             ? "text-[var(--color-accent)] border-[var(--color-accent)]"
-            : "text-[var(--text-muted)] border-transparent"
+            : "text-[var(--text-muted)] border-transparent",
         )}
         onClick={() => onSelectWeek(week[0])}
       >
@@ -36,7 +47,8 @@ export const WeekRow: React.FC<WeekRowProps> = ({
           isCurrentMonth={day.isSame(viewDate, "month")}
           hasPost={activityDates.has(day.format("YYYY-MM-DD"))}
           showRangeHighlight={showRangeHighlight}
-          onClick={onSelectDay} />
+          onClick={onSelectDay}
+        />
       ))}
     </>
   );

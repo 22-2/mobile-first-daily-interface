@@ -1,4 +1,3 @@
-
 /*
 
 This CSS file will be included with your plugin, and
@@ -22,7 +21,7 @@ If your plugin does not need CSS, delete this file.
   border-radius: var(--size-2-5);
 }
 .mfdi-scroll-area:hover::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-bg, rgba(0,0,0,0.1));
+  background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
 }
 .mfdi-scroll-area {
   scrollbar-width: none; /* Firefox */

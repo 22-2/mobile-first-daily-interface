@@ -9,7 +9,6 @@ import type {
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
 import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
 import {
-  countVisibleRootPosts,
   getThreadPosts,
   isVisibleRootPost,
   sortThreadPosts,
@@ -107,5 +106,3 @@ export const useFilteredPosts = ({
     includeThreadReplies,
   ]);
 };
-
-;

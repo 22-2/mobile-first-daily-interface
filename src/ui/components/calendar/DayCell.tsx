@@ -1,7 +1,6 @@
 import type React from "react";
+import type { DayCellProps } from "src/ui/components/calendar/types";
 import { cn } from "src/ui/components/primitives/utils";
-import type { DayCellProps } from "./types";
-import { Box } from "../primitives";
 
 type Props = DayCellProps & { showRangeHighlight: boolean };
 

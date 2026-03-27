@@ -1,22 +1,15 @@
-import * as Comlink from "comlink";
-import type { TFile } from "obsidian";
-import PQueue from "p-queue";
-import {
-  GRANULARITIES,
-  inferNoteIdentityFromFile,
-} from "src/db/note-file-identity";
-import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
-import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
-import type { Settings } from "src/settings";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
+import { WorkerPoolExecutor } from "src/db/indexer/executors";
+import type { ScanTarget } from "src/db/indexer/types";
+import { GRANULARITIES } from "src/db/note-file-identity";
+import { ScanWorkerPool } from "src/db/scan-worker-pool";
+import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
+import type { ScannableNote } from "src/db/worker-api";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
-import { MFDIDatabase } from "src/db/mfdi-db";
-import { ScanWorkerPool } from "src/db/scan-worker-pool";
-import type { ScanTarget } from "./types";
-import { WorkerPoolExecutor } from "./executors";
+import type { Settings } from "src/settings";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 // ---------------------------------------------------------------------------
 // Pure helpers
@@ -54,7 +47,8 @@ export function collectScanTargets(
         if (ambiguousPaths.has(file.path)) continue;
 
         const noteDate =
-          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ?? "";
+          getDateFromFile(file, granularity, shell, topic.id)?.toISOString() ??
+          "";
         if (!noteDate) continue;
 
         const candidate: ScanTarget = {
@@ -99,7 +93,8 @@ export async function toScannableNote(
 }
 
 export function generateBatchId(): string {
-  return typeof crypto !== "undefined" && typeof (crypto as any).randomUUID === "function"
+  return typeof crypto !== "undefined" &&
+    typeof (crypto as any).randomUUID === "function"
     ? (crypto as any).randomUUID()
     : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -120,4 +115,3 @@ export function buildWorkerPool(factory?: () => Worker): WorkerPoolExecutor {
     new ScanWorkerPool(poolSize, factory ?? (() => new ScanWorkerFactory())),
   );
 }
-

@@ -1,13 +1,13 @@
 import { Menu } from "obsidian";
 import { memo, useCallback, useMemo } from "react";
+import { Box } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { TaskView } from "src/ui/components/tasks/TaskView";
 import { useTaskActions } from "src/ui/hooks/internal/useTaskActions";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
-import { cn } from "src/ui/components/primitives/utils";
-import { Box } from "src/ui/components/primitives";
 
 export const TaskListView: React.FC = memo(() => {
   const { confirmDeleteAction } = useObsidianUi();

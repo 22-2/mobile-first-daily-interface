@@ -1,11 +1,18 @@
 import { useCallback, useRef, useState } from "react";
-import { Box, Button, Divider, Flex, Heading, VStack } from "src/ui/components/primitives";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import {
+  Box,
+  Button,
+  Divider,
+  Flex,
+  Heading,
+  VStack,
+} from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { TopicAddForm } from "src/ui/components/topics/TopicAddForm";
 import { TopicItem } from "src/ui/components/topics/TopicItem";
-import { cn } from "src/ui/components/primitives/utils";
 
 const TOPIC_ID_REGEX = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -52,7 +59,11 @@ export const TopicManagerView = ({
   const archivedTopics = topics.filter((t) => t.archived);
 
   return (
-    <VStack className={cn("flex flex-col items-stretch space-y-0 pb-[var(--size-4-4)]")}>
+    <VStack
+      className={cn(
+        "flex flex-col items-stretch space-y-0 pb-[var(--size-4-4)]",
+      )}
+    >
       {/* 通常トピック一覧 */}
       <VStack className={cn("flex flex-col items-stretch space-y-2")}>
         {activeTopics.map((topic) => (
@@ -93,7 +104,7 @@ export const TopicManagerView = ({
           className={cn(
             "mt-[var(--size-4-3)] flex items-center justify-start text-sm text-[var(--text-muted)]",
             "bg-transparent hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]",
-            "transition-colors"
+            "transition-colors",
           )}
         >
           <ObsidianIcon name="plus" className={cn("mr-2 h-[1em] w-[1em]")} />
@@ -103,18 +114,24 @@ export const TopicManagerView = ({
 
       {/* アーカイブ済み一覧 */}
       {archivedTopics.length > 0 && (
-        <VStack className={cn("flex flex-col items-stretch space-y-2 mt-[var(--size-4-6)]")}>
+        <VStack
+          className={cn(
+            "flex flex-col items-stretch space-y-2 mt-[var(--size-4-6)]",
+          )}
+        >
           <Flex className={cn("flex items-center px-[var(--size-4-3)]")}>
             <Heading
               className={cn(
-                "text-[0.75rem] font-semibold text-[var(--text-faint)] uppercase tracking-wider"
+                "text-[0.75rem] font-semibold text-[var(--text-faint)] uppercase tracking-wider",
               )}
             >
               アーカイブ済み ({archivedTopics.length})
             </Heading>
             <Box className={cn("flex-1 ml-[var(--size-4-2)]")}>
               <Divider
-                className={cn("border-t border-[var(--background-modifier-border)] opacity-50")}
+                className={cn(
+                  "border-t border-[var(--background-modifier-border)] opacity-50",
+                )}
               />
             </Box>
           </Flex>
@@ -145,14 +162,14 @@ export const TopicManagerView = ({
       {/* 完了ボタン */}
       <Box
         className={cn(
-          "mt-[var(--size-4-6)] border-t border-[var(--background-modifier-border)] pt-[var(--size-4-4)]"
+          "mt-[var(--size-4-6)] border-t border-[var(--background-modifier-border)] pt-[var(--size-4-4)]",
         )}
       >
         <Button
           onClick={onSave}
           className={cn(
             "w-full bg-[var(--color-accent)] text-[var(--text-on-accent)]",
-            "hover:bg-[var(--color-accent-2)] transition-colors py-2 rounded"
+            "hover:bg-[var(--color-accent-2)] transition-colors py-2 rounded",
           )}
         >
           完了

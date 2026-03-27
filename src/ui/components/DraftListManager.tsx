@@ -2,10 +2,10 @@ import { Menu } from "obsidian";
 import React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, HStack, Text } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
 import { useShallow } from "zustand/shallow";
-import { cn } from "src/ui/components/primitives/utils";
 
 interface DraftListManagerProps {
   onClose: () => void;
@@ -51,7 +51,9 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
           )}
         >
           <ObsidianIcon name="chevron-left" size="1.2em" />
-          <Text className={cn("text-[var(--text-accent)] font-bold")}>戻る</Text>
+          <Text className={cn("text-[var(--text-accent)] font-bold")}>
+            戻る
+          </Text>
         </button>
         <Box
           className={cn(
@@ -74,7 +76,11 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
               "flex flex-col items-center justify-center flex-1 text-[var(--text-faint)] gap-[1.5em]",
             )}
           >
-            <ObsidianIcon name="file-x" size="4em" className={cn("opacity-30")} />
+            <ObsidianIcon
+              name="file-x"
+              size="4em"
+              className={cn("opacity-30")}
+            />
             <Text className={cn("text-base opacity-60 font-bold")}>
               下書きはありません
             </Text>

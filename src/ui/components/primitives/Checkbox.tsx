@@ -1,7 +1,9 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & { className?: string };
+export type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  className?: string;
+};
 
 export const Checkbox = ({ className, ...rest }: CheckboxProps) => (
   <input type="checkbox" className={cn(className)} {...rest} />

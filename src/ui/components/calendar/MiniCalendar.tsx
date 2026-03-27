@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { CalendarHeader } from "./CalendarHeader";
-import { WeekRow } from "./WeekRow";
-import { useMiniCalendar } from "./utils";
+import { CalendarHeader } from "src/ui/components/calendar/CalendarHeader";
+import { useMiniCalendar } from "src/ui/components/calendar/utils";
+import { WeekRow } from "src/ui/components/calendar/WeekRow";
 
 const WEEK_DAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"] as const;
 
@@ -32,9 +32,7 @@ export const MiniCalendar: React.FC<{
   }, [viewDate, onViewDateChange]);
 
   return (
-    <div
-      className="mini-calendar flex flex-col w-full gap-4 p-4 rounded-[22px] bg-[var(--background-secondary)] border border-[var(--table-border-color)]"
-    >
+    <div className="mini-calendar flex flex-col w-full gap-4 p-4 rounded-[22px] bg-[var(--background-secondary)] border border-[var(--table-border-color)]">
       <CalendarHeader
         viewDate={viewDate}
         date={date}
@@ -43,9 +41,7 @@ export const MiniCalendar: React.FC<{
         onNext={handleNextMonth}
       />
 
-      <div
-        className="mini-calendar__grid grid grid-cols-8 gap-1 w-full text-center text-sm"
-      >
+      <div className="mini-calendar__grid grid grid-cols-8 gap-1 w-full text-center text-sm">
         {/* 曜日ヘッダー */}
         <div /> {/* 週番号列のスペーサー */}
         {WEEK_DAY_LABELS.map((label) => (

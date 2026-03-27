@@ -24,4 +24,3 @@ export const UnderlinedClickable: FC<UnderlinedClickableProps> = ({
     </Box>
   );
 };
-

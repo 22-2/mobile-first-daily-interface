@@ -1,5 +1,5 @@
-import { Box, Image, Link, Text } from "src/ui/components/primitives";
 import type { TwitterMeta } from "src/core/meta";
+import { Box, Image, Link, Text } from "src/ui/components/primitives";
 
 export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
   return (
@@ -10,9 +10,14 @@ export const TwitterCard = ({ meta }: { meta: TwitterMeta }) => {
             src="https://abs.twimg.com/favicons/twitter.3.ico"
             className="mfdi-html-card-site-icon object-contain h-[1em] mr-[var(--size-2-3)]"
           />
-          <Text className="mfdi-html-card-site-name h-[1em] leading-[1em]">X / Twitter</Text>
+          <Text className="mfdi-html-card-site-name h-[1em] leading-[1em]">
+            X / Twitter
+          </Text>
         </Box>
-        <Box className="mfdi-html-card-body" dangerouslySetInnerHTML={{ __html: meta.html }} />
+        <Box
+          className="mfdi-html-card-body"
+          dangerouslySetInnerHTML={{ __html: meta.html }}
+        />
       </Box>
       <Link
         href={meta.url}

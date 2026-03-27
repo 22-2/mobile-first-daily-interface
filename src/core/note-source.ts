@@ -1,7 +1,11 @@
 import type { TFile } from "obsidian";
-import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { Granularity, MomentLike } from "src/ui/types";
-import type { MFDINoteMode } from "src/ui/view/state";
+import {
+  buildFixedNotePathFromName,
+  createNewFixedNote,
+  ensureFixedNote,
+  normalizeFixedNotePath,
+  resolveFixedNote,
+} from "src/core/fixed-note";
 import {
   createTopicNote,
   getAllTopicNotes,
@@ -10,13 +14,9 @@ import {
   getTopicNote,
   resolveTopicNotePath,
 } from "src/lib/daily-notes";
-import {
-  buildFixedNotePathFromName,
-  createNewFixedNote,
-  ensureFixedNote,
-  normalizeFixedNotePath,
-  resolveFixedNote,
-} from "src/core/fixed-note";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { Granularity, MomentLike } from "src/ui/types";
+import type { MFDINoteMode } from "src/ui/view/state";
 
 interface NoteSourceContext {
   shell: ObsidianAppShell;

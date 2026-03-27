@@ -1,8 +1,8 @@
-import { Box, Button, Flex, HStack, Input } from "src/ui/components/primitives";
 import type { ChangeEvent, FC } from "react";
 import { memo, useCallback, useMemo } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
+import { Box, Button, Flex, HStack, Input } from "src/ui/components/primitives";
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
@@ -215,7 +215,11 @@ const InputAreaControl: FC = memo(() => {
         <ObsidianIcon
           name="maximize"
           size="1.1em"
-          className={isReadOnly ? "cursor-default opacity-30" : "hover:bg-[var(--background-modifier-hover)]"}
+          className={
+            isReadOnly
+              ? "cursor-default opacity-30"
+              : "hover:bg-[var(--background-modifier-hover)]"
+          }
           onClick={() => {
             if (isReadOnly) return;
             view.handlers.onOpenModalEditor?.();
@@ -280,11 +284,7 @@ const InputAreaFooter: FC = memo(() => {
   return (
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
       {editingPost && (
-        <Button
-          className="h-[2.4em]"
-          variant="ghost"
-          onClick={cancelEdit}
-        >
+        <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル
         </Button>
       )}

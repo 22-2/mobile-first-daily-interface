@@ -1,12 +1,16 @@
-import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { setTooltip } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import type { DateFilter, Granularity, Post } from "src/ui/types";
 import { getPostTags } from "src/ui/utils/post-metadata";
 
+import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
+import { createMeta } from "src/core/meta";
+import { pickUrls } from "src/core/strings";
+import { isPresent } from "src/core/types";
 import { BaseCard } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
@@ -15,10 +19,6 @@ import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
-import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
-import { createMeta } from "src/core/meta";
-import { pickUrls } from "src/core/strings";
-import { isPresent } from "src/core/types";
 
 export const PostCardView = React.memo(
   ({
@@ -102,7 +102,7 @@ export const PostCardView = React.memo(
             ) : undefined
           }
         >
-            <VStack align="stretch" gap={3}>
+          <VStack align="stretch" gap={3}>
             {/* Message Body */}
             <Box className="text-[93%] px-1 break-words">
               <ObsidianMarkdown content={post.message} />

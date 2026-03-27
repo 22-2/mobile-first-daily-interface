@@ -1,4 +1,9 @@
-import type { DateFilter, DisplayMode, Granularity, TimeFilter } from "src/ui/types";
+import type {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  TimeFilter,
+} from "src/ui/types";
 
 export class MFDIViewHandler {
   onOpenDailyNoteAction?: () => void;

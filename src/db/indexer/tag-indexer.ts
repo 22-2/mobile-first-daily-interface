@@ -1,17 +1,25 @@
-import * as Comlink from "comlink";
+import type * as Comlink from "comlink";
 import type { TFile } from "obsidian";
 import PQueue from "p-queue";
+import { DirectApiExecutor } from "src/db/indexer/executors";
+import { TagStatsManager } from "src/db/indexer/tag-stats-manager";
+import {
+  DEFAULT_QUEUE_CONCURRENCY,
+  DEFAULT_SCAN_CHUNK_SIZE,
+} from "src/db/indexer/types";
+import {
+  buildWorkerPool,
+  collectScanTargets,
+  estimateBytes,
+  generateBatchId,
+  normalizeTopics,
+  toScannableNote,
+} from "src/db/indexer/utils";
+import { MFDIDatabase } from "src/db/mfdi-db";
 import { inferNoteIdentityFromFile } from "src/db/note-file-identity";
-import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
 import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 import type { Settings } from "src/settings";
-import { MFDIDatabase } from "src/db/mfdi-db";
-import { ScanWorkerPool } from "src/db/scan-worker-pool";
-import { DirectApiExecutor, WorkerPoolExecutor } from "./executors";
-import { DEFAULT_QUEUE_CONCURRENCY, DEFAULT_SCAN_CHUNK_SIZE } from "./types";
-import { collectScanTargets, toScannableNote, normalizeTopics, buildWorkerPool, estimateBytes, generateBatchId } from "./utils";
-import { TagStatsManager } from "./tag-stats-manager";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -37,7 +45,8 @@ export class TagIndexer {
   private readonly ready: Promise<void>;
 
   constructor(appId: string, options: TagIndexerOptions = {}) {
-    this.queueConcurrency = options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
+    this.queueConcurrency =
+      options.queueConcurrency ?? DEFAULT_QUEUE_CONCURRENCY;
     this.scanChunkSize = options.scanChunkSize ?? DEFAULT_SCAN_CHUNK_SIZE;
     this.db = new MFDIDatabase(appId);
     this.tagStats = new TagStatsManager(this.db);
@@ -51,7 +60,10 @@ export class TagIndexer {
   // Full scan
   // -------------------------------------------------------------------------
 
-  async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
+  async scanAllNotes(
+    shell: ObsidianAppShell,
+    settings: Settings,
+  ): Promise<void> {
     await this.ready;
 
     const t0 = performance.now();
@@ -59,11 +71,17 @@ export class TagIndexer {
     const readQueue = new PQueue({ concurrency: this.queueConcurrency });
     const writeQueue = new PQueue({ concurrency: 1 });
 
-    await this.db.transaction("rw", this.db.memos, this.db.meta, this.db.tagStats, async () => {
-      await this.db.memos.clear();
-      await this.db.meta.clear();
-      await this.db.tagStats.clear();
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.meta,
+      this.db.tagStats,
+      async () => {
+        await this.db.memos.clear();
+        await this.db.meta.clear();
+        await this.db.tagStats.clear();
+      },
+    );
 
     for (let start = 0; start < targets.length; start += this.scanChunkSize) {
       const batch = targets.slice(start, start + this.scanChunkSize);
@@ -77,8 +95,13 @@ export class TagIndexer {
     await readQueue.onIdle();
     await writeQueue.onIdle();
     await this.tagStats.rebuild();
-    await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
-    console.log(`mfdi:full-scan elapsed=${performance.now() - t0}ms count=${targets.length}`);
+    await this.db.meta.put({
+      key: "lastFullScanAt",
+      value: new Date().toISOString(),
+    });
+    console.log(
+      `mfdi:full-scan elapsed=${performance.now() - t0}ms count=${targets.length}`,
+    );
 
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
@@ -118,29 +141,43 @@ export class TagIndexer {
 
     const records = result?.records ?? [];
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStats.collectForPath(file.path);
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStats.collectForPath(file.path);
 
-      await this.db.memos.where("path").equals(file.path).delete();
-      if (records.length) await this.db.memos.bulkPut(records);
+        await this.db.memos.where("path").equals(file.path).delete();
+        if (records.length) await this.db.memos.bulkPut(records);
 
-      const added = this.tagStats.collectFromRecords(records);
-      await this.tagStats.applyDeltas(removed, added);
-    });
+        const added = this.tagStats.collectFromRecords(records);
+        await this.tagStats.applyDeltas(removed, added);
+      },
+    );
 
-    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }));
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path: file.path } }),
+    );
   }
 
   async onFileDeleted(path: string): Promise<void> {
     await this.ready;
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStats.collectForPath(path);
-      await this.db.memos.where("path").equals(path).delete();
-      await this.tagStats.applyDeltas(removed, new Map());
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStats.collectForPath(path);
+        await this.db.memos.where("path").equals(path).delete();
+        await this.tagStats.applyDeltas(removed, new Map());
+      },
+    );
 
-    window.dispatchEvent(new CustomEvent("mfdi-db-updated", { detail: { path } }));
+    window.dispatchEvent(
+      new CustomEvent("mfdi-db-updated", { detail: { path } }),
+    );
   }
 
   async onFileRenamed(
@@ -154,11 +191,16 @@ export class TagIndexer {
     // Delete old-path memos first, then delegate to onFileChanged for the new path.
     // Note: if the process crashes between these two steps, tagStats will be
     // temporarily under-counted until the next onFileChanged or full scan.
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStats.collectForPath(oldPath);
-      await this.db.memos.where("path").equals(oldPath).delete();
-      await this.tagStats.applyDeltas(removed, new Map());
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStats.collectForPath(oldPath);
+        await this.db.memos.where("path").equals(oldPath).delete();
+        await this.tagStats.applyDeltas(removed, new Map());
+      },
+    );
 
     await this.onFileChanged(shell, file, settings);
   }
@@ -199,7 +241,9 @@ export class TagIndexer {
     } finally {
       this.db.meta
         .put({ key: `perf:batch:${batchId}`, value: JSON.stringify(perf) })
-        .catch(() => {/* ignore meta write failures */});
+        .catch(() => {
+          /* ignore meta write failures */
+        });
       console.log("mfdi:batch-perf", perf);
     }
   }

@@ -1,5 +1,5 @@
-import React, { forwardRef } from "react";
 import type { ComponentPropsWithRef, ElementType } from "react";
+import React, { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // VStack: 縦並びのスタック。Chakra互換APIでgap/align/justifyをサポート。
@@ -12,8 +12,17 @@ export type VStackProps<T extends ElementType = "div"> = {
 } & Omit<ComponentPropsWithRef<T>, "className" | "style">;
 
 export const VStack = forwardRef<HTMLElement, VStackProps>((props, ref) => {
-  const { as: Comp = "div", gap = "0.5rem", align = "center", justify, className, children, ...rest } = props as any;
-  const gapClass = typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
+  const {
+    as: Comp = "div",
+    gap = "0.5rem",
+    align = "center",
+    justify,
+    className,
+    children,
+    ...rest
+  } = props as any;
+  const gapClass =
+    typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
   const alignMap: Record<string, string> = {
     center: "items-center",
     start: "items-start",
@@ -26,9 +35,19 @@ export const VStack = forwardRef<HTMLElement, VStackProps>((props, ref) => {
     end: "justify-end",
     between: "justify-between",
   };
-  const classes = cn("flex flex-col", gapClass, alignMap[align] ?? "", justifyMap[justify] ?? "", className);
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  return React.createElement(Comp, { ref, className: classes, ...rest }, children);
+  const classes = cn(
+    "flex flex-col",
+    gapClass,
+    alignMap[align] ?? "",
+    justifyMap[justify] ?? "",
+    className,
+  );
+   
+  return React.createElement(
+    Comp,
+    { ref, className: classes, ...rest },
+    children,
+  );
 });
 
 VStack.displayName = "VStack";

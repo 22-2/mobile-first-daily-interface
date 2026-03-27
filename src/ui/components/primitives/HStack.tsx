@@ -13,12 +13,21 @@ export type HStackProps<T extends ElementType = "div"> = {
 } & Omit<ComponentPropsWithRef<T>, "className" | "style" | "as">;
 
 function HStackInner<T extends ElementType = "div">(
-  { as, gap = "0.5rem", align = "center", justify, className, children, ...rest }: HStackProps<T>,
-  ref: Ref<unknown>
+  {
+    as,
+    gap = "0.5rem",
+    align = "center",
+    justify,
+    className,
+    children,
+    ...rest
+  }: HStackProps<T>,
+  ref: Ref<unknown>,
 ) {
   const Comp = as ?? "div";
 
-  const gapClass = typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
+  const gapClass =
+    typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
   const alignMap: Record<string, string> = {
     center: "items-center",
     start: "items-start",
@@ -31,15 +40,22 @@ function HStackInner<T extends ElementType = "div">(
     between: "justify-between",
   };
 
-  const classes = cn("flex flex-row", gapClass, alignMap[align] ?? "", justifyMap[justify ?? ""] ?? "", className);
+  const classes = cn(
+    "flex flex-row",
+    gapClass,
+    alignMap[align] ?? "",
+    justifyMap[justify ?? ""] ?? "",
+    className,
+  );
 
-  // eslint-disable-next-line react/jsx-props-no-spreading
+   
   return createElement(Comp, { ref, className: classes, ...rest }, children);
 }
 
-export const HStack = forwardRef(HStackInner) as <T extends ElementType = "div">(
-  props: HStackProps<T> & { ref?: Ref<unknown> }
+export const HStack = forwardRef(HStackInner) as <
+  T extends ElementType = "div",
+>(
+  props: HStackProps<T> & { ref?: Ref<unknown> },
 ) => ReactNode;
 
 Object.defineProperty(HStack, "displayName", { value: "HStack" });
-

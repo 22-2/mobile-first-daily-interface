@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
-import { listPeriodicNotes, getPeriodicNoteDate } from "src/core/note-source";
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
+import type { Week } from "src/ui/components/calendar/types";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import type { Week } from "./types";
-
 
 // ─────────────────────────────────────────────
 // 純粋な計算関数 (変更なし)
@@ -32,8 +32,8 @@ function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
 function calcSelectedRange(
   date: moment.Moment,
   granularity: string,
-  dateFilter: string
-): { rangeStart: moment.Moment; rangeEnd: moment.Moment; } {
+  dateFilter: string,
+): { rangeStart: moment.Moment; rangeEnd: moment.Moment } {
   if (granularity === "week") {
     return {
       rangeStart: date.clone().startOf("isoWeek"),
@@ -42,7 +42,9 @@ function calcSelectedRange(
   }
   if (granularity !== "day" || dateFilter === "today") {
     return {
-      rangeStart: date.clone().startOf(granularity as moment.unitOfTime.StartOf),
+      rangeStart: date
+        .clone()
+        .startOf(granularity as moment.unitOfTime.StartOf),
       rangeEnd: date.clone().endOf(granularity as moment.unitOfTime.StartOf),
     };
   }
@@ -55,7 +57,10 @@ function calcSelectedRange(
   const days = parseInt(dateFilter, 10);
   if (!isNaN(days)) {
     return {
-      rangeStart: date.clone().subtract(days - 1, "days").startOf("day"),
+      rangeStart: date
+        .clone()
+        .subtract(days - 1, "days")
+        .startOf("day"),
       rangeEnd: date.clone().endOf("day"),
     };
   }
@@ -70,7 +75,14 @@ function calcSelectedRange(
 export function useMiniCalendar() {
   const { shell } = useAppContext();
   const {
-    date, setDate, granularity, setGranularity, dateFilter, setDateFilter, setDisplayMode, activeTopic,
+    date,
+    setDate,
+    granularity,
+    setGranularity,
+    dateFilter,
+    setDateFilter,
+    setDisplayMode,
+    activeTopic,
   } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -81,7 +93,7 @@ export function useMiniCalendar() {
       setDateFilter: s.setDateFilter,
       setDisplayMode: s.setDisplayMode,
       activeTopic: s.activeTopic,
-    }))
+    })),
   );
 
   const db = useMFDIDB();
@@ -92,10 +104,11 @@ export function useMiniCalendar() {
       return new Set(dates);
     },
     [db],
-    new Set<string>()
+    new Set<string>(),
   );
 
-  const [viewDate, setViewDate] = useState(() => window.moment(date).startOf("month")
+  const [viewDate, setViewDate] = useState(() =>
+    window.moment(date).startOf("month"),
   );
 
   const prevDateRef = useRef(date);
@@ -157,7 +170,7 @@ export function useMiniCalendar() {
   const { rangeStart, rangeEnd } = calcSelectedRange(
     date,
     granularity,
-    dateFilter as string
+    dateFilter as string,
   );
 
   return {

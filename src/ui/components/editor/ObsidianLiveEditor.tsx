@@ -1,8 +1,8 @@
 import { type FakeEditor } from "@22-2/obsidian-magical-editor";
-import { Box } from "src/ui/components/primitives/Box";
 import type { App, WorkspaceLeaf } from "obsidian";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "src/ui/components/editor/hooks";
+import { Box } from "src/ui/components/primitives/Box";
 import { cn } from "src/ui/components/primitives/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -82,7 +82,10 @@ export const ObsidianLiveEditor = forwardRef<
 
     return (
       <Box className={cn(className)} {...boxProps}>
-        <Box ref={containerRef} className="h-full w-full mfdi-live-editor-container"/>
+        <Box
+          ref={containerRef}
+          className="h-full w-full mfdi-live-editor-container"
+        />
       </Box>
     );
   },

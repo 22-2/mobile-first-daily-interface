@@ -1,8 +1,8 @@
-import { type UserConfig, defineConfig } from "vite";
-import path from "path";
-import builtins from "builtin-modules";
-import { obsidianCopyPlugin } from "./vite.plugins";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import builtins from "builtin-modules";
+import path from "path";
+import { defineConfig, type UserConfig } from "vite";
+import { obsidianCopyPlugin } from "./vite.plugins";
 // import tailwindcss from "@tailwindcss/vite";
 import { analyzer } from "vite-bundle-analyzer";
 

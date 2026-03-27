@@ -1,7 +1,7 @@
-import { Box, Flex, Text } from "src/ui/components/primitives";
 import type { FC } from "react";
-import type { MomentLike } from "src/ui/types";
 import { replaceDayToJa } from "src/core/strings";
+import { Box, Flex, Text } from "src/ui/components/primitives";
+import type { MomentLike } from "src/ui/types";
 
 interface DateDividerProps {
   date: MomentLike;

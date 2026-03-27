@@ -1,10 +1,9 @@
-
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 import type { TFile } from "obsidian";
-import type { GRANULARITIES } from "../note-file-identity";
+import type { GRANULARITIES } from "src/db/note-file-identity";
 
 export const DEFAULT_QUEUE_CONCURRENCY = 8;
 export const DEFAULT_SCAN_CHUNK_SIZE = 100;

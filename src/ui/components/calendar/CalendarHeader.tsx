@@ -1,6 +1,6 @@
 import type React from "node_modules/@types/react";
-import { ObsidianIcon } from "../common/ObsidianIcon";
-import { cn } from "../primitives/utils";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { cn } from "src/ui/components/primitives/utils";
 
 // ─────────────────────────────────────────────
 // サブコンポーネント (Tailwind化)
@@ -15,7 +15,8 @@ export const CalendarHeader: React.FC<{
   const isSameYear = viewDate.isSame(date, "year");
   const isSameMonth = viewDate.isSame(date, "month");
 
-  const highlightYear = (granularity === "year" && isSameYear) ||
+  const highlightYear =
+    (granularity === "year" && isSameYear) ||
     (granularity === "month" && isSameMonth);
   const highlightMonth = granularity === "month" && isSameMonth;
 
@@ -25,7 +26,9 @@ export const CalendarHeader: React.FC<{
         <span
           className={cn(
             "font-bold text-lg",
-            highlightYear ? "text-[var(--color-accent)]" : "text-[var(--text-normal)]"
+            highlightYear
+              ? "text-[var(--color-accent)]"
+              : "text-[var(--text-normal)]",
           )}
         >
           {viewDate.format("YYYY年")}
@@ -33,7 +36,9 @@ export const CalendarHeader: React.FC<{
         <span
           className={cn(
             "font-bold text-lg",
-            highlightMonth ? "text-[var(--color-accent)]" : "text-[var(--text-normal)]"
+            highlightMonth
+              ? "text-[var(--color-accent)]"
+              : "text-[var(--text-normal)]",
           )}
         >
           {viewDate.format("M月")}

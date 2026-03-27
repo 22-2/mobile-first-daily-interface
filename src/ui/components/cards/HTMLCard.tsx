@@ -1,6 +1,6 @@
-import { Box, Image, Link, Text } from "src/ui/components/primitives";
 import { useState } from "react";
 import type { HTMLMeta } from "src/core/meta";
+import { Box, Image, Link, Text } from "src/ui/components/primitives";
 
 export const HTMLCard = ({ meta }: { meta: HTMLMeta }) => {
   const [faviconUrl, setFaviconUrl] = useState(meta.faviconUrl);

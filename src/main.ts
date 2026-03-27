@@ -1,26 +1,24 @@
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import type { WorkspaceLeaf } from "obsidian";
 import { Plugin } from "obsidian";
-import type {
-  BuiltinMainContext} from "src/core/builtin-registry";
+import type { BuiltinMainContext } from "src/core/builtin-registry";
 import {
   createBuiltinContributions,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
-import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import { createFixedNoteFromInput } from "src/core/note-source";
+import type { Topic } from "src/core/topic";
+import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import type { Settings } from "src/settings";
 import { DEFAULT_SETTINGS, MFDISettingTab } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { Topic } from "src/core/topic";
 import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
-import type {
-  MFDIViewState} from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
 import {
   createFixedNoteViewState,
-  DEFAULT_MFDI_VIEW_STATE
+  DEFAULT_MFDI_VIEW_STATE,
 } from "src/ui/view/state";
 
 export default class MFDIPlugin extends Plugin {

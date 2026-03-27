@@ -1,13 +1,24 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type GridProps = React.HTMLAttributes<HTMLDivElement> & { cols?: number; gap?: string | number; className?: string };
+export type GridProps = React.HTMLAttributes<HTMLDivElement> & {
+  cols?: number;
+  gap?: string | number;
+  className?: string;
+};
 
-export const Grid = ({ cols = 2, gap = "0.5rem", className, children, ...rest }: GridProps) => {
-  const gapClass = typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
+export const Grid = ({
+  cols = 2,
+  gap = "0.5rem",
+  className,
+  children,
+  ...rest
+}: GridProps) => {
+  const gapClass =
+    typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
   const colsClass = `grid-cols-${cols}`;
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
+     
     <div className={cn("grid", colsClass, gapClass, className)} {...rest}>
       {children}
     </div>

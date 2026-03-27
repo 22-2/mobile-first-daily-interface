@@ -1,5 +1,4 @@
 import { TFile, Vault } from "obsidian";
-import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import {
   getAllTopicNotes,
   getDailyNoteSettings,
@@ -9,6 +8,7 @@ import {
   getYearlyNoteSettings,
   resolveTopicNotePath,
 } from "src/lib/daily-notes/index";
+import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Obsidian module before importing anything

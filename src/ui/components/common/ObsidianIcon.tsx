@@ -1,8 +1,8 @@
-import type { BoxProps } from "src/ui/components/primitives/Box";
-import { Box } from "src/ui/components/primitives";
-import { cn } from "src/ui/components/primitives/utils";
 import { setIcon } from "obsidian";
 import React, { useEffect, useRef } from "react";
+import { Box } from "src/ui/components/primitives";
+import type { BoxProps } from "src/ui/components/primitives/Box";
+import { cn } from "src/ui/components/primitives/utils";
 
 interface ObsidianIconProps extends BoxProps {
   name: string;
@@ -13,7 +13,10 @@ interface ObsidianIconProps extends BoxProps {
 }
 
 export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
-  ({ name, size, boxSize, width, height, className, ...restProps }, forwardedRef) => {
+  (
+    { name, size, boxSize, width, height, className, ...restProps },
+    forwardedRef,
+  ) => {
     const innerRef = useRef<HTMLDivElement | null>(null);
 
     // keep forwarded ref in sync
@@ -49,7 +52,9 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
       if (!svg) return;
 
       const s = size ?? boxSize ?? width ?? height;
-      const setter = svg as unknown as { setCssStyles?: (styles: Record<string, string>) => void };
+      const setter = svg as unknown as {
+        setCssStyles?: (styles: Record<string, string>) => void;
+      };
       if (s) {
         const ss = typeof s === "number" ? `${s}px` : String(s);
         setter.setCssStyles?.({ width: ss, height: ss });

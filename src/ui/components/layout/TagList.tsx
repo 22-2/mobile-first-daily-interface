@@ -1,4 +1,3 @@
-import { HStack, Text, VStack } from "src/ui/components/primitives";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect, useState } from "react";
 import {
@@ -6,6 +5,7 @@ import {
   SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
+import { HStack, Text, VStack } from "src/ui/components/primitives";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 

@@ -90,7 +90,13 @@ export const ResultCount: FC = () => {
 
   if (viewNoteMode === "fixed") {
     return (
-      <>{formatFixedCount(displayCount, getFixedNoteTitle(fixedNotePath), asTask)}</>
+      <>
+        {formatFixedCount(
+          displayCount,
+          getFixedNoteTitle(fixedNotePath),
+          asTask,
+        )}
+      </>
     );
   }
 

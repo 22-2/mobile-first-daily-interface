@@ -1,16 +1,22 @@
-import { Box, HStack, Spinner, Text, VStack } from "src/ui/components/primitives";
 import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
+import { parseThinoEntries } from "src/core/thino";
 import {
   SidebarItemCount,
   SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
+import {
+  Box,
+  HStack,
+  Spinner,
+  Text,
+  VStack,
+} from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { parseThinoEntries } from "src/core/thino";
 import { useShallow } from "zustand/shallow";
-import { cn } from "../primitives/utils";
 
 interface Counts {
   posts: number;
@@ -54,7 +60,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
 
   const [countsMap, setCountsMap] = useState<Record<string, Counts>>({});
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<"all" | "year" | "month" | "week">("all");
+  const [filter, setFilter] = useState<"all" | "year" | "month" | "week">(
+    "all",
+  );
 
   const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
@@ -120,7 +128,9 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     <Text
       className={cn(
         "text-[length:var(--font-ui-small)] cursor-pointer transition-colors duration-100 ease-in-out hover:text-[var(--text-normal)]",
-        isActive ? "font-bold text-[var(--color-accent)]" : "font-normal text-[var(--text-muted)]",
+        isActive
+          ? "font-bold text-[var(--color-accent)]"
+          : "font-normal text-[var(--text-muted)]",
       )}
       onClick={(e) => {
         e.stopPropagation();
@@ -142,13 +152,29 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     <VStack className="mfdi-sidebar-scales items-stretch gap-0 pt-2 mt-2">
       <SidebarSectionHeader className="sidebar-section-header">
         <HStack className="gap-2 items-center">
-          <FilterButton label="すべて" isActive={filter === "all"} onClick={() => setFilter("all")} />
+          <FilterButton
+            label="すべて"
+            isActive={filter === "all"}
+            onClick={() => setFilter("all")}
+          />
           <Separator />
-          <FilterButton label="年" isActive={filter === "year"} onClick={() => setFilter("year")} />
+          <FilterButton
+            label="年"
+            isActive={filter === "year"}
+            onClick={() => setFilter("year")}
+          />
           <Separator />
-          <FilterButton label="月" isActive={filter === "month"} onClick={() => setFilter("month")} />
+          <FilterButton
+            label="月"
+            isActive={filter === "month"}
+            onClick={() => setFilter("month")}
+          />
           <Separator />
-          <FilterButton label="週" isActive={filter === "week"} onClick={() => setFilter("week")} />
+          <FilterButton
+            label="週"
+            isActive={filter === "week"}
+            onClick={() => setFilter("week")}
+          />
         </HStack>
         {loading && (
           <Spinner className="size-3 text-[var(--text-faint)] animate-spin [animation-duration:0.8s]" />
@@ -160,14 +186,18 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
           (() => {
             const yKey = `year-${baseDate.format("YYYY")}`;
             const yCounts = countsMap[yKey];
-            const yHasActivity = yCounts && (yCounts.posts > 0 || yCounts.tasks > 0);
+            const yHasActivity =
+              yCounts && (yCounts.posts > 0 || yCounts.tasks > 0);
             const isSelected = granularity === "year";
 
             return (
               <SidebarTextButton
                 isSelected={isSelected}
                 isMuted={!yHasActivity}
-                className={cn("mfdi-scale-item mfdi-scale-item-year", isSelected && "is-selected")}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-year",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
                   if (isSelected) {
                     handleClickHome();
@@ -190,14 +220,18 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
           (() => {
             const mKey = `month-${baseDate.format("YYYY-MM")}`;
             const mCounts = countsMap[mKey];
-            const mHasActivity = mCounts && (mCounts.posts > 0 || mCounts.tasks > 0);
+            const mHasActivity =
+              mCounts && (mCounts.posts > 0 || mCounts.tasks > 0);
             const isSelected = granularity === "month";
 
             return (
               <SidebarTextButton
                 isSelected={isSelected}
                 isMuted={!mHasActivity}
-                className={cn("mfdi-scale-item mfdi-scale-item-month", isSelected && "is-selected")}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-month",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
                   if (isSelected) {
                     handleClickHome();
@@ -218,16 +252,21 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
 
         {(filter === "all" || filter === "week") &&
           weeks.map((w) => {
-            const isSelected = granularity === "week" && date.isSame(w, "isoWeek");
+            const isSelected =
+              granularity === "week" && date.isSame(w, "isoWeek");
             const counts = countsMap[`week-${w.format("YYYY-WW")}`];
-            const hasActivity = counts && (counts.posts > 0 || counts.tasks > 0);
+            const hasActivity =
+              counts && (counts.posts > 0 || counts.tasks > 0);
 
             return (
               <SidebarTextButton
                 key={w.format("YYYY-WW")}
                 isSelected={isSelected}
                 isMuted={!hasActivity}
-                className={cn("mfdi-scale-item mfdi-scale-item-week", isSelected && "is-selected")}
+                className={cn(
+                  "mfdi-scale-item mfdi-scale-item-week",
+                  isSelected && "is-selected",
+                )}
                 onClick={() => {
                   if (isSelected) {
                     handleClickHome();

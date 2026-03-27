@@ -90,7 +90,9 @@ export const TopicItem = ({
       <Box
         className={cn(
           "w-[3px] h-[2.5em] rounded-[2px] mr-[var(--size-4-3)] shrink-0 transition-[background] duration-150",
-          isActive ? "bg-[var(--color-accent)]" : "bg-[var(--background-secondary)]",
+          isActive
+            ? "bg-[var(--color-accent)]"
+            : "bg-[var(--background-secondary)]",
         )}
       />
 

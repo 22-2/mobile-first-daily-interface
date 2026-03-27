@@ -1,11 +1,10 @@
-import type { MFDIDatabase } from "../mfdi-db";
-
+import type { MFDIDatabase } from "src/db/mfdi-db";
 
 // ---------------------------------------------------------------------------
 // TagStatsManager — encapsulates all tag-count bookkeeping
 // ---------------------------------------------------------------------------
 export class TagStatsManager {
-  constructor(private readonly db: MFDIDatabase) { }
+  constructor(private readonly db: MFDIDatabase) {}
 
   /** Full rebuild from the current memos table. */
   async rebuild(): Promise<void> {
@@ -22,7 +21,11 @@ export class TagStatsManager {
     await this.db.tagStats.clear();
     if (counts.size > 0) {
       await this.db.tagStats.bulkPut(
-        [...counts.entries()].map(([tag, count]) => ({ tag, count, updatedAt }))
+        [...counts.entries()].map(([tag, count]) => ({
+          tag,
+          count,
+          updatedAt,
+        })),
       );
     }
   }
@@ -30,7 +33,7 @@ export class TagStatsManager {
   /** Apply a diff: subtract `removed` counts, add `added` counts. */
   async applyDeltas(
     removed: Map<string, number>,
-    added: Map<string, number>
+    added: Map<string, number>,
   ): Promise<void> {
     const tags = [...new Set([...removed.keys(), ...added.keys()])];
     if (tags.length === 0) return;
@@ -38,13 +41,14 @@ export class TagStatsManager {
     const existingRows = await this.db.tagStats.bulkGet(tags as any);
     const updatedAt = new Date().toISOString();
 
-    const toPut: { tag: string; count: number; updatedAt: string; }[] = [];
+    const toPut: { tag: string; count: number; updatedAt: string }[] = [];
     const toDelete: string[] = [];
 
     for (let i = 0; i < tags.length; i++) {
       const tag = tags[i];
       const existingCount = existingRows[i]?.count ?? 0;
-      const newCount = existingCount - (removed.get(tag) ?? 0) + (added.get(tag) ?? 0);
+      const newCount =
+        existingCount - (removed.get(tag) ?? 0) + (added.get(tag) ?? 0);
 
       if (newCount > 0) {
         toPut.push({ tag, count: newCount, updatedAt });

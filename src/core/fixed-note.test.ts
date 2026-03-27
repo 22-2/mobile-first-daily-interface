@@ -1,5 +1,4 @@
 import { TFile } from "obsidian";
-import { resolveNoteSource } from "src/core/note-source";
 import {
   buildFixedNotePathFromName,
   buildUntitledFixedNotePath,
@@ -9,6 +8,7 @@ import {
   normalizeFixedNoteFolder,
   normalizeFixedNotePath,
 } from "src/core/fixed-note";
+import { resolveNoteSource } from "src/core/note-source";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("fixed note utilities", () => {

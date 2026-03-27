@@ -1,6 +1,6 @@
 import * as Comlink from "comlink";
 import { buildMemoRecordsForNote } from "src/db/scan-note";
-import type { ScanWorkerAPI, ScanResultEnvelope } from "src/db/worker-api";
+import type { ScanResultEnvelope, ScanWorkerAPI } from "src/db/worker-api";
 
 function estimateBytes(files: { content: string }[]): number {
   try {
@@ -33,7 +33,10 @@ const workerApi: ScanWorkerAPI = {
       // ignore
     }
 
-    const envelope: ScanResultEnvelope = { records, timings: { started, finished, noteCount: files.length, bytes } };
+    const envelope: ScanResultEnvelope = {
+      records,
+      timings: { started, finished, noteCount: files.length, bytes },
+    };
     return envelope;
   },
 
@@ -57,7 +60,10 @@ const workerApi: ScanWorkerAPI = {
       // ignore
     }
 
-    const envelope: ScanResultEnvelope = { records, timings: { started, finished, noteCount: records.length, bytes } };
+    const envelope: ScanResultEnvelope = {
+      records,
+      timings: { started, finished, noteCount: records.length, bytes },
+    };
     return envelope;
   },
   async dispose() {

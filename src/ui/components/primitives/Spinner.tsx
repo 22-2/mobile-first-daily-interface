@@ -1,6 +1,9 @@
 import React from "react";
 
-export type SpinnerProps = { size?: number; className?: string } & React.HTMLAttributes<HTMLDivElement>;
+export type SpinnerProps = {
+  size?: number;
+  className?: string;
+} & React.HTMLAttributes<HTMLDivElement>;
 
 export const Spinner = ({ size = 16, className, ...rest }: SpinnerProps) => (
   <div

@@ -11,22 +11,21 @@ export type BoxProps<T extends ElementType = "div"> = {
 
 function BoxInner<T extends ElementType = "div">(
   { as, className, children, ...rest }: BoxProps<T>,
-  ref: Ref<unknown>
+  ref: Ref<unknown>,
 ) {
   // 目的: Tailwind クラスを渡せるようにして、既存の Chakra `Box` の代替として使えるようにする
   // メンタルモデル: 最小限のラッパーで余計な振る舞いを持たせない
   const Comp = as ?? "div";
   return createElement(
     Comp,
-    // eslint-disable-next-line react/jsx-props-no-spreading
+     
     { ref, className: cn(className), ...rest },
-    children
+    children,
   );
 }
 
 export const Box = forwardRef(BoxInner) as <T extends ElementType = "div">(
-  props: BoxProps<T> & { ref?: Ref<unknown> }
+  props: BoxProps<T> & { ref?: Ref<unknown> },
 ) => ReactNode;
 
 Object.defineProperty(Box, "displayName", { value: "Box" });
-

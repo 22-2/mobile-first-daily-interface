@@ -1,5 +1,5 @@
-import React, { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
+import { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // Input: Tailwind ベースのシンプルな input コンポーネント。
@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   );
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
+     
     <input ref={ref} className={classes} {...rest} />
   );
 });

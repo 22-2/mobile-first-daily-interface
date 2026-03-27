@@ -1,8 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import type { MarkdownView} from "obsidian";
+import type { MarkdownView } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
+import { resolveTimestamp, toText } from "src/core/post-utils";
+import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
+import { parseThinoEntries } from "src/core/thino";
 import { useAppContext } from "src/ui/context/AppContext";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
@@ -11,7 +14,6 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
-import { resolveTimestamp, toText } from "src/core/post-utils";
 import {
   buildPostFromEntry,
   createThreadId,
@@ -19,8 +21,6 @@ import {
   THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
-import { parseThinoEntries } from "src/core/thino";
 import { useShallow } from "zustand/shallow";
 
 export const usePostActions = () => {
