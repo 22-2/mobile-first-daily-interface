@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex } from "src/ui/components/primitives";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import type { Granularity } from "src/ui/types";
@@ -10,16 +10,10 @@ interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({ granularity }) => {
   return (
     <Flex
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      height="100%"
-      gap="var(--size-4-3)"
-      color="var(--text-faint)"
-      style={{ userSelect: "none", pointerEvents: "none" }}
+      className="flex-col items-center justify-center h-full gap-[var(--size-4-3)] text-[var(--text-faint)] select-none pointer-events-none"
     >
-      <ObsidianIcon name="feather" boxSize="2.5em" opacity={0.35} />
-      <Box fontSize="var(--font-ui-small)" opacity={0.6} textAlign="center">
+      <ObsidianIcon name="feather"  className="opacity-35" boxSize="2.5em" />
+      <Box className="text-[length:var(--font-ui-small)] opacity-60 text-center">
         この{GRANULARITY_CONFIG[granularity].label}の記録はまだありません
       </Box>
     </Flex>
