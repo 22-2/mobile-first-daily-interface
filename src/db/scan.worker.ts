@@ -119,6 +119,34 @@ try {
       }
     },
 
+    getTagStats: async () => {
+      console.log(TAG, "getTagStats called");
+      const start = Date.now();
+      try {
+        const res = await dbService.getTagStats();
+        // ensure plain objects
+        const plain = Array.isArray(res) ? res.map((r) => ({ ...r })) : res;
+        console.log(TAG, "getTagStats completed", { durationMs: Date.now() - start, count: plain?.length });
+        return plain;
+      } catch (err) {
+        console.error(TAG, "getTagStats failed:", err);
+        throw err;
+      }
+    },
+
+    getMeta: async (key) => {
+      console.log(TAG, "getMeta called", { key });
+      const start = Date.now();
+      try {
+        const res = await dbService.getMeta(key);
+        console.log(TAG, "getMeta completed", { durationMs: Date.now() - start });
+        return res;
+      } catch (err) {
+        console.error(TAG, "getMeta failed:", err);
+        throw err;
+      }
+    },
+
     getMemos: async (params) => {
       console.log(TAG, "getMemos called", { params });
       const start = Date.now();

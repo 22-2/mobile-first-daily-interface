@@ -37,9 +37,11 @@ export const TagList: React.FC = () => {
         return { items: null, hasCompletedFullScan: false };
       }
 
+      // db is a remote IDBService exposed from the worker; use the
+      // provided methods instead of accessing Dexie internals.
       const [tagStats, lastFullScanAt] = await Promise.all([
-        db.tagStats.toArray(),
-        db.meta.get("lastFullScanAt"),
+        db.getTagStats(),
+        db.getMeta("lastFullScanAt"),
       ]);
 
       return {

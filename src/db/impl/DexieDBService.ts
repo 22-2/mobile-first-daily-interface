@@ -1,4 +1,4 @@
-import { MFDIDatabase, type MemoRecord } from "src/db/mfdi-db";
+import { MFDIDatabase, type MemoRecord, type TagStatRecord } from "src/db/mfdi-db";
 import { DexieMemoRepository } from "src/db/impl/DexieMemoRepository";
 import { DexieTagStatsRepository } from "src/db/impl/DexieTagStatsRepository";
 import type { IDBService, DBServiceOptions } from "src/db/interfaces/IDBService";
@@ -90,6 +90,17 @@ export class DexieDBService implements IDBService {
   async getAllActiveDates(): Promise<string[]> {
     if (!this.memoRepo) throw new Error("DB not initialized");
     return await this.memoRepo.getAllActiveDates();
+  }
+
+  async getTagStats(): Promise<TagStatRecord[]> {
+    if (!this.db) throw new Error("DB not initialized");
+    return await this.db.tagStats.toArray();
+  }
+
+  async getMeta(key: string): Promise<string | undefined> {
+    if (!this.db) throw new Error("DB not initialized");
+    const rec = await this.db.meta.get(key as any);
+    return rec ? (rec.value as string) : undefined;
   }
 
   async getMemos(params: {

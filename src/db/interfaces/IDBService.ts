@@ -1,4 +1,4 @@
-import type { MemoRecord } from "src/db/mfdi-db";
+import type { MemoRecord, TagStatRecord } from "src/db/mfdi-db";
 import type { ScannableNote } from "src/db/worker-api";
 
 export interface DBServiceOptions {
@@ -50,6 +50,16 @@ export interface IDBService {
    * 指定した条件のメモ総数を取得する
    */
   countMemos(topicId?: string): Promise<number>;
+
+  /**
+   * タグ統計を取得する（タグ名とカウントの配列）
+   */
+  getTagStats(): Promise<TagStatRecord[]>;
+
+  /**
+   * メタ情報を取得する（キーに対応する値）
+   */
+  getMeta(key: string): Promise<string | undefined>;
 
   /**
    * 接続を閉じる
