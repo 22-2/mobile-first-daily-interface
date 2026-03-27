@@ -1,33 +1,26 @@
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
-import { defineConfig, type UserConfig } from "vite";
+import { defineConfig, type UserConfig, loadEnv } from "vite";
 import { obsidianCopyPlugin } from "./vite.plugins";
-// import tailwindcss from "@tailwindcss/vite";
 import { analyzer } from "vite-bundle-analyzer";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
-  // ビルド解析 (analyze) の有効化は CLI フラグではなく環境変数で制御する。
-  // 理由: Vite の CLI は未定義のオプションを受け取ると起動時にエラーを投げるため、
-  // `pnpm build -- --analyze` のようにスクリプト経由で渡しても Vite が拒否してしまう。
-  // そのため、CIやローカルで `ANALYZE=true pnpm build`（または PowerShell では
-  // `$env:ANALYZE = 'true'; pnpm build'`）のように環境変数で切り替える方式に変更する。
-  const isAnalyze = process.env.ANALYZE === "true" || process.env.VITE_ANALYZE === "true";
-  // watchモードはCLIフラグ(--watch)か環境変数(VITE_WATCH=true)で有効化する
-  // 理由: 開発中にファイル変更を監視して自動で再ビルドしたいケースがあるため。
-  // `vite build --watch` の代替として使えるようにし、既存のdevサーバーと干渉しない挙動にする。
-  const isWatch = process.argv.includes("--watch") || process.env.VITE_WATCH === "true";
+  const env = loadEnv(mode, process.cwd(), "");
+
+  const isAnalyze = process.argv.includes("--analyze");
+  const isWatch = process.argv.includes("--watch");
   const isDev = mode === "development" || isWatch;
   const isProd = !isDev;
+  const onMyPc = env.ON_MY_PC === "true";
 
   return {
     plugins: [
       isAnalyze && analyzer(),
       react(),
-      // tailwindcss(),
       reactCompilerPreset(),
-      obsidianCopyPlugin({
+      onMyPc && obsidianCopyPlugin({
         pluginsDir: [
           "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
           "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",

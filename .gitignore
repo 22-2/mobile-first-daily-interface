@@ -27,3 +27,4 @@ playwright-report/
 test-results/
 
 styles.css
+.env

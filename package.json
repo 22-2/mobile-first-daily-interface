@@ -5,8 +5,9 @@
   "description": "TODO",
   "main": "main.js",
   "scripts": {
-    "dev": "vite --watch",
+    "dev": "vite build",
     "build": "vite build",
+    "build:analyze": "vite build -- --analyze",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
