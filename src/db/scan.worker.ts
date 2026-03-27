@@ -71,7 +71,7 @@ try {
       console.log(TAG, "onFileChanged called", { path: note?.path, len: note?.content?.length ?? 0 });
       const start = Date.now();
       try {
-        const res = await dbService.onFileChanged(note as any);
+        const res = await dbService.onFileChanged(note);
         console.log(TAG, "onFileChanged completed", { durationMs: Date.now() - start });
         return res;
       } catch (err) {
@@ -97,7 +97,7 @@ try {
       console.log(TAG, "onFileRenamed called", { oldPath, newPath: note?.path });
       const start = Date.now();
       try {
-        const res = await dbService.onFileRenamed(note as any, oldPath);
+        const res = await dbService.onFileRenamed(note, oldPath);
         console.log(TAG, "onFileRenamed completed", { durationMs: Date.now() - start });
         return res;
       } catch (err) {
@@ -123,8 +123,8 @@ try {
       console.log(TAG, "getMemos called", { params });
       const start = Date.now();
       try {
-        const res = await dbService.getMemos(params as any);
-        console.log(TAG, "getMemos completed", { durationMs: Date.now() - start, count: (res as any[])?.length });
+        const res = await dbService.getMemos(params);
+        console.log(TAG, "getMemos completed", { durationMs: Date.now() - start, count: res?.length });
         return res;
       } catch (err) {
         console.error(TAG, "getMemos failed:", err);
@@ -136,7 +136,7 @@ try {
       console.log(TAG, "countMemos called", { topicId });
       const start = Date.now();
       try {
-        const res = await dbService.countMemos(topicId as any);
+        const res = await dbService.countMemos(topicId);
         console.log(TAG, "countMemos completed", { durationMs: Date.now() - start, result: res });
         return res;
       } catch (err) {
