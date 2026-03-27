@@ -52,12 +52,12 @@ export interface TagIndexerOptions {
 class DirectApiExecutor implements ScanWorkerAPI {
   constructor(private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>) {}
 
-  scanFiles(files: ScannableNote[]) {
-    return this.api.scanFiles(files);
+  scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {
+    return (this.api as any).scanFiles(files, meta);
   }
 
-  scanFile(note: ScannableNote) {
-    return this.api.scanFile(note);
+  scanFile(note: ScannableNote, meta?: { batchId?: string }) {
+    return (this.api as any).scanFile(note, meta);
   }
 
   async dispose() {
@@ -68,12 +68,14 @@ class DirectApiExecutor implements ScanWorkerAPI {
 class WorkerPoolExecutor implements ScanWorkerAPI {
   constructor(private readonly pool: ScanWorkerPool) {}
 
-  scanFiles(files: ScannableNote[]) {
-    return this.pool.next().scanFiles(files);
+  scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {
+    const { remote } = this.pool.next();
+    return (remote as any).scanFiles(files, meta);
   }
 
-  scanFile(note: ScannableNote) {
-    return this.pool.next().scanFile(note);
+  scanFile(note: ScannableNote, meta?: { batchId?: string }) {
+    const { remote } = this.pool.next();
+    return (remote as any).scanFile(note, meta);
   }
 
   async dispose() {
@@ -203,9 +205,11 @@ export class TagIndexer {
   async scanAllNotes(shell: ObsidianAppShell, settings: Settings): Promise<void> {
     await this.waitUntilReady();
 
+    const t0 = performance.now();
     const targets = collectScanTargets(shell, settings);
     const readQueue = new PQueue({ concurrency: this.queueConcurrency });
     const writeQueue = new PQueue({ concurrency: 1 });
+
 
     await this.db.transaction("rw", this.db.memos, this.db.meta, this.db.tagStats, async () => {
       await this.db.memos.clear();
@@ -218,13 +222,47 @@ export class TagIndexer {
       const notes = await Promise.all(
         batch.map((t) => readQueue.add(() => toScannableNote(shell, t))),
       );
-
       // Kick off parsing immediately, buffer writes to stay sequential on DB.
-      const parsePromise = this.executor.scanFiles(notes);
+      const batchId = (typeof crypto !== "undefined" && (crypto as any).randomUUID)
+        ? (crypto as any).randomUUID()
+        : `${start}-${Date.now()}`;
+
+      let bytes = 0;
+      try {
+        const enc = new TextEncoder();
+        bytes = notes.reduce((s, n) => s + enc.encode(n.content).length, 0);
+      } catch {
+        bytes = notes.reduce((s, n) => s + n.content.length, 0);
+      }
+
+      const tSend = performance.now();
+      const parsePromise = this.executor.scanFiles(notes, { batchId });
+
       writeQueue.add(async () => {
-        const records = await parsePromise;
-        if (records?.length) {
+        const result = await parsePromise;
+        const records = result?.records ?? [];
+        const workerTimings = result?.timings;
+        const tRecv = performance.now();
+
+        // Log batch-level metrics and persist a small perf record to meta.
+        const perf = {
+          batchId,
+          noteCount: notes.length,
+          bytes,
+          hostSendMs: tSend,
+          hostRecvMs: tRecv,
+          hostRoundtripMs: tRecv - tSend,
+          workerTimings,
+        };
+        try {
           await this.db.memos.bulkPut(records);
+        } finally {
+          try {
+            await this.db.meta.put({ key: `perf:batch:${batchId}`, value: JSON.stringify(perf) });
+          } catch (e) {
+            // ignore meta write failure
+          }
+          console.log("mfdi:batch-perf", perf);
         }
       });
     }
@@ -233,6 +271,7 @@ export class TagIndexer {
     await writeQueue.onIdle();
     await this.rebuildTagStats();
     await this.db.meta.put({ key: "lastFullScanAt", value: new Date().toISOString() });
+      console.log(`transfer: ${performance.now() - t0}ms, count: ${targets.length}`);
 
     window.dispatchEvent(new CustomEvent("mfdi-db-updated"));
   }
@@ -256,14 +295,20 @@ export class TagIndexer {
     if (!identity) return;
 
     const content = await shell.cachedReadFile(file);
-    const records = await this.executor.scanFile({
+    const batchId = (typeof crypto !== "undefined" && (crypto as any).randomUUID)
+      ? (crypto as any).randomUUID()
+      : `file-${Date.now()}`;
+
+    const result = await this.executor.scanFile({
       path: file.path,
       noteName: file.basename,
       topicId: identity.topicId,
       noteGranularity: identity.granularity,
       noteDate: identity.noteDate.toISOString(),
       content,
-    });
+    }, { batchId });
+
+    const records = result?.records ?? [];
 
     await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
       await this.db.memos.where("path").equals(file.path).delete();
