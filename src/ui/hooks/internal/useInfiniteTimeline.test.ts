@@ -81,6 +81,8 @@ describe("useInfiniteTimeline", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    // モック環境で Obsidian の `activeDocument.hasFocus()` を安定させる
+    vi.stubGlobal("activeDocument", { hasFocus: vi.fn(() => true) });
 
     settingsState.activeTopic = "topic-a";
     settingsState.displayMode = "timeline";
