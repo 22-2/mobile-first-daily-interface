@@ -1,5 +1,5 @@
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import builtins from "builtin-modules";
+import { builtinModules } from "module";
 import path from "path";
 import { defineConfig, type UserConfig } from "vite";
 import { obsidianCopyPlugin } from "./vite.plugins";
@@ -83,7 +83,7 @@ export default defineConfig(async ({ mode }) => {
           "@lezer/common",
           "@lezer/highlight",
           "@lezer/lr",
-          ...builtins,
+          ...builtinModules,
         ],
       },
     },
