@@ -169,16 +169,10 @@ const InputAreaControl: FC = memo(() => {
         <ObsidianIcon
           name="home"
           size="1.1em"
-          color={isViewDefault ? undefined : "var(--text-accent)"}
-          padding="4px"
-          borderRadius="4px"
-          _hover={
+          className={
             isViewDefault
-              ? { bg: "var(--background-modifier-hover)" }
-              : {
-                  color: "var(--text-normal)",
-                  bg: "var(--background-modifier-hover)",
-                }
+              ? "hover:bg-[var(--background-modifier-hover)]"
+              : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={handleClickHome}
         />
@@ -221,17 +215,7 @@ const InputAreaControl: FC = memo(() => {
         <ObsidianIcon
           name="maximize"
           size="1.1em"
-          cursor={isReadOnly ? "default" : "pointer"}
-          opacity={isReadOnly ? 0.3 : 1}
-          padding="4px"
-          borderRadius="4px"
-          _hover={
-            isReadOnly
-              ? {}
-              : {
-                  bg: "var(--background-modifier-hover)",
-                }
-          }
+          className={isReadOnly ? "cursor-default opacity-30" : "hover:bg-[var(--background-modifier-hover)]"}
           onClick={() => {
             if (isReadOnly) return;
             view.handlers.onOpenModalEditor?.();
