@@ -36,7 +36,7 @@ export class DexieTagStatsRepository implements ITagStatsRepository {
     const tags = [...new Set([...removed.keys(), ...added.keys()])];
     if (tags.length === 0) return;
 
-    const existingRows = await this.db.tagStats.bulkGet(tags as any);
+    const existingRows = await this.db.tagStats.bulkGet(tags);
     const updatedAt = new Date().toISOString();
 
     const toPut: { tag: string; count: number; updatedAt: string }[] = [];
@@ -44,7 +44,7 @@ export class DexieTagStatsRepository implements ITagStatsRepository {
 
     for (let i = 0; i < tags.length; i++) {
       const tag = tags[i];
-      const existingCount = (existingRows[i] as any)?.count ?? 0;
+      const existingCount = (existingRows[i]?.count ?? 0);
       const newCount =
         existingCount - (removed.get(tag) ?? 0) + (added.get(tag) ?? 0);
 

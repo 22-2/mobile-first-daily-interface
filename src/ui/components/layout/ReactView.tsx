@@ -80,7 +80,7 @@ export const ReactView = ({
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { settings, storage, shell } = useAppContext();
-  const component = useObsidianComponent();
+  const component = useObsidianComponent() as MFDIView;
   const store = useCurrentAppStore();
   const { viewNoteMode, fixedNotePath } = useAppStore(
     useShallow((s) => ({
@@ -161,7 +161,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     if (!("getState" in component)) return;
 
-    const viewState = (component as any).getState();
+    const viewState = component.getState();
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
       fixedNotePath: viewState.fixedNotePath,
@@ -263,16 +263,16 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ]);
 
   // Sync state/handlers with Obsidian View
-  useViewSync("handlers" in component ? (component as any) : null);
+  useViewSync("handlers" in component ? component : null);
 
   // Handle focus requested from View
   useEffect(() => {
     if (!("handlers" in component)) return;
-    (component as any).handlers.onFocusRequested = () => {
+    component.handlers.onFocusRequested = () => {
       inputRef.current?.focus();
     };
     return () => {
-      (component as any).handlers.onFocusRequested = undefined;
+      component.handlers.onFocusRequested = undefined;
     };
   }, [component, inputRef]);
 
@@ -289,7 +289,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ReactViewContent = () => {
-  const component = useObsidianComponent();
+  const component = useObsidianComponent() as MFDIView;
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
@@ -346,7 +346,7 @@ const ReactViewContent = () => {
 
   useEffect(() => {
     if (!("handlers" in component)) return;
-    (component as any).handlers.onCopyAllPosts = () => {
+    component.handlers.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =
         settings.threadFocusRootId && settings.displayMode === "focus"
@@ -358,7 +358,7 @@ const ReactViewContent = () => {
       navigator.clipboard.writeText(text);
     };
     return () => {
-      (component as any).handlers.onCopyAllPosts = undefined;
+      component.handlers.onCopyAllPosts = undefined;
     };
   }, [
     component,

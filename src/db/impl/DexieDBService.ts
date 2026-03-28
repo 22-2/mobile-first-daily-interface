@@ -99,7 +99,7 @@ export class DexieDBService implements IDBService {
 
   async getMeta(key: string): Promise<string | undefined> {
     if (!this.db) throw new Error("DB not initialized");
-    const rec = await this.db.meta.get(key as any);
+    const rec = await this.db.meta.get(key);
     return rec ? (rec.value as string) : undefined;
   }
 

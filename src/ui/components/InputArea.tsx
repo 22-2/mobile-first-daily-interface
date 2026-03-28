@@ -23,6 +23,7 @@ import {
 } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import type { MFDIView } from "../view/MFDIView";
 
 const NavButton: FC<{
   direction: "left" | "right";
@@ -66,7 +67,7 @@ const DisplayModeIndicator: FC<{
 });
 
 const InputAreaControl: FC = memo(() => {
-  const component = useObsidianComponent();
+  const component = useObsidianComponent() as MFDIView;
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
@@ -227,7 +228,7 @@ const InputAreaControl: FC = memo(() => {
           }
           onClick={() => {
             if (isReadOnly || !("handlers" in component)) return;
-            (component as any).handlers.onOpenModalEditor?.();
+            (component).handlers.onOpenModalEditor?.();
           }}
         />
       </Box>
@@ -322,7 +323,7 @@ const InputAreaFooter: FC = memo(() => {
 });
 
 export const InputArea: FC = memo(() => {
-  const component = useObsidianComponent();
+  const component = useObsidianComponent() as MFDIView;
   const app = useObsidianApp();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
@@ -346,7 +347,7 @@ export const InputArea: FC = memo(() => {
 
       <ObsidianLiveEditor
         ref={inputRef}
-        leaf={"leaf" in component ? (component as any).leaf : undefined}
+        leaf={component.leaf}
         app={app}
         initialValue={inputSnapshot}
         onChange={syncInputSession}

@@ -90,9 +90,8 @@ export async function toScannableNote(
 }
 
 export function generateBatchId(): string {
-  return typeof crypto !== "undefined" &&
-    typeof (crypto as any).randomUUID === "function"
-    ? (crypto as any).randomUUID()
+  return crypto.randomUUID
+    ? crypto.randomUUID()
     : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 

@@ -216,7 +216,7 @@ export const createSettingsSlice: StateCreator<
 
   handleClickHome: () => {
     const now = window.moment();
-    set({ ...(DEFAULT_VIEW_STATE as any), date: now });
+    set({ ...(DEFAULT_VIEW_STATE), date: now });
     const state = get();
     persistValue(
       state,
