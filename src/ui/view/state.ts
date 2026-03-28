@@ -24,6 +24,7 @@ export interface MFDIViewState extends Record<string, unknown> {
   asTask: boolean;
   timeFilter: TimeFilter;
   dateFilter: DateFilter;
+  searchQuery: string;
   activeTopic: string;
   noteMode: MFDINoteMode;
   fixedNotePath: string | null;
@@ -35,6 +36,7 @@ export const DEFAULT_MFDI_VIEW_STATE: MFDIViewState = {
   asTask: false,
   timeFilter: "all",
   dateFilter: "today",
+  searchQuery: "",
   activeTopic: "",
   noteMode: "periodic",
   fixedNotePath: null,

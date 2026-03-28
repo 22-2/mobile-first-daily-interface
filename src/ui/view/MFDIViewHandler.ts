@@ -11,6 +11,7 @@ export interface MFDIViewHandler {
   onChangeAsTask?: (asTask: boolean) => void;
   onChangeTimeFilter?: (f: TimeFilter) => void;
   onChangeDateFilter?: (f: DateFilter) => void;
+  onSearchQueryChange?: (query: string) => void;
   onChangeDisplayMode?: (mode: DisplayMode) => void;
   onOpenModalEditor?: () => void;
   onSubmit?: () => Promise<void>;

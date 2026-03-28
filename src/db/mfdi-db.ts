@@ -71,22 +71,29 @@ export class MFDIDatabase extends Dexie {
   async getLatestVisibleMemos(
     topicId?: string,
     limit = 300,
+    query?: string,
   ): Promise<MemoRecord[]> {
+    let collection;
     if (topicId) {
-      return await this.memos
+      collection = this.memos
         .where("[topicId+archived+deleted+createdAt]")
         .between([topicId, 0, 0, ""], [topicId, 0, 0, "\uffff"])
-        .reverse()
-        .limit(limit)
-        .toArray();
+        .reverse();
+    } else {
+      collection = this.memos
+        .where("[archived+deleted+createdAt]")
+        .between([0, 0, ""], [0, 0, "\uffff"])
+        .reverse();
     }
 
-    return await this.memos
-      .where("[archived+deleted+createdAt]")
-      .between([0, 0, ""], [0, 0, "\uffff"])
-      .reverse()
-      .limit(limit)
-      .toArray();
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      collection = collection.filter((m) =>
+        m.content.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    return await collection.limit(limit).toArray();
   }
 
   /**
@@ -114,12 +121,13 @@ export class MFDIDatabase extends Dexie {
     startDate: string;
     endDate: string;
     limit?: number;
+    query?: string;
   }): Promise<MemoRecord[]> {
-    const { topicId, startDate, endDate, limit } = params;
-    let query;
+    const { topicId, startDate, endDate, limit, query: searchQuery } = params;
+    let collection;
 
     if (topicId) {
-      query = this.memos
+      collection = this.memos
         .where("[topicId+archived+deleted+createdAt]")
         .between(
           [topicId, 0, 0, startDate],
@@ -128,17 +136,24 @@ export class MFDIDatabase extends Dexie {
           true,
         );
     } else {
-      query = this.memos
+      collection = this.memos
         .where("[archived+deleted+createdAt]")
         .between([0, 0, startDate], [0, 0, endDate], true, true);
     }
 
-    if (limit) {
-      query = query.reverse().limit(limit);
-    } else {
-      query = query.reverse();
+    collection = collection.reverse();
+
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      collection = collection.filter((m) =>
+        m.content.toLowerCase().includes(lowerQuery),
+      );
     }
 
-    return await query.toArray();
+    if (limit) {
+      collection = collection.limit(limit);
+    }
+
+    return await collection.toArray();
   }
 }

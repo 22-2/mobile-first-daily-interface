@@ -179,8 +179,10 @@ export class MFDIView extends ItemView {
       }
 
       const searchSetting = new Setting(createDiv()).addSearch((search) => {
+        search.setValue(this.state.searchQuery);
         search.onChange((value) => {
-          // this.handlers.onSearchQueryChange?.(value);
+          this.state.searchQuery = value;
+          this.handlers.onSearchQueryChange?.(value);
         });
 
         search.inputEl.addEventListener("blur", () => {

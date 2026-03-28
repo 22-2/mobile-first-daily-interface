@@ -48,6 +48,7 @@ export interface SettingsSlice {
   sidebarOpen: boolean;
   displayMode: DisplayMode;
   asTask: boolean;
+  searchQuery: string;
   threadFocusRootId: string | null;
   setActiveTopic: (topicId: string) => void;
   setActiveTag: (tag: string | null) => void;
@@ -55,6 +56,7 @@ export interface SettingsSlice {
   setDate: (d: MomentLike) => void;
   setTimeFilter: (f: TimeFilter) => void;
   setDateFilter: (f: DateFilter) => void;
+  setSearchQuery: (q: string) => void;
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;

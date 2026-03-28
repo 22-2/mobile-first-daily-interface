@@ -11,8 +11,9 @@ export class DexieMemoRepository implements IMemoRepository {
   async getLatestVisibleMemos(
     topicId?: string,
     limit = 300,
+    query?: string,
   ): Promise<MemoRecord[]> {
-    return await this.db.getLatestVisibleMemos(topicId, limit);
+    return await this.db.getLatestVisibleMemos(topicId, limit, query);
   }
 
   async countVisibleMemos(topicId?: string): Promise<number> {
@@ -24,6 +25,7 @@ export class DexieMemoRepository implements IMemoRepository {
     startDate: string;
     endDate: string;
     limit?: number;
+    query?: string;
   }): Promise<MemoRecord[]> {
     return await this.db.getVisibleMemosByDateRange(params);
   }

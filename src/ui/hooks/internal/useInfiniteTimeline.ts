@@ -21,11 +21,12 @@ export const useInfiniteTimeline = () => {
   const dbService = useMFDIDB();
   const queryClient = useQueryClient();
 
-  const { activeTopic, displayMode, date } = useSettingsStore(
+  const { activeTopic, displayMode, date, searchQuery } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       displayMode: s.displayMode,
       date: s.date,
+      searchQuery: s.searchQuery,
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
@@ -79,6 +80,7 @@ export const useInfiniteTimeline = () => {
       activeTopic,
       displayMode,
       timelineDayKey,
+      searchQuery,
     ],
     enabled: shouldFetchDb,
     initialPageParam: null,
@@ -96,6 +98,7 @@ export const useInfiniteTimeline = () => {
         topicId: activeTopic,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
+        query: searchQuery,
       });
 
       const posts = records.map(memoRecordToPost);
@@ -109,6 +112,7 @@ export const useInfiniteTimeline = () => {
         startDate: "0000-01-01T00:00:00.000Z",
         endDate: startDate.clone().subtract(1, "ms").toISOString(),
         limit: 1,
+        query: searchQuery,
       });
 
       const result: TimelinePostsPage = {

@@ -107,6 +107,7 @@ function resolveInitialSettingsState(
         DISPLAY_MODE.TIMELINE,
       ) ?? (DISPLAY_MODE.TIMELINE as DisplayMode),
     asTask: storage?.get<boolean>(STORAGE_KEYS.AS_TASK, false) ?? false,
+    searchQuery: "",
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
       null,
@@ -128,6 +129,7 @@ export const createSettingsSlice: StateCreator<
   sidebarOpen: true,
   displayMode: DISPLAY_MODE.TIMELINE as DisplayMode,
   asTask: false,
+  searchQuery: "",
   threadFocusRootId: null,
 
   setActiveTopic: (activeTopic) => {
@@ -177,6 +179,10 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.DATE_FILTER, dateFilter);
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+  },
+
+  setSearchQuery: (searchQuery) => {
+    set({ searchQuery });
   },
 
   setSidebarOpen: (sidebarOpen) => {

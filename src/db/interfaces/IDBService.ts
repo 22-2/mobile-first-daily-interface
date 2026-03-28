@@ -43,6 +43,7 @@ export interface IDBService {
     topicId?: string;
     startDate?: string;
     endDate?: string;
+    query?: string;
     limit?: number;
   }): Promise<MemoRecord[]>;
 
