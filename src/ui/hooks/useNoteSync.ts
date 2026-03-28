@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
-import { useCallback, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
@@ -55,9 +55,15 @@ export function useNoteSync() {
     })),
   );
 
-  const refreshPosts = useCallback(
-    createRefreshPosts({
-      vault: shell!.getVault(),
+  const refreshPostsRef = useRef<((path?: string) => Promise<void>) | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!shell) return;
+    // 初期化時に vault が確実に存在する場合のみ createRefreshPosts を生成する
+    refreshPostsRef.current = createRefreshPosts({
+      vault: shell.getVault(),
       queryClient,
       dateFilter,
       activeTopic,
@@ -67,21 +73,7 @@ export function useNoteSync() {
       updatePostsForWeek: store.getState().updatePostsForWeek,
       updatePostsForDays: store.getState().updatePostsForDays,
       replacePaths: store.getState().replacePaths,
-    }),
-    [
-      shell,
-      store,
-      queryClient,
-      dateFilter,
-      activeTopic,
-      date,
-      displayMode,
-      updatePosts,
-    ],
-  );
-
-  useEffect(() => {
-    if (!shell) return;
+    });
     const isMultiDayOrTimeline =
       dateFilter !== "today" || isTimelineView(displayMode);
     const noteSource = resolveNoteSource({
@@ -96,7 +88,7 @@ export function useNoteSync() {
     const handleChanged = async (file: TFile) => {
       if (noteSource.mode === "periodic" && isMultiDayOrTimeline) {
         if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
-          await refreshPosts(file.path);
+          await refreshPostsRef.current?.(file.path);
         }
         return;
       }
@@ -117,7 +109,7 @@ export function useNoteSync() {
       }
 
       if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
-        await refreshPosts(file.path);
+        await refreshPostsRef.current?.(file.path);
       }
 
       if (file.path !== currentDailyNote?.path) return;
@@ -136,6 +128,7 @@ export function useNoteSync() {
       shell.getMetadataCache().offref(changedRef);
       shell.getVault().offref(deleteRef);
       shell.getVault().offref(createRef);
+      refreshPostsRef.current = null;
     };
   }, [
     shell,
@@ -153,7 +146,7 @@ export function useNoteSync() {
     setPosts,
     updatePosts,
     updateTasks,
-    refreshPosts,
+    // refreshPosts を外部に置かないので dependency からは除外
     store,
   ]);
 }

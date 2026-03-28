@@ -12,7 +12,6 @@ interface AppContextValue {
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
-const ObsidianAppContext = createContext<App | null>(null);
 
 export function useAppContext(): AppContextValue {
   const ctx = useContext(AppContext);
@@ -20,14 +19,6 @@ export function useAppContext(): AppContextValue {
     throw new Error("useAppContext must be used within AppContextProvider");
   }
   return ctx;
-}
-
-export function useObsidianApp(): App {
-  const app = useContext(ObsidianAppContext);
-  if (!app) {
-    throw new Error("useObsidianApp must be used within AppContextProvider");
-  }
-  return app;
 }
 
 interface AppContextProviderProps {
@@ -50,8 +41,6 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({
   );
 
   return (
-    <ObsidianAppContext.Provider value={app}>
-      <AppContext.Provider value={value}>{children}</AppContext.Provider>
-    </ObsidianAppContext.Provider>
+    <AppContext.Provider value={value}>{children}</AppContext.Provider>
   );
 };

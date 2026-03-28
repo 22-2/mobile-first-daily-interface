@@ -1,7 +1,7 @@
 import { MarkdownRenderer } from "obsidian";
 import { useEffect, useRef } from "react";
 import { Box } from "src/ui/components/primitives";
-import { useObsidianApp } from "src/ui/context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const ObsidianMarkdown: React.FC<Props> = ({ content, sourcePath }) => {
-  const app = useObsidianApp();
+  const { shell } = useAppContext();
   const rootRef = useRef<HTMLDivElement>(null);
   const component = useObsidianComponent();
 
@@ -20,13 +20,13 @@ export const ObsidianMarkdown: React.FC<Props> = ({ content, sourcePath }) => {
     rootRef.current.empty();
 
     MarkdownRenderer.render(
-      app,
+      shell.getRawApp(),
       content,
       rootRef.current,
       sourcePath ?? "",
       component,
     ).catch((e) => console.error("Failed to render markdown", e));
-  }, [content, sourcePath, app, component]);
+  }, [content, sourcePath, shell, component]);
 
   return <Box ref={rootRef} className="markdown-rendered block" />;
 };

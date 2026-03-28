@@ -9,7 +9,7 @@ import {
   READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { useObsidianApp } from "src/ui/context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
@@ -324,7 +324,7 @@ const InputAreaFooter: FC = memo(() => {
 
 export const InputArea: FC = memo(() => {
   const component = useObsidianComponent() as MFDIView;
-  const app = useObsidianApp();
+  const { shell } = useAppContext();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
       inputSnapshot: s.inputSnapshot,
@@ -348,7 +348,7 @@ export const InputArea: FC = memo(() => {
       <ObsidianLiveEditor
         ref={inputRef}
         leaf={component.leaf}
-        app={app}
+        app={shell.getRawApp()}
         initialValue={inputSnapshot}
         onChange={syncInputSession}
         onSubmit={handleSubmit}
