@@ -20,6 +20,10 @@ export const STORAGE_KEYS = {
   EDITING_POST_GRANULARITY: "editingPostGranularity",
   EDITING_POST_OFFSET: "editingPostOffset",
   EDITING_POST_DATE: "editingPostDate",
+  EDITING_POST_ID: "editingPostId",
+  EDITING_POST_PATH: "editingPostPath",
+  EDITING_POST_TIMESTAMP: "editingPostTimestamp",
+  EDITING_POST_METADATA: "editingPostMetadata",
   THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
 } as const;
 

@@ -130,6 +130,7 @@ export interface EditorSlice {
   clearInput: () => void;
   getInputValue: () => string;
   setEditingPostOffset: (offset: number | null) => void;
+  setEditingPost: (post: Post | null) => void;
   setInputRef: (ref: RefObject<ObsidianLiveEditorRef | null>) => void;
   setScrollContainerRef: (ref: RefObject<HTMLDivElement | null>) => void;
   startEdit: (post: Post) => void;

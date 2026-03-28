@@ -97,6 +97,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       get().storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, editingPostOffset);
     },
 
+    setEditingPost: (post) => {
+      set({ editingPost: post, editingPostOffset: post?.startOffset ?? null });
+    },
+
     setInputRef: (inputRef) => {
       set({ inputRef });
     },
@@ -112,6 +116,12 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, post.startOffset);
       storage?.set(STORAGE_KEYS.EDITING_POST_DATE, date.toISOString());
       storage?.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
+
+      storage?.set(STORAGE_KEYS.EDITING_POST_ID, post.id);
+      storage?.set(STORAGE_KEYS.EDITING_POST_PATH, post.path);
+      storage?.set(STORAGE_KEYS.EDITING_POST_TIMESTAMP, post.timestamp.toISOString());
+      storage?.set(STORAGE_KEYS.EDITING_POST_METADATA, JSON.stringify(post.metadata));
+
       replaceInput(post.message);
 
       setTimeout(() => {
@@ -125,6 +135,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       storage?.remove(STORAGE_KEYS.EDITING_POST_OFFSET);
       storage?.remove(STORAGE_KEYS.EDITING_POST_DATE);
       storage?.remove(STORAGE_KEYS.EDITING_POST_GRANULARITY);
+      storage?.remove(STORAGE_KEYS.EDITING_POST_ID);
+      storage?.remove(STORAGE_KEYS.EDITING_POST_PATH);
+      storage?.remove(STORAGE_KEYS.EDITING_POST_TIMESTAMP);
+      storage?.remove(STORAGE_KEYS.EDITING_POST_METADATA);
       clearInput();
     },
 
@@ -167,10 +181,35 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
         null,
       );
 
+      const id = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_ID, null);
+      const path = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_PATH, null);
+      const timestampStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_TIMESTAMP, null);
+      const metadataStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_METADATA, null);
+      const noteDateStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_DATE, null);
+
+      let reconstructedPost = null;
+      if (id && path && timestampStr && metadataStr && noteDateStr && persistedEditingOffset !== null) {
+        reconstructedPost = {
+          id,
+          path,
+          timestamp: window.moment(timestampStr),
+          noteDate: window.moment(noteDateStr),
+          metadata: JSON.parse(metadataStr),
+          message: persistedInput,
+          startOffset: persistedEditingOffset,
+          endOffset: persistedEditingOffset + persistedInput.length, // approximation
+          offset: persistedEditingOffset,
+          bodyStartOffset: persistedEditingOffset, // approximation
+          kind: "thino" as const,
+          threadRootId: null, // will be resolved if needed
+        };
+      }
+
       set((state) => ({
         inputSnapshot:
           state.inputSnapshot.length > 0 ? state.inputSnapshot : persistedInput,
         editingPostOffset: state.editingPostOffset ?? persistedEditingOffset,
+        editingPost: state.editingPost ?? reconstructedPost,
       }));
 
       // ストレージから復元した内容でセッションを同期する。これもないと、reactのstateは復元されるが、live editorの内容が復元されないため、両方を更新する必要がある
