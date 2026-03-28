@@ -100,7 +100,7 @@ function resolveInitialSettingsState(
         STORAGE_KEYS.DATE_FILTER,
         DATE_FILTER_IDS.TODAY,
       ) ?? DATE_FILTER_IDS.TODAY,
-    sidebarOpen: storage?.get<boolean>(STORAGE_KEYS.SIDEBAR_OPEN, true) ?? true,
+    sidebarOpen: storage?.get<boolean>(STORAGE_KEYS.SIDEBAR_OPEN, false) ?? false,
     displayMode:
       storage?.get<DisplayMode>(
         STORAGE_KEYS.DISPLAY_MODE,
@@ -126,7 +126,8 @@ export const createSettingsSlice: StateCreator<
   date: window.moment(),
   timeFilter: TIME_FILTER_IDS.ALL,
   dateFilter: DATE_FILTER_IDS.TODAY,
-  sidebarOpen: true,
+  // 初回描画でチラつきを防ぐため、初期は閉じておく
+  sidebarOpen: false,
   displayMode: DISPLAY_MODE.TIMELINE as DisplayMode,
   asTask: false,
   searchQuery: "",
