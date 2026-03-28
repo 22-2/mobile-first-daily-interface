@@ -121,6 +121,7 @@ export interface NoteSlice {
 
 export interface EditorSlice {
   inputSnapshot: string;
+  editingPost: Post | null;
   editingPostOffset: number | null;
   inputRef: RefObject<ObsidianLiveEditorRef | null>;
   scrollContainerRef: RefObject<HTMLDivElement | null>;

@@ -30,7 +30,7 @@ export const useInfiniteTimeline = () => {
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
   // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const shouldFetchDb = isTimelineView(displayMode) && activeDocument.hasFocus();
+  const shouldFetchDb = isTimelineView(displayMode);
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
