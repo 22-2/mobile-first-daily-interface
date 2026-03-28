@@ -156,7 +156,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const { storage } = get();
+      const { storage, syncInputSession } = get();
       if (!storage) return;
 
       const persistedInput = storage.get<string>(STORAGE_KEYS.INPUT, "");
@@ -170,6 +170,9 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
           state.inputSnapshot.length > 0 ? state.inputSnapshot : persistedInput,
         editingPostOffset: state.editingPostOffset ?? persistedEditingOffset,
       }));
+
+      // ストレージから復元した内容でセッションを同期する。これもないと、reactのstateは復元されるが、live editorの内容が復元されないため、両方を更新する必要がある
+      setTimeout(() => syncInputSession(persistedInput))
     },
   };
 };
