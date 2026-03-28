@@ -7,11 +7,8 @@ import type { Settings } from "src/settings";
 import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
-import "src/ui/styles/draft.css";
 import "src/ui/styles/global.css";
-import "src/ui/styles/input.css";
 import "src/ui/styles/mfdi.css";
-import "src/ui/styles/modal.css";
 import type { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 import type { MFDIViewState } from "src/ui/view/state";
 import {
@@ -19,7 +16,6 @@ import {
   getFixedNoteTitle,
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
-import "src/ui/styles/editor.css"
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
