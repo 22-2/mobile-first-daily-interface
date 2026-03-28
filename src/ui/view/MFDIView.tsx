@@ -12,7 +12,7 @@ import "src/ui/styles/global.css";
 import "src/ui/styles/input.css";
 import "src/ui/styles/mfdi.css";
 import "src/ui/styles/modal.css";
-import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import type { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 import type { MFDIViewState } from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,

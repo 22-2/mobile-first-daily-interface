@@ -25,6 +25,7 @@ import {
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
+  useAppStore,
   useCurrentAppStore,
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
@@ -184,7 +185,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         threadFocusRootId: null,
       });
     }
-  }, [store, view, viewState.noteMode, viewState.fixedNotePath]);
+  }, [store, component, viewNoteMode, fixedNotePath]);
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);

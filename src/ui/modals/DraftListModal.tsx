@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { Modal } from "obsidian";
+import { Component, Modal } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { DraftListManager } from "src/ui/components/DraftListManager";
@@ -26,7 +26,7 @@ export class DraftListModal extends Modal {
         app={this.app}
         settings={this.store.getState().pluginSettings!}
       >
-        <ComponentContextProvider component={this}>
+        <ComponentContextProvider component={this as unknown as Component}>
           <AppStoreProvider store={this.store}>
             <DraftListManager onClose={() => this.close()} />
           </AppStoreProvider>
