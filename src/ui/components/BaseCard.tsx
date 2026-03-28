@@ -34,19 +34,21 @@ export const BaseCard: React.FC<BaseCardProps> = ({
 
   return (
     <Flex
-      className={`flex flex-col max-h-[50vh] p-[var(--size-4-2)] ${dimClass}`}
+      className={`base-card flex flex-col max-h-[50vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass}`}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
-      <Box className="p-[var(--size-4-2)] pt-[var(--size-4-1)] overflow-y-auto flex-1 mfdi-scroll-area">
+      <Box className="overflow-y-auto flex-1 mfdi-scroll-area">
         {children}
       </Box>
 
       {/* Footer */}
-      <HStack className="text-[var(--text-muted)] text-[80%] pt-0 items-center gap-[var(--size-2-3)]">
+      <HStack className="footer px-[var(--size-4-1)] text-[var(--text-muted)] text-[80%] pt-0 items-center gap-[var(--size-2-3)]">
         {footerAddon}
+
         <Spacer />
-        <HStack className="gap-[var(--size-2-1)]">
+
+        <HStack className="tag-list gap-[var(--size-2-1)]">
           {footerRightAddon}
           <Tag className="text-xs px-2 py-0.5 rounded-full bg-[var(--tag-bg)] text-[var(--tag-fg)]">
             {/* fixedノートは複数日が混在しうるので、時刻だけだと投稿の文脈を失う。 */}
