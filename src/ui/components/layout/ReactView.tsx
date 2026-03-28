@@ -131,8 +131,6 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePostsForWeek,
     updatePostsForDays,
     updatePostsFromDB,
-    updateTasks,
-    updatePosts,
   } = usePostsStore(
     useShallow((state) => ({
       posts: state.posts,
@@ -328,6 +326,7 @@ const ReactViewContent = () => {
       timeFilter: s.timeFilter,
       displayMode: s.displayMode,
       threadFocusRootId: s.threadFocusRootId,
+      searchQuery: s.searchQuery,
     })),
   );
 
@@ -482,6 +481,7 @@ function useViewSync(view: MFDIView | null) {
     displayMode,
     isReadOnly,
     sidebarOpen,
+    searchQuery,
     setGranularity,
     setTimeFilter,
     setDateFilter,
@@ -489,6 +489,7 @@ function useViewSync(view: MFDIView | null) {
     setAsTask,
     setDisplayMode,
     setSidebarOpen,
+    setSearchQuery,
   } = useSettingsStore(
     useShallow((state) => ({
       granularity: state.granularity,
