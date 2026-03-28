@@ -6,7 +6,7 @@ import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
+import { isVisible } from "src/ui/utils/post-metadata";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle } from "src/ui/view/state";
@@ -56,9 +56,7 @@ export const ResultCount: FC = () => {
     if (isTimelineView(displayMode) && typeof dbTotalCount === "number") {
       return dbTotalCount;
     }
-    const visiblePosts = posts.filter(
-      (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
-    );
+    const visiblePosts = posts.filter((p) => isVisible(p.metadata));
     return countVisibleRootPosts(visiblePosts);
   }, [posts, displayMode, dbTotalCount]);
 
@@ -72,9 +70,7 @@ export const ResultCount: FC = () => {
   const currentCount = asTask
     ? tasks.length
     : isTimelineView(displayMode)
-    ? countVisibleRootPosts(
-        allPosts.filter((p) => !isArchived(p.metadata) && !isDeleted(p.metadata)),
-      )
+    ? countVisibleRootPosts(allPosts.filter((p) => isVisible(p.metadata)))
     : filteredPosts.length;
 
   // 固定ノートを表示中の場合は「N posts in <ノート名>」形式

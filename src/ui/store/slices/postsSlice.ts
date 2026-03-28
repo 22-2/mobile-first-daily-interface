@@ -5,7 +5,7 @@ import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import type { MFDIStore, PostsSlice } from "src/ui/store/slices/types";
 import type { MomentLike, Post } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
-import { isArchived, isDeleted } from "src/ui/utils/post-metadata";
+import { isVisible } from "src/ui/utils/post-metadata";
 import {
   buildPostFromEntry,
   memoRecordToPost,
@@ -126,9 +126,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       displayMode,
       viewNoteMode,
     } = get();
-    const visiblePosts = posts.filter(
-      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
-    );
+    const visiblePosts = posts.filter((post) => isVisible(post.metadata));
 
     if (viewNoteMode === "fixed") {
       return filterPostsByRelativeWindow(visiblePosts, {

@@ -7,7 +7,7 @@ import type {
   TimeFilter,
 } from "src/ui/types";
 import { filterPostsByRelativeWindow } from "src/ui/utils/post-filters";
-import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
+import { getPostTags, isVisible } from "src/ui/utils/post-metadata";
 import {
   getThreadPosts,
   isVisibleRootPost,
@@ -42,9 +42,7 @@ export const useFilteredPosts = ({
   includeThreadReplies = false,
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
-    const postsWithoutHidden = posts.filter(
-      (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
-    );
+    const postsWithoutHidden = posts.filter((p) => isVisible(p.metadata));
     const effectiveActiveTag = viewNoteMode === "fixed" ? null : activeTag;
     const postsMatchingTag =
       effectiveActiveTag == null
