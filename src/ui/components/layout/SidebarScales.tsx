@@ -14,7 +14,7 @@ import {
   VStack,
 } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
@@ -26,7 +26,7 @@ interface Counts {
 export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
   viewedDate,
 }) => {
-  const { shell } = useAppContext();
+  const shell = useAppStore((s) => s.shell);
   const {
     date,
     setDate,
@@ -66,6 +66,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
 
   const getCountsForPeriod = useCallback(
     async (d: moment.Moment, g: "week" | "month" | "year") => {
+      if (!shell) return { posts: 0, tasks: 0 };
       const note = resolvePeriodicNote(shell, d, g, activeTopic);
       if (!note) return { posts: 0, tasks: 0 };
 

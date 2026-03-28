@@ -2,9 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useCallback, useEffect } from "react";
 import { resolveNoteSource } from "src/core/note-source";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
-import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -15,7 +14,7 @@ import { useShallow } from "zustand/shallow";
  * ファイルの変更・削除イベントを監視し、ノートの内容をReactの状態と自動同期するHook。
  */
 export function useNoteSync() {
-  const { shell } = useAppContext();
+  const shell = useAppStore((s) => s.shell);
   const store = useCurrentAppStore();
   const queryClient = useQueryClient();
 
@@ -58,7 +57,7 @@ export function useNoteSync() {
 
   const refreshPosts = useCallback(
     createRefreshPosts({
-      vault: shell.getVault(),
+      vault: shell!.getVault(),
       queryClient,
       dateFilter,
       activeTopic,
@@ -82,6 +81,7 @@ export function useNoteSync() {
   );
 
   useEffect(() => {
+    if (!shell) return;
     const isMultiDayOrTimeline =
       dateFilter !== "today" || isTimelineView(displayMode);
     const noteSource = resolveNoteSource({

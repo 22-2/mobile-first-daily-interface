@@ -29,7 +29,7 @@ export class MFDIView extends ItemView {
   private settings: Settings;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
-  public readonly handlers = new MFDIViewHandler();
+  public readonly handlers: MFDIViewHandler = {};
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);

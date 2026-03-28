@@ -9,7 +9,8 @@ import {
   READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
+import { useObsidianApp } from "src/ui/context/AppContext";
+import { useObsidianComponent } from "src/ui/context/ComponentContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
@@ -65,11 +66,15 @@ const DisplayModeIndicator: FC<{
 });
 
 const InputAreaControl: FC = memo(() => {
-  const { view } = useAppContext();
-  const viewState = view.getState();
+  const component = useObsidianComponent();
+  const { viewNoteMode } = useAppStore(
+    useShallow((s) => ({
+      viewNoteMode: s.viewNoteMode,
+    })),
+  );
   const capabilities = useMemo(
-    () => getMFDIViewCapabilities(viewState),
-    [view, viewState.noteMode],
+    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+    [viewNoteMode],
   );
   const {
     date,
@@ -216,13 +221,13 @@ const InputAreaControl: FC = memo(() => {
           name="maximize"
           size="1.1em"
           className={
-            isReadOnly
+            isReadOnly || !("handlers" in component)
               ? "cursor-default opacity-30"
               : "hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={() => {
-            if (isReadOnly) return;
-            view.handlers.onOpenModalEditor?.();
+            if (isReadOnly || !("handlers" in component)) return;
+            (component as any).handlers.onOpenModalEditor?.();
           }}
         />
       </Box>
@@ -317,7 +322,7 @@ const InputAreaFooter: FC = memo(() => {
 });
 
 export const InputArea: FC = memo(() => {
-  const { view } = useAppContext();
+  const component = useObsidianComponent();
   const app = useObsidianApp();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
@@ -341,7 +346,7 @@ export const InputArea: FC = memo(() => {
 
       <ObsidianLiveEditor
         ref={inputRef}
-        leaf={view.leaf}
+        leaf={"leaf" in component ? (component as any).leaf : undefined}
         app={app}
         initialValue={inputSnapshot}
         onChange={syncInputSession}

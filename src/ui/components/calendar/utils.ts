@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import type { Week } from "src/ui/components/calendar/types";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppStore } from "src/ui/store/appStore";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 
@@ -73,7 +73,7 @@ function calcSelectedRange(
 // カスタムフック (変更なし)
 // ─────────────────────────────────────────────
 export function useMiniCalendar() {
-  const { shell } = useAppContext();
+  const shell = useAppStore((s) => s.shell);
   const {
     date,
     setDate,
@@ -156,6 +156,7 @@ export function useMiniCalendar() {
   };
 
   const activityDates = useMemo(() => {
+    if (!shell) return new Set<string>();
     const notes = listPeriodicNotes(shell, "day", activeTopic);
     const dates = new Set<string>(dbActiveDates);
     Object.values(notes).forEach((file) => {

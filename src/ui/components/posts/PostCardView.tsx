@@ -2,7 +2,7 @@ import { setTooltip } from "obsidian";
 import React, { useEffect, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppStore } from "src/ui/store/appStore";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import type { DateFilter, Granularity, Post } from "src/ui/types";
 import { getPostTags } from "src/ui/utils/post-metadata";
@@ -42,18 +42,18 @@ export const PostCardView = React.memo(
     className?: string;
     style?: React.CSSProperties;
   }) => {
-    const { settings } = useAppContext();
+    const settings = useAppStore((s) => s.pluginSettings);
     const viewNoteMode = useSettingsStore((s) => s.viewNoteMode);
 
     const { htmlMetas, imageMetas, twitterMetas } = usePostMetadata(
       post.message,
-      settings.enabledCardView,
+      settings?.enabledCardView ?? false,
     );
 
     const isDimmed = isPastDateReadOnly({
       date: post.noteDate,
       granularity,
-      allowEditingPastNotes: settings.allowEditingPastNotes,
+      allowEditingPastNotes: settings?.allowEditingPastNotes ?? false,
     });
     const threadToggleLabel = isThreadFocused
       ? "スレッド表示を閉じる"
@@ -108,7 +108,7 @@ export const PostCardView = React.memo(
               <ObsidianMarkdown content={post.message} />
             </Box>
 
-            {settings.enabledCardView && (
+            {settings?.enabledCardView && (
               <Box className="px-1">
                 {htmlMetas.map((meta) => (
                   <HTMLCard key={meta.originUrl} meta={meta} />
