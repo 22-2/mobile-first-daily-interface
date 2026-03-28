@@ -129,8 +129,9 @@ describe("builtin registry", () => {
       dispose: vi.fn(async () => {}),
     };
     const settings = { fixedNoteFiles: [] } as any;
+    const storage = { get: vi.fn(() => null), set: vi.fn() } as any;
 
-    createTagIndexLifecycleContribution(tagIndexExtension).activate({
+    createTagIndexLifecycleContribution(tagIndexExtension, storage).activate({
       app,
       shell: {} as any,
       getSettings: () => settings,

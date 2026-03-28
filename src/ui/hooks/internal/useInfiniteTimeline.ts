@@ -81,7 +81,7 @@ export const useInfiniteTimeline = () => {
       displayMode,
       timelineDayKey,
       searchQuery,
-    ],
+    ].filter(Boolean),
     enabled: shouldFetchDb,
     initialPageParam: null,
 
