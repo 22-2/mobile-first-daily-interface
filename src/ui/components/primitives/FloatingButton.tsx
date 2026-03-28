@@ -23,7 +23,7 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
     <button
       aria-label="Scroll to top"
       className={cn(
-        "absolute right-4 bottom-4 z-20 bg-[var(--interactive-accent)] text-[var(--text-on-accent)] rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity flex items-center justify-center",
+        "absolute right-8 bottom-8 z-20 bg-[var(--interactive-accent)] text-[var(--text-on-accent)] rounded-full p-3 shadow-lg hover:opacity-90 transition-opacity flex items-center justify-center",
         className ?? "",
       )}
       onClick={onClick}
