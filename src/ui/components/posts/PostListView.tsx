@@ -48,10 +48,18 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { editingPostOffset, startEdit, scrollContainerRef } = useEditorStore(
+  const {
+    editingPostOffset,
+    editingPost,
+    startEdit,
+    setEditingPost,
+    scrollContainerRef,
+  } = useEditorStore(
     useShallow((s) => ({
       editingPostOffset: s.editingPostOffset,
+      editingPost: s.editingPost,
       startEdit: s.startEdit,
+      setEditingPost: s.setEditingPost,
       scrollContainerRef: s.scrollContainerRef,
     })),
   );
@@ -305,6 +313,18 @@ export const PostListView: React.FC = memo(() => {
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
+
+  // 編集中のポストを現在のリストから再特定する
+  // オフセットがズレている可能性があるので、IDなどで再特定して同期する
+  useEffect(() => {
+    if (editingPostOffset === null) return;
+    if (editingPost && editingPost.startOffset === editingPostOffset) return;
+
+    const realPost = posts.find((p) => p.startOffset === editingPostOffset);
+    if (realPost) {
+      setEditingPost(realPost);
+    }
+  }, [posts, editingPostOffset, editingPost, setEditingPost]);
 
   // 無限スクロールのトリガー
   useEffect(() => {

@@ -257,7 +257,7 @@ const InputAreaFooter: FC = memo(() => {
 
   const { editingPost, inputSnapshot, clearInput } = useEditorStore(
     useShallow((s) => ({
-      editingPost: s.getEditingPost(posts),
+      editingPost: s.editingPost,
       inputSnapshot: s.inputSnapshot,
       clearInput: s.clearInput,
     })),

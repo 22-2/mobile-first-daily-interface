@@ -2,15 +2,74 @@ import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
 
+// startEdit / cancelEdit で操作するストレージキーをまとめて管理
+const EDITING_POST_STORAGE_KEYS = [
+  STORAGE_KEYS.EDITING_POST_OFFSET,
+  STORAGE_KEYS.EDITING_POST_DATE,
+  STORAGE_KEYS.EDITING_POST_GRANULARITY,
+  STORAGE_KEYS.EDITING_POST_ID,
+  STORAGE_KEYS.EDITING_POST_PATH,
+  STORAGE_KEYS.EDITING_POST_TIMESTAMP,
+  STORAGE_KEYS.EDITING_POST_METADATA,
+] as const;
+
+type PersistMode = "debounced" | "immediate";
+
+type UpdateSessionInputOptions = {
+  updateEditor?: boolean;
+  syncEditorIfStale?: boolean;
+  persistMode?: PersistMode;
+};
+
+// hydrateEditorState で永続化データから editing post を復元する
+type PersistedEditingPost = {
+  id: string;
+  path: string;
+  timestampStr: string;
+  metadataStr: string;
+  noteDateStr: string;
+  offset: number;
+  message: string;
+};
+
+const reconstructEditingPost = ({
+  id,
+  path,
+  timestampStr,
+  metadataStr,
+  noteDateStr,
+  offset,
+  message,
+}: PersistedEditingPost) => ({
+  id,
+  path,
+  timestamp: window.moment(timestampStr),
+  noteDate: window.moment(noteDateStr),
+  metadata: JSON.parse(metadataStr),
+  message,
+  startOffset: offset,
+  endOffset: offset + message.length, // 近似値
+  offset,
+  bodyStartOffset: offset, // 近似値
+  kind: "thino" as const,
+  threadRootId: null, // 必要に応じて解決される
+});
+
 export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   set,
   get,
 ) => {
   let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const persistInputDebounced = (input: string) => {
+  const persistInput = (input: string, mode: PersistMode) => {
     if (inputPersistTimer !== null) {
       clearTimeout(inputPersistTimer);
+      inputPersistTimer = null;
+    }
+
+    if (mode === "immediate") {
+      get().storage?.set(STORAGE_KEYS.INPUT, input);
+      return;
     }
 
     inputPersistTimer = setTimeout(() => {
@@ -19,49 +78,34 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     }, 50);
   };
 
-  const persistInputImmediately = (input: string) => {
-    if (inputPersistTimer !== null) {
-      clearTimeout(inputPersistTimer);
-      inputPersistTimer = null;
-    }
-
-    get().storage?.set(STORAGE_KEYS.INPUT, input);
-  };
-
   const updateSessionInput = (
     input: string,
-    options?: {
-      updateEditor?: boolean;
-      syncEditorIfStale?: boolean;
-      persistMode?: "debounced" | "immediate";
-    },
+    options: UpdateSessionInputOptions = {},
   ) => {
+    const { updateEditor, syncEditorIfStale, persistMode = "debounced" } = options;
+
     set({ inputSnapshot: input });
+    persistInput(input, persistMode);
 
-    if (options?.persistMode === "immediate") {
-      persistInputImmediately(input);
-    } else {
-      persistInputDebounced(input);
-    }
-
-    // ないとEditorの内容が同期されない
+    // React の state だけでなく live editor も更新しないと内容が同期されない
     const inputRef = get().inputRef.current;
-    if (options?.updateEditor) {
+
+    if (updateEditor) {
       inputRef?.setContent(input);
       return;
     }
 
-    if (options?.syncEditorIfStale && inputRef) {
+    if (syncEditorIfStale && inputRef) {
       const editorSnapshot = inputRef.getContentSnapshot();
       if (editorSnapshot !== input) {
         inputRef.setContent(input);
       }
     }
-    // ここまでないと、reactのstateは更新されるが、live editorの内容が更新されないため、両方を更新する必要がある
   };
 
   return {
     inputSnapshot: "",
+    editingPost: null,
     editingPostOffset: null,
     inputRef: { current: null },
     scrollContainerRef: { current: null },
@@ -87,70 +131,64 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       });
     },
 
-    getInputValue: () => {
-      return get().inputSnapshot;
-    },
+    getInputValue: () => get().inputSnapshot,
 
     setEditingPostOffset: (editingPostOffset) => {
       set({ editingPostOffset });
       get().storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, editingPostOffset);
     },
 
-    setInputRef: (inputRef) => {
-      set({ inputRef });
+    setEditingPost: (post) => {
+      set({ editingPost: post, editingPostOffset: post?.startOffset ?? null });
     },
 
-    setScrollContainerRef: (scrollContainerRef) => {
-      set({ scrollContainerRef });
-    },
+    setInputRef: (inputRef) => set({ inputRef }),
+
+    setScrollContainerRef: (scrollContainerRef) => set({ scrollContainerRef }),
 
     startEdit: (post) => {
       const { date, granularity, setAsTask, replaceInput, storage } = get();
+
       setAsTask(false);
-      set({ editingPostOffset: post.startOffset });
+      set({ editingPost: post, editingPostOffset: post.startOffset });
+
       storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, post.startOffset);
       storage?.set(STORAGE_KEYS.EDITING_POST_DATE, date.toISOString());
       storage?.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
+      storage?.set(STORAGE_KEYS.EDITING_POST_ID, post.id);
+      storage?.set(STORAGE_KEYS.EDITING_POST_PATH, post.path);
+      storage?.set(STORAGE_KEYS.EDITING_POST_TIMESTAMP, post.timestamp.toISOString());
+      storage?.set(STORAGE_KEYS.EDITING_POST_METADATA, JSON.stringify(post.metadata));
+
       replaceInput(post.message);
 
-      setTimeout(() => {
-        get().inputRef.current?.focus();
-      });
+      setTimeout(() => get().inputRef.current?.focus());
     },
 
     cancelEdit: () => {
       const { storage, clearInput } = get();
-      set({ editingPostOffset: null });
-      storage?.remove(STORAGE_KEYS.EDITING_POST_OFFSET);
-      storage?.remove(STORAGE_KEYS.EDITING_POST_DATE);
-      storage?.remove(STORAGE_KEYS.EDITING_POST_GRANULARITY);
+
+      set({ editingPost: null, editingPostOffset: null });
+      EDITING_POST_STORAGE_KEYS.forEach((key) => storage?.remove(key));
       clearInput();
     },
 
     getEditingPost: (posts) => {
-      const { editingPostOffset } = get();
+      const { editingPost, editingPostOffset } = get();
+      if (editingPost) return editingPost;
       if (editingPostOffset === null) return null;
-      return (
-        posts.find((post) => post.startOffset === editingPostOffset) ?? null
-      );
+      return posts.find((post) => post.startOffset === editingPostOffset) ?? null;
     },
 
     canSubmit: (posts, currentValue) => {
-      const {
-        getInputValue,
-        granularity,
-        getEffectiveDate,
-        getEditingPost,
-        isDateReadOnly,
-      } = get();
+      const { getInputValue, granularity, getEffectiveDate, getEditingPost, isDateReadOnly } = get();
       const input = currentValue ?? getInputValue();
       const effectiveDate = getEffectiveDate();
+
       if (isDateReadOnly(effectiveDate, granularity)) return false;
 
       const editingPost = getEditingPost(posts);
-      if (!editingPost) {
-        return input.trim().length > 0;
-      }
+      if (!editingPost) return input.trim().length > 0;
 
       return input !== editingPost.message;
     },
@@ -165,13 +203,35 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
         null,
       );
 
+      const id = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_ID, null);
+      const path = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_PATH, null);
+      const timestampStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_TIMESTAMP, null);
+      const metadataStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_METADATA, null);
+      const noteDateStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_DATE, null);
+
+      const canReconstruct =
+        id && path && timestampStr && metadataStr && noteDateStr &&
+        persistedEditingOffset !== null;
+
+      const reconstructedPost = canReconstruct
+        ? reconstructEditingPost({
+            id,
+            path,
+            timestampStr,
+            metadataStr,
+            noteDateStr,
+            offset: persistedEditingOffset,
+            message: persistedInput,
+          })
+        : null;
+
       set((state) => ({
-        inputSnapshot:
-          state.inputSnapshot.length > 0 ? state.inputSnapshot : persistedInput,
+        inputSnapshot: state.inputSnapshot || persistedInput,
         editingPostOffset: state.editingPostOffset ?? persistedEditingOffset,
+        editingPost: state.editingPost ?? reconstructedPost,
       }));
 
-      // ストレージから復元した内容でセッションを同期する。これもないと、reactのstateは復元されるが、live editorの内容が復元されないため、両方を更新する必要がある
+      // ストレージから復元した内容で live editor も同期する
       setTimeout(() => syncInputSession(persistedInput));
     },
   };

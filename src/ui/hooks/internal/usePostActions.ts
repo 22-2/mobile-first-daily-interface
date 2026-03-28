@@ -70,7 +70,7 @@ export const usePostActions = () => {
       clearInput: s.clearInput,
       inputRef: s.inputRef,
       scrollContainerRef: s.scrollContainerRef,
-      editingPost: s.getEditingPost(postsState.posts),
+      editingPost: s.editingPost,
       canSubmit: s.canSubmit(postsState.posts),
       cancelEdit: s.cancelEdit,
     })),
@@ -335,7 +335,7 @@ export const usePostActions = () => {
     const currentInput = editorState.getInputValue();
 
     // --- 編集中の投稿を上書き ---
-    if (editorState.editingPost?.path) {
+    if (editorState.editingPost) {
       const latestEditingPost = await findLatestPost(editorState.editingPost);
       if (!latestEditingPost) {
         new Notice("編集中の投稿を再特定できませんでした");
