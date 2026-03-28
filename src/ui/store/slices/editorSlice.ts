@@ -62,6 +62,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
   return {
     inputSnapshot: "",
+    editingPost: null,
     editingPostOffset: null,
     inputRef: { current: null },
     scrollContainerRef: { current: null },
@@ -107,7 +108,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     startEdit: (post) => {
       const { date, granularity, setAsTask, replaceInput, storage } = get();
       setAsTask(false);
-      set({ editingPostOffset: post.startOffset });
+      set({ editingPost: post, editingPostOffset: post.startOffset });
       storage?.set(STORAGE_KEYS.EDITING_POST_OFFSET, post.startOffset);
       storage?.set(STORAGE_KEYS.EDITING_POST_DATE, date.toISOString());
       storage?.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
@@ -120,7 +121,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
     cancelEdit: () => {
       const { storage, clearInput } = get();
-      set({ editingPostOffset: null });
+      set({ editingPost: null, editingPostOffset: null });
       storage?.remove(STORAGE_KEYS.EDITING_POST_OFFSET);
       storage?.remove(STORAGE_KEYS.EDITING_POST_DATE);
       storage?.remove(STORAGE_KEYS.EDITING_POST_GRANULARITY);
@@ -128,7 +129,8 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     getEditingPost: (posts) => {
-      const { editingPostOffset } = get();
+      const { editingPost, editingPostOffset } = get();
+      if (editingPost) return editingPost;
       if (editingPostOffset === null) return null;
       return (
         posts.find((post) => post.startOffset === editingPostOffset) ?? null
