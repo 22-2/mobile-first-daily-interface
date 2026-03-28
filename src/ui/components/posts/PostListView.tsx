@@ -454,7 +454,7 @@ export const PostListView: React.FC = memo(() => {
         </Box>
       )}
       <FloatingButton className="up-button fixed" onClick={scrollToTop} visible={showScrollTop}>
-        <ObsidianIcon className="text-[var(--text-on-accent)]" name="chevron-up" boxSize="1.2em" />
+        <ObsidianIcon className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]" name="chevron-up" boxSize="1.2em" />
       </FloatingButton>
     </Box>
   );
