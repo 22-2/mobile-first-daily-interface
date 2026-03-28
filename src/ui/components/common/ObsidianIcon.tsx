@@ -64,7 +64,7 @@ export const ObsidianIcon = React.forwardRef<HTMLDivElement, ObsidianIconProps>(
     }, [name, size, boxSize, width, height]);
 
     const base =
-      "inline-flex items-center justify-center text-[var(--icon-color)] transition-all duration-150 px-[var(--size-2-3)] py-[var(--size-2-2)] rounded-[var(--corner-shape)] hover:text-[var(--icon-color-hover)] cursor-pointer";
+      "obsidian-icon inline-flex items-center justify-center text-[var(--icon-color)] transition-all duration-150 px-[var(--size-2-3)] py-[var(--size-2-2)] rounded-[var(--corner-shape)] hover:text-[var(--icon-color-hover)] cursor-pointer";
 
     return (
       <Box ref={innerRef} className={cn(base, className)} {...restProps} />

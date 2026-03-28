@@ -1,9 +1,11 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
+import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -314,6 +316,25 @@ export const PostListView: React.FC = memo(() => {
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const scrollToTop = useCallback(() => {
+    rowVirtualizer.scrollToIndex(0, { align: "start", behavior: "instant" });
+  }, [parentRef, rowVirtualizer]);
+
+  useEffect(() => {
+    const el = parentRef.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      setShowScrollTop(el.scrollTop > 200);
+    };
+
+    el.addEventListener("scroll", onScroll);
+    onScroll();
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [parentRef]);
+
   // 編集中のポストを現在のリストから再特定する
   // オフセットがズレている可能性があるので、IDなどで再特定して同期する
   useEffect(() => {
@@ -432,6 +453,9 @@ export const PostListView: React.FC = memo(() => {
           これ以上投稿はありません
         </Box>
       )}
+      <FloatingButton className="up-button fixed" onClick={scrollToTop} visible={showScrollTop}>
+        <ObsidianIcon className="text-[var(--text-on-accent)]" name="chevron-up" boxSize="1.2em" />
+      </FloatingButton>
     </Box>
   );
 });
