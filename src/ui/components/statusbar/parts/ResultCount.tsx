@@ -11,21 +11,7 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-// ---- ヘルパー関数 ----
-
-const formatCount = (count: number, total: string, asTask: boolean): string =>
-  asTask ? `${count} tasks` : `${count}${total} posts`;
-
-const formatFixedCount = (
-  count: number,
-  noteTitle: string,
-  asTask: boolean,
-): string =>
-  asTask ? `${count} tasks in ${noteTitle}` : `${count} posts in ${noteTitle}`;
-
-// ---- カスタムフック ----
-
-const useResultCountState = () => {
+export const ResultCount: FC = () => {
   const settings = useSettingsStore(
     useShallow((s) => ({
       granularity: s.granularity,
@@ -39,16 +25,11 @@ const useResultCountState = () => {
       activeTopic: s.activeTopic,
     })),
   );
-  const postsState = usePostsStore(
+
+  const { posts, tasks } = usePostsStore(
     useShallow((s) => ({ posts: s.posts, tasks: s.tasks })),
   );
-  return { settings, postsState };
-};
 
-// ---- コンポーネント ----
-
-export const ResultCount: FC = () => {
-  const { settings, postsState } = useResultCountState();
   const {
     granularity,
     asTask,
@@ -59,46 +40,41 @@ export const ResultCount: FC = () => {
     fixedNotePath,
     activeTopic,
   } = settings;
-  const { posts, tasks } = postsState;
 
   const filteredPosts = useFilteredPosts({ posts, ...settings });
 
+  // タイムライン表示時はDBから総件数を取得する
   const db = useMFDIDB();
   const dbTotalCount = useLiveQuery(
-    () => (db ? db.countMemos(activeTopic) : undefined),
+    () => db?.countMemos(activeTopic),
     [db, activeTopic],
   );
 
-  const allPostsCount = useMemo(() => {
+  // 「全体の件数」: タイムライン表示時はDB値、それ以外は表示中の投稿数
+  const totalCount = useMemo(() => {
     if (isTimelineView(displayMode) && typeof dbTotalCount === "number") {
       return dbTotalCount;
     }
     const visiblePosts = posts.filter(
-      (post) => !isArchived(post.metadata) && !isDeleted(post.metadata),
+      (p) => !isArchived(p.metadata) && !isDeleted(p.metadata),
     );
     return countVisibleRootPosts(visiblePosts);
   }, [posts, displayMode, dbTotalCount]);
 
-  // ---- 表示ロジック ----
+  // 「現在の件数」: タスクモードならタスク数、それ以外はフィルター後の投稿数
+  const currentCount = asTask ? tasks.length : filteredPosts.length;
 
-  const displayCount = asTask ? tasks.length : filteredPosts.length;
-
-  const isDailyTimeFiltered =
-    dateFilter === "today" && timeFilter !== "all" && granularity === "day";
-  const shouldShowTotal = isDailyTimeFiltered || isTimelineView(displayMode);
-  const totalPart = shouldShowTotal ? `/${allPostsCount}` : "";
-
+  // 固定ノートを表示中の場合は「N posts in <ノート名>」形式
   if (viewNoteMode === "fixed") {
-    return (
-      <>
-        {formatFixedCount(
-          displayCount,
-          getFixedNoteTitle(fixedNotePath),
-          asTask,
-        )}
-      </>
-    );
+    const noteTitle = getFixedNoteTitle(fixedNotePath);
+    return <>{asTask ? `${currentCount} tasks in ${noteTitle}` : `${currentCount} posts in ${noteTitle}`}</>;
   }
 
-  return <>{formatCount(displayCount, totalPart, asTask)}</>;
+  // 「今日・時間帯フィルターあり」または「タイムライン表示」のときは総件数も併記する
+  const isDailyTimeFiltered =
+    dateFilter === "today" && timeFilter !== "all" && granularity === "day";
+  const showTotal = isDailyTimeFiltered || isTimelineView(displayMode);
+
+  const totalSuffix = showTotal ? `/${totalCount}` : "";
+  return <>{asTask ? `${currentCount} tasks` : `${currentCount}${totalSuffix} posts`}</>;
 };
