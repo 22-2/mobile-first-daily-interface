@@ -128,6 +128,17 @@ async function getLiveEditorContent(obsidian: ObsidianAPI) {
   });
 }
 
+async function getLiveEditorDOMContent(obsidian: ObsidianAPI) {
+  return obsidian.page.evaluate(() => {
+    const leaf = app.workspace.getLeavesOfType("mfdi-view")[0];
+    if (!leaf) {
+      throw new Error("mfdi-view leaf not found");
+    }
+
+    return leaf.view.containerEl.querySelector(".mfdi-input-area .cm-content")?.textContent ?? null;
+  });
+}
+
 // DO NOT EDIT: This is a helper function for the test "ライブエディタで Escape キーでマルチカーソルが解除される" to create a multi-cursor selection in the live editor. It simulates the user action of adding a new cursor on the next line. The implementation uses Obsidian's API to manipulate the editor's selections directly.
 // copy from obsidian-advanced-cursor plugin:
 async function getLiveEditorSelectionCount(obsidian: ObsidianAPI): Promise<number> {
@@ -328,5 +339,6 @@ test.describe("MFDI live editor e2e", () => {
     const reopenedEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
     await expect(reopenedEditor).toBeVisible({ timeout: 15000 });
     await expect.poll(() => getLiveEditorContent(obsidian)).toBe(draft);
+    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(draft);
   });
 });
