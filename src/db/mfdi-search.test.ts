@@ -1,0 +1,92 @@
+import {
+  MFDIDatabase,
+  type MemoRecord,
+} from "src/db/mfdi-db";
+import { afterEach, describe, expect, test, vitest } from "vitest";
+
+const databases: MFDIDatabase[] = [];
+
+afterEach(async () => {
+  while (databases.length > 0) {
+    const db = databases.pop();
+    if (!db) {
+      continue;
+    }
+
+    db.close();
+    await db.delete();
+  }
+});
+
+function createDatabase() {
+  const db = new MFDIDatabase(`test-${crypto.randomUUID()}`);
+  databases.push(db);
+  return db;
+}
+
+function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
+  return {
+    id: `daily/${overrides.noteDate || '2026-03-23'}.md:${Math.random()}`,
+    path: `daily/${overrides.noteDate || '2026-03-23'}.md`,
+    noteName: overrides.noteDate || "2026-03-23",
+    topicId: "",
+    noteGranularity: "day",
+    content: "hello",
+    tags: [],
+    metadataJson: JSON.stringify({}),
+    createdAt: `${overrides.noteDate || '2026-03-23'}T10:00:00.000Z`,
+    updatedAt: `${overrides.noteDate || '2026-03-23'}T10:00:00.000Z`,
+    archived: 0,
+    deleted: 0,
+    bodyStartOffset: 0,
+    startOffset: 0,
+    endOffset: 0,
+    noteDate: overrides.noteDate || "2026-03-23",
+    ...overrides,
+  };
+}
+
+describe("MFDIDatabase Search", () => {
+  test("getLatestVisibleMemos filters by query", async () => {
+    const db = createDatabase();
+    await db.memos.bulkPut([
+      createMemo({ content: "apple pie", noteDate: "2026-03-23" }),
+      createMemo({ content: "banana cake", noteDate: "2026-03-24" }),
+      createMemo({ content: "apple juice", noteDate: "2026-03-25" }),
+    ]);
+
+    const results = await db.getLatestVisibleMemos(undefined, 10, "apple");
+    expect(results).toHaveLength(2);
+    expect(results.map(r => r.content)).toContain("apple pie");
+    expect(results.map(r => r.content)).toContain("apple juice");
+    expect(results.map(r => r.content)).not.toContain("banana cake");
+  });
+
+  test("getVisibleMemosByDateRange filters by query", async () => {
+    const db = createDatabase();
+    await db.memos.bulkPut([
+      createMemo({ content: "test one", noteDate: "2026-01-01" }),
+      createMemo({ content: "test two", noteDate: "2026-01-02" }),
+      createMemo({ content: "other", noteDate: "2026-01-03" }),
+    ]);
+
+    const results = await db.getVisibleMemosByDateRange({
+      startDate: "2026-01-01",
+      endDate: "2026-01-05",
+      query: "test"
+    });
+
+    expect(results).toHaveLength(2);
+    expect(results.map(r => r.content)).toContain("test one");
+    expect(results.map(r => r.content)).toContain("test two");
+  });
+
+  test("search is case-insensitive", async () => {
+    const db = createDatabase();
+    await db.memos.put(createMemo({ content: "Case Insensitive Search" }));
+
+    const results = await db.getLatestVisibleMemos(undefined, 10, "case");
+    expect(results).toHaveLength(1);
+    expect(results[0].content).toBe("Case Insensitive Search");
+  });
+});

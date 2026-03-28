@@ -107,21 +107,23 @@ export class DexieDBService implements IDBService {
     topicId?: string;
     startDate?: string;
     endDate?: string;
+    query?: string;
     limit?: number;
   }): Promise<MemoRecord[]> {
     if (!this.memoRepo) throw new Error("DB not initialized");
-    const { topicId, startDate, endDate, limit } = params;
+    const { topicId, startDate, endDate, query, limit } = params;
 
     if (startDate && endDate) {
       return await this.memoRepo.getVisibleMemosByDateRange({
         topicId,
         startDate,
         endDate,
+        query,
         limit,
       });
     }
 
-    return await this.memoRepo.getLatestVisibleMemos(topicId, limit);
+    return await this.memoRepo.getLatestVisibleMemos(topicId, limit, query);
   }
 
   async countMemos(topicId?: string): Promise<number> {

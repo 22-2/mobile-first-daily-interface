@@ -64,7 +64,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForWeek: async (topicId, date) => {
-    const { setPosts } = get();
+    const { setPosts, searchQuery } = get();
     const db = WorkerClient.get();
 
     const weekStart = date.clone().startOf("isoWeek");
@@ -74,6 +74,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       topicId,
       startDate: weekStart.toISOString(),
       endDate: weekEnd.toISOString(),
+      query: searchQuery,
     });
 
     const posts = records.map(memoRecordToPost);
@@ -82,7 +83,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsForDays: async (topicId, date, days) => {
-    const { setPosts } = get();
+    const { setPosts, searchQuery } = get();
     const db = WorkerClient.get();
 
     const windowStart = date
@@ -95,6 +96,7 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
       topicId,
       startDate: windowStart.toISOString(),
       endDate: windowEnd.toISOString(),
+      query: searchQuery,
     });
 
     const posts = records.map(memoRecordToPost);
@@ -109,10 +111,14 @@ export const createPostsSlice: StateCreator<MFDIStore, [], [], PostsSlice> = (
   },
 
   updatePostsFromDB: async ({ topicId, limit = 300 }) => {
-    const { setPosts } = get();
+    const { setPosts, searchQuery } = get();
     const db = WorkerClient.get();
 
-    const records = await db.getMemos({ topicId, limit });
+    const records = await db.getMemos({
+      topicId,
+      limit,
+      query: searchQuery,
+    });
     setPosts(records.map(memoRecordToPost));
   },
 

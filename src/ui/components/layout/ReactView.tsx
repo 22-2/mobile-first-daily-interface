@@ -131,6 +131,8 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePostsForWeek,
     updatePostsForDays,
     updatePostsFromDB,
+    updateTasks,
+    updatePosts,
   } = usePostsStore(
     useShallow((state) => ({
       posts: state.posts,
@@ -142,9 +144,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })),
   );
 
-  const { displayMode } = useSettingsStore(
+  const { displayMode, searchQuery } = useSettingsStore(
     useShallow((state) => ({
       displayMode: state.displayMode,
+      searchQuery: state.searchQuery,
     })),
   );
 
@@ -201,6 +204,19 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     if (viewNoteMode === "fixed") return;
+    if (isTimelineView(displayMode)) {
+      updatePostsFromDB({ topicId: activeTopic });
+    }
+  }, [
+    viewNoteMode,
+    displayMode,
+    activeTopic,
+    updatePostsFromDB,
+    searchQuery,
+  ]);
+
+  useEffect(() => {
+    if (viewNoteMode === "fixed") return;
     if (!capabilities.supportsPeriodMenus) return;
     if (granularity !== "day" || asTask) return;
 
@@ -230,6 +246,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePostsForDays,
     capabilities.supportsPeriodMenus,
     viewNoteMode,
+    searchQuery,
   ]);
 
   useEffect(() => {
@@ -260,6 +277,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePosts,
     updateTasks,
     viewNoteMode,
+    searchQuery,
   ]);
 
   // Sync state/handlers with Obsidian View
@@ -335,6 +353,7 @@ const ReactViewContent = () => {
   const filteredPosts = useFilteredPosts({
     posts,
     ...settings,
+    searchQuery: settings.searchQuery,
   });
 
   // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
@@ -342,6 +361,7 @@ const ReactViewContent = () => {
     posts,
     ...settings,
     includeThreadReplies: true,
+    searchQuery: settings.searchQuery,
   });
 
   useEffect(() => {
@@ -479,6 +499,7 @@ function useViewSync(view: MFDIView | null) {
       displayMode: state.displayMode,
       isReadOnly: state.isReadOnly(),
       sidebarOpen: state.sidebarOpen,
+      searchQuery: state.searchQuery,
       setGranularity: state.setGranularity,
       setTimeFilter: state.setTimeFilter,
       setDateFilter: state.setDateFilter,
@@ -486,6 +507,7 @@ function useViewSync(view: MFDIView | null) {
       setAsTask: state.setAsTask,
       setDisplayMode: state.setDisplayMode,
       setSidebarOpen: state.setSidebarOpen,
+      setSearchQuery: state.setSearchQuery,
     })),
   );
 
@@ -551,6 +573,11 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     view.setStatePartial({ activeTopic });
   }, [view, activeTopic]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.setStatePartial({ searchQuery });
+  }, [view, searchQuery]);
 
   useEffect(() => {
     if (!view) return;
@@ -640,6 +667,16 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onChangeDisplayMode = undefined;
     };
   }, [view, setDisplayMode]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.handlers.onSearchQueryChange = (query: string) => {
+      setSearchQuery(query);
+    };
+    return () => {
+      view.handlers.onSearchQueryChange = undefined;
+    };
+  }, [view, setSearchQuery]);
 
   useEffect(() => {
     if (!view) return;

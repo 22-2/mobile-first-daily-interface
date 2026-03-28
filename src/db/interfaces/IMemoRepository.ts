@@ -9,7 +9,11 @@ export interface IMemoRepository {
   /**
    * 未アーカイブ・未削除のメモを最新順に取得する
    */
-  getLatestVisibleMemos(topicId?: string, limit?: number): Promise<MemoRecord[]>;
+  getLatestVisibleMemos(
+    topicId?: string,
+    limit?: number,
+    query?: string,
+  ): Promise<MemoRecord[]>;
 
   /**
    * 未アーカイブ・未削除のメモ総数を取得する
@@ -24,6 +28,7 @@ export interface IMemoRepository {
     startDate: string;
     endDate: string;
     limit?: number;
+    query?: string;
   }): Promise<MemoRecord[]>;
 
   /**

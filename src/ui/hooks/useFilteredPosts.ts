@@ -27,6 +27,7 @@ interface UseFilteredPostsProps {
   threadFocusRootId: string | null;
   viewNoteMode?: MFDINoteMode;
   includeThreadReplies?: boolean;
+  searchQuery?: string;
 }
 
 export const useFilteredPosts = ({
@@ -40,9 +41,19 @@ export const useFilteredPosts = ({
   threadFocusRootId,
   viewNoteMode = "periodic",
   includeThreadReplies = false,
+  searchQuery = "",
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
-    const postsWithoutHidden = posts.filter((p) => isVisible(p.metadata));
+    let filtered = posts.filter((p) => isVisible(p.metadata));
+
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.message.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    const postsWithoutHidden = filtered;
     const effectiveActiveTag = viewNoteMode === "fixed" ? null : activeTag;
     const postsMatchingTag =
       effectiveActiveTag == null
@@ -102,5 +113,6 @@ export const useFilteredPosts = ({
     threadFocusRootId,
     viewNoteMode,
     includeThreadReplies,
+    searchQuery,
   ]);
 };
