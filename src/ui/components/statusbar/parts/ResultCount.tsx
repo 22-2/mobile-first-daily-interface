@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import type { FC } from "react";
 import { useMemo } from "react";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -61,8 +62,20 @@ export const ResultCount: FC = () => {
     return countVisibleRootPosts(visiblePosts);
   }, [posts, displayMode, dbTotalCount]);
 
-  // 「現在の件数」: タスクモードならタスク数、それ以外はフィルター後の投稿数
-  const currentCount = asTask ? tasks.length : filteredPosts.length;
+  // タイムライン表示時はページネーションで読み込まれた投稿は`useInfiniteTimeline().allPosts`に入る。
+  // そのため現在件数は以下の優先順位で決定する:
+  // - タスクモード: タスク数
+  // - タイムライン表示: allPosts のうちアーカイブ/削除を除いたルート投稿数
+  // - それ以外: フィルター後の投稿数
+  const { allPosts } = useInfiniteTimeline();
+
+  const currentCount = asTask
+    ? tasks.length
+    : isTimelineView(displayMode)
+    ? countVisibleRootPosts(
+        allPosts.filter((p) => !isArchived(p.metadata) && !isDeleted(p.metadata)),
+      )
+    : filteredPosts.length;
 
   // 固定ノートを表示中の場合は「N posts in <ノート名>」形式
   if (viewNoteMode === "fixed") {
