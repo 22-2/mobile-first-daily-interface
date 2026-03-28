@@ -12,8 +12,9 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
-    "type": "pnpm tsc --noEmit -skipLibCheck",
-    "pre:push": "tsc -noEmit -skipLibCheck && pnpm run test",
+    "typecheck": "pnpm tsc --noEmit -skipLibCheck",
+    "format": "pnpx organize-imports-cli tsconfig.json && pnpx prettier --editorconfig --write ./src && pnpm exec eslint --fix",
+    "pre:push": "pnpm typecheck && pnpm run test",
     "ci": "pnpm install && pnpm run build && pnpm run test",
     "release": "pnpm ci && pnpm version-bump.mts ${VERSION} && git add package.json manifest.json versions.json pnpm.lockb && git commit -m ${VERSION} && git tag ${VERSION} && git push --tags && git push"
   },
