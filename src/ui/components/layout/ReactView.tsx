@@ -13,8 +13,10 @@ import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
-import { useObsidianComponent } from "src/ui/context/ComponentContext";
-import { ComponentContextProvider } from "src/ui/context/ComponentContext";
+import {
+  ComponentContextProvider,
+  useObsidianComponent,
+} from "src/ui/context/ComponentContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -205,13 +207,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (isTimelineView(displayMode)) {
       updatePostsFromDB({ topicId: activeTopic });
     }
-  }, [
-    viewNoteMode,
-    displayMode,
-    activeTopic,
-    updatePostsFromDB,
-    searchQuery,
-  ]);
+  }, [viewNoteMode, displayMode, activeTopic, updatePostsFromDB, searchQuery]);
 
   useEffect(() => {
     if (viewNoteMode === "fixed") return;

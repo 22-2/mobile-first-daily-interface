@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 beforeEach(() => {
   // Fix "now" to a specific date for tests that use window.moment()
-    // 16:00:00 JST is 07:00:00 UTC
+  // 16:00:00 JST is 07:00:00 UTC
   vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));
 });
 

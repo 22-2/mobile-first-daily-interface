@@ -18,7 +18,6 @@ export const Grid = ({
     typeof gap === "number" ? `gap-[${gap}px]` : `gap-[${String(gap)}]`;
   const colsClass = `grid-cols-${cols}`;
   return (
-     
     <div className={cn("grid", colsClass, gapClass, className)} {...rest}>
       {children}
     </div>

@@ -1,9 +1,9 @@
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
-import { defineConfig, type UserConfig, loadEnv } from "vite";
-import { obsidianCopyPlugin } from "./vite.plugins";
+import { defineConfig, loadEnv, type UserConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
+import { obsidianCopyPlugin } from "./vite.plugins";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;

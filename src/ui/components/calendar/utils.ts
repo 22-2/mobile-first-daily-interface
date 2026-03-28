@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useShallow } from "zustand/shallow";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import type { Week } from "src/ui/components/calendar/types";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useAppStore } from "src/ui/store/appStore";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
+import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 // ─────────────────────────────────────────────
 // 純粋な計算関数 (変更なし)

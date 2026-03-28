@@ -1,5 +1,5 @@
-import type { MemoRecord, MFDIDatabase } from "src/db/mfdi-db";
 import type { IMemoRepository } from "src/db/interfaces/IMemoRepository";
+import type { MemoRecord, MFDIDatabase } from "src/db/mfdi-db";
 
 export class DexieMemoRepository implements IMemoRepository {
   constructor(private readonly db: MFDIDatabase) {}

@@ -1,8 +1,5 @@
-import {
-  MFDIDatabase,
-  type MemoRecord,
-} from "src/db/mfdi-db";
-import { afterEach, describe, expect, test, vitest } from "vitest";
+import { MFDIDatabase, type MemoRecord } from "src/db/mfdi-db";
+import { afterEach, describe, expect, test } from "vitest";
 
 const databases: MFDIDatabase[] = [];
 
@@ -26,16 +23,16 @@ function createDatabase() {
 
 function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
   return {
-    id: `daily/${overrides.noteDate || '2026-03-23'}.md:${Math.random()}`,
-    path: `daily/${overrides.noteDate || '2026-03-23'}.md`,
+    id: `daily/${overrides.noteDate || "2026-03-23"}.md:${Math.random()}`,
+    path: `daily/${overrides.noteDate || "2026-03-23"}.md`,
     noteName: overrides.noteDate || "2026-03-23",
     topicId: "",
     noteGranularity: "day",
     content: "hello",
     tags: [],
     metadataJson: JSON.stringify({}),
-    createdAt: `${overrides.noteDate || '2026-03-23'}T10:00:00.000Z`,
-    updatedAt: `${overrides.noteDate || '2026-03-23'}T10:00:00.000Z`,
+    createdAt: `${overrides.noteDate || "2026-03-23"}T10:00:00.000Z`,
+    updatedAt: `${overrides.noteDate || "2026-03-23"}T10:00:00.000Z`,
     archived: 0,
     deleted: 0,
     bodyStartOffset: 0,
@@ -57,9 +54,9 @@ describe("MFDIDatabase Search", () => {
 
     const results = await db.getLatestVisibleMemos(undefined, 10, "apple");
     expect(results).toHaveLength(2);
-    expect(results.map(r => r.content)).toContain("apple pie");
-    expect(results.map(r => r.content)).toContain("apple juice");
-    expect(results.map(r => r.content)).not.toContain("banana cake");
+    expect(results.map((r) => r.content)).toContain("apple pie");
+    expect(results.map((r) => r.content)).toContain("apple juice");
+    expect(results.map((r) => r.content)).not.toContain("banana cake");
   });
 
   test("getVisibleMemosByDateRange filters by query", async () => {
@@ -73,12 +70,12 @@ describe("MFDIDatabase Search", () => {
     const results = await db.getVisibleMemosByDateRange({
       startDate: "2026-01-01",
       endDate: "2026-01-05",
-      query: "test"
+      query: "test",
     });
 
     expect(results).toHaveLength(2);
-    expect(results.map(r => r.content)).toContain("test one");
-    expect(results.map(r => r.content)).toContain("test two");
+    expect(results.map((r) => r.content)).toContain("test one");
+    expect(results.map((r) => r.content)).toContain("test two");
   });
 
   test("search is case-insensitive", async () => {

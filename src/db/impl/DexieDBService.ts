@@ -1,9 +1,16 @@
-import { MFDIDatabase, type MemoRecord, type TagStatRecord } from "src/db/mfdi-db";
 import { DexieMemoRepository } from "src/db/impl/DexieMemoRepository";
 import { DexieTagStatsRepository } from "src/db/impl/DexieTagStatsRepository";
-import type { IDBService, DBServiceOptions } from "src/db/interfaces/IDBService";
-import type { ScannableNote } from "src/db/worker-api";
+import type {
+  DBServiceOptions,
+  IDBService,
+} from "src/db/interfaces/IDBService";
+import {
+  MFDIDatabase,
+  type MemoRecord,
+  type TagStatRecord,
+} from "src/db/mfdi-db";
 import { buildMemoRecordsForNote } from "src/db/scan-note";
+import type { ScannableNote } from "src/db/worker-api";
 
 export class DexieDBService implements IDBService {
   private db: MFDIDatabase | null = null;
@@ -27,62 +34,87 @@ export class DexieDBService implements IDBService {
   }
 
   async scanAllNotes(notes: ScannableNote[]): Promise<void> {
-    if (!this.db || !this.memoRepo || !this.tagStatsRepo) throw new Error("DB not initialized");
+    if (!this.db || !this.memoRepo || !this.tagStatsRepo)
+      throw new Error("DB not initialized");
 
-    await this.db.transaction("rw", this.db.memos, this.db.meta, this.db.tagStats, async () => {
-      await this.memoRepo!.clear();
-      await this.db!.meta.clear();
-      await this.tagStatsRepo!.clear();
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.meta,
+      this.db.tagStats,
+      async () => {
+        await this.memoRepo!.clear();
+        await this.db!.meta.clear();
+        await this.tagStatsRepo!.clear();
 
-      const allRecords = notes.flatMap(buildMemoRecordsForNote);
-      await this.memoRepo!.bulkPut(allRecords);
-      await this.tagStatsRepo!.rebuild();
-      await this.db!.meta.put({
-        key: "lastFullScanAt",
-        value: new Date().toISOString(),
-      });
-    });
+        const allRecords = notes.flatMap(buildMemoRecordsForNote);
+        await this.memoRepo!.bulkPut(allRecords);
+        await this.tagStatsRepo!.rebuild();
+        await this.db!.meta.put({
+          key: "lastFullScanAt",
+          value: new Date().toISOString(),
+        });
+      },
+    );
 
     this.notify();
   }
 
   async onFileChanged(note: ScannableNote): Promise<void> {
-    if (!this.db || !this.memoRepo || !this.tagStatsRepo) throw new Error("DB not initialized");
+    if (!this.db || !this.memoRepo || !this.tagStatsRepo)
+      throw new Error("DB not initialized");
 
     const records = buildMemoRecordsForNote(note);
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStatsRepo!.collectForPath(note.path);
-      await this.memoRepo!.deleteByPath(note.path);
-      if (records.length) await this.memoRepo!.bulkPut(records);
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStatsRepo!.collectForPath(note.path);
+        await this.memoRepo!.deleteByPath(note.path);
+        if (records.length) await this.memoRepo!.bulkPut(records);
 
-      const added = this.tagStatsRepo!.collectFromRecords(records);
-      await this.tagStatsRepo!.applyDeltas(removed, added);
-    });
+        const added = this.tagStatsRepo!.collectFromRecords(records);
+        await this.tagStatsRepo!.applyDeltas(removed, added);
+      },
+    );
 
     this.notify({ path: note.path });
   }
 
   async onFileDeleted(path: string): Promise<void> {
-    if (!this.db || !this.memoRepo || !this.tagStatsRepo) throw new Error("DB not initialized");
+    if (!this.db || !this.memoRepo || !this.tagStatsRepo)
+      throw new Error("DB not initialized");
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStatsRepo!.collectForPath(path);
-      await this.memoRepo!.deleteByPath(path);
-      await this.tagStatsRepo!.applyDeltas(removed, new Map());
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStatsRepo!.collectForPath(path);
+        await this.memoRepo!.deleteByPath(path);
+        await this.tagStatsRepo!.applyDeltas(removed, new Map());
+      },
+    );
 
     this.notify({ path });
   }
 
   async onFileRenamed(note: ScannableNote, oldPath: string): Promise<void> {
-    if (!this.db || !this.memoRepo || !this.tagStatsRepo) throw new Error("DB not initialized");
+    if (!this.db || !this.memoRepo || !this.tagStatsRepo)
+      throw new Error("DB not initialized");
 
-    await this.db.transaction("rw", this.db.memos, this.db.tagStats, async () => {
-      const removed = await this.tagStatsRepo!.collectForPath(oldPath);
-      await this.memoRepo!.deleteByPath(oldPath);
-      await this.tagStatsRepo!.applyDeltas(removed, new Map());
-    });
+    await this.db.transaction(
+      "rw",
+      this.db.memos,
+      this.db.tagStats,
+      async () => {
+        const removed = await this.tagStatsRepo!.collectForPath(oldPath);
+        await this.memoRepo!.deleteByPath(oldPath);
+        await this.tagStatsRepo!.applyDeltas(removed, new Map());
+      },
+    );
 
     await this.onFileChanged(note);
   }

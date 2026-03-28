@@ -6,7 +6,6 @@ export type ImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
 };
 
 export const Image = ({ className, ...rest }: ImageProps) => (
-   
   <img className={cn(className)} {...rest} />
 );
 

@@ -27,7 +27,8 @@ export function useObsidianUi() {
   );
 
   const confirmDelete = useCallback(
-    (args: DeleteConfirmArgs) => showDeleteConfirmModal(shell.getRawApp(), args),
+    (args: DeleteConfirmArgs) =>
+      showDeleteConfirmModal(shell.getRawApp(), args),
     [shell],
   );
 

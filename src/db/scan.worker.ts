@@ -1,4 +1,3 @@
-
 // src/db/scan.worker.ts
 import * as Comlink from "comlink";
 import { isDev } from "src/core/constants";
@@ -14,7 +13,10 @@ function estimateNotesBytes(notes?: ScannableNote[]): number {
   if (!notes?.length) return 0;
   try {
     const enc = new TextEncoder();
-    return notes.reduce((sum, n) => sum + (n.content ? enc.encode(n.content).length : 0), 0);
+    return notes.reduce(
+      (sum, n) => sum + (n.content ? enc.encode(n.content).length : 0),
+      0,
+    );
   } catch {
     return notes.reduce((sum, n) => sum + (n.content?.length ?? 0), 0);
   }
@@ -29,7 +31,6 @@ async function withLogging<T>(
   meta: Record<string, unknown>,
   fn: () => Promise<T>,
 ): Promise<T> {
-
   if (!isDev) {
     return await fn();
   }
@@ -50,9 +51,21 @@ async function withLogging<T>(
 
 self.addEventListener("error", (ev: ErrorEvent) => {
   try {
-    console.error(TAG, "Uncaught error in worker:", ev.message, ev.filename, ev.lineno, ev.colno, ev.error);
+    console.error(
+      TAG,
+      "Uncaught error in worker:",
+      ev.message,
+      ev.filename,
+      ev.lineno,
+      ev.colno,
+      ev.error,
+    );
   } catch {
-    console.error(TAG, "Uncaught error in worker (failed to stringify event)", ev);
+    console.error(
+      TAG,
+      "Uncaught error in worker (failed to stringify event)",
+      ev,
+    );
   }
 });
 
@@ -60,7 +73,11 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
   try {
     console.error(TAG, "Unhandled promise rejection in worker:", ev.reason);
   } catch {
-    console.error(TAG, "Unhandled promise rejection in worker (failed to stringify reason)", ev);
+    console.error(
+      TAG,
+      "Unhandled promise rejection in worker (failed to stringify reason)",
+      ev,
+    );
   }
 });
 
@@ -75,7 +92,9 @@ try {
 
   const api: IDBService = {
     initialize: (options) =>
-      withLogging("initialize", { appId: options?.appId }, () => db().initialize(options)),
+      withLogging("initialize", { appId: options?.appId }, () =>
+        db().initialize(options),
+      ),
 
     scanAllNotes: (notes) =>
       withLogging(
@@ -85,8 +104,10 @@ try {
       ),
 
     onFileChanged: (note) =>
-      withLogging("onFileChanged", { path: note?.path, len: note?.content?.length ?? 0 }, () =>
-        db().onFileChanged(note),
+      withLogging(
+        "onFileChanged",
+        { path: note?.path, len: note?.content?.length ?? 0 },
+        () => db().onFileChanged(note),
       ),
 
     onFileDeleted: (path) =>
@@ -111,8 +132,7 @@ try {
         return Array.isArray(res) ? res.map((r) => ({ ...r })) : res;
       }),
 
-    getMeta: (key) =>
-      withLogging("getMeta", { key }, () => db().getMeta(key)),
+    getMeta: (key) => withLogging("getMeta", { key }, () => db().getMeta(key)),
 
     getMemos: (params) =>
       withLogging("getMemos", { params }, async () => {

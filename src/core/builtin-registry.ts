@@ -1,11 +1,11 @@
 import { around } from "monkey-around";
 import type { App, Command, EventRef } from "obsidian";
 import { TFile, WorkspaceLeaf } from "obsidian";
+import { MFDIStorage } from "src/core/storage";
 import type { FixedNoteViewExtension } from "src/extensions/fixed-note-view-extension";
 import { createFixedNoteViewExtension } from "src/extensions/fixed-note-view-extension";
 import type { TagIndexExtension } from "src/extensions/tag-index-extension";
 import { createTagIndexExtension } from "src/extensions/tag-index-extension";
-import { MFDIStorage } from "src/core/storage";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";

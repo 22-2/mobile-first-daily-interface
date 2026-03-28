@@ -172,7 +172,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       }));
 
       // ストレージから復元した内容でセッションを同期する。これもないと、reactのstateは復元されるが、live editorの内容が復元されないため、両方を更新する必要がある
-      setTimeout(() => syncInputSession(persistedInput))
+      setTimeout(() => syncInputSession(persistedInput));
     },
   };
 };

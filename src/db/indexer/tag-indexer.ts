@@ -52,7 +52,9 @@ export class TagIndexer {
       targets.map((t) => readQueue.add(() => toScannableNote(shell, t))),
     );
 
-    const validNotes = scannableNotes.filter((n): n is NonNullable<typeof n> => n !== null);
+    const validNotes = scannableNotes.filter(
+      (n): n is NonNullable<typeof n> => n !== null,
+    );
 
     const dbService = WorkerClient.get();
     await dbService.scanAllNotes(validNotes);

@@ -228,7 +228,7 @@ const InputAreaControl: FC = memo(() => {
           }
           onClick={() => {
             if (isReadOnly || !("handlers" in component)) return;
-            (component).handlers.onOpenModalEditor?.();
+            component.handlers.onOpenModalEditor?.();
           }}
         />
       </Box>

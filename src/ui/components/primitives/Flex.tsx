@@ -75,7 +75,6 @@ export const Flex = forwardRef<HTMLElement, FlexProps>((props, ref) => {
     className,
   );
 
-   
   return React.createElement(
     Comp as any,
     { ref, className: classes, ...rest },

@@ -6,9 +6,9 @@ import {
   createBuiltinContributions,
   createBuiltinRegistry,
 } from "src/core/builtin-registry";
-import { WorkerClient } from "src/db/worker-client";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
+import { WorkerClient } from "src/db/worker-client";
 import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import type { Settings } from "src/settings";
 import { DEFAULT_SETTINGS, MFDISettingTab } from "src/settings";

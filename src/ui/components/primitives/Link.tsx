@@ -6,7 +6,6 @@ export type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 };
 
 export const Link = ({ className, ...rest }: LinkProps) => (
-   
   <a className={cn(className)} {...rest} />
 );
 

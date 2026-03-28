@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DexieDBService } from "src/db/impl/DexieDBService";
 import type { ScannableNote } from "src/db/worker-api";
+import { beforeEach, describe, expect, it } from "vitest";
 
 // BroadcastChannel polyfill for test environment
-if (typeof BroadcastChannel === 'undefined') {
+if (typeof BroadcastChannel === "undefined") {
   (globalThis as any).BroadcastChannel = class {
     postMessage() {}
     close() {}

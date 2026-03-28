@@ -1,8 +1,8 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import type { FC } from "react";
 import { useMemo } from "react";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -70,13 +70,19 @@ export const ResultCount: FC = () => {
   const currentCount = asTask
     ? tasks.length
     : isTimelineView(displayMode)
-    ? countVisibleRootPosts(allPosts.filter((p) => isVisible(p.metadata)))
-    : filteredPosts.length;
+      ? countVisibleRootPosts(allPosts.filter((p) => isVisible(p.metadata)))
+      : filteredPosts.length;
 
   // 固定ノートを表示中の場合は「N posts in <ノート名>」形式
   if (viewNoteMode === "fixed") {
     const noteTitle = getFixedNoteTitle(fixedNotePath);
-    return <>{asTask ? `${currentCount} tasks in ${noteTitle}` : `${currentCount} posts in ${noteTitle}`}</>;
+    return (
+      <>
+        {asTask
+          ? `${currentCount} tasks in ${noteTitle}`
+          : `${currentCount} posts in ${noteTitle}`}
+      </>
+    );
   }
 
   // 「今日・時間帯フィルターあり」または「タイムライン表示」のときは総件数も併記する
@@ -85,5 +91,9 @@ export const ResultCount: FC = () => {
   const showTotal = isDailyTimeFiltered || isTimelineView(displayMode);
 
   const totalSuffix = showTotal ? `/${totalCount}` : "";
-  return <>{asTask ? `${currentCount} tasks` : `${currentCount}${totalSuffix} posts`}</>;
+  return (
+    <>
+      {asTask ? `${currentCount} tasks` : `${currentCount}${totalSuffix} posts`}
+    </>
+  );
 };

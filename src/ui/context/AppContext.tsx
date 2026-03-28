@@ -40,7 +40,5 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({
     [shell, storage, settings],
   );
 
-  return (
-    <AppContext.Provider value={value}>{children}</AppContext.Provider>
-  );
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

@@ -12,13 +12,10 @@ export const Text = ({
   children,
   ...rest
 }: TextProps) => {
-  return (
-     
-    React.createElement(
-      Comp as any,
-      { className: cn(className), ...rest },
-      children,
-    )
+  return React.createElement(
+    Comp as any,
+    { className: cn(className), ...rest },
+    children,
   );
 };
 

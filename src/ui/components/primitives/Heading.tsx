@@ -12,7 +12,6 @@ export const Heading = ({
   children,
   ...rest
 }: HeadingProps) =>
-   
   React.createElement(
     Comp as any,
     { className: cn(className), ...rest },

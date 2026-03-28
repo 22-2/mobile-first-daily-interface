@@ -8,9 +8,9 @@ import {
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
-import { memoRecordToPost } from "src/ui/utils/thread-utils";
 
 const PAGE_SIZE_DAYS = 14;
 
@@ -31,7 +31,8 @@ export const useInfiniteTimeline = () => {
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
   // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const shouldFetchDb = isTimelineView(displayMode) && activeDocument.hasFocus();
+  const shouldFetchDb =
+    isTimelineView(displayMode) && activeDocument.hasFocus();
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
@@ -45,10 +46,10 @@ export const useInfiniteTimeline = () => {
       }
 
       const state = settingsStore.getState();
-        const now = window.moment();
-        if (!state.date.isSame(now, "day")) {
-          state.setDate(now);
-        }
+      const now = window.moment();
+      if (!state.date.isSame(now, "day")) {
+        state.setDate(now);
+      }
 
       queryClient.invalidateQueries({
         queryKey: ["posts", activeTopic, displayMode],
@@ -92,7 +93,10 @@ export const useInfiniteTimeline = () => {
       );
 
       const endDate = baseDate.clone().endOf("day");
-      const startDate = baseDate.clone().subtract(PAGE_SIZE_DAYS - 1, "day").startOf("day");
+      const startDate = baseDate
+        .clone()
+        .subtract(PAGE_SIZE_DAYS - 1, "day")
+        .startOf("day");
 
       const records = await dbService.getMemos({
         topicId: activeTopic,

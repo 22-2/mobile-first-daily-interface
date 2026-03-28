@@ -18,7 +18,7 @@ function BoxInner<T extends ElementType = "div">(
   const Comp = as ?? "div";
   return createElement(
     Comp,
-     
+
     { ref, className: cn(className), ...rest },
     children,
   );

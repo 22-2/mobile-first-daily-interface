@@ -42,7 +42,7 @@ export const VStack = forwardRef<HTMLElement, VStackProps>((props, ref) => {
     justifyMap[justify] ?? "",
     className,
   );
-   
+
   return React.createElement(
     Comp,
     { ref, className: classes, ...rest },

@@ -1,5 +1,5 @@
-import type { MemoRecord, MFDIDatabase } from "src/db/mfdi-db";
 import type { ITagStatsRepository } from "src/db/interfaces/ITagStatsRepository";
+import type { MemoRecord, MFDIDatabase } from "src/db/mfdi-db";
 
 export class DexieTagStatsRepository implements ITagStatsRepository {
   constructor(private readonly db: MFDIDatabase) {}
@@ -44,7 +44,7 @@ export class DexieTagStatsRepository implements ITagStatsRepository {
 
     for (let i = 0; i < tags.length; i++) {
       const tag = tags[i];
-      const existingCount = (existingRows[i]?.count ?? 0);
+      const existingCount = existingRows[i]?.count ?? 0;
       const newCount =
         existingCount - (removed.get(tag) ?? 0) + (added.get(tag) ?? 0);
 

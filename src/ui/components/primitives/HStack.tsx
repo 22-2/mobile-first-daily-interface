@@ -48,7 +48,6 @@ function HStackInner<T extends ElementType = "div">(
     className,
   );
 
-   
   return createElement(Comp, { ref, className: classes, ...rest }, children);
 }
 

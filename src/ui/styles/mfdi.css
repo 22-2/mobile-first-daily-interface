@@ -60,7 +60,6 @@
   padding-inline-end: 0;
 }
 
-
 /*
 
 This CSS file will be included with your plugin, and
@@ -153,7 +152,6 @@ If your plugin does not need CSS, delete this file.
   margin-inline: initial !important;
 }
 
-
 .mfdi-modal__body {
   display: grid;
   gap: var(--size-4-3);
@@ -206,7 +204,6 @@ If your plugin does not need CSS, delete this file.
   padding-top: 0;
 }
 
-
 [data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
   display: none !important;
 }
@@ -221,9 +218,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 [data-type="mfdi-view"] .cm-scroller {
-	max-height: 500px;
+  max-height: 500px;
 }
-
 
 .mfdi-draft-list-modal {
   width: 100% !important;
