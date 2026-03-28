@@ -23,6 +23,8 @@ export class MFDIView extends ItemView {
   private editableTitleBar: EditableTitleBar | null = null;
   private root: Root;
   private settings: Settings;
+  // 検索入力用のコントロール要素を保持しておく
+  private activeSearchControlEl: HTMLElement | null = null;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
   public readonly handlers: MFDIViewHandler = {};
@@ -168,18 +170,29 @@ export class MFDIView extends ItemView {
       });
     }
 
-    // toggleする
+    // 検索UIをトグル表示。既に開いていれば閉じる。
     this.addAction("search", "検索", () => {
-      const searchSetting = new Setting(createDiv())
-        .addSearch((search) => {
-          search.onChange((value) => {
-            // this.handlers.onSearchQueryChange?.(value);
-          })
-          search.inputEl.addEventListener("blur", () => {
-            searchSetting.controlEl.detach();
-          });
-          window.setTimeout(() => search.inputEl.focus());
+      if (this.activeSearchControlEl) {
+        this.activeSearchControlEl.detach();
+        this.activeSearchControlEl = null;
+        return;
+      }
+
+      const searchSetting = new Setting(createDiv()).addSearch((search) => {
+        search.onChange((value) => {
+          // this.handlers.onSearchQueryChange?.(value);
         });
+
+        search.inputEl.addEventListener("blur", () => {
+          searchSetting.controlEl.detach();
+          this.activeSearchControlEl = null;
+        });
+
+        // フォーカスは少し待ってから
+        window.setTimeout(() => search.inputEl.focus());
+      });
+
+      this.activeSearchControlEl = searchSetting.controlEl;
       this.actionsEl.prepend(searchSetting.controlEl);
     });
 
