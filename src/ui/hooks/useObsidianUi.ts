@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useObsidianApp } from "src/ui/context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
 import {
   DeleteConfirmModal,
   showDeleteConfirmModal,
@@ -14,38 +14,38 @@ type DeleteConfirmArgs = Parameters<typeof showDeleteConfirmModal>[1];
 type InputModalArgs = Parameters<typeof showInputModal>[1];
 
 export function useObsidianUi() {
-  const app = useObsidianApp();
+  const { shell } = useAppContext();
   const store = useCurrentAppStore();
 
   const openDraftList = useCallback(() => {
-    new DraftListModal(app, store).open();
-  }, [app, store]);
+    new DraftListModal(shell.getRawApp(), store).open();
+  }, [shell, store]);
 
   const showTextInput = useCallback(
-    (args: InputModalArgs) => showInputModal(app, args),
-    [app],
+    (args: InputModalArgs) => showInputModal(shell.getRawApp(), args),
+    [shell],
   );
 
   const confirmDelete = useCallback(
-    (args: DeleteConfirmArgs) => showDeleteConfirmModal(app, args),
-    [app],
+    (args: DeleteConfirmArgs) => showDeleteConfirmModal(shell.getRawApp(), args),
+    [shell],
   );
 
   const confirmDeleteAction = useCallback(
     (onConfirm: () => Promise<void>) => {
-      new DeleteConfirmModal(app, onConfirm).open();
+      new DeleteConfirmModal(shell.getRawApp(), onConfirm).open();
     },
-    [app],
+    [shell],
   );
 
   const openModalEditor = useCallback(
     (options: MFDIEditorModalOptions) => {
       // Obsidian UI API が raw app を要求する処理はここへ集約して、通常コンポーネントへ漏らさない。
-      const modal = new MFDIEditorModal(app, options);
+      const modal = new MFDIEditorModal(shell.getRawApp(), options);
       modal.open();
       return modal;
     },
-    [app],
+    [shell],
   );
 
   return useMemo(

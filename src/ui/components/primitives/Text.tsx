@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 export type TextProps = React.HTMLAttributes<HTMLElement> & {
-  as?: keyof JSX.IntrinsicElements;
+  as?: any;
   className?: string;
 };
 

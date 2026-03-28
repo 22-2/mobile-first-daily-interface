@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import path from "node:path";
 import type { ObsidianAPI } from "obsidian-e2e-toolkit";
 import { expect, test } from "obsidian-e2e-toolkit";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type { MFDIView } from "src/ui/view/MFDIView";
 
 const PLUGIN_PATH = path.resolve(".");
@@ -339,6 +340,7 @@ test.describe("MFDI live editor e2e", () => {
     const reopenedEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
     await expect(reopenedEditor).toBeVisible({ timeout: 15000 });
     await expect.poll(() => getLiveEditorContent(obsidian)).toBe(draft);
+    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain(draft);
     await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(draft);
   });
 });

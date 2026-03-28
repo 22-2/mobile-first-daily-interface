@@ -13,6 +13,8 @@ import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
+import { useObsidianComponent } from "src/ui/context/ComponentContext";
+import { ComponentContextProvider } from "src/ui/context/ComponentContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -23,6 +25,7 @@ import {
   AppStoreProvider,
   createAppStore,
   initializeAppStore,
+  useAppStore,
   useCurrentAppStore,
 } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
@@ -61,29 +64,45 @@ export const ReactView = ({
   }
 
   return (
-    <AppContextProvider app={app} settings={settings} view={view}>
-      <AppStoreProvider store={storeRef.current}>
-        <QueryClientProvider client={queryClient}>
-          <MFDIAppRoot>
-            <ReactViewContent />
-          </MFDIAppRoot>
-        </QueryClientProvider>
-      </AppStoreProvider>
+    <AppContextProvider app={app} settings={settings}>
+      <ComponentContextProvider component={view}>
+        <AppStoreProvider store={storeRef.current}>
+          <QueryClientProvider client={queryClient}>
+            <MFDIAppRoot>
+              <ReactViewContent />
+            </MFDIAppRoot>
+          </QueryClientProvider>
+        </AppStoreProvider>
+      </ComponentContextProvider>
     </AppContextProvider>
   );
 };
 
 const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { view, settings, storage, shell } = useAppContext();
+  const { settings, storage, shell } = useAppContext();
+  const component = useObsidianComponent() as MFDIView;
   const store = useCurrentAppStore();
-  const viewState = view.getState();
+  const { viewNoteMode, fixedNotePath } = useAppStore(
+    useShallow((s) => ({
+      viewNoteMode: s.viewNoteMode,
+      fixedNotePath: s.fixedNotePath,
+    })),
+  );
+
   const capabilities = useMemo(
-    () => getMFDIViewCapabilities(viewState),
-    [view, viewState.noteMode],
+    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+    [viewNoteMode],
   );
 
   useEffect(() => {
-    initializeAppStore({ shell, settings, storage }, store);
+    initializeAppStore(
+      {
+        shell,
+        settings,
+        storage,
+      },
+      store,
+    );
   }, [settings, storage, shell, store]);
 
   const { date, granularity, activeTopic, dateFilter, asTask, isReadOnly } =
@@ -140,6 +159,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useDbSync();
 
   useEffect(() => {
+    if (!("getState" in component)) return;
+
+    const viewState = component.getState();
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
       fixedNotePath: viewState.fixedNotePath,
@@ -163,7 +185,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         threadFocusRootId: null,
       });
     }
-  }, [store, view, viewState.noteMode, viewState.fixedNotePath]);
+  }, [store, component, viewNoteMode, fixedNotePath]);
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);
@@ -173,12 +195,12 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     date,
     granularity,
     activeTopic,
-    viewState.noteMode,
-    viewState.fixedNotePath,
+    viewNoteMode,
+    fixedNotePath,
   ]);
 
   useEffect(() => {
-    if (viewState.noteMode === "fixed") return;
+    if (viewNoteMode === "fixed") return;
     if (!capabilities.supportsPeriodMenus) return;
     if (granularity !== "day" || asTask) return;
 
@@ -207,7 +229,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updatePostsForWeek,
     updatePostsForDays,
     capabilities.supportsPeriodMenus,
-    viewState.noteMode,
+    viewNoteMode,
   ]);
 
   useEffect(() => {
@@ -228,7 +250,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!currentDailyNote) return;
 
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
-    if (viewState.noteMode === "fixed" || dateFilter === "today") {
+    if (viewNoteMode === "fixed" || dateFilter === "today") {
       promises.push(updatePosts(currentDailyNote));
     }
     Promise.all(promises);
@@ -237,21 +259,22 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     dateFilter,
     updatePosts,
     updateTasks,
-    viewState.noteMode,
+    viewNoteMode,
   ]);
 
   // Sync state/handlers with Obsidian View
-  useViewSync(view);
+  useViewSync("handlers" in component ? component : null);
 
   // Handle focus requested from View
   useEffect(() => {
-    view.handlers.onFocusRequested = () => {
+    if (!("handlers" in component)) return;
+    component.handlers.onFocusRequested = () => {
       inputRef.current?.focus();
     };
     return () => {
-      view.handlers.onFocusRequested = undefined;
+      component.handlers.onFocusRequested = undefined;
     };
-  }, [view, inputRef]);
+  }, [component, inputRef]);
 
   // Initial scroll position when note changes
   useEffect(() => {
@@ -266,11 +289,15 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ReactViewContent = () => {
-  const { view } = useAppContext();
-  const viewState = view.getState();
+  const component = useObsidianComponent() as MFDIView;
+  const { viewNoteMode } = useAppStore(
+    useShallow((s) => ({
+      viewNoteMode: s.viewNoteMode,
+    })),
+  );
   const capabilities = useMemo(
-    () => getMFDIViewCapabilities(viewState),
-    [view, viewState.noteMode],
+    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+    [viewNoteMode],
   );
   const settings = useSettingsStore(
     useShallow((s) => ({
@@ -318,7 +345,8 @@ const ReactViewContent = () => {
   });
 
   useEffect(() => {
-    view.handlers.onCopyAllPosts = () => {
+    if (!("handlers" in component)) return;
+    component.handlers.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =
         settings.threadFocusRootId && settings.displayMode === "focus"
@@ -330,10 +358,10 @@ const ReactViewContent = () => {
       navigator.clipboard.writeText(text);
     };
     return () => {
-      view.handlers.onCopyAllPosts = undefined;
+      component.handlers.onCopyAllPosts = undefined;
     };
   }, [
-    view,
+    component,
     filteredPosts,
     filteredPostsWithThreadReplies,
     settings.threadFocusRootId,
@@ -420,7 +448,7 @@ const ReactViewContent = () => {
   );
 };
 
-function useViewSync(view: MFDIView) {
+function useViewSync(view: MFDIView | null) {
   const { shell, settings } = useAppContext();
   const { openDraftList, openModalEditor } = useObsidianUi();
   const store = useCurrentAppStore();
@@ -495,30 +523,37 @@ function useViewSync(view: MFDIView) {
   }, [inputSnapshot]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ granularity });
   }, [view, granularity]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ asTask });
   }, [view, asTask]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ timeFilter });
   }, [view, timeFilter]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ dateFilter });
   }, [view, dateFilter]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ displayMode });
   }, [view, displayMode]);
 
   useEffect(() => {
+    if (!view) return;
     view.setStatePartial({ activeTopic });
   }, [view, activeTopic]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onSubmit = handleSubmit;
     return () => {
       view.handlers.onSubmit = undefined;
@@ -526,6 +561,7 @@ function useViewSync(view: MFDIView) {
   }, [view, handleSubmit]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
     return () => {
       view.handlers.onOpenDailyNoteAction = undefined;
@@ -533,6 +569,7 @@ function useViewSync(view: MFDIView) {
   }, [view, handleClickOpenDailyNote]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeGranularity = (nextGranularity: Granularity) => {
       setGranularity(nextGranularity);
       if (nextGranularity !== "day") {
@@ -557,6 +594,7 @@ function useViewSync(view: MFDIView) {
   ]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeTopic = setActiveTopic;
     return () => {
       view.handlers.onChangeTopic = undefined;
@@ -564,6 +602,7 @@ function useViewSync(view: MFDIView) {
   }, [view, setActiveTopic]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeAsTask = (nextAsTask: boolean) => {
       setAsTask(nextAsTask);
     };
@@ -573,6 +612,7 @@ function useViewSync(view: MFDIView) {
   }, [view, setAsTask]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeTimeFilter = (nextTimeFilter: TimeFilter) => {
       setTimeFilter(nextTimeFilter);
     };
@@ -582,6 +622,7 @@ function useViewSync(view: MFDIView) {
   }, [view, setTimeFilter]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeDateFilter = (nextDateFilter: DateFilter) => {
       setDateFilter(nextDateFilter);
     };
@@ -591,6 +632,7 @@ function useViewSync(view: MFDIView) {
   }, [view, setDateFilter]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
       setDisplayMode(nextDisplayMode);
     };
@@ -600,6 +642,7 @@ function useViewSync(view: MFDIView) {
   }, [view, setDisplayMode]);
 
   useEffect(() => {
+    if (!view) return;
     if (isReadOnly) {
       view.handlers.onOpenModalEditor = undefined;
       return;
@@ -622,6 +665,7 @@ function useViewSync(view: MFDIView) {
   }, [view, openModalEditor, getInputValue, replaceInput, isReadOnly]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onToggleSidebar = () => {
       setSidebarOpenRef.current(!sidebarOpenRef.current);
     };
@@ -631,6 +675,7 @@ function useViewSync(view: MFDIView) {
   }, [view]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onOpenDraftList = () => {
       openDraftList();
     };
@@ -640,6 +685,7 @@ function useViewSync(view: MFDIView) {
   }, [view, openDraftList, store]);
 
   useEffect(() => {
+    if (!view) return;
     view.handlers.onSetLiveEditorContentForTesting = (content: string) => {
       syncInputSession(content);
     };

@@ -38,7 +38,7 @@ export class TagStatsManager {
     const tags = [...new Set([...removed.keys(), ...added.keys()])];
     if (tags.length === 0) return;
 
-    const existingRows = await this.db.tagStats.bulkGet(tags as any);
+    const existingRows = await this.db.tagStats.bulkGet(tags);
     const updatedAt = new Date().toISOString();
 
     const toPut: { tag: string; count: number; updatedAt: string }[] = [];

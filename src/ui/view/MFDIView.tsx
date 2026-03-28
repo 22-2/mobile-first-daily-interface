@@ -7,19 +7,15 @@ import type { Settings } from "src/settings";
 import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
-import "src/ui/styles/draft.css";
 import "src/ui/styles/global.css";
-import "src/ui/styles/input.css";
 import "src/ui/styles/mfdi.css";
-import "src/ui/styles/modal.css";
-import { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import type { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
 import type { MFDIViewState } from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,
   getFixedNoteTitle,
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
-import "src/ui/styles/editor.css"
 
 export const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -29,7 +25,7 @@ export class MFDIView extends ItemView {
   private settings: Settings;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
-  public readonly handlers = new MFDIViewHandler();
+  public readonly handlers: MFDIViewHandler = {};
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);

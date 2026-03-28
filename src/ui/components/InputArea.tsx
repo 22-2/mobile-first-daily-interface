@@ -9,7 +9,8 @@ import {
   READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { useAppContext, useObsidianApp } from "src/ui/context/AppContext";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useObsidianComponent } from "src/ui/context/ComponentContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useAppStore } from "src/ui/store/appStore";
@@ -22,6 +23,7 @@ import {
 } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import type { MFDIView } from "../view/MFDIView";
 
 const NavButton: FC<{
   direction: "left" | "right";
@@ -65,11 +67,15 @@ const DisplayModeIndicator: FC<{
 });
 
 const InputAreaControl: FC = memo(() => {
-  const { view } = useAppContext();
-  const viewState = view.getState();
+  const component = useObsidianComponent() as MFDIView;
+  const { viewNoteMode } = useAppStore(
+    useShallow((s) => ({
+      viewNoteMode: s.viewNoteMode,
+    })),
+  );
   const capabilities = useMemo(
-    () => getMFDIViewCapabilities(viewState),
-    [view, viewState.noteMode],
+    () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+    [viewNoteMode],
   );
   const {
     date,
@@ -216,13 +222,13 @@ const InputAreaControl: FC = memo(() => {
           name="maximize"
           size="1.1em"
           className={
-            isReadOnly
+            isReadOnly || !("handlers" in component)
               ? "cursor-default opacity-30"
               : "hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={() => {
-            if (isReadOnly) return;
-            view.handlers.onOpenModalEditor?.();
+            if (isReadOnly || !("handlers" in component)) return;
+            (component).handlers.onOpenModalEditor?.();
           }}
         />
       </Box>
@@ -317,8 +323,8 @@ const InputAreaFooter: FC = memo(() => {
 });
 
 export const InputArea: FC = memo(() => {
-  const { view } = useAppContext();
-  const app = useObsidianApp();
+  const component = useObsidianComponent() as MFDIView;
+  const { shell } = useAppContext();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
       inputSnapshot: s.inputSnapshot,
@@ -341,8 +347,8 @@ export const InputArea: FC = memo(() => {
 
       <ObsidianLiveEditor
         ref={inputRef}
-        leaf={view.leaf}
-        app={app}
+        leaf={component.leaf}
+        app={shell.getRawApp()}
         initialValue={inputSnapshot}
         onChange={syncInputSession}
         onSubmit={handleSubmit}

@@ -4,17 +4,14 @@ import { createContext, useContext, useMemo } from "react";
 import { MFDIStorage } from "src/core/storage";
 import type { Settings } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { MFDIView } from "src/ui/view/MFDIView";
 
 interface AppContextValue {
   shell: ObsidianAppShell;
   storage: MFDIStorage;
   settings: Settings;
-  view: MFDIView;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
-const ObsidianAppContext = createContext<App | null>(null);
 
 export function useAppContext(): AppContextValue {
   const ctx = useContext(AppContext);
@@ -24,38 +21,26 @@ export function useAppContext(): AppContextValue {
   return ctx;
 }
 
-export function useObsidianApp(): App {
-  const app = useContext(ObsidianAppContext);
-  if (!app) {
-    throw new Error("useObsidianApp must be used within AppContextProvider");
-  }
-  return app;
-}
-
 interface AppContextProviderProps {
   app: App;
   settings: Settings;
-  view: MFDIView;
   children: ReactNode;
 }
 
 export const AppContextProvider: React.FC<AppContextProviderProps> = ({
   app,
   settings,
-  view,
   children,
 }) => {
   const shell = useMemo(() => new ObsidianAppShell(app), [app]);
   const storage = useMemo(() => new MFDIStorage(shell.getAppId()), [shell]);
   const value = useMemo<AppContextValue>(
     // 一般ロジックから raw app を見えなくして、依存の漏れを型で止める。
-    () => ({ shell, storage, settings, view }),
-    [shell, storage, settings, view],
+    () => ({ shell, storage, settings }),
+    [shell, storage, settings],
   );
 
   return (
-    <ObsidianAppContext.Provider value={app}>
-      <AppContext.Provider value={value}>{children}</AppContext.Provider>
-    </ObsidianAppContext.Provider>
+    <AppContext.Provider value={value}>{children}</AppContext.Provider>
   );
 };

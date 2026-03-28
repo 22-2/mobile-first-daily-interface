@@ -1,7 +1,7 @@
 import { Menu } from "obsidian";
 import type { FC } from "react";
 import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
-import { useAppContext } from "src/ui/context/AppContext";
+import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
 
@@ -30,7 +30,7 @@ const buildTopicMenu = (
 };
 
 export const TopicDisplay: FC = () => {
-  const { settings } = useAppContext();
+  const settings = useAppStore((s) => s.pluginSettings);
   const { activeTopic, setActiveTopic, viewNoteMode } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
@@ -39,7 +39,7 @@ export const TopicDisplay: FC = () => {
     })),
   );
 
-  if (viewNoteMode === "fixed") return null;
+  if (viewNoteMode === "fixed" || !settings) return null;
 
   const activeTopicName = settings.topics.find(
     (t) => t.id === activeTopic,
