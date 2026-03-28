@@ -59,7 +59,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   return (
     <Flex
       ref={rootRef}
-      className={`base-card flex flex-col max-h-[50vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass} ${
+      className={`base-card flex flex-col max-h-[30vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass} ${
         clickToActivate && !activated ? "cursor-pointer" : ""
       }`}
       onClick={(e) => {
