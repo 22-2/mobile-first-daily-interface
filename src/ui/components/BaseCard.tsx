@@ -1,4 +1,6 @@
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Flex, HStack, Spacer, Tag } from "src/ui/components/primitives";
+import { useAppStore } from "src/ui/store/appStore";
 import {
   DISPLAY_DATE_TIME_FORMAT,
   DISPLAY_TIME_FORMAT,
@@ -32,13 +34,46 @@ export const BaseCard: React.FC<BaseCardProps> = ({
 }) => {
   const dimClass = isDimmed ? "opacity-60 filter grayscale" : "";
 
+  // Feature toggle from plugin settings: whether click-to-activate behavior is enabled.
+  const clickToActivate = useAppStore(
+    (s: any) => s.pluginSettings?.clickToActivateScroll ?? false,
+  );
+
+  const [activated, setActivated] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!clickToActivate) return;
+    const handler = (e: MouseEvent) => {
+      if (!rootRef.current) return;
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (!rootRef.current.contains(target)) {
+        setActivated(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [clickToActivate]);
+
   return (
     <Flex
-      className={`base-card flex flex-col max-h-[50vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass}`}
+      ref={rootRef}
+      className={`base-card flex flex-col max-h-[50vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass} ${
+        clickToActivate && !activated ? "cursor-pointer" : ""
+      }`}
+      onClick={(e) => {
+        if (clickToActivate) {
+          setActivated(true);
+        }
+      }}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
-      <Box className="overflow-y-auto flex-1 mfdi-scroll-area">
+      <Box
+        className={`flex-1 mfdi-scroll-area ${
+          clickToActivate ? (activated ? "activated" : "not-activated") : ""
+        }`}>
         {children}
       </Box>
 

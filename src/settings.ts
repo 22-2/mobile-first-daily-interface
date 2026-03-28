@@ -8,6 +8,8 @@ export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
+  // When true, posts become scrollable only after being clicked (activated).
+  clickToActivateScroll: boolean;
   allowEditingPastNotes: boolean;
   updateDateStrategy: "never" | "always" | "same_day";
   topics: Topic[];
@@ -20,6 +22,7 @@ export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "Thino",
   insertAfter: "## Thino",
   enabledCardView: true,
+  clickToActivateScroll: true,
   allowEditingPastNotes: false,
   updateDateStrategy: "never",
   topics: [DEFAULT_TOPIC],
@@ -32,7 +35,6 @@ export const postFormatMap = {
   Thino: { type: "thino" },
 } as const;
 export type PostFormatOption = keyof typeof postFormatMap;
-type PostFormat = (typeof postFormatMap)[PostFormatOption];
 
 export class MFDISettingTab extends PluginSettingTab {
   plugin: MFDIPlugin;
@@ -61,15 +63,15 @@ export class MFDISettingTab extends PluginSettingTab {
     containerEl: HTMLElement,
     name: string,
     desc: string,
-    key: keyof Pick<Settings, "enabledCardView" | "allowEditingPastNotes">,
+    key: keyof Settings,
     rerenderOnChange = false,
   ): void {
     new Setting(containerEl)
       .setName(name)
       .setDesc(desc)
       .addToggle((tc) =>
-        tc.setValue(this.plugin.settings[key]).onChange(async (value) => {
-          await this.updateSetting(key, value);
+        tc.setValue(Boolean(this.plugin.settings[key])).onChange(async (value) => {
+          await this.updateSetting(key as any, value as any);
           if (rerenderOnChange) this.plugin.rerenderView();
         }),
       );
@@ -125,6 +127,14 @@ export class MFDISettingTab extends PluginSettingTab {
       "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
       "allowEditingPastNotes",
       true,
+    );
+
+    this.addToggleSetting(
+      containerEl,
+      "投稿のクリックでスクロールを有効化",
+      "有効にすると投稿をクリック（アクティベート）したときだけ内部がスクロール可能になります。",
+      "clickToActivateScroll",
+      false,
     );
 
     new Setting(containerEl)

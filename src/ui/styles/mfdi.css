@@ -82,13 +82,21 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent;
   border-radius: var(--size-2-5);
 }
-.mfdi-scroll-area:hover::-webkit-scrollbar-thumb {
+.mfdi-scroll-area.activated::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
 }
 .mfdi-scroll-area {
+  /* By default, do not allow internal scrolling. When activated, `.activated` enables scrolling. */
+  overflow-y: hidden;
   scrollbar-width: none; /* Firefox */
 }
-.mfdi-scroll-area:hover {
+.mfdi-scroll-area.activated {
+  overflow-y: auto;
+}
+.mfdi-scroll-area:not(.activated) {
+  overflow-y: hidden;
+}
+.mfdi-scroll-area.activated:hover {
   scrollbar-width: thin;
 }
 
