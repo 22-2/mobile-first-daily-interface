@@ -1,5 +1,5 @@
 import type { Menu, WorkspaceLeaf } from "obsidian";
-import { ItemView, Scope, TFile } from "obsidian";
+import { ItemView, Scope, Setting, TFile } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { ensureExtension } from "src/core/path";
@@ -167,6 +167,21 @@ export class MFDIView extends ItemView {
         this.handlers.onToggleSidebar?.();
       });
     }
+
+    // toggleする
+    this.addAction("search", "検索", () => {
+      const searchSetting = new Setting(createDiv())
+        .addSearch((search) => {
+          search.onChange((value) => {
+            // this.handlers.onSearchQueryChange?.(value);
+          })
+          search.inputEl.addEventListener("blur", () => {
+            searchSetting.controlEl.detach();
+          });
+          window.setTimeout(() => search.inputEl.focus());
+        });
+      this.actionsEl.prepend(searchSetting.controlEl);
+    });
 
     if (this.state.noteMode === "fixed") {
       this.setupEditableTitleBar();
