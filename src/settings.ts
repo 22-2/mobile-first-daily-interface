@@ -13,6 +13,7 @@ export interface Settings {
   topics: Topic[];
   activeTopic: string;
   fixedNoteFiles: { path: string }[];
+  fullScanIntervalHours?: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   topics: [DEFAULT_TOPIC],
   activeTopic: "",
   fixedNoteFiles: [],
+  fullScanIntervalHours:1,
 };
 
 export const postFormatMap = {
@@ -74,6 +76,22 @@ export class MFDISettingTab extends PluginSettingTab {
   }
 
   private addGeneralSettings(containerEl: HTMLElement): void {
+    new Setting(containerEl)
+      .setName("全体フルスキャンの間隔（時間）")
+      .setDesc("最後のフルスキャンから経過したら起動時にフルスキャンを実行します。")
+      .addDropdown((tc) =>
+        tc
+          .addOption("1", "1時間")
+          .addOption("3", "3時間")
+          .addOption("6", "6時間")
+          .addOption("12", "12時間")
+          .addOption("24", "24時間（デフォルト）")
+          .setValue(String(this.plugin.settings.fullScanIntervalHours ?? 24))
+          .onChange(async (value) => {
+            await this.updateSetting("fullScanIntervalHours", parseInt(value, 10));
+          }),
+      );
+
     new Setting(containerEl)
       .setName("挿入位置 (文字列の後ろ)")
       .setDesc(

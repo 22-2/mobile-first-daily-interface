@@ -5,6 +5,7 @@ import type { FixedNoteViewExtension } from "src/extensions/fixed-note-view-exte
 import { createFixedNoteViewExtension } from "src/extensions/fixed-note-view-extension";
 import type { TagIndexExtension } from "src/extensions/tag-index-extension";
 import { createTagIndexExtension } from "src/extensions/tag-index-extension";
+import { MFDIStorage } from "src/core/storage";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import type { MFDIView } from "src/ui/view/MFDIView";
@@ -105,6 +106,7 @@ export function createCommandContribution(): BuiltinContribution {
 // テスト時はモック extension を直接注入できる。
 export function createTagIndexLifecycleContribution(
   tagIndexExtension: TagIndexExtension,
+  storage: MFDIStorage,
 ): BuiltinContribution {
   return {
     id: "tag-index-lifecycle",
@@ -114,8 +116,31 @@ export function createTagIndexLifecycleContribution(
         void tagIndexExtension.dispose();
       });
 
-      context.app.workspace.onLayoutReady(() => {
-        void tagIndexExtension.fullScan(context.shell, context.getSettings());
+      context.app.workspace.onLayoutReady(async () => {
+        try {
+          const settings = context.getSettings();
+          const intervalHours = settings.fullScanIntervalHours ?? 24;
+
+          const last = storage.get<string | null>("lastFullScanAt", null);
+          let shouldScan = false;
+
+          if (!last) {
+            shouldScan = true;
+          } else {
+            const diffHours = window
+              .moment()
+              .diff(window.moment(last), "hours", true);
+            shouldScan = diffHours >= intervalHours;
+          }
+
+          if (!shouldScan) {
+            return;
+          }
+          await tagIndexExtension.fullScan(context.shell, settings);
+          storage.set("lastFullScanAt", window.moment().toISOString());
+        } catch (e) {
+          console.error("Failed to run conditional full scan:", e);
+        }
       });
 
       context.registerEvent(
@@ -225,7 +250,10 @@ export function createBuiltinContributions(
     createViewRegistrationContribution(),
     createRibbonContribution(),
     createCommandContribution(),
-    createTagIndexLifecycleContribution(createTagIndexExtension(appId)),
+    createTagIndexLifecycleContribution(
+      createTagIndexExtension(appId),
+      new MFDIStorage(appId),
+    ),
     createFixedNoteRegistryContribution(),
     createFixedNoteViewLifecycleContribution(createFixedNoteViewExtension()),
   ];
