@@ -20,6 +20,7 @@ import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import { cn } from "../primitives/utils";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }
@@ -33,6 +34,7 @@ export const PostListView: React.FC = memo(() => {
       granularity: s.granularity,
       displayMode: s.displayMode,
       dateFilter: s.dateFilter,
+      sidebarOpen: s.sidebarOpen,
       setDate: s.setDate,
       setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
@@ -453,7 +455,11 @@ export const PostListView: React.FC = memo(() => {
           これ以上投稿はありません
         </Box>
       )}
-      <FloatingButton className="up-button fixed" onClick={scrollToTop} visible={showScrollTop}>
+      <FloatingButton
+        className={cn("up-button fixed", settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8")}
+        onClick={scrollToTop}
+        visible={showScrollTop}
+      >
         <ObsidianIcon className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]" name="chevron-up" boxSize="1.2em" />
       </FloatingButton>
     </Box>
