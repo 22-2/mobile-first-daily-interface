@@ -45,7 +45,10 @@ export const ObsidianMarkdown: React.FC<Props> = ({ content, sourcePath }) => {
         }
         e.preventDefault();
         const href = el.getAttribute("data-href");
-        shell.getRawApp().workspace.getLeaf().openLinkText(href ?? "", sourcePath ?? "");
+        shell
+          .getRawApp()
+          .workspace.getLeaf()
+          .openLinkText(href ?? "", sourcePath ?? "");
       }}
     />
   );

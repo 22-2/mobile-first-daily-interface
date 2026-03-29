@@ -100,7 +100,8 @@ function resolveInitialSettingsState(
         STORAGE_KEYS.DATE_FILTER,
         DATE_FILTER_IDS.TODAY,
       ) ?? DATE_FILTER_IDS.TODAY,
-    sidebarOpen: storage?.get<boolean>(STORAGE_KEYS.SIDEBAR_OPEN, false) ?? false,
+    sidebarOpen:
+      storage?.get<boolean>(STORAGE_KEYS.SIDEBAR_OPEN, false) ?? false,
     displayMode:
       storage?.get<DisplayMode>(
         STORAGE_KEYS.DISPLAY_MODE,

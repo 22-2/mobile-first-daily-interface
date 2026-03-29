@@ -5,7 +5,7 @@ import "fake-indexeddb/auto";
 // assert formatted local times (e.g. 16:00:00 JST).
 process.env.TZ = "Asia/Tokyo";
 
-import { beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 // Load moment after TZ is set so it picks up the intended timezone.
 const momentModule = await import("moment");

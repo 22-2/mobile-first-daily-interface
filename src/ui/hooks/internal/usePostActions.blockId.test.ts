@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
-import { TFile, Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-query", () => ({
   useQueryClient: vi.fn(() => ({
@@ -46,10 +46,14 @@ describe("usePostActions - copyBlockIdLink", () => {
 
     mockApp = {
       vault: {
-        getAbstractFileByPath: vi.fn((path: string) => (path === testNote.path ? testNote : null)),
+        getAbstractFileByPath: vi.fn((path: string) =>
+          path === testNote.path ? testNote : null,
+        ),
       },
       fileManager: {
-        generateMarkdownLink: vi.fn((file, _path, subpath) => `[[${file.basename}${subpath}]]`),
+        generateMarkdownLink: vi.fn(
+          (file, _path, subpath) => `[[${file.basename}${subpath}]]`,
+        ),
       },
     };
 
@@ -105,7 +109,9 @@ describe("usePostActions - copyBlockIdLink", () => {
       await result.current.copyBlockIdLink(postWithId);
     });
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("[[test-note#^existing123]]");
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      "[[test-note#^existing123]]",
+    );
     expect(Notice).toHaveBeenCalledWith("ブロックIDリンクをコピーしました");
     expect(mockShell.replaceRange).not.toHaveBeenCalled();
   });
@@ -136,7 +142,9 @@ describe("usePostActions - copyBlockIdLink", () => {
     expect(savedText).toMatch(/\^([0-9a-z]{6})/);
 
     const generatedId = savedText.match(/\^([0-9a-z]{6})/)[1];
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`[[test-note#^${generatedId}]]`);
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      `[[test-note#^${generatedId}]]`,
+    );
     expect(Notice).toHaveBeenCalledWith("ブロックIDリンクをコピーしました");
   });
 });

@@ -5,9 +5,9 @@ import {
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
 import { HStack, Text, VStack } from "src/ui/components/primitives";
+import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 
 interface TagCountItem {
   tag: string;
@@ -16,7 +16,10 @@ interface TagCountItem {
 
 export const TagList: React.FC = () => {
   const { activeTag, setActiveTag } = useSettingsStore(
-    useShallow((s) => ({ activeTag: s.activeTag, setActiveTag: s.setActiveTag })),
+    useShallow((s) => ({
+      activeTag: s.activeTag,
+      setActiveTag: s.setActiveTag,
+    })),
   );
 
   const db = useMFDIDB();
@@ -35,7 +38,9 @@ export const TagList: React.FC = () => {
         const tagStats = await db.getTagStats();
         const sorted = tagStats
           .map(({ tag, count }) => ({ tag, count }))
-          .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "ja"));
+          .sort(
+            (a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "ja"),
+          );
 
         if (mounted) setItems(sorted);
       } catch (e) {

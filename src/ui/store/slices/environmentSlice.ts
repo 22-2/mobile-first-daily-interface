@@ -30,7 +30,6 @@ export const createEnvironmentSlice: StateCreator<
   },
 
   initializeAppStore: ({ shell, settings, storage }) => {
-
     set({
       shell,
       pluginSettings: settings,

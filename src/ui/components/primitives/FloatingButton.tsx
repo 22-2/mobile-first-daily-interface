@@ -34,4 +34,6 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
   );
 };
 
-Object.defineProperty(FloatingButton, "displayName", { value: "FloatingButton" });
+Object.defineProperty(FloatingButton, "displayName", {
+  value: "FloatingButton",
+});

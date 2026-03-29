@@ -1,11 +1,11 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
-import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
@@ -468,11 +468,18 @@ export const PostListView: React.FC = memo(() => {
         </Box>
       )}
       <FloatingButton
-        className={cn("up-button fixed", settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8")}
+        className={cn(
+          "up-button fixed",
+          settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8",
+        )}
         onClick={scrollToTop}
         visible={showScrollTop}
       >
-        <ObsidianIcon className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]" name="chevron-up" boxSize="1.2em" />
+        <ObsidianIcon
+          className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]"
+          name="chevron-up"
+          boxSize="1.2em"
+        />
       </FloatingButton>
     </Box>
   );

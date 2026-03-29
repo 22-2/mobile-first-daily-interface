@@ -82,7 +82,11 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     input: string,
     options: UpdateSessionInputOptions = {},
   ) => {
-    const { updateEditor, syncEditorIfStale, persistMode = "debounced" } = options;
+    const {
+      updateEditor,
+      syncEditorIfStale,
+      persistMode = "debounced",
+    } = options;
 
     set({ inputSnapshot: input });
     persistInput(input, persistMode);
@@ -157,8 +161,14 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       storage?.set(STORAGE_KEYS.EDITING_POST_GRANULARITY, granularity);
       storage?.set(STORAGE_KEYS.EDITING_POST_ID, post.id);
       storage?.set(STORAGE_KEYS.EDITING_POST_PATH, post.path);
-      storage?.set(STORAGE_KEYS.EDITING_POST_TIMESTAMP, post.timestamp.toISOString());
-      storage?.set(STORAGE_KEYS.EDITING_POST_METADATA, JSON.stringify(post.metadata));
+      storage?.set(
+        STORAGE_KEYS.EDITING_POST_TIMESTAMP,
+        post.timestamp.toISOString(),
+      );
+      storage?.set(
+        STORAGE_KEYS.EDITING_POST_METADATA,
+        JSON.stringify(post.metadata),
+      );
 
       replaceInput(post.message);
 
@@ -177,11 +187,19 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       const { editingPost, editingPostOffset } = get();
       if (editingPost) return editingPost;
       if (editingPostOffset === null) return null;
-      return posts.find((post) => post.startOffset === editingPostOffset) ?? null;
+      return (
+        posts.find((post) => post.startOffset === editingPostOffset) ?? null
+      );
     },
 
     canSubmit: (posts, currentValue) => {
-      const { getInputValue, granularity, getEffectiveDate, getEditingPost, isDateReadOnly } = get();
+      const {
+        getInputValue,
+        granularity,
+        getEffectiveDate,
+        getEditingPost,
+        isDateReadOnly,
+      } = get();
       const input = currentValue ?? getInputValue();
       const effectiveDate = getEffectiveDate();
 
@@ -204,13 +222,29 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       );
 
       const id = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_ID, null);
-      const path = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_PATH, null);
-      const timestampStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_TIMESTAMP, null);
-      const metadataStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_METADATA, null);
-      const noteDateStr = storage.get<string | null>(STORAGE_KEYS.EDITING_POST_DATE, null);
+      const path = storage.get<string | null>(
+        STORAGE_KEYS.EDITING_POST_PATH,
+        null,
+      );
+      const timestampStr = storage.get<string | null>(
+        STORAGE_KEYS.EDITING_POST_TIMESTAMP,
+        null,
+      );
+      const metadataStr = storage.get<string | null>(
+        STORAGE_KEYS.EDITING_POST_METADATA,
+        null,
+      );
+      const noteDateStr = storage.get<string | null>(
+        STORAGE_KEYS.EDITING_POST_DATE,
+        null,
+      );
 
       const canReconstruct =
-        id && path && timestampStr && metadataStr && noteDateStr &&
+        id &&
+        path &&
+        timestampStr &&
+        metadataStr &&
+        noteDateStr &&
         persistedEditingOffset !== null;
 
       const reconstructedPost = canReconstruct

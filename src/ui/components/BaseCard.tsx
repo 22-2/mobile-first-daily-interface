@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Flex, HStack, Spacer, Tag } from "src/ui/components/primitives";
-import { useAppStore } from "src/ui/store/appStore";
 import {
   DISPLAY_DATE_TIME_FORMAT,
   DISPLAY_TIME_FORMAT,
 } from "src/ui/config/date-formats";
+import { useAppStore } from "src/ui/store/appStore";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
 interface BaseCardProps {
@@ -73,7 +73,8 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       <Box
         className={`flex-1 mfdi-scroll-area ${
           clickToActivate ? (activated ? "activated" : "not-activated") : ""
-        }`}>
+        }`}
+      >
         {children}
       </Box>
 
