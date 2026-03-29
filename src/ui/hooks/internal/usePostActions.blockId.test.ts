@@ -55,7 +55,7 @@ describe("usePostActions - copyBlockIdLink", () => {
 
     mockShell = {
       getVault: vi.fn(() => mockApp.vault),
-      getApp: vi.fn(() => mockApp),
+      getRawApp: vi.fn(() => mockApp),
       loadFile: vi.fn(async () => ""),
       replaceRange: vi.fn().mockResolvedValue(undefined),
     };

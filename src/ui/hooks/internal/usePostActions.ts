@@ -680,7 +680,7 @@ export const usePostActions = () => {
       }
 
       const link = shell
-        .getApp()
+        .getRawApp()
         .fileManager.generateMarkdownLink(file, "", `#^${blockId}`);
       await navigator.clipboard.writeText(link);
       new Notice("ブロックIDリンクをコピーしました");
