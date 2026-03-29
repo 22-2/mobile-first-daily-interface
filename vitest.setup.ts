@@ -18,7 +18,7 @@ const moment = (momentModule as any).default ?? momentModule;
 beforeEach(() => {
   vi.useFakeTimers();
   // Default 'now' matching existing test expectations
-  vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));
+  vi.setSystemTime(new Date("2026-03-15T10:00:00.000+09:00"));
 });
 
 afterEach(() => {

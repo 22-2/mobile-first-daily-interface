@@ -2,6 +2,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { TFile, Notice } from "obsidian";
 import { useAppContext } from "src/ui/context/AppContext";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
@@ -30,7 +31,7 @@ vi.mock("obsidian", async () => {
 });
 
 describe("usePostActions - copyBlockIdLink", () => {
-  const today = window.moment("2026-03-15T09:00:00.000Z");
+  const today = window.moment("2026-03-15T10:00:00.000+09:00");
   const testNote = Object.assign(new TFile(), {
     path: "test-note.md",
     basename: "test-note",
@@ -41,9 +42,6 @@ describe("usePostActions - copyBlockIdLink", () => {
   let mockShell: any;
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(today.toDate());
-
     mockApp = {
       vault: {
         getAbstractFileByPath: vi.fn((path: string) => (path === testNote.path ? testNote : null)),
@@ -83,7 +81,6 @@ describe("usePostActions - copyBlockIdLink", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -111,6 +108,8 @@ describe("usePostActions - copyBlockIdLink", () => {
   });
 
   it("blockId がない場合は新しく生成して保存してからコピーする", async () => {
+    // Force focus mode so that findLatestPost uses absolute offsets correctly
+    settingsStore.setState({ displayMode: DISPLAY_MODE.FOCUS });
     const postWithoutId = {
       id: "post-2",
       message: "no id",
@@ -122,7 +121,7 @@ describe("usePostActions - copyBlockIdLink", () => {
       endOffset: 5,
     } as any;
 
-    mockShell.loadFile.mockResolvedValue("## Thino\n- 09:00:00 no id\n");
+    mockShell.loadFile.mockResolvedValue("## Thino\n- 10:00:00 no id\n");
 
     const { result } = renderHook(() => usePostActions());
 

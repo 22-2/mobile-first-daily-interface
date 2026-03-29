@@ -46,16 +46,16 @@ vi.mock("./refreshPosts", () => ({
 }));
 
 describe("timeline note resolution", () => {
-  const today = window.moment("2026-03-15T09:00:00.000Z");
+  const today = window.moment("2026-03-15T10:00:00.000+09:00");
   const yesterday = today.clone().subtract(1, "day");
   const todayNote = Object.assign(new TFile(), {
-    path: "2026-03-15.md",
-    basename: "2026-03-15",
+    path: today.format("YYYY-MM-DD") + ".md",
+    basename: today.format("YYYY-MM-DD"),
     extension: "md",
   }) as any;
   const yesterdayNote = Object.assign(new TFile(), {
-    path: "2026-03-14.md",
-    basename: "2026-03-14",
+    path: yesterday.format("YYYY-MM-DD") + ".md",
+    basename: yesterday.format("YYYY-MM-DD"),
     extension: "md",
   }) as any;
   let mockApp: any;
@@ -68,8 +68,6 @@ describe("timeline note resolution", () => {
   const mockScrollTo = vi.fn();
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(today.toDate());
     vi.clearAllMocks();
 
     mockApp = {
@@ -183,10 +181,6 @@ describe("timeline note resolution", () => {
     });
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("タイムライン投稿では過去ノートを見ていても今日のノートを作成して投稿する", async () => {
     vi.mocked(dailyNotes.getTopicNote).mockReturnValue(null);
     mockCreateNoteWithInsertAfter.mockResolvedValue(todayNote);
@@ -241,7 +235,7 @@ describe("timeline note resolution", () => {
     expect(mockInsertTextAfter).toHaveBeenCalledWith(
       todayNote,
       [
-        `- ${today.format("HH:mm:ss")}`,
+        `- 10:00:00`,
         "    ```",
         "    console.log('hello')",
         "    ```",
@@ -309,6 +303,9 @@ describe("timeline note resolution", () => {
       date.isSame(today, "day") ? todayNote : null,
     );
 
+    // Timeline view effectively uses current time as its date
+    settingsStore.setState({ displayMode: DISPLAY_MODE.TIMELINE });
+
     await noteStore.getState().handleClickOpenDailyNote(mockApp, {
       insertAfter: "## Thino",
     } as any);
@@ -320,6 +317,9 @@ describe("timeline note resolution", () => {
   it("タイムラインで今日のノートが無ければ作成してから開く", async () => {
     vi.mocked(dailyNotes.getTopicNote).mockReturnValue(null);
     mockCreateNoteWithInsertAfter.mockResolvedValue(todayNote);
+
+    // Timeline view effectively uses current time as its date
+    settingsStore.setState({ displayMode: DISPLAY_MODE.TIMELINE });
 
     await noteStore.getState().handleClickOpenDailyNote(mockApp, {
       insertAfter: "## Thino",
@@ -450,7 +450,7 @@ describe("timeline note resolution", () => {
     settingsStore.setState({
       threadFocusRootId: "root-today-1",
       displayMode: DISPLAY_MODE.FOCUS,
-      date: today.clone(),
+      date: today.clone().startOf("day"),
     });
     mockInsertTextAfter.mockResolvedValue(undefined);
     mockRefreshPosts.mockResolvedValue(undefined);
@@ -462,7 +462,7 @@ describe("timeline note resolution", () => {
     });
 
     expect(mockInsertTextAfter.mock.calls[0][1]).toContain(
-      `- ${today.format("HH:mm:ss")} timeline post`,
+      `- 10:00:00 timeline post`,
     );
     expect(mockInsertTextAfter.mock.calls[0][1]).not.toContain(
       "- 23:59:59 timeline post",
@@ -576,6 +576,8 @@ note header
   });
 
   it("タイムラインからスレッド作成した時はフォーカス切替後に再読込する", async () => {
+    // Override date for this test specifically if needed,
+    // but settingsSlice behavior should depend on displayMode.
     const plainPost = {
       id: `${yesterdayNote.path}:0`,
       threadRootId: null,
@@ -830,6 +832,8 @@ prefix
   });
 
   it("永久削除は対象投稿だけを消して前後のデータを壊さない", async () => {
+    // Force focus mode for absolute offset deletion test
+    settingsStore.setState({ displayMode: DISPLAY_MODE.FOCUS });
     const targetPost = {
       id: `${yesterdayNote.path}:20`,
       threadRootId: null,

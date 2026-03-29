@@ -79,7 +79,6 @@ vi.mock("src/ui/hooks/useMFDIDB", () => ({
 
 describe("useInfiniteTimeline", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.clearAllMocks();
     // モック環境で Obsidian の `activeDocument.hasFocus()` を安定させる
     vi.stubGlobal("activeDocument", { hasFocus: vi.fn(() => true) });
@@ -102,10 +101,6 @@ describe("useInfiniteTimeline", () => {
       hasNextPage: false,
       isFetchingNextPage: false,
     });
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it("queryKey に日付キーを含め、日付跨ぎでクエリが切り替わる", () => {
@@ -145,7 +140,7 @@ describe("useInfiniteTimeline", () => {
 
   it("タイムライン表示中に日付が変わったら setDate を呼ぶ", () => {
     settingsState.date = moment("2026-03-15T00:00:00.000Z");
-    vi.setSystemTime(new Date("2026-03-16T00:01:00.000Z"));
+    vi.setSystemTime(new Date("2026-03-16T10:01:00.000+09:00"));
 
     renderHook(() => useInfiniteTimeline());
 
@@ -155,7 +150,7 @@ describe("useInfiniteTimeline", () => {
 
     expect(setDateMock).toHaveBeenCalledTimes(1);
     const calledMoment = setDateMock.mock.calls[0][0];
-    expect(calledMoment.isSame(moment("2026-03-16T00:01:00.000Z"), "day")).toBe(
+    expect(calledMoment.isSame(moment("2026-03-16T10:01:00.000+09:00"), "day")).toBe(
       true,
     );
   });

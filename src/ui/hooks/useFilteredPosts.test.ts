@@ -24,10 +24,6 @@ function createPost(overrides: Partial<Post>): Post {
 }
 
 describe("useFilteredPosts", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   test("通常表示ではスレッド返信を隠す", () => {
     const posts = [
       createPost({ id: "reply-1", threadRootId: "root-1", startOffset: 20 }),
@@ -117,7 +113,6 @@ describe("useFilteredPosts", () => {
   });
 
   test("fixed note では現在時刻基準の日付フィルタを適用する", () => {
-    vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));
 
     const posts = [
@@ -156,7 +151,6 @@ describe("useFilteredPosts", () => {
   });
 
   test("fixed note では timeFilter を適用し、activeTag は無視する", () => {
-    vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));
 
     const posts = [

@@ -9,12 +9,10 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("settingsSlice", () => {
-  const today = window.moment("2026-03-16T09:00:00.000Z");
+  const today = window.moment("2026-03-15T10:00:00.000+09:00");
   const yesterday = today.clone().subtract(1, "day");
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(today.toDate());
     settingsStore.setState({
       pluginSettings: {
         postFormatOption: "Thino",
