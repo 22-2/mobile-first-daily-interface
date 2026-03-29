@@ -201,4 +201,29 @@ describe("parseThinoEntries", () => {
     expect(entries[0].message).toContain("[posted::keep-me-too]");
     expect(entries[0].metadata.posted).toBe("2026-03-19T10:00:00.000Z");
   });
+
+  test("parses block ID and metadata in various orders", () => {
+    const content = [
+      "## Thino",
+      "- 10:00:00 block id at end [key::val] ^abc123",
+      "- 10:01:00 block id before metadata ^def456 [key::val]",
+      "- 10:02:00 block id on separate line",
+      "    content",
+      "    [key::val]",
+      "    ^ghi789",
+      "",
+    ].join("\n");
+
+    const entries = parseThinoEntries(content);
+    expect(entries).toHaveLength(3);
+
+    expect(entries[0].message).toBe("block id at end");
+    expect(entries[0].metadata).toEqual({ key: "val", blockId: "abc123" });
+
+    expect(entries[1].message).toBe("block id before metadata");
+    expect(entries[1].metadata).toEqual({ key: "val", blockId: "def456" });
+
+    expect(entries[2].message).toBe("block id on separate line\ncontent");
+    expect(entries[2].metadata).toEqual({ key: "val", blockId: "ghi789" });
+  });
 });

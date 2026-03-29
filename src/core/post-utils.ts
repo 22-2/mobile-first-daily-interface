@@ -42,7 +42,10 @@ export function toText(
   const shouldMoveFirstLineToBody = isFencedCodeBlockStart(firstLine);
   const inlineFirstLine = shouldMoveFirstLineToBody ? "" : firstLine;
   const restLines = shouldMoveFirstLineToBody ? lines : lines.slice(1);
-  const metadataEntries = Object.entries(metadata);
+  const metadataEntries = Object.entries(metadata).filter(
+    ([k]) => k !== "blockId",
+  );
+  const blockId = metadata.blockId;
 
   const head =
     inlineFirstLine.length > 0
@@ -61,6 +64,9 @@ export function toText(
   const metadataLines = metadataEntries.map(([k, v]) => `    [${k}::${v}]`);
 
   const trailingLines = [...bodyLines, ...metadataLines];
+  if (blockId) {
+    trailingLines.push(`    ^${blockId}`);
+  }
 
   if (trailingLines.length === 0) {
     return head + "\n";

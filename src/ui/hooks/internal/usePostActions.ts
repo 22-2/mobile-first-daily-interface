@@ -665,6 +665,29 @@ export const usePostActions = () => {
     [shell, settings, settingsState, deletePost, store],
   );
 
+  const copyBlockIdLink = useCallback(
+    async (post: Post) => {
+      let blockId = post.metadata.blockId;
+      if (!blockId) {
+        blockId = Math.random().toString(36).substring(2, 8);
+        await replaceAndRefresh(post, { blockId });
+      }
+
+      const file = shell.getVault().getAbstractFileByPath(post.path);
+      if (!(file instanceof TFile)) {
+        new Notice("ファイルを特定できませんでした");
+        return;
+      }
+
+      const link = shell
+        .getApp()
+        .fileManager.generateMarkdownLink(file, "", `#^${blockId}`);
+      await navigator.clipboard.writeText(link);
+      new Notice("ブロックIDリンクをコピーしました");
+    },
+    [shell, replaceAndRefresh],
+  );
+
   const createThread = useCallback(
     async (post: Post) => {
       if (post.threadRootId === post.id) {
@@ -772,5 +795,6 @@ export const usePostActions = () => {
     setPostTags,
     movePostToTomorrow,
     handleClickTime,
+    copyBlockIdLink,
   };
 };

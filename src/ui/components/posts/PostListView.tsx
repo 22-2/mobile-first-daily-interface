@@ -77,6 +77,7 @@ export const PostListView: React.FC = memo(() => {
     archivePost,
     createThread,
     setPostTags,
+    copyBlockIdLink,
   } = usePostActions();
 
   const timelineView = isTimelineView(settings.displayMode);
@@ -167,6 +168,16 @@ export const PostListView: React.FC = memo(() => {
               await setPostTags(post, nextValue);
             }),
         );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("ブロックIDを付与してコピー")
+            .setIcon("link")
+            .setDisabled(isReadOnly)
+            .onClick(() => {
+              copyBlockIdLink(post);
+            }),
+        );
       });
 
       menu.addSeparator();
@@ -252,6 +263,7 @@ export const PostListView: React.FC = memo(() => {
       capabilities.supportsTags,
       showTextInput,
       confirmDeleteAction,
+      copyBlockIdLink,
     ],
   );
 

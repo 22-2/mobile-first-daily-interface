@@ -33,14 +33,25 @@ function stripTrailingMetadata(
   let nextLine = line;
 
   while (true) {
-    const match = nextLine.match(/^(.*?)(?:\s+)?\[([^\]:]+)::([^\]]+)\]\s*$/);
-    if (!match) {
-      return nextLine;
+    const metadataMatch = nextLine.match(
+      /^(.*?)(?:\s+)?\[([^\]:]+)::([^\]]+)\]\s*$/,
+    );
+    if (metadataMatch) {
+      const [, prefix, key, value] = metadataMatch;
+      metadata[key.trim()] = value.trim();
+      nextLine = prefix.trimEnd();
+      continue;
     }
 
-    const [, prefix, key, value] = match;
-    metadata[key.trim()] = value.trim();
-    nextLine = prefix.trimEnd();
+    const blockIdMatch = nextLine.match(/^(.*?)(?:\s+)?\^([0-9a-zA-Z-]+)\s*$/);
+    if (blockIdMatch) {
+      const [, prefix, blockId] = blockIdMatch;
+      metadata["blockId"] = blockId;
+      nextLine = prefix.trimEnd();
+      continue;
+    }
+
+    return nextLine;
   }
 }
 
@@ -77,8 +88,14 @@ function extractMessageAndMetadata(
     const metadataOnlyMatch = lines[lastIndex].match(
       /^\[([^\]:]+)::([^\]]+)\]$/,
     );
-    if (metadataOnlyMatch) {
-      metadata[metadataOnlyMatch[1].trim()] = metadataOnlyMatch[2].trim();
+    const blockIdOnlyMatch = lines[lastIndex].match(/^\^([0-9a-zA-Z-]+)$/);
+
+    if (metadataOnlyMatch || blockIdOnlyMatch) {
+      if (metadataOnlyMatch) {
+        metadata[metadataOnlyMatch[1].trim()] = metadataOnlyMatch[2].trim();
+      } else if (blockIdOnlyMatch) {
+        metadata["blockId"] = blockIdOnlyMatch[1];
+      }
       lines.splice(lastIndex, 1);
       isOutsideFence.splice(lastIndex, 1);
       lastIndex -= 1;
