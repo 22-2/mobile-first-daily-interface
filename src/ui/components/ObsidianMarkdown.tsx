@@ -28,5 +28,25 @@ export const ObsidianMarkdown: React.FC<Props> = ({ content, sourcePath }) => {
     ).catch((e) => console.error("Failed to render markdown", e));
   }, [content, sourcePath, shell, component]);
 
-  return <Box ref={rootRef} className="markdown-rendered block" />;
+  return (
+    <Box
+      ref={rootRef}
+      className="markdown-rendered block"
+      onClick={(e) => {
+        const el = e.target as HTMLElement;
+        // 応急処置
+        // なぜかObsidianのMarkdownRendererはaタグにonClickをつけないとリンクが機能しない
+
+        if (el.tagName !== "A") {
+          return;
+        }
+        if (!el.classList.contains("internal-link")) {
+          return;
+        }
+        e.preventDefault();
+        const href = el.getAttribute("data-href");
+        shell.getRawApp().workspace.getLeaf().openLinkText(href ?? "", sourcePath ?? "");
+      }}
+    />
+  );
 };
