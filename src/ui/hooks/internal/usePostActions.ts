@@ -136,6 +136,7 @@ export const usePostActions = () => {
         return latestById;
       }
 
+      // IDで見つからない場合は、内容と日時が完全に一致する投稿を探す（位置が変わっている可能性があるため）
       return (
         latestPosts.find(
           (candidate) =>
@@ -665,6 +666,29 @@ export const usePostActions = () => {
     [shell, settings, settingsState, deletePost, store],
   );
 
+  const copyBlockIdLink = useCallback(
+    async (post: Post) => {
+      let blockId = post.metadata.blockId;
+      if (!blockId) {
+        blockId = Math.random().toString(36).substring(2, 8);
+        await replaceAndRefresh(post, { blockId });
+      }
+
+      const file = shell.getVault().getAbstractFileByPath(post.path);
+      if (!(file instanceof TFile)) {
+        new Notice("ファイルを特定できませんでした");
+        return;
+      }
+
+      const link = shell
+        .getRawApp()
+        .fileManager.generateMarkdownLink(file, "", `#^${blockId}`);
+      await navigator.clipboard.writeText(link);
+      new Notice("ブロックIDリンクをコピーしました");
+    },
+    [shell, replaceAndRefresh],
+  );
+
   const createThread = useCallback(
     async (post: Post) => {
       if (post.threadRootId === post.id) {
@@ -772,5 +796,6 @@ export const usePostActions = () => {
     setPostTags,
     movePostToTomorrow,
     handleClickTime,
+    copyBlockIdLink,
   };
 };

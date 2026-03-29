@@ -6,7 +6,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 beforeEach(() => {
   // Fix "now" to a specific date for tests that use window.moment()
-  // 16:00:00 JST is 07:00:00 UTC
+  // ここを変更すると、テスト内の日時表現も変わるので注意
+  // TODO: どの環境でも必ず同じ日時になるようにする
   vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));
 });
 
@@ -119,5 +120,20 @@ describe("toText", () => {
     });
     expect(result).toContain("[archived::20260311195539]");
     expect(result).toContain("[deleted::20260311195539]");
+  });
+
+  test("thino format - appends blockId at the very end", () => {
+    const result = toText("test", false, "day", undefined, {
+      key: "val",
+      blockId: "abc123",
+    });
+    expect(result).toBe("- 16:00:00 test\n    [key::val]\n    ^abc123\n");
+  });
+
+  test("thino format - appends blockId at the end even without other metadata", () => {
+    const result = toText("test", false, "day", undefined, {
+      blockId: "abc123",
+    });
+    expect(result).toBe("- 16:00:00 test\n    ^abc123\n");
   });
 });
