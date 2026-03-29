@@ -136,6 +136,7 @@ export const usePostActions = () => {
         return latestById;
       }
 
+      // IDで見つからない場合は、内容と日時が完全に一致する投稿を探す（位置が変わっている可能性があるため）
       return (
         latestPosts.find(
           (candidate) =>
