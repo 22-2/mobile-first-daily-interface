@@ -20,7 +20,6 @@ import type { MFDINoteMode } from "src/ui/view/state";
 export interface EnvironmentSlice {
   shell: ObsidianAppShell | null;
   storage: MFDIStorage | null;
-  db: MFDIDatabase | null;
   pluginSettings: Settings | null;
   viewNoteMode: MFDINoteMode;
   fixedNotePath: string | null;

@@ -4,6 +4,7 @@ import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 import { obsidianCopyPlugin } from "./vite.plugins";
 import inspect from "vite-plugin-inspect";
+import analyzer from "vite-bundle-analyzer"
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
@@ -19,6 +20,7 @@ export default defineConfig(async ({ mode }) => {
     devtools: isAnalyze,
     plugins: [
       isAnalyze && inspect({open: true, outputDir: "inspect"}),
+      isAnalyze && analyzer(),
       react(),
       reactCompilerPreset(),
       onMyPc && obsidianCopyPlugin({
