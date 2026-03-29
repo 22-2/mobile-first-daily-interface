@@ -343,4 +343,25 @@ test.describe("MFDI live editor e2e", () => {
     await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain(draft);
     await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(draft);
   });
+
+  test("投稿したポストを編集できて、変更がすぐに反映される", async ({ obsidian }) => {
+    await waitForMFDIReady(obsidian, obsidian.page);
+    const message = `Editable post ${Date.now()}`;
+    await setLiveEditorContent(obsidian, message);
+    await obsidian.page.getByRole("button", { name: "投稿" }).click();
+    await obsidian.page.locator(".list .base-card").first().dblclick();
+    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
+    await expect.poll(() => getLiveEditorContent(obsidian)).toBe(message);
+    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain(message);
+    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(message);
+    const editedMessage = `${message} - edited`;
+    await setLiveEditorContent(obsidian, editedMessage);
+    await obsidian.page.waitForTimeout(500);
+    await obsidian.page.getByRole("button", { name: "更新" }).click();
+    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
+    await expect.poll(() => getLiveEditorContent(obsidian)).toBe("");
+    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain("");
+    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe("");
+    expect(obsidian.page.locator(".list .base-card").first()).toContainText(editedMessage);
+  });
 });
