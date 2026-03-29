@@ -206,6 +206,7 @@ test.describe("MFDI live editor e2e", () => {
     await waitForMFDIReady(obsidian, obsidian.page);
 
     await expect(obsidian.page.getByText("タイムライン表示中")).toBeVisible();
+    await obsidian.page.locator(`[aria-label="サイドバーを切り替え"]`).click();
     await obsidian.page.locator(".mini-calendar__day-cell").first().click();
 
     await expect(obsidian.page.locator(".mfdi-date-input")).toBeVisible();
