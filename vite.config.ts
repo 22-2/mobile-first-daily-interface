@@ -2,8 +2,8 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
-import { analyzer } from "vite-bundle-analyzer";
 import { obsidianCopyPlugin } from "./vite.plugins";
+import inspect from "vite-plugin-inspect";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
@@ -16,8 +16,9 @@ export default defineConfig(async ({ mode }) => {
   const onMyPc = env.ON_MY_PC === "true";
 
   return {
+    devtools: isAnalyze,
     plugins: [
-      isAnalyze && analyzer(),
+      isAnalyze && inspect({open: true, outputDir: "inspect"}),
       react(),
       reactCompilerPreset(),
       onMyPc && obsidianCopyPlugin({
