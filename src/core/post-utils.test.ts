@@ -6,8 +6,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 beforeEach(() => {
   // Fix "now" to a specific date for tests that use window.moment()
-  // Use UTC to ensure consistent results across environments
-  vi.setSystemTime(new Date("2026-03-02T16:00:00.000Z"));
+  // ここを変更すると、テスト内の日時表現も変わるので注意
+  // TODO: どの環境でも必ず同じ日時になるようにする
+  vi.setSystemTime(new Date("2026-03-02T16:00:00.000+09:00"));
 });
 
 describe("toText", () => {
