@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import path from "node:path";
 import type { ObsidianAPI } from "obsidian-e2e-toolkit";
 import { expect, test } from "obsidian-e2e-toolkit";
@@ -178,34 +178,70 @@ async function createLiveEditorMulticursor(obsidian: ObsidianAPI): Promise<void>
     editor.setSelections(selections);
   });
 }
+// ─── 待機時間定数 ───────────────────────────────────────────
+const WAIT = {
+  SHORT: 200,
+  MEDIUM: 300,
+  LONG: 500,
+  DRAFT_SAVE: 3000,
+} as const;
+
+// ─── ヘルパー ────────────────────────────────────────────────
+
+/** localStorage の mfdi 入力値を検証する */
+async function expectLocalStorage(obsidian: ObsidianAPI, expected: string) {
+  await expect
+    .poll(() =>
+      obsidian.page.evaluate(
+        () => localStorage.getItem(`mfdi-${app.appId}-input`),
+      ),
+    )
+    .toContain(expected);
+}
+
+/** ライブエディタの状態（state / DOM）を一括検証する */
+async function expectLiveEditorContent(
+  obsidian: ObsidianAPI,
+  expected: string,
+) {
+  await expect.poll(() => getLiveEditorContent(obsidian)).toBe(expected);
+  await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(expected);
+  await expectLocalStorage(obsidian, expected);
+}
+
+// ─── テストスイート ──────────────────────────────────────────
 
 test.describe("MFDI live editor e2e", () => {
+  let liveEditor: Locator;
+
+  // ほぼ全テストで必要な共通セットアップ
+  test.beforeEach(async ({ obsidian }) => {
+    liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
+  });
+
+  // ── 起動 ────────────────────────────────────────────────────
+
   test("mfdiビュー起動時に view 未初期化エラーを出さない", async ({ obsidian }) => {
     const pageErrors: string[] = [];
     const consoleErrors: string[] = [];
 
-    obsidian.page.on("pageerror", (error) => {
-      pageErrors.push(error.message);
-    });
-    obsidian.page.on("console", (message) => {
-      if (message.type() === "error") {
-        consoleErrors.push(message.text());
-      }
+    obsidian.page.on("pageerror", (e) => pageErrors.push(e.message));
+    obsidian.page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
     });
 
-    await waitForMFDIReady(obsidian, obsidian.page);
-    await obsidian.page.waitForTimeout(500);
+    await obsidian.page.waitForTimeout(WAIT.LONG);
 
-    const startupErrors = [...pageErrors, ...consoleErrors].join("\n");
-    expect(startupErrors).not.toContain(
+    expect([...pageErrors, ...consoleErrors].join("\n")).not.toContain(
       "Cannot read properties of undefined (reading 'view')",
     );
   });
 
-  test("タイムライン中にカレンダー日付を押すとフォーカス表示へ戻る", async ({ obsidian }) => {
-    await waitForMFDIReady(obsidian, obsidian.page);
+  // ── カレンダー ───────────────────────────────────────────────
 
+  test("タイムライン中にカレンダー日付を押すとフォーカス表示へ戻る", async ({ obsidian }) => {
     await expect(obsidian.page.getByText("タイムライン表示中")).toBeVisible();
+
     await obsidian.page.locator(`[aria-label="サイドバーを切り替え"]`).click();
     await obsidian.page.locator(".mini-calendar__day-cell").first().click();
 
@@ -213,72 +249,63 @@ test.describe("MFDI live editor e2e", () => {
     await expect(obsidian.page.getByText("タイムライン表示中")).toHaveCount(0);
   });
 
-  test("ライブエディタで Playwright fill が使える", async ({ obsidian }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
+  // ── ライブエディタ ───────────────────────────────────────────
 
+  test("ライブエディタで Playwright fill が使える", async ({ obsidian }) => {
     await liveEditor.click();
     await liveEditor.fill("Playwright live typing");
-    await obsidian.page.waitForTimeout(200);
+    await obsidian.page.waitForTimeout(WAIT.SHORT);
 
     await expect(liveEditor).toContainText("Playwright live typing");
   });
 
-  test("scoped ホットキーでモーダルエディタを開ける", async ({ obsidian }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
+  test("ライブエディタで Escape キーでマルチカーソルが解除される", async ({ obsidian }) => {
+    await liveEditor.click();
+    await obsidian.page.waitForTimeout(WAIT.MEDIUM);
 
-    await registerAppScopeHotkeyCounter(
-      obsidian,
-      "open-modal-parent",
-      ["Ctrl", "Shift", "Alt"],
-      "o",
-    );
+    // 2 つ目の選択範囲のため最低 15 文字必要
+    await setLiveEditorContent(obsidian, "h\ne\nl\nlo\n w\no\nr\nl\nd\n t\ne\ns\nt");
+    await obsidian.page.waitForTimeout(WAIT.MEDIUM);
+
+    await createLiveEditorMulticursor(obsidian);
+    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(2);
+
+    await obsidian.page.keyboard.press("Escape");
+    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(1);
+  });
+
+  // ── モーダルエディタ ─────────────────────────────────────────
+
+  test("scoped ホットキーでモーダルエディタを開ける", async ({ obsidian }) => {
+    await registerAppScopeHotkeyCounter(obsidian, "open-modal-parent", ["Ctrl", "Shift", "Alt"], "o");
 
     await liveEditor.click();
     const modalEditor = await openModalFromKeyboard(obsidian.page);
 
     await expect(modalEditor).toBeVisible();
-    await expect.poll(() => getAppScopeHotkeyCount(obsidian, "open-modal-parent")).toBe(0);
+    await expect
+      .poll(() => getAppScopeHotkeyCount(obsidian, "open-modal-parent"))
+      .toBe(0);
   });
 
   test("Escape キーで MFDIEditorModal が閉じる", async ({ obsidian }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
-
     await liveEditor.click();
     await openModalFromKeyboard(obsidian.page);
-    await obsidian.page.waitForTimeout(300);
+    await obsidian.page.waitForTimeout(WAIT.MEDIUM);
 
     await obsidian.page.keyboard.press("Escape");
+
     await expect(obsidian.page.locator(".mfdi-modal-editor")).not.toBeVisible();
     await expect(liveEditor).toBeVisible();
   });
 
-  test("ライブエディタで Escape キーでマルチカーソルが解除される", async ({ obsidian }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
-    await liveEditor.click();
-    await obsidian.page.waitForTimeout(300);
-
-    // テキストを設定：最低 15 文字必要（2 つ目の選択範囲のため）
-    await setLiveEditorContent(obsidian, "h\ne\nl\nlo\n w\no\nr\nl\nd\n t\ne\ns\nt");
-    await obsidian.page.waitForTimeout(300);
-
-    // マルチカーソルを作成（2 つの選択範囲）
-    await createLiveEditorMulticursor(obsidian);
-    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(2);
-
-    // Escape キーを押してマルチカーソルを解除
-    await obsidian.page.keyboard.press("Escape");
-    await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(1);
-  });
-
-  test("モーダルエディタで fill できてライブエディタに同期される", async ({ obsidian, page }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
-
+  test("モーダルエディタで fill できてライブエディタに同期される", async ({ obsidian }) => {
     await liveEditor.click();
     const modalEditor = await openModalFromKeyboard(obsidian.page);
 
     await modalEditor.click();
     await modalEditor.fill("Modal sync text");
-    await obsidian.page.waitForTimeout(200);
+    await obsidian.page.waitForTimeout(WAIT.SHORT);
 
     await expect(modalEditor).toContainText("Modal sync text");
     await expect(liveEditor).toContainText("Modal sync text");
@@ -288,80 +315,112 @@ test.describe("MFDI live editor e2e", () => {
     await expect(liveEditor).toContainText("Modal sync text");
   });
 
-  test("Ctrl+Enter では MFDIView の Scope のみが呼ばれる", async ({ obsidian }) => {
-    const liveEditor = await waitForMFDIReady(obsidian, obsidian.page);
-    const message = `Scope submit ${Date.now()}`;
+  // ── 投稿・スコープ ───────────────────────────────────────────
 
-    await registerAppScopeHotkeyCounter(
-      obsidian,
-      "submit-parent",
-      ["Ctrl"],
-      "Enter",
-    );
+  test("Ctrl+Enter では MFDIView の Scope のみが呼ばれる", async ({ obsidian }) => {
+    const message = `Scope submit ${Date.now()}`;
+    await registerAppScopeHotkeyCounter(obsidian, "submit-parent", ["Ctrl"], "Enter");
 
     await setLiveEditorContent(obsidian, message);
     await liveEditor.click();
     await obsidian.page.keyboard.press("Control+Enter");
-    await obsidian.page.waitForTimeout(500);
+    await obsidian.page.waitForTimeout(WAIT.LONG);
 
-    const matchingPosts = obsidian.page.locator(".list .markdown-rendered", {
-      hasText: message,
-    });
-
-    await expect(matchingPosts).toHaveCount(1);
-    await expect.poll(() => getAppScopeHotkeyCount(obsidian, "submit-parent")).toBe(0);
+    await expect(
+      obsidian.page.locator(".list .markdown-rendered", { hasText: message }),
+    ).toHaveCount(1);
+    await expect
+      .poll(() => getAppScopeHotkeyCount(obsidian, "submit-parent"))
+      .toBe(0);
   });
 
   test("入力したテキストが投稿される", async ({ obsidian }) => {
-    await waitForMFDIReady(obsidian, obsidian.page);
     const message = `E2E post ${Date.now()}`;
 
     await setLiveEditorContent(obsidian, message);
     await obsidian.page.getByRole("button", { name: "投稿" }).click();
-    await obsidian.page.waitForTimeout(500); // 投稿処理が完了するのを待つ
+    await obsidian.page.waitForTimeout(WAIT.LONG);
 
-    const content = await obsidian.page.locator(".list .markdown-rendered").first().innerText();
+    const content = await obsidian.page
+      .locator(".list .markdown-rendered")
+      .first()
+      .innerText();
 
     expect(content).toContain(message);
   });
 
+  test("投稿したポストを編集できて、変更がすぐに反映される", async ({ obsidian }) => {
+    const message = `Editable post ${Date.now()}`;
+
+    // 投稿
+    await setLiveEditorContent(obsidian, message);
+    await obsidian.page.getByRole("button", { name: "投稿" }).click();
+
+    // 編集モードに入る
+    await obsidian.page.locator(".list .base-card").first().dblclick();
+    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
+    await expectLiveEditorContent(obsidian, message);
+
+    // 編集して更新
+    const editedMessage = `${message} - edited`;
+    await setLiveEditorContent(obsidian, editedMessage);
+    await obsidian.page.waitForTimeout(WAIT.LONG);
+    await obsidian.page.getByRole("button", { name: "更新" }).click();
+
+    // 更新後の検証
+    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
+    await expectLiveEditorContent(obsidian, "");
+    await expect.poll(() => obsidian.page.locator(".list .base-card").all()).toHaveLength(1);
+    await expect.poll(() => obsidian.page.locator(".list .base-card").first().textContent()).toContain(editedMessage);
+  });
+
+  test("編集中タブを閉じても、編集中の状態が維持される", async ({ obsidian }) => {
+    const message = `Close tab while editing ${Date.now()}`;
+
+    // 投稿
+    await setLiveEditorContent(obsidian, message);
+    await obsidian.page.getByRole("button", { name: "投稿" }).click();
+
+    // 編集モードに入る
+    await obsidian.page.locator(".list .base-card").first().dblclick();
+    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
+    await expectLiveEditorContent(obsidian, message);
+
+    // タブを閉じて再度開く
+    await obsidian.closeTab();
+    await obsidian.command("mobile-first-daily-interface:mfdi-open-view");
+    await obsidian.waitForViewType("mfdi-view");
+    await expectLiveEditorContent(obsidian, message);
+
+
+    // 編集して更新
+    const editedMessage = `${message} - edited`;
+    await setLiveEditorContent(obsidian, editedMessage);
+    await obsidian.page.waitForTimeout(WAIT.LONG);
+    await obsidian.page.getByRole("button", { name: "更新" }).click();
+
+    // 更新後の検証
+    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
+    await expectLiveEditorContent(obsidian, "");
+    await expect.poll(() => obsidian.page.locator(".list .base-card").all()).toHaveLength(1);
+    await expect.poll(() => obsidian.page.locator(".list .base-card").first().textContent()).toContain(editedMessage);
+  });
+
+  // ── ドラフト復元 ─────────────────────────────────────────────
+
   test("タブを閉じたあとライブエディタの内容が復元される", async ({ obsidian }) => {
-    await waitForMFDIReady(obsidian, obsidian.page);
     const draft = `draft-${Date.now()}`;
 
     await setLiveEditorContent(obsidian, draft);
-    await obsidian.page.waitForTimeout(3000); // ドラフト保存が完了するのを待つ
+    await obsidian.page.waitForTimeout(WAIT.DRAFT_SAVE);
 
     await obsidian.closeTab();
-
+    await expectLocalStorage(obsidian, draft);
     await obsidian.command("mobile-first-daily-interface:mfdi-open-view");
     await obsidian.waitForViewType("mfdi-view");
 
     const reopenedEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
     await expect(reopenedEditor).toBeVisible({ timeout: 15000 });
-    await expect.poll(() => getLiveEditorContent(obsidian)).toBe(draft);
-    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain(draft);
-    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(draft);
-  });
-
-  test("投稿したポストを編集できて、変更がすぐに反映される", async ({ obsidian }) => {
-    await waitForMFDIReady(obsidian, obsidian.page);
-    const message = `Editable post ${Date.now()}`;
-    await setLiveEditorContent(obsidian, message);
-    await obsidian.page.getByRole("button", { name: "投稿" }).click();
-    await obsidian.page.locator(".list .base-card").first().dblclick();
-    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
-    await expect.poll(() => getLiveEditorContent(obsidian)).toBe(message);
-    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain(message);
-    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe(message);
-    const editedMessage = `${message} - edited`;
-    await setLiveEditorContent(obsidian, editedMessage);
-    await obsidian.page.waitForTimeout(500);
-    await obsidian.page.getByRole("button", { name: "更新" }).click();
-    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
-    await expect.poll(() => getLiveEditorContent(obsidian)).toBe("");
-    await expect.poll(() => obsidian.page.evaluate(() => localStorage.getItem(`mfdi-${app.appId}-input`))).toContain("");
-    await expect.poll(() => getLiveEditorDOMContent(obsidian)).toBe("");
-    expect(obsidian.page.locator(".list .base-card").first()).toContainText(editedMessage);
+    await expectLiveEditorContent(obsidian, draft);
   });
 });
