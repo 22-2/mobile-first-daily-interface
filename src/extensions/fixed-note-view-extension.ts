@@ -52,19 +52,28 @@ export function findExistingMFDILeaf(
   });
 }
 
+function shouldConvertViewState(viewState: unknown): boolean {
+  if (!viewState || typeof viewState !== "object") return false;
+  const candidate = viewState as {
+    type?: string;
+    state?: Record<string, unknown>;
+  };
+  if (candidate.type !== "markdown") return false;
+
+  // フラグが付与されている場合は強制的にMarkdownビューとして開く意図がある。
+  if (candidate.state?.__mfdi_force_markdown) return false;
+
+  return true;
+}
+
 export function createFixedNoteViewExtension(): FixedNoteViewExtension {
   return {
     convertMarkdownViewState: (viewState) => {
-      if (!viewState || typeof viewState !== "object") return viewState;
+      if (!shouldConvertViewState(viewState)) return viewState;
       const candidate = viewState as {
         type?: string;
         state?: Record<string, unknown>;
       };
-      if (candidate.type !== "markdown") return viewState;
-
-      // フラグが付与されている場合は強制的にMarkdownビューとして開く意図がある。
-      if (candidate.state?.__mfdi_force_markdown) return viewState;
-
       const filePath =
         typeof candidate.state?.file === "string" ? candidate.state.file : "";
       if (!isMFDIFixedNotePath(filePath)) return viewState;

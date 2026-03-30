@@ -119,7 +119,7 @@ export class MFDIView extends ItemView {
       this.handlers.onChangeTopic?.(this.state.activeTopic);
     }
 
-    this.render();
+    this.setupView();
   }
 
   // -----------------------------------------------------------------------
@@ -128,7 +128,7 @@ export class MFDIView extends ItemView {
 
   updateSettings(settings: Settings): void {
     this.settings = settings;
-    this.render();
+    this.setupView();
   }
 
   // -----------------------------------------------------------------------
@@ -202,7 +202,15 @@ export class MFDIView extends ItemView {
       this.setupEditableTitleBar();
     }
 
-    this.render();
+    const _render = () => {
+      if (!this.root) {
+        this.root = createRoot(this.containerEl.children[1]);
+      }
+      this.root.render(
+        <ReactView app={this.app} settings={this.settings} view={this} />,
+      );
+    };
+    _render();
   }
 
   private setupEditableTitleBar(): void {
@@ -223,19 +231,10 @@ export class MFDIView extends ItemView {
           ensureExtension(newTitle, ".mfdi.md"),
         );
         this.state.fixedNotePath = file.path;
-        this.render();
+        this.setupView();
       },
     });
     this.editableTitleBar.render();
-  }
-
-  private render(): void {
-    if (!this.root) {
-      this.root = createRoot(this.containerEl.children[1]);
-    }
-    this.root.render(
-      <ReactView app={this.app} settings={this.settings} view={this} />,
-    );
   }
 
   // -----------------------------------------------------------------------
