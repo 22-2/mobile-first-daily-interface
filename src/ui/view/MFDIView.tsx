@@ -161,13 +161,18 @@ export class MFDIView extends ItemView {
     });
   }
 
+  private cleanUpActions(): void {
+    Array.from(this.actionsEl.children).filter((el) => el.getAttr("data-mfdi-actions") === "true").forEach((el) => el.detach());
+  }
+
   private setupView(): void {
+    this.cleanUpActions();
     const capabilities = getMFDIViewCapabilities(this.state);
 
     if (capabilities.supportsSidebar) {
       this.addAction("columns-2", "サイドバーを切り替え", () => {
         this.handlers.onToggleSidebar?.();
-      });
+      }).setAttr("data-mfdi-actions", "true");
     }
 
     // 検索UIをトグル表示。既に開いていれば閉じる。
@@ -196,7 +201,7 @@ export class MFDIView extends ItemView {
 
       this.activeSearchControlEl = searchSetting.controlEl;
       this.actionsEl.prepend(searchSetting.controlEl);
-    });
+    }).setAttr("data-mfdi-actions", "true");;
 
     if (this.state.noteMode === "fixed") {
       this.setupEditableTitleBar();
