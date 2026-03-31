@@ -25,6 +25,7 @@ describe("settingsSlice", () => {
         topics: [],
         activeTopic: "",
         fixedNoteFiles: [],
+        clickToActivateScroll: false,
       },
       granularity: "day",
       date: today.clone(),
