@@ -1,5 +1,5 @@
-import type { QueryClient } from "@tanstack/react-query";
 import type { Vault } from "obsidian";
+import { mutate } from "swr";
 import { TFile } from "obsidian";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import type { DateFilter, DisplayMode, MomentLike } from "src/ui/types";
@@ -15,7 +15,6 @@ type RefreshPosts = (path?: string) => Promise<void>;
 
 interface RefreshPostsDeps {
   vault: Vault;
-  queryClient: QueryClient;
   dateFilter: DateFilter;
   activeTopic: string;
   date: MomentLike;
@@ -35,7 +34,6 @@ interface RefreshPostsDeps {
 
 export function createRefreshPosts({
   vault,
-  queryClient,
   dateFilter,
   activeTopic,
   date,
@@ -44,12 +42,16 @@ export function createRefreshPosts({
   updatePostsForWeek,
   updatePostsForDays,
   replacePaths,
-}: RefreshPostsDeps): RefreshPosts {
+}: Omit<RefreshPostsDeps, "queryClient">): RefreshPosts {
   return async (path?: string) => {
     if (isTimelineView(displayMode)) {
-      await queryClient.invalidateQueries({
-        queryKey: ["posts", activeTopic, displayMode],
-      });
+      await mutate(
+        (key) =>
+          Array.isArray(key) &&
+          key[0] === "posts" &&
+          key[1] === activeTopic &&
+          key[2] === displayMode,
+      );
       return;
     }
 

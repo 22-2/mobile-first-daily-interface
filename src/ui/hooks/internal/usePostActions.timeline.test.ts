@@ -13,17 +13,9 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
-  return {
-    ...actual,
-    useQueryClient: vi.fn(() => ({
-      invalidateQueries: vi.fn(),
-    })),
-  };
-});
+vi.mock("swr", () => ({
+  mutate: vi.fn(),
+}));
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(),
@@ -145,6 +137,7 @@ describe("timeline note resolution", () => {
         topics: [],
         activeTopic: "",
         fixedNoteFiles: [],
+        clickToActivateScroll: false,
       },
       activeTopic: "",
       granularity: "day",

@@ -7,10 +7,8 @@ import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: vi.fn(() => ({
-    invalidateQueries: vi.fn(),
-  })),
+vi.mock("swr", () => ({
+  mutate: vi.fn(),
 }));
 
 vi.mock("src/ui/context/AppContext", () => ({

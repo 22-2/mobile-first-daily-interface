@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import type { MarkdownView } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
@@ -26,7 +25,6 @@ import { useShallow } from "zustand/shallow";
 export const usePostActions = () => {
   const { shell, settings } = useAppContext();
   const store = useCurrentAppStore();
-  const queryClient = useQueryClient();
 
   const getSerializedTimestamp = useCallback(
     (timestamp: Post["timestamp"], noteDate: Post["noteDate"]) => {
@@ -86,7 +84,6 @@ export const usePostActions = () => {
   const refreshPosts = useCallback(
     createRefreshPosts({
       vault: shell.getVault(),
-      queryClient,
       dateFilter: settingsState.dateFilter,
       activeTopic: settingsState.activeTopic,
       date: settingsState.date,
@@ -98,7 +95,6 @@ export const usePostActions = () => {
     }),
     [
       shell,
-      queryClient,
       settingsState.dateFilter,
       settingsState.activeTopic,
       settingsState.date,

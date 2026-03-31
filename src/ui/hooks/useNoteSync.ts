@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { TFile } from "obsidian";
 import { useEffect, useRef } from "react";
 import { resolveNoteSource } from "src/core/note-source";
@@ -16,7 +15,6 @@ import { useShallow } from "zustand/shallow";
 export function useNoteSync() {
   const shell = useAppStore((s) => s.shell);
   const store = useCurrentAppStore();
-  const queryClient = useQueryClient();
 
   const { date, granularity, activeTopic, dateFilter, displayMode, setDate } =
     useSettingsStore(
@@ -64,7 +62,6 @@ export function useNoteSync() {
     // 初期化時に vault が確実に存在する場合のみ createRefreshPosts を生成する
     refreshPostsRef.current = createRefreshPosts({
       vault: shell.getVault(),
-      queryClient,
       dateFilter,
       activeTopic,
       date,

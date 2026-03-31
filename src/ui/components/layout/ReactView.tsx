@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { App } from "obsidian";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Settings } from "src/settings";
@@ -49,7 +48,7 @@ import {
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-const queryClient = new QueryClient();
+
 
 export const ReactView = ({
   app,
@@ -69,11 +68,9 @@ export const ReactView = ({
     <AppContextProvider app={app} settings={settings}>
       <ComponentContextProvider component={view}>
         <AppStoreProvider store={storeRef.current}>
-          <QueryClientProvider client={queryClient}>
             <MFDIAppRoot>
               <ReactViewContent />
             </MFDIAppRoot>
-          </QueryClientProvider>
         </AppStoreProvider>
       </ComponentContextProvider>
     </AppContextProvider>

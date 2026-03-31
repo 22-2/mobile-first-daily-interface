@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import moment from "moment";
 import { DEFAULT_SETTINGS } from "src/settings";
@@ -48,7 +47,7 @@ vi.mock("src/core/note-source", () => ({
   getPeriodicNoteDate: vi.fn(),
 }));
 
-const queryClient = new QueryClient();
+
 
 describe("MiniCalendar", () => {
   beforeEach(() => {
@@ -72,9 +71,7 @@ describe("MiniCalendar", () => {
     });
 
     const { getByText } = render(
-      <QueryClientProvider client={queryClient}>
-        <MiniCalendar />
-      </QueryClientProvider>,
+      <MiniCalendar />,
     );
     expect(getByText("2026年")).toBeDefined();
     expect(getByText("3月")).toBeDefined();
@@ -92,9 +89,7 @@ describe("MiniCalendar", () => {
     // The range calculation is internal to calcSelectedRange and buildWeeksInMonth
 
     const { getByText, getAllByText } = render(
-      <QueryClientProvider client={queryClient}>
-        <MiniCalendar />
-      </QueryClientProvider>,
+      <MiniCalendar />,
     );
     // 3/9 itself should have the selected day class (accent color)
     // 3/3 to 3/8 should be in the selected range (active hover bg)
@@ -118,9 +113,7 @@ describe("MiniCalendar", () => {
     });
 
     const { container } = render(
-      <QueryClientProvider client={queryClient}>
-        <MiniCalendar />
-      </QueryClientProvider>,
+      <MiniCalendar />,
     );
     const dayCell = container.querySelector(".mini-calendar__day-cell");
 

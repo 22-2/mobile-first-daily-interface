@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import useSWR from "swr";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
@@ -97,14 +97,18 @@ export function useMiniCalendar() {
   );
 
   const dbService = useMFDIDB();
-  const { data: dbActiveDates = new Set<string>() } = useQuery({
-    queryKey: ["activeDates"],
-    queryFn: async () => {
+  const { data: dbActiveDates = new Set<string>() } = useSWR(
+    ["activeDates"],
+    async () => {
       const dates = await dbService.getAllActiveDates();
       return new Set(dates);
     },
-    staleTime: Infinity,
-  });
+    {
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   const [viewDate, setViewDate] = useState(() =>
     window.moment(date).startOf("month"),
