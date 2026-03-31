@@ -417,17 +417,7 @@ const ListFooter = memo(
     }, [hasMore, loadMore]);
 
     return (
-      <Box
-        style={{
-          width: "100%",
-          height: "100px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--text-muted)",
-          fontSize: "var(--font-smallest)",
-        }}
-      >
+      <Box className="w-full h-full flex items-center justify-center text-[var(--text-muted)] text-[var(--font-smallest)]">
         {hasMore ? "読み込み中..." : "これ以上投稿はありません"}
       </Box>
     );
