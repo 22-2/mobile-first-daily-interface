@@ -16,6 +16,7 @@ import {
   ComponentContextProvider,
   useObsidianComponent,
 } from "src/ui/context/ComponentContext";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -124,20 +125,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   const {
-    posts,
-    updatePosts,
     updateTasks,
-    updatePostsForWeek,
-    updatePostsForDays,
-    updatePostsFromDB,
   } = usePostsStore(
     useShallow((state) => ({
-      posts: state.posts,
-      updatePosts: state.updatePosts,
       updateTasks: state.updateTasks,
-      updatePostsForWeek: state.updatePostsForWeek,
-      updatePostsForDays: state.updatePostsForDays,
-      updatePostsFromDB: state.updatePostsFromDB,
     })),
   );
 
@@ -199,46 +190,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     fixedNotePath,
   ]);
 
-  useEffect(() => {
-    if (viewNoteMode === "fixed") return;
-    if (isTimelineView(displayMode)) {
-      updatePostsFromDB({ topicId: activeTopic });
-    }
-  }, [viewNoteMode, displayMode, activeTopic, updatePostsFromDB, searchQuery]);
+  // updatePostsFromDB is no longer needed here as SWR handles it
 
-  useEffect(() => {
-    if (viewNoteMode === "fixed") return;
-    if (!capabilities.supportsPeriodMenus) return;
-    if (granularity !== "day" || asTask) return;
-
-    if (dateFilter === "this_week") {
-      updatePostsForWeek(activeTopic, date).then((paths) => {
-        replacePaths(paths);
-      });
-      return;
-    }
-
-    if (["3d", "5d", "7d"].includes(dateFilter)) {
-      const days = parseInt(dateFilter, 10);
-      if (!Number.isNaN(days)) {
-        updatePostsForDays(activeTopic, date, days).then(({ paths }) => {
-          replacePaths(paths);
-        });
-      }
-    }
-  }, [
-    date,
-    dateFilter,
-    granularity,
-    asTask,
-    activeTopic,
-    replacePaths,
-    updatePostsForWeek,
-    updatePostsForDays,
-    capabilities.supportsPeriodMenus,
-    viewNoteMode,
-    searchQuery,
-  ]);
+  // updatePostsForWeek and updatePostsForDays are no longer needed here as SWR handles it
 
   useEffect(() => {
     if (!isReadOnly && inputRef.current) {
@@ -258,14 +212,12 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!currentDailyNote) return;
 
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
-    if (viewNoteMode === "fixed" || dateFilter === "today") {
-      promises.push(updatePosts(currentDailyNote));
-    }
+    // updatePosts is no longer needed here
     Promise.all(promises);
   }, [
     currentDailyNote,
     dateFilter,
-    updatePosts,
+    // updatePosts,
     updateTasks,
     viewNoteMode,
     searchQuery,
@@ -323,12 +275,8 @@ const ReactViewContent = () => {
     })),
   );
 
-  const { tasks, posts } = usePostsStore(
-    useShallow((s) => ({
-      tasks: s.tasks,
-      posts: s.posts,
-    })),
-  );
+  const { posts } = useUnifiedPosts();
+  const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
 
   const { currentDailyNote } = useNoteStore(
     useShallow((s) => ({
@@ -520,7 +468,7 @@ function useViewSync(view: MFDIView | null) {
     return store.getState().handleClickOpenDailyNote(shell, settings);
   }, [store, shell, settings]);
 
-  const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
+  const { setCurrentDailyNote, setTasks } = store.getState();
 
   const inputRefVal = useRef(inputSnapshot);
   const sidebarOpenRef = useRef(sidebarOpen);
@@ -598,7 +546,6 @@ function useViewSync(view: MFDIView | null) {
         setDateFilter("today");
       }
       setCurrentDailyNote(null);
-      setPosts([]);
       setTasks([]);
     };
     return () => {
@@ -610,7 +557,6 @@ function useViewSync(view: MFDIView | null) {
     setTimeFilter,
     setDateFilter,
     setCurrentDailyNote,
-    setPosts,
     setTasks,
   ]);
 

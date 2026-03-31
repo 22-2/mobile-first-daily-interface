@@ -74,7 +74,7 @@ describe("usePostActions - copyBlockIdLink", () => {
       granularity: "day",
     });
 
-    postsStore.setState({ posts: [] });
+    postsStore.setState({ tasks: [] });
 
     // Mock navigator.clipboard
     Object.assign(navigator, {

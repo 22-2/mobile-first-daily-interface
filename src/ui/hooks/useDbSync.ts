@@ -17,26 +17,9 @@ export function useDbSync() {
 
     channel.onmessage = (event) => {
       if (event.data.type === "mfdi-db-updated") {
-        // メモに関連するクエリを全て無効化する
+        // 全ての 'posts' に関連するキャッシュを再検証する。
+        // これだけで全ビューが自動的に最新化される。
         mutate((key) => Array.isArray(key) && key[0] === "posts");
-
-        // Zustand ストアの状態も最新に同期する
-        const state = store.getState();
-        if (isTimelineView(state.displayMode)) {
-          // タイムラインモード時はDB全体から更新
-          state.updatePostsFromDB({
-            topicId: state.activeTopic,
-          });
-        } else {
-          // それ以外の時は現在のデイリーノートを再読込
-          const { shell } = context;
-          if (shell) {
-            state.updateCurrentDailyNote(shell);
-            if (state.currentDailyNote) {
-              state.updatePosts(state.currentDailyNote);
-            }
-          }
-        }
       }
     };
 

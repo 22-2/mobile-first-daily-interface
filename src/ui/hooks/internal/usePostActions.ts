@@ -6,6 +6,7 @@ import { resolveTimestamp, toText } from "src/core/post-utils";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
 import { parseThinoEntries } from "src/core/thino";
 import { useAppContext } from "src/ui/context/AppContext";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
@@ -52,14 +53,7 @@ export const usePostActions = () => {
     })),
   );
 
-  const postsState = usePostsStore(
-    useShallow((s) => ({
-      posts: s.posts,
-      updatePosts: s.updatePosts,
-      updatePostsForWeek: s.updatePostsForWeek,
-      updatePostsForDays: s.updatePostsForDays,
-    })),
-  );
+  const { posts: allPosts } = useUnifiedPosts();
 
   const editorState = useEditorStore(
     useShallow((s) => ({
@@ -69,7 +63,7 @@ export const usePostActions = () => {
       inputRef: s.inputRef,
       scrollContainerRef: s.scrollContainerRef,
       editingPost: s.editingPost,
-      canSubmit: s.canSubmit(postsState.posts),
+      canSubmit: (posts: Post[]) => s.canSubmit(posts),
       cancelEdit: s.cancelEdit,
     })),
   );
@@ -83,26 +77,12 @@ export const usePostActions = () => {
 
   const refreshPosts = useCallback(
     createRefreshPosts({
-      vault: shell.getVault(),
-      dateFilter: settingsState.dateFilter,
       activeTopic: settingsState.activeTopic,
-      date: settingsState.date,
       displayMode: settingsState.displayMode,
-      updatePosts: postsState.updatePosts,
-      updatePostsForWeek: postsState.updatePostsForWeek,
-      updatePostsForDays: postsState.updatePostsForDays,
-      replacePaths: noteState.replacePaths,
     }),
     [
-      shell,
-      settingsState.dateFilter,
       settingsState.activeTopic,
-      settingsState.date,
       settingsState.displayMode,
-      postsState.updatePosts,
-      postsState.updatePostsForWeek,
-      postsState.updatePostsForDays,
-      noteState.replacePaths,
     ],
   );
 
@@ -375,7 +355,7 @@ export const usePostActions = () => {
     const metadata: Record<string, string> = {};
 
     if (settingsState.threadFocusRootId) {
-      const rootPost = postsState.posts.find(
+      const rootPost = allPosts.find(
         (post) => post.id === settingsState.threadFocusRootId,
       );
       if (!rootPost) {
@@ -482,7 +462,7 @@ export const usePostActions = () => {
     shell,
     settings,
     settingsState,
-    postsState,
+    allPosts,
     editorState,
     noteState,
     refreshPosts,
@@ -515,7 +495,7 @@ export const usePostActions = () => {
 
       await replaceAndRefresh(post, { deleted: now.format("YYYYMMDDHHmmss") });
     },
-    [postsState.posts, replaceAndRefresh, settingsState, updateManyPosts],
+    [allPosts, replaceAndRefresh, settingsState, updateManyPosts],
   );
 
   // ---------------------------------------------------------------------------
@@ -682,7 +662,7 @@ export const usePostActions = () => {
       await navigator.clipboard.writeText(link);
       new Notice("ブロックIDリンクをコピーしました");
     },
-    [shell, replaceAndRefresh],
+    [allPosts, replaceAndRefresh],
   );
 
   const createThread = useCallback(

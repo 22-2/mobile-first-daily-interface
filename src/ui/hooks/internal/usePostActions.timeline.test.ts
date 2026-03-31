@@ -149,7 +149,7 @@ describe("timeline note resolution", () => {
       asTask: false,
     });
 
-    postsStore.setState({ posts: [], tasks: [] });
+    postsStore.setState({ tasks: [] });
 
     editorStore.setState({
       inputSnapshot: "timeline post",
@@ -259,7 +259,7 @@ describe("timeline note resolution", () => {
     });
 
     expect(editorStore.getState().getInputValue()).toBe("from-snapshot");
-    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+    expect(editorStore.getState().canSubmit([])).toBe(
       true,
     );
   });
@@ -403,7 +403,7 @@ describe("timeline note resolution", () => {
     mockInsertTextAfter.mockResolvedValue(undefined);
     mockRefreshPosts.mockResolvedValue(undefined);
 
-    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+    expect(editorStore.getState().canSubmit([])).toBe(
       true,
     );
 

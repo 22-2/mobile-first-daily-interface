@@ -163,7 +163,14 @@ export const useInfiniteTimeline = () => {
     if (hasNextPage && !isValidating) setSize(size + 1);
   }, [hasNextPage, isValidating, size, setSize]);
 
-  return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
+  return {
+    allPosts,
+    loadMore,
+    hasMore: hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isValidating,
+  };
 };
 
 export { resolveTimelineCacheBucket };

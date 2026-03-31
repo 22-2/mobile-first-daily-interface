@@ -1,7 +1,6 @@
 import type { FC } from "react";
 import { useMemo } from "react";
-import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -26,9 +25,8 @@ export const ResultCount: FC = () => {
     })),
   );
 
-  const { posts, tasks } = usePostsStore(
-    useShallow((s) => ({ posts: s.posts, tasks: s.tasks })),
-  );
+  const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
+  const { posts } = useUnifiedPosts();
 
   const {
     granularity,
@@ -40,8 +38,6 @@ export const ResultCount: FC = () => {
     fixedNotePath,
     activeTopic,
   } = settings;
-
-  const filteredPosts = useFilteredPosts({ posts, ...settings });
 
   // タイムライン表示時はDBから総件数を取得する
   const db = useMFDIDB();
@@ -59,18 +55,9 @@ export const ResultCount: FC = () => {
     return countVisibleRootPosts(visiblePosts);
   }, [posts, displayMode, dbTotalCount]);
 
-  // タイムライン表示時はページネーションで読み込まれた投稿は`useInfiniteTimeline().allPosts`に入る。
-  // そのため現在件数は以下の優先順位で決定する:
-  // - タスクモード: タスク数
-  // - タイムライン表示: allPosts のうちアーカイブ/削除を除いたルート投稿数
-  // - それ以外: フィルター後の投稿数
-  const { allPosts } = useInfiniteTimeline();
-
   const currentCount = asTask
     ? tasks.length
-    : isTimelineView(displayMode)
-      ? countVisibleRootPosts(allPosts.filter((p) => isVisible(p.metadata)))
-      : filteredPosts.length;
+    : countVisibleRootPosts(posts.filter((p) => isVisible(p.metadata)));
 
   // 固定ノートを表示中の場合は「N posts in <ノート名>」形式
   if (viewNoteMode === "fixed") {
