@@ -39,8 +39,8 @@ describe("usePostActions - copyBlockIdLink", () => {
   let mockShell: any;
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(today.toDate());
+    vi.useRealTimers();
+
 
     mockApp = {
       vault: {
@@ -116,7 +116,7 @@ describe("usePostActions - copyBlockIdLink", () => {
 
   it("blockId がない場合は新しく生成して保存してからコピーする", async () => {
     const postWithoutId = {
-      id: "post-2",
+      id: "test-note.md:9",
       message: "no id",
       metadata: {},
       path: testNote.path,
