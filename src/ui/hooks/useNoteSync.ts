@@ -7,6 +7,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { isPostsKey } from "src/ui/utils/swr-utils";
 import { useShallow } from "zustand/shallow";
 
 export function useNoteSync() {
@@ -60,24 +61,17 @@ export function useNoteSync() {
 
     const refreshPosts = async () => {
       // 全ての 'posts' に関連するキャッシュを再検証
-      await mutate((key) => Array.isArray(key) && key[0] === "posts");
+      await mutate(isPostsKey);
     };
 
     const handleChanged = async (file: TFile) => {
-      const isMultiDayOrTimeline =
-        dateFilter !== "today" || isTimelineView(displayMode);
-
-      if (noteSource.mode === "periodic" && isMultiDayOrTimeline) {
-        if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
-          await refreshPosts();
-        }
-        return;
-      }
-
       if (!noteSource.matchesPath(file.path, currentDailyNote)) return;
 
       store.getState().updateCurrentDailyNote(shell);
-      await Promise.all([refreshPosts(), updateTasks(file)]);
+      // タスク（Markdownとしてのタスク）はシェルから直接取得するため、ここで更新する。
+      // ポスト（DB管理）の更新は Worker からの通知 (useDbSync) に任せることで
+      // DB更新前の古いデータをフェッチしてしまうレースコンディションを防ぐ。
+      await updateTasks(file);
     };
 
     const handleDelete = async (file: { path: string }) => {
@@ -88,10 +82,8 @@ export function useNoteSync() {
         return;
       }
 
-      if (isTimelineView(displayMode) || weekNotePaths.has(file.path)) {
-        await refreshPosts();
-      }
-
+      // 削除時のポスト更新も Worker からの通知に任せる。
+      
       if (file.path !== currentDailyNote?.path) return;
       setDate(date.clone());
       setTasks([]);

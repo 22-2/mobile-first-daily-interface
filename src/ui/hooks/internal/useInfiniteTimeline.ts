@@ -11,6 +11,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { isPostsKey } from "src/ui/utils/swr-utils";
 import { useShallow } from "zustand/shallow";
 
 const PAGE_SIZE_DAYS = 14;
@@ -53,13 +54,7 @@ export const useInfiniteTimeline = () => {
         state.setDate(now);
       }
 
-      mutate(
-        (key) =>
-          Array.isArray(key) &&
-          key[0] === "posts" &&
-          key[1] === activeTopic &&
-          key[2] === displayMode,
-      );
+      mutate(isPostsKey);
     }, 30 * 1000);
 
     return () => {

@@ -1,5 +1,6 @@
 import { mutate } from "swr";
-import type { DateFilter, DisplayMode, MomentLike } from "src/ui/types";
+import type { DisplayMode } from "src/ui/types";
+import { isPostsKey } from "src/ui/utils/swr-utils";
 
 type RefreshPosts = (path?: string) => Promise<void>;
 
@@ -17,10 +18,6 @@ export function createRefreshPosts({
 }: RefreshPostsDeps): RefreshPosts {
   return async () => {
     // 全ての 'posts' に関連するキーを再検証する
-    await mutate(
-      (key) =>
-        Array.isArray(key) &&
-        key[0] === "posts"
-    );
+    await mutate(isPostsKey);
   };
 }

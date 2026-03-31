@@ -361,7 +361,7 @@ describe("timeline note resolution", () => {
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [threadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-1",
       displayMode: DISPLAY_MODE.FOCUS,
@@ -407,7 +407,7 @@ describe("timeline note resolution", () => {
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [threadRoot], tasks: [] });
     settingsStore.setState((state) => ({
       ...state,
       pluginSettings: {
@@ -457,7 +457,7 @@ describe("timeline note resolution", () => {
       path: todayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [todayThreadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [todayThreadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-today-1",
       displayMode: DISPLAY_MODE.FOCUS,
@@ -723,7 +723,7 @@ note header
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    (postsStore as any).setState({ posts: [replyPost, rootPost], tasks: [] });
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
@@ -806,7 +806,7 @@ prefix
     [posted::${today.toISOString()}]
 `;
 
-    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    (postsStore as any).setState({ posts: [replyPost, rootPost], tasks: [] });
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
