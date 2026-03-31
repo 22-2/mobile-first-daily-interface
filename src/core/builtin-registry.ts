@@ -127,6 +127,7 @@ export function createTagIndexLifecycleContribution(
           if (!last) {
             shouldScan = true;
           } else {
+            // intervalHours が 0 の場合は、常に(起動のたびに)スキャンを実行する
             const diffHours = window
               .moment()
               .diff(window.moment(last), "hours", true);
