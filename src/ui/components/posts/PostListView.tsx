@@ -1,6 +1,6 @@
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { Menu, Notice } from "obsidian";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
@@ -316,38 +316,13 @@ export const PostListView: React.FC = memo(() => {
     settings.viewNoteMode,
   ]);
 
-  const parentRef = scrollContainerRef;
-
-  const rowVirtualizer = useVirtualizer({
-    count: displayedPostsWithDividers.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: (index) => {
-      const item = displayedPostsWithDividers[index];
-      return item.type === "divider" ? 50 : 120; // 暫定の高さ
-    },
-    overscan: 10,
-  });
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
+  const vRef = useRef<VirtualizerHandle>(null);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const scrollToTop = useCallback(() => {
-    rowVirtualizer.scrollToIndex(0, { align: "start", behavior: "instant" });
-  }, [parentRef, rowVirtualizer]);
-
-  useEffect(() => {
-    const el = parentRef.current;
-    if (!el) return;
-
-    const onScroll = () => {
-      setShowScrollTop(el.scrollTop > 200);
-    };
-
-    el.addEventListener("scroll", onScroll);
-    onScroll();
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [parentRef]);
+    vRef.current?.scrollToIndex(0, { align: "start" });
+  }, []);
 
   // 編集中のポストを現在のリストから再特定する
   // オフセットがズレている可能性があるので、IDなどで再特定して同期する
@@ -361,21 +336,12 @@ export const PostListView: React.FC = memo(() => {
     }
   }, [posts, editingPostOffset, editingPost, setEditingPost]);
 
-  // 無限スクロールのトリガー
+  // 無限スクロールのトリガー (初期読み込みなどでリストが空の場合のケア)
   useEffect(() => {
     if (threadView) return;
     if (!timelineView || !hasMore) return;
 
-    // もし表示するアイテムが全く無い場合は、初期読み込みで空ファイルに当たった可能性があるので即座に次を読み込む
     if (displayedPostsWithDividers.length === 0) {
-      loadMore();
-      return;
-    }
-
-    if (virtualItems.length === 0) return;
-
-    const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem.index >= displayedPostsWithDividers.length - 1) {
       loadMore();
     }
   }, [
@@ -383,32 +349,20 @@ export const PostListView: React.FC = memo(() => {
     hasMore,
     loadMore,
     displayedPostsWithDividers.length,
-    virtualItems.length,
-    virtualItems[virtualItems.length - 1]?.index,
     threadView,
   ]);
 
   return (
-    <Box
-      className="list w-full relative"
-      style={{
-        height: `${rowVirtualizer.getTotalSize()}px`,
-      }}
-    >
-      {virtualItems.map((virtualItem) => {
-        const item = displayedPostsWithDividers[virtualItem.index];
-
-        return (
+    <Box className="list w-full relative">
+      <Virtualizer
+        ref={vRef}
+        scrollRef={scrollContainerRef}
+        onScroll={(offset) => setShowScrollTop(offset > 200)}
+      >
+        {displayedPostsWithDividers.map((item) => (
           <Box
-            key={virtualItem.key}
-            data-index={virtualItem.index}
-            ref={rowVirtualizer.measureElement}
+            key={item.key}
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              transform: `translateY(${virtualItem.start}px)`,
               paddingBottom: "1px", // 境界線の重なり防止
             }}
           >
@@ -431,42 +385,11 @@ export const PostListView: React.FC = memo(() => {
               />
             )}
           </Box>
-        );
-      })}
-      {timelineView && !threadView && hasMore && (
-        <Box
-          style={{
-            position: "absolute",
-            top: `${rowVirtualizer.getTotalSize()}px`,
-            width: "100%",
-            height: "100px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--text-muted)",
-            fontSize: "var(--font-smallest)",
-          }}
-        >
-          読み込み中...
-        </Box>
-      )}
-      {timelineView && !threadView && !hasMore && (
-        <Box
-          style={{
-            position: "absolute",
-            top: `${rowVirtualizer.getTotalSize()}px`,
-            width: "100%",
-            height: "100px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--text-muted)",
-            fontSize: "var(--font-smallest)",
-          }}
-        >
-          これ以上投稿はありません
-        </Box>
-      )}
+        ))}
+        {timelineView && !threadView && (
+          <ListFooter key="footer" hasMore={hasMore} loadMore={loadMore} />
+        )}
+      </Virtualizer>
       <FloatingButton
         className={cn(
           "up-button fixed",
@@ -484,3 +407,29 @@ export const PostListView: React.FC = memo(() => {
     </Box>
   );
 });
+
+const ListFooter = memo(
+  ({ hasMore, loadMore }: { hasMore: boolean; loadMore: () => void }) => {
+    useEffect(() => {
+      if (hasMore) {
+        loadMore();
+      }
+    }, [hasMore, loadMore]);
+
+    return (
+      <Box
+        style={{
+          width: "100%",
+          height: "100px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--text-muted)",
+          fontSize: "var(--font-smallest)",
+        }}
+      >
+        {hasMore ? "読み込み中..." : "これ以上投稿はありません"}
+      </Box>
+    );
+  },
+);
