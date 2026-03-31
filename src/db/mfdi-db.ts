@@ -318,21 +318,25 @@ export class MFDIDatabase {
     const tx = db.transaction(storeNames, idbMode);
 
     this._txStack.push(tx);
+    const cleanup = () => {
+      this._txStack = this._txStack.filter((item) => item !== tx);
+    };
 
     return new Promise<T>((resolve, reject) => {
       let result: T;
+      let callbackError: unknown;
 
       tx.oncomplete = () => {
-        this._txStack.pop();
+        cleanup();
         resolve(result);
       };
       tx.onerror = () => {
-        this._txStack.pop();
-        reject(tx.error);
+        cleanup();
+        reject(callbackError ?? tx.error);
       };
       tx.onabort = () => {
-        this._txStack.pop();
-        reject(new Error("Transaction aborted"));
+        cleanup();
+        reject(callbackError ?? new Error("Transaction aborted"));
       };
 
       callback()
@@ -340,6 +344,7 @@ export class MFDIDatabase {
           result = res;
         })
         .catch((err) => {
+          callbackError = err;
           tx.abort();
         });
     });
@@ -356,7 +361,7 @@ export class MFDIDatabase {
       async (s) => {
         const index = s.index("[archived+deleted]");
         const range = IDBKeyRange.only([0, 0]);
-        return cursorAll<MemoRecord>(index, range, "next");
+        return cursorAll<MemoRecord>(index, range, "next", undefined, undefined);
       },
     );
     const dateSet = new Set(memos.map((m) => m.noteDate));
@@ -387,7 +392,7 @@ export class MFDIDatabase {
         range,
         "prev",
         buildContentFilter(query),
-        limit,
+        limit || 300,
       );
     });
   }
@@ -428,13 +433,18 @@ export class MFDIDatabase {
             range: IDBKeyRange.bound([0, 0, startDate], [0, 0, endDate]),
           };
 
+      // console.log(`[MFDIDatabase] getVisibleMemosByDateRange: topicId="${topicId}", range=[${startDate}, ${endDate}], limit=${limit}`);
+
       return cursorAll<MemoRecord>(
         index,
         range,
         "prev",
         buildContentFilter(searchQuery),
-        limit,
-      );
+        limit || 300,
+      ).then((results) => {
+        // console.log(`[MFDIDatabase] getVisibleMemosByDateRange result count: ${results.length}`);
+        return results;
+      });
     });
   }
 
@@ -454,7 +464,11 @@ export class MFDIDatabase {
     for (let i = this._txStack.length - 1; i >= 0; i--) {
       const tx = this._txStack[i];
       if ([...tx.objectStoreNames].includes(name)) {
-        return tx.objectStore(name);
+        // 要求されたモードが readonly なら再利用可能。
+        // readwrite の場合、再利用する tx も readwrite である必要がある。
+        if (mode === "readonly" || tx.mode === "readwrite") {
+          return tx.objectStore(name);
+        }
       }
     }
 

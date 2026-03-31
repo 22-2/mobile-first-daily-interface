@@ -31,8 +31,11 @@ export const useInfiniteTimeline = () => {
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
   // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const shouldFetchDb =
-    isTimelineView(displayMode) && activeDocument.hasFocus();
+  const isTimelineVisible = isTimelineView(displayMode);
+  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。
+  // SWRのキー作成からは hasFocus を除外する。そうしないとフォーカスが外れた瞬間にデータが消えてしまう (key=null) ため。
+  const shouldFetchDb = isTimelineVisible;
+  const isFocused = activeDocument.hasFocus();
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
@@ -41,7 +44,8 @@ export const useInfiniteTimeline = () => {
   useEffect(() => {
     // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
     const timer = window.setInterval(() => {
-      if (!shouldFetchDb) {
+      // タイムライン非表示中、またはウィンドウがフォーカスされていない場合は何もしない
+      if (!isTimelineVisible || !activeDocument.hasFocus()) {
         return;
       }
 
