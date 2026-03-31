@@ -1,4 +1,4 @@
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
@@ -22,7 +22,7 @@ export default defineConfig(async ({ mode }) => {
       isAnalyze && inspect({open: true, outputDir: "inspect"}),
       isAnalyze && analyzer(),
       react(),
-      reactCompilerPreset(),
+      // reactCompilerPreset(),
       onMyPc && obsidianCopyPlugin({
         pluginsDir: [
           "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
