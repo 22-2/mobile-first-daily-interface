@@ -387,7 +387,7 @@ export const PostListView: React.FC = memo(() => {
           </Box>
         ))}
         {timelineView && !threadView && (
-          <ListFooter key="footer" hasMore={hasMore} loadMore={loadMore} />
+          <ListFooter key="footer" hasMore={!!hasMore} loadMore={loadMore} />
         )}
       </Virtualizer>
       <FloatingButton
