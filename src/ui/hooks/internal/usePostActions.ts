@@ -136,7 +136,7 @@ export const usePostActions = () => {
       return (
         latestPosts.find(
           (candidate) =>
-            candidate.message === post.message &&
+            candidate.message.trim() === post.message.trim() &&
             candidate.timestamp.valueOf() === post.timestamp.valueOf(),
         ) ?? null
       );

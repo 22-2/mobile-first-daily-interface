@@ -95,10 +95,11 @@ function buildContentFilter(
 // ---------------------------------------------------------------------------
 
 /** トランザクション取得コールバック */
-type StoreResolver = (
-  name: string,
+type StoreCallbackResolver = <T>(
+  name: StoreName,
   mode: IDBTransactionMode,
-) => Promise<IDBObjectStore>;
+  callback: (store: IDBObjectStore) => Promise<T> | T,
+) => Promise<T>;
 
 // ---------------------------------------------------------------------------
 // Store accessor classes
@@ -106,125 +107,140 @@ type StoreResolver = (
 
 class MemoStore {
   readonly _name = "memos" as const;
-  constructor(private readonly getStore: StoreResolver) {}
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
 
   clear(): Promise<undefined> {
-    return this.store("readwrite").then((s) => req(s.clear()));
+    return this.perform("readwrite", (s) => req(s.clear()));
   }
 
   get(id: string): Promise<MemoRecord | undefined> {
-    return this.store("readonly").then((s) => req(s.get(id)));
+    return this.perform("readonly", (s) => req(s.get(id)));
   }
 
   put(item: MemoRecord): Promise<IDBValidKey> {
-    return this.store("readwrite").then((s) => req(s.put(item)));
+    return this.perform("readwrite", (s) => req(s.put(item)));
   }
 
   delete(id: string): Promise<undefined> {
-    return this.store("readwrite").then((s) => req(s.delete(id)));
+    return this.perform("readwrite", (s) => req(s.delete(id)));
   }
 
   toArray(): Promise<MemoRecord[]> {
-    return this.store("readonly").then((s) => req(s.getAll()));
+    return this.perform("readonly", (s) => req(s.getAll()));
   }
 
-  async bulkPut(items: MemoRecord[]): Promise<void> {
-    const s = await this.store("readwrite");
-    await Promise.all(items.map((item) => req(s.put(item))));
+  bulkPut(items: MemoRecord[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(items.map((item) => req(s.put(item))));
+    });
   }
 
   where(indexName: string) {
     return {
       equals: (value: unknown) => ({
-        toArray: async (): Promise<MemoRecord[]> => {
-          const s = await this.store("readonly");
-          return req(s.index(indexName).getAll(IDBKeyRange.only(value)));
+        toArray: (): Promise<MemoRecord[]> => {
+          return this.perform("readonly", (s) =>
+            req(s.index(indexName).getAll(IDBKeyRange.only(value))),
+          );
         },
-        delete: async (): Promise<void> => {
-          const s = await this.store("readwrite");
-          const request = s
-            .index(indexName)
-            .openKeyCursor(IDBKeyRange.only(value));
-          return new Promise<void>((resolve, reject) => {
-            request.onsuccess = () => {
-              const cursor = request.result;
-              if (cursor) {
-                s.delete(cursor.primaryKey);
-                cursor.continue();
-              } else {
-                resolve();
-              }
-            };
-            request.onerror = () => reject(request.error);
+        delete: (): Promise<void> => {
+          return this.perform("readwrite", (s) => {
+            const request = s
+              .index(indexName)
+              .openKeyCursor(IDBKeyRange.only(value));
+            return new Promise<void>((resolve, reject) => {
+              request.onsuccess = () => {
+                const cursor = request.result;
+                if (cursor) {
+                  s.delete(cursor.primaryKey);
+                  cursor.continue();
+                } else {
+                  resolve();
+                }
+              };
+              request.onerror = () => reject(request.error);
+            });
           });
         },
       }),
     };
   }
-
-  private store(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-    return this.getStore(this._name, mode);
-  }
 }
 
 class MetaStore {
   readonly _name = "meta" as const;
-  constructor(private readonly getStore: StoreResolver) {}
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
 
   clear(): Promise<undefined> {
-    return this.store("readwrite").then((s) => req(s.clear()));
+    return this.perform("readwrite", (s) => req(s.clear()));
   }
 
   put(item: MetaRecord): Promise<IDBValidKey> {
-    return this.store("readwrite").then((s) => req(s.put(item)));
+    return this.perform("readwrite", (s) => req(s.put(item)));
   }
 
   get(key: string): Promise<MetaRecord | undefined> {
-    return this.store("readonly").then((s) => req(s.get(key)));
-  }
-
-  private store(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-    return this.getStore(this._name, mode);
+    return this.perform("readonly", (s) => req(s.get(key)));
   }
 }
 
 class TagStatStore {
   readonly _name = "tagStats" as const;
-  constructor(private readonly getStore: StoreResolver) {}
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
 
   clear(): Promise<undefined> {
-    return this.store("readwrite").then((s) => req(s.clear()));
+    return this.perform("readwrite", (s) => req(s.clear()));
   }
 
   put(item: TagStatRecord): Promise<IDBValidKey> {
-    return this.store("readwrite").then((s) => req(s.put(item)));
+    return this.perform("readwrite", (s) => req(s.put(item)));
   }
 
   get(tag: string): Promise<TagStatRecord | undefined> {
-    return this.store("readonly").then((s) => req(s.get(tag)));
+    return this.perform("readonly", (s) => req(s.get(tag)));
   }
 
   toArray(): Promise<TagStatRecord[]> {
-    return this.store("readonly").then((s) => req(s.getAll()));
+    return this.perform("readonly", (s) => req(s.getAll()));
   }
 
-  async bulkPut(items: TagStatRecord[]): Promise<void> {
-    const s = await this.store("readwrite");
-    await Promise.all(items.map((item) => req(s.put(item))));
+  bulkPut(items: TagStatRecord[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(items.map((item) => req(s.put(item))));
+    });
   }
 
-  async bulkGet(tags: string[]): Promise<(TagStatRecord | undefined)[]> {
-    const s = await this.store("readonly");
-    return Promise.all(tags.map((tag) => req(s.get(tag))));
+  bulkGet(tags: string[]): Promise<(TagStatRecord | undefined)[]> {
+    return this.perform("readonly", async (s) => {
+      return Promise.all(tags.map((tag) => req(s.get(tag))));
+    });
   }
 
-  async bulkDelete(tags: string[]): Promise<void> {
-    const s = await this.store("readwrite");
-    await Promise.all(tags.map((tag) => req(s.delete(tag))));
-  }
-
-  private store(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-    return this.getStore(this._name, mode);
+  bulkDelete(tags: string[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(tags.map((tag) => req(s.delete(tag))));
+    });
   }
 }
 
@@ -258,25 +274,22 @@ const DB_VERSION = 6;
 export class MFDIDatabase {
   private readonly _db: Promise<IDBDatabase>;
   private readonly _name: string;
-
-  /** アクティブなトランザクションのスタック（ネスト対応） */
   private _txStack: IDBTransaction[] = [];
 
   // store accessor インスタンスは一度だけ生成する
-  readonly memos: MemoStore;
-  readonly meta: MetaStore;
-  readonly tagStats: TagStatStore;
+  public readonly memos: MemoStore;
+  public readonly meta: MetaStore;
+  public readonly tagStats: TagStatStore;
 
   constructor(appId: string) {
     this._name = getMFDIDatabaseName(appId);
+    // インスタンス作成時に Promise を初期化
     this._db = this.openDatabase();
 
-    const getStore: StoreResolver = (name, mode) =>
-      this.resolveStore(name as StoreName, mode);
-
-    this.memos = new MemoStore(getStore);
-    this.meta = new MetaStore(getStore);
-    this.tagStats = new TagStatStore(getStore);
+    const withStore = this.withStoreCallback.bind(this);
+    this.memos = new MemoStore(withStore);
+    this.meta = new MetaStore(withStore);
+    this.tagStats = new TagStatStore(withStore);
   }
 
   // ---------------------------------------------------------------------------
@@ -452,14 +465,12 @@ export class MFDIDatabase {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  /**
-   * アクティブなトランザクションがあればそれを再利用し、
-   * なければ新規トランザクションを作成して store を返す。
-   */
-  private async resolveStore(
+  /** store を取得してコールバックを実行する内部ユーティリティ */
+  private async withStoreCallback<T>(
     name: StoreName,
     mode: IDBTransactionMode,
-  ): Promise<IDBObjectStore> {
+    callback: (store: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
     // スタック末尾（最も内側）のトランザクションを優先して再利用
     for (let i = this._txStack.length - 1; i >= 0; i--) {
       const tx = this._txStack[i];
@@ -467,23 +478,14 @@ export class MFDIDatabase {
         // 要求されたモードが readonly なら再利用可能。
         // readwrite の場合、再利用する tx も readwrite である必要がある。
         if (mode === "readonly" || tx.mode === "readwrite") {
-          return tx.objectStore(name);
+          return callback(tx.objectStore(name));
         }
       }
     }
 
     const db = await this._db;
-    return db.transaction(name, mode).objectStore(name);
-  }
-
-  /** store を取得してコールバックを実行する内部ユーティリティ */
-  private async withStoreCallback<T>(
-    name: StoreName,
-    mode: IDBTransactionMode,
-    callback: (store: IDBObjectStore) => Promise<T>,
-  ): Promise<T> {
-    const store = await this.resolveStore(name, mode);
-    return callback(store);
+    const tx = db.transaction(name, mode);
+    return callback(tx.objectStore(name));
   }
 
   private openDatabase(): Promise<IDBDatabase> {

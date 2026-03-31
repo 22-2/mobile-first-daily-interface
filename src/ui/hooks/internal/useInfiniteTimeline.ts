@@ -139,9 +139,7 @@ export const useInfiniteTimeline = () => {
 
       return result;
     },
-    {
-      revalidateFirstPage: false,
-    },
+    {},
   );
 
   const hasNextPage =
