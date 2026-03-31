@@ -30,9 +30,7 @@ export const useInfiniteTimeline = () => {
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
-  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const shouldFetchDb =
-    isTimelineView(displayMode) && activeDocument.hasFocus();
+  const shouldFetchDb = isTimelineView(displayMode);
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
@@ -140,8 +138,15 @@ export const useInfiniteTimeline = () => {
     },
   );
 
-  const hasNextPage =
-    infiniteData && infiniteData[infiniteData.length - 1]?.hasMore;
+  const lastPage = useMemo(() => {
+    if (!infiniteData) return null;
+    for (let i = infiniteData.length - 1; i >= 0; i--) {
+      if (infiniteData[i]) return infiniteData[i];
+    }
+    return null;
+  }, [infiniteData]);
+
+  const hasNextPage = lastPage?.hasMore ?? false;
   const isFetchingNextPage =
     size > 0 && infiniteData && typeof infiniteData[size - 1] === "undefined";
   // SWR loads all pages on initial mount if size > 1, but here size starts at 1.
@@ -151,7 +156,7 @@ export const useInfiniteTimeline = () => {
   // ページデータを取得
   // ---------------------------------------------------------------------------
   const allPosts = useMemo(() => {
-    return infiniteData?.flatMap((p) => p.posts) ?? [];
+    return infiniteData?.filter(Boolean).flatMap((p) => p.posts) ?? [];
   }, [infiniteData]);
 
   // ---------------------------------------------------------------------------
