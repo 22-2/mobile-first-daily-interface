@@ -1,4 +1,4 @@
-import { type Remote, wrap } from "comlink";
+import { wrap, type Remote } from "comlink";
 import type { IDBService } from "src/db/interfaces/IDBService";
 import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
 

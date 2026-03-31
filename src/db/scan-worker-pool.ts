@@ -1,4 +1,4 @@
-import { type Remote, wrap } from "comlink";
+import { wrap, type Remote } from "comlink";
 import type { ScanWorkerAPI } from "src/db/worker-api";
 
 export type WorkerFactory = () => Worker;

@@ -162,7 +162,9 @@ export class MFDIView extends ItemView {
   }
 
   private cleanUpActions(): void {
-    Array.from(this.actionsEl.children).filter((el) => el.getAttr("data-mfdi-actions") === "true").forEach((el) => el.detach());
+    Array.from(this.actionsEl.children)
+      .filter((el) => el.getAttr("data-mfdi-actions") === "true")
+      .forEach((el) => el.detach());
   }
 
   private setupView(): void {
@@ -201,7 +203,7 @@ export class MFDIView extends ItemView {
 
       this.activeSearchControlEl = searchSetting.controlEl;
       this.actionsEl.prepend(searchSetting.controlEl);
-    }).setAttr("data-mfdi-actions", "true");;
+    }).setAttr("data-mfdi-actions", "true");
 
     if (this.state.noteMode === "fixed") {
       this.setupEditableTitleBar();

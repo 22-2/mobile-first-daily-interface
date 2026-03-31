@@ -9,9 +9,7 @@ import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 // ---------------------------------------------------------------------------
 
 export class DirectApiExecutor implements ScanWorkerAPI {
-  constructor(
-    private readonly api: ScanWorkerAPI | Remote<ScanWorkerAPI>,
-  ) {}
+  constructor(private readonly api: ScanWorkerAPI | Remote<ScanWorkerAPI>) {}
 
   scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {
     return this.api.scanFiles(files, meta);
