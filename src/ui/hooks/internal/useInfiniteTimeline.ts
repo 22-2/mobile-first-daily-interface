@@ -1,5 +1,6 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
+import { mutate } from "swr";
+import useSWRInfinite from "swr/infinite";
 import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
   resolveTimelineBaseDate,
@@ -19,7 +20,6 @@ const PAGE_SIZE_DAYS = 14;
  */
 export const useInfiniteTimeline = () => {
   const dbService = useMFDIDB();
-  const queryClient = useQueryClient();
 
   const { activeTopic, displayMode, date, searchQuery } = useSettingsStore(
     useShallow((s) => ({
@@ -51,42 +51,51 @@ export const useInfiniteTimeline = () => {
         state.setDate(now);
       }
 
-      queryClient.invalidateQueries({
-        queryKey: ["posts", activeTopic, displayMode],
-      });
+      mutate(
+        (key) =>
+          Array.isArray(key) &&
+          key[0] === "posts" &&
+          key[1] === activeTopic &&
+          key[2] === displayMode,
+      );
     }, 30 * 1000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [queryClient, activeTopic, displayMode]);
+  }, [activeTopic, displayMode, shouldFetchDb]);
 
   // ---------------------------------------------------------------------------
   // 無限クエリ
   // ---------------------------------------------------------------------------
   const {
     data: infiniteData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery<
-    TimelinePostsPage,
-    Error,
-    { pages: TimelinePostsPage[]; pageParams: (string | null)[] },
-    string[],
-    string | null
-  >({
-    queryKey: [
-      "posts",
-      activeTopic,
-      displayMode,
-      timelineDayKey,
-      searchQuery,
-    ].filter(Boolean),
-    enabled: shouldFetchDb,
-    initialPageParam: null,
+    size,
+    setSize,
+    isValidating,
+    isLoading,
+  } = useSWRInfinite<TimelinePostsPage>(
+    (pageIndex, previousPageData) => {
+      if (!shouldFetchDb) return null;
+      if (previousPageData && !previousPageData.hasMore) return null;
 
-    queryFn: async ({ pageParam }) => {
+      const pageParam =
+        pageIndex === 0
+          ? null
+          : previousPageData!.lastSearchedDate.clone().subtract(1, "day").format();
+
+      return [
+        "posts",
+        activeTopic,
+        displayMode,
+        timelineDayKey,
+        searchQuery,
+        pageParam,
+      ];
+    },
+    async (key) => {
+      const pageParam = key[key.length - 1];
+
       const baseDate = resolveTimelineBaseDate(
         pageParam,
         settingsStore.getState().getEffectiveDate,
@@ -109,8 +118,6 @@ export const useInfiniteTimeline = () => {
       const paths = new Set(posts.map((p) => p.path));
       addPaths(paths);
 
-      // 判定ロジック: このウィンドウより前に投稿が存在するかを確認して
-      // 次ページの有無を決定する（timelinePosts.createTimelinePageFetcher と同等）。
       const older = await dbService.getMemos({
         topicId: activeTopic,
         startDate: "0000-01-01T00:00:00.000Z",
@@ -128,26 +135,31 @@ export const useInfiniteTimeline = () => {
 
       return result;
     },
+    {
+      revalidateFirstPage: false,
+    },
+  );
 
-    getNextPageParam: (lastPage) =>
-      lastPage.hasMore
-        ? lastPage.lastSearchedDate.clone().subtract(1, "day").format()
-        : undefined,
-  });
+  const hasNextPage =
+    infiniteData && infiniteData[infiniteData.length - 1]?.hasMore;
+  const isFetchingNextPage =
+    size > 0 && infiniteData && typeof infiniteData[size - 1] === "undefined";
+  // SWR loads all pages on initial mount if size > 1, but here size starts at 1.
+  // When loading more, setSize(size + 1) makes isValidating true.
 
   // ---------------------------------------------------------------------------
   // ページデータを取得
   // ---------------------------------------------------------------------------
   const allPosts = useMemo(() => {
-    return infiniteData?.pages.flatMap((p) => p.posts) ?? [];
+    return infiniteData?.flatMap((p) => p.posts) ?? [];
   }, [infiniteData]);
 
   // ---------------------------------------------------------------------------
   // 次ページ読み込みトリガー
   // ---------------------------------------------------------------------------
   const loadMore = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+    if (hasNextPage && !isValidating) setSize(size + 1);
+  }, [hasNextPage, isValidating, size, setSize]);
 
   return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
 };

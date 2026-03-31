@@ -5,7 +5,8 @@ import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const useInfiniteQueryMock = vi.fn();
+const useSWRInfiniteMock = vi.fn();
+const mutateMock = vi.fn();
 const createTimelinePageFetcherMock = vi.fn();
 const fetchPageMock = vi.fn();
 const addPathsMock = vi.fn();
@@ -13,20 +14,25 @@ const setPostsMock = vi.fn();
 const setDateMock = vi.fn();
 const loadFileMock = vi.fn(async (_path: string) => "");
 const cachedReadFileMock = vi.fn(async () => "");
-const invalidateQueriesMock = vi.fn();
 
 const settingsState = {
   activeTopic: "topic-a",
   displayMode: "timeline",
   date: moment("2026-03-15T00:00:00.000Z"),
+  searchQuery: "",
   setDate: setDateMock,
   getEffectiveDate: () => settingsState.date.clone(),
 };
 
-vi.mock("@tanstack/react-query", () => ({
-  useInfiniteQuery: (...args: unknown[]) => useInfiniteQueryMock(...args),
-  useQueryClient: () => ({ invalidateQueries: invalidateQueriesMock }),
+vi.mock("swr", () => ({
+  mutate: (...args: unknown[]) => mutateMock(...args),
 }));
+
+vi.mock("swr/infinite", () => {
+  return {
+    default: (...args: unknown[]) => useSWRInfiniteMock(...args),
+  };
+});
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: () => ({
@@ -96,11 +102,12 @@ describe("useInfiniteTimeline", () => {
     });
     createTimelinePageFetcherMock.mockReturnValue(fetchPageMock);
 
-    useInfiniteQueryMock.mockReturnValue({
+    useSWRInfiniteMock.mockReturnValue({
       data: undefined,
-      fetchNextPage: vi.fn(),
-      hasNextPage: false,
-      isFetchingNextPage: false,
+      size: 1,
+      setSize: vi.fn(),
+      isValidating: false,
+      isLoading: false,
     });
   });
 
@@ -111,23 +118,29 @@ describe("useInfiniteTimeline", () => {
   it("queryKey に日付キーを含め、日付跨ぎでクエリが切り替わる", () => {
     const { rerender } = renderHook(() => useInfiniteTimeline());
 
-    const firstOptions = useInfiniteQueryMock.mock.calls[0][0];
-    expect(firstOptions.queryKey).toEqual([
+    const getKey = useSWRInfiniteMock.mock.calls[0][0];
+    const key = getKey(0, null);
+    expect(key).toEqual([
       "posts",
       "topic-a",
       "timeline",
       "2026-03-15",
+      "",
+      null,
     ]);
 
     settingsState.date = moment("2026-03-16T00:00:00.000Z");
     rerender();
 
-    const secondOptions = useInfiniteQueryMock.mock.calls[1][0];
-    expect(secondOptions.queryKey).toEqual([
+    const secondGetKey = useSWRInfiniteMock.mock.calls[1][0];
+    const secondKey = secondGetKey(0, null);
+    expect(secondKey).toEqual([
       "posts",
       "topic-a",
       "timeline",
       "2026-03-16",
+      "",
+      null,
     ]);
   });
 
@@ -137,8 +150,8 @@ describe("useInfiniteTimeline", () => {
 
     renderHook(() => useInfiniteTimeline());
 
-    const firstOptions = useInfiniteQueryMock.mock.calls[0][0];
-    await firstOptions.queryFn({ pageParam: null });
+    const fetcher = useSWRInfiniteMock.mock.calls[0][1];
+    await fetcher(["posts", "topic-a", "timeline", "2026-03-15", "", null]);
 
     expect(getMemosMock).toHaveBeenCalled();
   });

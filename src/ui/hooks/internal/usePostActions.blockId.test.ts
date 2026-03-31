@@ -7,10 +7,8 @@ import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: vi.fn(() => ({
-    invalidateQueries: vi.fn(),
-  })),
+vi.mock("swr", () => ({
+  mutate: vi.fn(),
 }));
 
 vi.mock("src/ui/context/AppContext", () => ({
@@ -41,8 +39,8 @@ describe("usePostActions - copyBlockIdLink", () => {
   let mockShell: any;
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(today.toDate());
+    vi.useRealTimers();
+
 
     mockApp = {
       vault: {
@@ -118,7 +116,7 @@ describe("usePostActions - copyBlockIdLink", () => {
 
   it("blockId がない場合は新しく生成して保存してからコピーする", async () => {
     const postWithoutId = {
-      id: "post-2",
+      id: "test-note.md:9",
       message: "no id",
       metadata: {},
       path: testNote.path,

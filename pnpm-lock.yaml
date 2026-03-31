@@ -14,12 +14,9 @@ importers:
       '@22-2/obsidian-magical-editor':
         specifier: 1.0.2
         version: 1.0.2(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))
-      '@tanstack/react-query':
-        specifier: ^5.95.2
-        version: 5.95.2(react@19.2.4)
-      '@tanstack/react-virtual':
-        specifier: ^3.13.23
-        version: 3.13.23(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@preact/signals':
+        specifier: ^2.9.0
+        version: 2.9.0(preact@10.29.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -47,21 +44,24 @@ importers:
       react:
         specifier: ~19.2.4
         version: 19.2.4
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
       react-dom:
         specifier: ~19.2.4
         version: 19.2.4(react@19.2.4)
+      swr:
+        specifier: ^2.4.1
+        version: 2.4.1(react@19.2.4)
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      virtua:
+        specifier: ^0.49.0
+        version: 0.49.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vue@3.5.31(typescript@6.0.2))
       zustand:
         specifier: ^5.0.12
-        version: 5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)
+        version: 5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
       '@22-2/esbuild-plugin-obsidian-copy':
         specifier: 0.1.1
@@ -1148,6 +1148,14 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
+  '@preact/signals-core@1.14.0':
+    resolution: {integrity: sha512-AowtCcCU/33lFlh1zRFf/u+12rfrhtNakj7UpaGEsmMwUKpKWMVvcktOGcwBBNiB4lWrZWc01LhiyyzVklJyaQ==}
+
+  '@preact/signals@2.9.0':
+    resolution: {integrity: sha512-hYrY0KyUqkDgOl1qba/JGn6y81pXnurn21PMaxfcMwdncdZ3M/oVdmpTvEnsGjh48dIwDVc7bjWHqIsngSjYug==}
+    peerDependencies:
+      preact: '>= 10.25.0 || >=11.0.0-0'
+
   '@publint/pack@0.1.4':
     resolution: {integrity: sha512-HDVTWq3H0uTXiU0eeSQntcVUTPP3GamzeXI41+x7uU9J65JgWQh3qWZHblR1i0npXfFtF+mxBiU2nJH8znxWnQ==}
     engines: {node: '>=18'}
@@ -1368,23 +1376,6 @@ packages:
 
   '@tailwindcss/postcss@4.2.2':
     resolution: {integrity: sha512-n4goKQbW8RVXIbNKRB/45LzyUqN451deQK0nzIeauVEqjlI49slUlgKYJM2QyUzap/PcpnS7kzSUmPb1sCRvYQ==}
-
-  '@tanstack/query-core@5.95.2':
-    resolution: {integrity: sha512-o4T8vZHZET4Bib3jZ/tCW9/7080urD4c+0/AUaYVpIqOsr7y0reBc1oX3ttNaSW5mYyvZHctiQ/UOP2PfdmFEQ==}
-
-  '@tanstack/react-query@5.95.2':
-    resolution: {integrity: sha512-/wGkvLj/st5Ud1Q76KF1uFxScV7WeqN1slQx5280ycwAyYkIPGaRZAEgHxe3bjirSd5Zpwkj6zNcR4cqYni/ZA==}
-    peerDependencies:
-      react: ^18 || ^19
-
-  '@tanstack/react-virtual@3.13.23':
-    resolution: {integrity: sha512-XnMRnHQ23piOVj2bzJqHrRrLg4r+F86fuBcwteKfbIjJrtGxb4z7tIvPVAe4B+4UVwo9G4Giuz5fmapcrnZ0OQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
-  '@tanstack/virtual-core@3.13.23':
-    resolution: {integrity: sha512-zSz2Z2HNyLjCplANTDyl3BcdQJc2k1+yyFoKhNRmCr7V7dY8o8q5m8uFTI1/Pg1kL+Hgrz6u3Xo6eFUB7l66cg==}
 
   '@testing-library/dom@10.4.1':
     resolution: {integrity: sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==}
@@ -3921,11 +3912,6 @@ packages:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
     engines: {node: '>= 0.10'}
 
-  react-compiler-runtime@1.0.0:
-    resolution: {integrity: sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==}
-    peerDependencies:
-      react: ^17.0.0 || ^18.0.0 || ^19.0.0 || ^0.0.0-experimental
-
   react-dom@19.2.4:
     resolution: {integrity: sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==}
     peerDependencies:
@@ -4265,6 +4251,11 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  swr@2.4.1:
+    resolution: {integrity: sha512-2CC6CiKQtEwaEeNiqWTAw9PGykW8SR5zZX8MZk6TeAvEAnVS7Visz8WzphqgtQ8v2xz/4Q5K+j+SeMaKXeeQIA==}
+    peerDependencies:
+      react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
@@ -4525,6 +4516,11 @@ packages:
     resolution: {integrity: sha512-oCwdVC7mTuWiPyjLUz/COz5TLk6wgp0RCsN+wHZ2Ekneac9w8uuV0njcbbie2ME+Vs+d6duwmYuR3HgQXs1fOg==}
     engines: {node: '>= 0.4'}
 
+  use-sync-external-store@1.6.0:
+    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -4547,6 +4543,26 @@ packages:
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
+
+  virtua@0.49.0:
+    resolution: {integrity: sha512-yra9TIPqkVIn+LOjCZO8e6C6UsCiCIHJXt3yfnCP02r2sLpgr6mlispn3SHtWZv2aK2tuZLo6Sp2v6qmSrSVfw==}
+    peerDependencies:
+      react: '>=16.14.0'
+      react-dom: '>=16.14.0'
+      solid-js: '>=1.0'
+      svelte: '>=5.0'
+      vue: '>=3.2'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
 
   vite-bundle-analyzer@1.3.6:
     resolution: {integrity: sha512-elFXkF9oGy4CJEeOdP1DSEHRDKWfmaEDfT9/GuF4jmyfmUF6nC//iN+ythqMEVvrtchOEHGKLumZwnu1NjoI0w==}
@@ -5813,6 +5829,13 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
+  '@preact/signals-core@1.14.0': {}
+
+  '@preact/signals@2.9.0(preact@10.29.0)':
+    dependencies:
+      '@preact/signals-core': 1.14.0
+      preact: 10.29.0
+
   '@publint/pack@0.1.4': {}
 
   '@quansync/fs@1.0.0':
@@ -5952,21 +5975,6 @@ snapshots:
       '@tailwindcss/oxide': 4.2.2
       postcss: 8.5.8
       tailwindcss: 4.2.2
-
-  '@tanstack/query-core@5.95.2': {}
-
-  '@tanstack/react-query@5.95.2(react@19.2.4)':
-    dependencies:
-      '@tanstack/query-core': 5.95.2
-      react: 19.2.4
-
-  '@tanstack/react-virtual@3.13.23(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      '@tanstack/virtual-core': 3.13.23
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-
-  '@tanstack/virtual-core@3.13.23': {}
 
   '@testing-library/dom@10.4.1':
     dependencies:
@@ -8905,10 +8913,6 @@ snapshots:
       iconv-lite: 0.7.2
       unpipe: 1.0.0
 
-  react-compiler-runtime@1.0.0(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-
   react-dom@19.2.4(react@19.2.4):
     dependencies:
       react: 19.2.4
@@ -9364,6 +9368,12 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
+  swr@2.4.1(react@19.2.4):
+    dependencies:
+      dequal: 2.0.3
+      react: 19.2.4
+      use-sync-external-store: 1.6.0(react@19.2.4)
+
   symbol-tree@3.2.4: {}
 
   tagged-tag@1.0.0: {}
@@ -9574,6 +9584,10 @@ snapshots:
       punycode: 1.4.1
       qs: 6.15.0
 
+  use-sync-external-store@1.6.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
+
   util-deprecate@1.0.2: {}
 
   uuid@9.0.1: {}
@@ -9585,6 +9599,12 @@ snapshots:
   validate-npm-package-name@7.0.2: {}
 
   vary@1.1.2: {}
+
+  virtua@0.49.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vue@3.5.31(typescript@6.0.2)):
+    optionalDependencies:
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      vue: 3.5.31(typescript@6.0.2)
 
   vite-bundle-analyzer@1.3.6: {}
 
@@ -9831,8 +9851,9 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zustand@5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4):
+  zustand@5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4)):
     optionalDependencies:
       '@types/react': 19.2.14
       immer: 11.1.4
       react: 19.2.4
+      use-sync-external-store: 1.6.0(react@19.2.4)

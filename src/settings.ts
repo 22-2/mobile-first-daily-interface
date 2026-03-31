@@ -28,7 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   topics: [DEFAULT_TOPIC],
   activeTopic: "",
   fixedNoteFiles: [],
-  fullScanIntervalHours: 1,
+  fullScanIntervalHours: 24,
 };
 
 export const postFormatMap = {
@@ -81,12 +81,13 @@ export class MFDISettingTab extends PluginSettingTab {
 
   private addGeneralSettings(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("全体フルスキャンの間隔（時間）")
+      .setName("全体フルスキャンの間隔")
       .setDesc(
-        "最後のフルスキャンから経過したら起動時にフルスキャンを実行します。",
+        "最後の大規模スキャンから指定した時間が経過している場合、起動時にフルスキャンを実行します。",
       )
       .addDropdown((tc) =>
         tc
+          .addOption("0", "毎回起動時")
           .addOption("1", "1時間")
           .addOption("3", "3時間")
           .addOption("6", "6時間")
