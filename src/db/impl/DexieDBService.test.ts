@@ -1,6 +1,6 @@
 import { DexieDBService } from "src/db/impl/DexieDBService";
 import type { ScannableNote } from "src/db/worker-api";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // BroadcastChannel polyfill for test environment
 if (typeof BroadcastChannel === "undefined") {
@@ -14,9 +14,11 @@ describe("DexieDBService", () => {
   let service: DexieDBService;
 
   beforeEach(async () => {
+    vi.useRealTimers();
     service = new DexieDBService();
     await service.initialize({ appId: "test-app" });
   });
+
 
   it("should initialize and scan all notes", async () => {
     const notes: ScannableNote[] = [

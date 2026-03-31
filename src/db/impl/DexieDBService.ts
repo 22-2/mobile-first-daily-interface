@@ -29,9 +29,10 @@ export class DexieDBService implements IDBService {
     await this.db.open();
   }
 
-  private notify(detail?: any) {
+  private notify(detail?: { path?: string }) {
     this.channel?.postMessage({ type: "mfdi-db-updated", detail });
   }
+
 
   async scanAllNotes(notes: ScannableNote[]): Promise<void> {
     if (!this.db || !this.memoRepo || !this.tagStatsRepo)
@@ -39,9 +40,7 @@ export class DexieDBService implements IDBService {
 
     await this.db.transaction(
       "rw",
-      this.db.memos,
-      this.db.meta,
-      this.db.tagStats,
+      [this.db.memos, this.db.meta, this.db.tagStats],
       async () => {
         await this.memoRepo!.clear();
         await this.db!.meta.clear();
@@ -68,8 +67,7 @@ export class DexieDBService implements IDBService {
 
     await this.db.transaction(
       "rw",
-      this.db.memos,
-      this.db.tagStats,
+      [this.db.memos, this.db.tagStats],
       async () => {
         const removed = await this.tagStatsRepo!.collectForPath(note.path);
         await this.memoRepo!.deleteByPath(note.path);
@@ -89,8 +87,7 @@ export class DexieDBService implements IDBService {
 
     await this.db.transaction(
       "rw",
-      this.db.memos,
-      this.db.tagStats,
+      [this.db.memos, this.db.tagStats],
       async () => {
         const removed = await this.tagStatsRepo!.collectForPath(path);
         await this.memoRepo!.deleteByPath(path);
@@ -107,8 +104,7 @@ export class DexieDBService implements IDBService {
 
     await this.db.transaction(
       "rw",
-      this.db.memos,
-      this.db.tagStats,
+      [this.db.memos, this.db.tagStats],
       async () => {
         const removed = await this.tagStatsRepo!.collectForPath(oldPath);
         await this.memoRepo!.deleteByPath(oldPath);

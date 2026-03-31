@@ -1,7 +1,11 @@
 import { MFDIDatabase, type MemoRecord } from "src/db/mfdi-db";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const databases: MFDIDatabase[] = [];
+
+beforeEach(() => {
+  vi.useRealTimers();
+});
 
 afterEach(async () => {
   while (databases.length > 0) {

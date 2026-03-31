@@ -1,4 +1,3 @@
-import { useLiveQuery } from "dexie-react-hooks";
 import type { FC } from "react";
 import { useMemo } from "react";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
@@ -46,7 +45,7 @@ export const ResultCount: FC = () => {
 
   // タイムライン表示時はDBから総件数を取得する
   const db = useMFDIDB();
-  const dbTotalCount = useLiveQuery(
+  const dbTotalCount = useMemo(
     () => db?.countMemos(activeTopic),
     [db, activeTopic],
   );
