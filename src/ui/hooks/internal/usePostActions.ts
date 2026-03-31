@@ -63,7 +63,7 @@ export const usePostActions = () => {
       inputRef: s.inputRef,
       scrollContainerRef: s.scrollContainerRef,
       editingPost: s.editingPost,
-      canSubmit: (posts: Post[]) => s.canSubmit(posts),
+      canSubmit: s.canSubmit,
       cancelEdit: s.cancelEdit,
     })),
   );
@@ -299,7 +299,7 @@ export const usePostActions = () => {
   // 新規投稿 / 編集の確定
   // ---------------------------------------------------------------------------
   const handleSubmit = useCallback(async () => {
-    if (!editorState.canSubmit) return;
+    if (!editorState.canSubmit(allPosts)) return;
 
     // タイムライン表示時は日付が変わったら自動で今日のノートに切り替える
     if (isTimelineView(settingsState.displayMode)) {

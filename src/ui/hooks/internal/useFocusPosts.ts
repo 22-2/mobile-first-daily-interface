@@ -67,10 +67,10 @@ export const useFocusPosts = () => {
     return (records ?? []).map(memoRecordToPost);
   }, [records]);
 
-  return {
+  return useMemo(() => ({
     posts,
     mutate,
     isLoading: !records && !error,
     isValidating,
-  };
+  }), [posts, mutate, records, error, isValidating]);
 };

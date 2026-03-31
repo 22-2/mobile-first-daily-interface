@@ -30,12 +30,10 @@ export const useInfiniteTimeline = () => {
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
-  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const isTimelineVisible = isTimelineView(displayMode);
-  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。
-  // SWRのキー作成からは hasFocus を除外する。そうしないとフォーカスが外れた瞬間にデータが消えてしまう (key=null) ため。
-  const shouldFetchDb = isTimelineVisible;
-  const isFocused = activeDocument.hasFocus();
+  // Determine whether DB fetches should run for the timeline view.
+  // Use the view-mode check at runtime inside timers to avoid TDZ/closure
+  // issues in some test environments where globals are stubbed differently.
+  const shouldFetchDb = isTimelineView(displayMode);
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
@@ -45,7 +43,7 @@ export const useInfiniteTimeline = () => {
     // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
     const timer = window.setInterval(() => {
       // タイムライン非表示中、またはウィンドウがフォーカスされていない場合は何もしない
-      if (!isTimelineVisible || !activeDocument.hasFocus()) {
+      if (!isTimelineView(displayMode) || !(typeof activeDocument !== "undefined" && activeDocument.hasFocus())) {
         return;
       }
 
@@ -163,14 +161,14 @@ export const useInfiniteTimeline = () => {
     if (hasNextPage && !isValidating) setSize(size + 1);
   }, [hasNextPage, isValidating, size, setSize]);
 
-  return {
+  return useMemo(() => ({
     allPosts,
     loadMore,
     hasMore: hasNextPage,
     isFetchingNextPage,
     isLoading,
     isValidating,
-  };
+  }), [allPosts, loadMore, hasNextPage, isFetchingNextPage, isLoading, isValidating]);
 };
 
 export { resolveTimelineCacheBucket };

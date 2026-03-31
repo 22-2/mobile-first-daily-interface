@@ -25,6 +25,13 @@ const settingsState = {
 };
 
 vi.mock("swr", () => ({
+  default: (_key: unknown, _fetcher?: unknown) => ({
+    data: undefined,
+    mutate: vi.fn(),
+    isValidating: false,
+    isLoading: false,
+    error: undefined,
+  }),
   mutate: (...args: unknown[]) => mutateMock(...args),
 }));
 

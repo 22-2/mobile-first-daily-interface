@@ -11,9 +11,27 @@ import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
+  useUnifiedPosts: vi.fn(() => ({
+    posts: (postsStore.getState() as any).posts ?? [],
+    loadMore: vi.fn(),
+    hasMore: false,
+    isLoading: false,
+    isValidating: false,
+  })),
+}));
+
 vi.mock("swr", () => ({
+  default: (_key: unknown, _fetcher?: unknown) => ({
+    data: undefined,
+    mutate: vi.fn(),
+    isValidating: false,
+    isLoading: false,
+    error: undefined,
+  }),
   mutate: vi.fn(),
 }));
 

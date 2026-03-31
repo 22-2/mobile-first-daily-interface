@@ -20,7 +20,7 @@ export const useUnifiedPosts = () => {
   const infinity = useInfiniteTimeline();
   const focus = useFocusPosts();
 
-  const result = useMemo(() => {
+  return useMemo(() => {
     if (timelineView) {
       return {
         posts: infinity.allPosts,
@@ -38,7 +38,15 @@ export const useUnifiedPosts = () => {
         isValidating: focus.isValidating,
       };
     }
-  }, [timelineView, infinity, focus]);
-
-  return result;
+  }, [
+    timelineView,
+    infinity.allPosts,
+    infinity.loadMore,
+    infinity.hasMore,
+    infinity.isLoading,
+    infinity.isValidating,
+    focus.posts,
+    focus.isLoading,
+    focus.isValidating,
+  ]);
 };
