@@ -1,4 +1,4 @@
-import type * as Comlink from "comlink";
+import type { Remote } from "comlink";
 import type { ScanWorkerPool } from "src/db/scan-worker-pool";
 import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 
@@ -10,7 +10,7 @@ import type { ScannableNote, ScanWorkerAPI } from "src/db/worker-api";
 
 export class DirectApiExecutor implements ScanWorkerAPI {
   constructor(
-    private readonly api: ScanWorkerAPI | Comlink.Remote<ScanWorkerAPI>,
+    private readonly api: ScanWorkerAPI | Remote<ScanWorkerAPI>,
   ) {}
 
   scanFiles(files: ScannableNote[], meta?: { batchId?: string }) {

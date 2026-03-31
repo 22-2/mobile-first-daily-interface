@@ -1,10 +1,10 @@
-import * as Comlink from "comlink";
+import { type Remote, wrap } from "comlink";
 import type { ScanWorkerAPI } from "src/db/worker-api";
 
 export type WorkerFactory = () => Worker;
 
 export class ScanWorkerPool {
-  private remotes: Comlink.Remote<ScanWorkerAPI>[] = [];
+  private remotes: Remote<ScanWorkerAPI>[] = [];
   private workers: Worker[] = [];
   private idx = 0;
 
@@ -12,11 +12,11 @@ export class ScanWorkerPool {
     for (let i = 0; i < count; i++) {
       const w = factory();
       this.workers.push(w);
-      this.remotes.push(Comlink.wrap<ScanWorkerAPI>(w));
+      this.remotes.push(wrap<ScanWorkerAPI>(w));
     }
   }
 
-  next(): { remote: Comlink.Remote<ScanWorkerAPI>; worker: Worker } {
+  next(): { remote: Remote<ScanWorkerAPI>; worker: Worker } {
     if (this.remotes.length === 0) throw new Error("No workers in pool");
     const pos = this.idx % this.remotes.length;
     const r = this.remotes[pos];

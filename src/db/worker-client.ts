@@ -1,15 +1,15 @@
-import * as Comlink from "comlink";
+import { type Remote, wrap } from "comlink";
 import type { IDBService } from "src/db/interfaces/IDBService";
 import ScanWorkerFactory from "src/db/scan.worker?worker&inline";
 
 export class WorkerClient {
-  private static instance: Comlink.Remote<IDBService> | null = null;
+  private static instance: Remote<IDBService> | null = null;
   private static worker: Worker | null = null;
 
-  static get(): Comlink.Remote<IDBService> {
+  static get(): Remote<IDBService> {
     if (!this.instance) {
       this.worker = new ScanWorkerFactory();
-      this.instance = Comlink.wrap<IDBService>(this.worker);
+      this.instance = wrap<IDBService>(this.worker);
     }
     return this.instance;
   }

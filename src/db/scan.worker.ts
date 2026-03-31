@@ -1,5 +1,5 @@
 // src/db/scan.worker.ts
-import * as Comlink from "comlink";
+import { expose } from "comlink";
 import { isDev } from "src/core/constants";
 import { DexieDBService } from "src/db/impl/DexieDBService";
 import type { IDBService } from "src/db/interfaces/IDBService";
@@ -156,7 +156,7 @@ try {
       }),
   };
 
-  Comlink.expose(api);
+  expose(api);
 
   // Signal that the worker is ready to receive messages
   try {
