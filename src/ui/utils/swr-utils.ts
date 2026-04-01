@@ -4,10 +4,6 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import type { DisplayMode } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
 
-const SERIALIZED_POSTS_KEY_PREFIX = '@"posts",';
-const SERIALIZED_INFINITE_POSTS_KEY_PREFIX =
-  `$inf$${SERIALIZED_POSTS_KEY_PREFIX}`;
-
 type RefreshPostsContext = {
   activeTopic: string;
   displayMode: DisplayMode;
@@ -19,25 +15,8 @@ type RefreshPostsContext = {
  * SWR のキーが 'posts' 関連であるか判定する。
  * SWR 2.x の useSWR (Array) と useSWRInfinite (String with $inf$ prefix) の両方に対応する。
  */
-export function isPostsKey(key: unknown): boolean {
-  // useSWR の場合 (Array)
-  if (Array.isArray(key)) {
-    return key[0] === "posts";
-  }
-
-  // useSWRInfinite の場合 (String)
-  // メンタルモデル: SWR 2.x のグローバル mutate(predicate) が見るのは
-  // useSWR / useSWRInfinite に渡した元の配列ではなく、cache 内のシリアライズ済み文字列キー。
-  // 投稿直後の手動 refresh でも focus revalidate と同じキャッシュ群を拾えるよう、
-  // 通常キー `@"posts",...` と infinite 親キー `$inf$@"posts",...` の両方を判定する。
-  if (typeof key === "string") {
-    return (
-      key.startsWith(SERIALIZED_POSTS_KEY_PREFIX) ||
-      key.startsWith(SERIALIZED_INFINITE_POSTS_KEY_PREFIX)
-    );
-  }
-
-  return false;
+export function isPostsKey(key: string | string[]): boolean {
+  return key.includes("posts");
 }
 
 function getRefreshPostsContext(): RefreshPostsContext {
