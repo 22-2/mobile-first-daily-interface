@@ -28,5 +28,9 @@ export interface MFDIViewHandler {
     settingsDateIso: string;
     displayMode: DisplayMode;
     activeTopic: string;
+    inputSnapshot: string;
+    editingPostMessage: string | null;
+    persistedInput: string;
+    editorSnapshot: string | null;
   };
 }

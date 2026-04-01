@@ -80,6 +80,17 @@ export const ObsidianLiveEditor = forwardRef<
       editorRef.current?.setPlaceholder(placeholder ?? "", readonlyPlaceholder);
     }, [placeholder, readonlyPlaceholder]);
 
+    useEffect(() => {
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      if (editor.getContentSnapshot() !== initialValue) {
+        // メンタルモデル: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
+        // editor 実体へ明示反映して、store だけ更新されるズレを防ぐ。
+        editor.setContent(initialValue);
+      }
+    }, [editorRef, initialValue]);
+
     return (
       <Box className={cn(className)} {...boxProps}>
         <Box

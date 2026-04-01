@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Settings } from "src/settings";
 import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
@@ -34,6 +34,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type {
   DateFilter,
   DisplayMode,
@@ -94,7 +95,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     [viewNoteMode],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // メンタルモデル: 子の live editor は mount 時の passive effect で初期化される。
+    // ここで hydration が遅れると、空の初期 state が先に editor/localStorage へ流れて復元値を潰す。
     initializeAppStore(
       {
         shell,
@@ -680,15 +683,20 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     view.handlers.onGetDebugStateForTesting = () => {
       const state = settingsStore.getState();
+      const appState = store.getState();
       return {
         settingsDateIso: state.date.toISOString(),
         displayMode: state.displayMode,
         activeTopic: state.activeTopic,
+        inputSnapshot: appState.inputSnapshot,
+        editingPostMessage: appState.editingPost?.message ?? null,
+        persistedInput: appState.storage?.get<string>(STORAGE_KEYS.INPUT, "") ?? "",
+        editorSnapshot: appState.inputRef.current?.getContentSnapshot() ?? null,
       };
     };
 
     return () => {
       view.handlers.onGetDebugStateForTesting = undefined;
     };
-  }, [view]);
+  }, [view, store]);
 }
