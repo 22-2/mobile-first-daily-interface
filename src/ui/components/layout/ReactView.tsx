@@ -33,7 +33,7 @@ import {
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useSettingsStore } from "src/ui/store/settingsStore";
+import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import type {
   DateFilter,
   DisplayMode,
@@ -675,4 +675,20 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onGetLiveEditorContentForTesting = undefined;
     };
   }, [view, syncInputSession, getInputValue]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.handlers.onGetDebugStateForTesting = () => {
+      const state = settingsStore.getState();
+      return {
+        settingsDateIso: state.date.toISOString(),
+        displayMode: state.displayMode,
+        activeTopic: state.activeTopic,
+      };
+    };
+
+    return () => {
+      view.handlers.onGetDebugStateForTesting = undefined;
+    };
+  }, [view]);
 }

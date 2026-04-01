@@ -4,25 +4,34 @@ import { describe, expect, test, vi } from "vitest";
 
 function createShell(initialContent: string) {
   let content = initialContent;
+  const file = Object.assign(new TFile(), { path: "daily.md" });
   const write = vi.fn(async (_path: string, nextContent: string) => {
+    content = nextContent;
+  });
+  const modify = vi.fn(async (_file: TFile, nextContent: string) => {
     content = nextContent;
   });
 
   const app = {
     vault: {
+      getAbstractFileByPath: vi.fn((path: string) =>
+        path === file.path ? file : null,
+      ),
+      modify,
       adapter: {
         read: vi.fn(async () => content),
         write,
         append: vi.fn(),
       },
     },
-  } as any;
+  } as unknown as ConstructorParameters<typeof ObsidianAppShell>[0];
 
   return {
     helper: new ObsidianAppShell(app),
-    file: Object.assign(new TFile(), { path: "daily.md" }),
+    file,
     getContent: () => content,
     write,
+    modify,
   };
 }
 
@@ -51,5 +60,17 @@ describe("ObsidianAppShell.insertTextAfter", () => {
     await helper.insertTextAfter(file, "\n## Thino", "");
 
     expect(getContent()).toBe("header\n## Thino");
+  });
+});
+
+describe("ObsidianAppShell.writeFile", () => {
+  test("既存ファイルは vault.modify を使って更新する", async () => {
+    const { helper, file, write, modify, getContent } = createShell("before");
+
+    await helper.writeFile(file.path, "after");
+
+    expect(modify).toHaveBeenCalledTimes(1);
+    expect(write).not.toHaveBeenCalled();
+    expect(getContent()).toBe("after");
   });
 });

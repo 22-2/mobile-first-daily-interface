@@ -6,6 +6,8 @@ type RefreshPosts = (path?: string) => Promise<void>;
 interface RefreshPostsDeps {
   activeTopic: string;
   displayMode: DisplayMode;
+  timelineDayKey: string;
+  searchQuery: string;
 }
 
 /**
@@ -14,8 +16,15 @@ interface RefreshPostsDeps {
 export function createRefreshPosts({
   activeTopic,
   displayMode,
+  timelineDayKey,
+  searchQuery,
 }: RefreshPostsDeps): RefreshPosts {
   return async () => {
-    await refreshAllPosts();
+    await refreshAllPosts({
+      activeTopic,
+      displayMode,
+      timelineDayKey,
+      searchQuery,
+    });
   };
 }

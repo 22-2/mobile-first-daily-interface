@@ -24,4 +24,9 @@ export interface MFDIViewHandler {
   onOpenDraftList?: () => void;
   onSetLiveEditorContentForTesting?: (content: string) => void;
   onGetLiveEditorContentForTesting?: () => string;
+  onGetDebugStateForTesting?: () => {
+    settingsDateIso: string;
+    displayMode: DisplayMode;
+    activeTopic: string;
+  };
 }
