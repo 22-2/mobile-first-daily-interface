@@ -22,6 +22,7 @@ export interface MFDIViewState extends Record<string, unknown> {
   displayMode: DisplayMode;
   granularity: Granularity;
   asTask: boolean;
+  threadOnly: boolean;
   timeFilter: TimeFilter;
   dateFilter: DateFilter;
   searchQuery: string;
@@ -34,6 +35,7 @@ export const DEFAULT_MFDI_VIEW_STATE: MFDIViewState = {
   displayMode: DISPLAY_MODE.FOCUS,
   granularity: "day",
   asTask: false,
+  threadOnly: false,
   timeFilter: "all",
   dateFilter: "today",
   searchQuery: "",

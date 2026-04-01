@@ -13,13 +13,14 @@ import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
  */
 export const useFocusPosts = () => {
   const dbService = useMFDIDB();
-  const { activeTopic, date, granularity, dateFilter, searchQuery } = useSettingsStore(
+  const { activeTopic, date, granularity, dateFilter, searchQuery, threadOnly } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       date: s.date,
       granularity: s.granularity,
       dateFilter: s.dateFilter,
       searchQuery: s.searchQuery,
+      threadOnly: s.threadOnly,
     })),
   );
 
@@ -52,13 +53,22 @@ export const useFocusPosts = () => {
   }, [date, granularity, dateFilter]);
 
   const { data: records, mutate, isValidating, error } = useSWR(
-    ["posts", "focus", activeTopic, startDate, endDate, searchQuery],
+    [
+      "posts",
+      "focus",
+      activeTopic,
+      startDate,
+      endDate,
+      searchQuery,
+      threadOnly,
+    ],
     async () => {
       return await dbService.getMemos({
         topicId: activeTopic,
         startDate,
         endDate,
         query: searchQuery,
+        threadOnly,
       });
     }
   );

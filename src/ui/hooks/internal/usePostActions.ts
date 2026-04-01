@@ -36,6 +36,7 @@ export const usePostActions = () => {
       activeTopic: s.activeTopic,
       dateFilter: s.dateFilter,
       searchQuery: s.searchQuery,
+      threadOnly: s.threadOnly,
       asTask: s.asTask,
       setDate: s.setDate,
       setThreadFocusRootId: s.setThreadFocusRootId,
@@ -75,12 +76,14 @@ export const usePostActions = () => {
       displayMode: settingsState.displayMode,
       timelineDayKey: settingsState.date.format("YYYY-MM-DD"),
       searchQuery: settingsState.searchQuery,
+      threadOnly: settingsState.threadOnly,
     }),
     [
       settingsState.activeTopic,
       settingsState.displayMode,
       settingsState.date,
       settingsState.searchQuery,
+      settingsState.threadOnly,
     ],
   );
 

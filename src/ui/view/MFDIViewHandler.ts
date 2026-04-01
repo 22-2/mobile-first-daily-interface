@@ -9,6 +9,7 @@ export interface MFDIViewHandler {
   onOpenDailyNoteAction?: () => void;
   onChangeGranularity?: (g: Granularity) => void;
   onChangeAsTask?: (asTask: boolean) => void;
+  onChangeThreadOnly?: (threadOnly: boolean) => void;
   onChangeTimeFilter?: (f: TimeFilter) => void;
   onChangeDateFilter?: (f: DateFilter) => void;
   onSearchQueryChange?: (query: string) => void;

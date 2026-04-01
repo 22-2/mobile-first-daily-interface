@@ -34,6 +34,7 @@ describe("isPostsKey", () => {
       "timeline",
       "2026-03-15",
       "",
+      false,
       pageIndex === 0 ? null : previousPageData,
     ]);
 
@@ -66,6 +67,7 @@ describe("isPostsKey", () => {
         displayMode: "focus",
         timelineDayKey: "2026-03-15",
         searchQuery: "",
+        threadOnly: false,
       });
     });
 
@@ -84,7 +86,15 @@ describe("isPostsKey", () => {
       useSWRInfinite(
         (pageIndex) =>
           pageIndex === 0
-            ? ["posts", "topic-infinite", "timeline", "2026-03-15", "", null]
+            ? [
+                "posts",
+                "topic-infinite",
+                "timeline",
+                "2026-03-15",
+                "",
+                false,
+                null,
+              ]
             : null,
         fetcher,
         { revalidateOnFocus: false },
@@ -103,6 +113,7 @@ describe("isPostsKey", () => {
         displayMode: "timeline",
         timelineDayKey: "2026-03-15",
         searchQuery: "",
+        threadOnly: false,
       });
     });
 

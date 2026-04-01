@@ -8,13 +8,14 @@ import { useShallow } from "zustand/shallow";
  * SWR のキャッシュを無効化するフック。
  */
 export function useDbSync() {
-  const { activeTopic, displayMode, timelineDayKey, searchQuery } =
+  const { activeTopic, displayMode, timelineDayKey, searchQuery, threadOnly } =
     useSettingsStore(
       useShallow((s) => ({
         activeTopic: s.activeTopic,
         displayMode: s.displayMode,
         timelineDayKey: s.date.format("YYYY-MM-DD"),
         searchQuery: s.searchQuery,
+        threadOnly: s.threadOnly,
       })),
     );
 
@@ -28,6 +29,7 @@ export function useDbSync() {
           displayMode,
           timelineDayKey,
           searchQuery,
+          threadOnly,
         });
       }
     };
@@ -42,10 +44,11 @@ export function useDbSync() {
       displayMode,
       timelineDayKey,
       searchQuery,
+      threadOnly,
     });
 
     return () => {
       channel.close();
     };
-  }, [activeTopic, displayMode, timelineDayKey, searchQuery]);
+  }, [activeTopic, displayMode, timelineDayKey, searchQuery, threadOnly]);
 }

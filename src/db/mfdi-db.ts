@@ -81,13 +81,44 @@ function cursorAll<T>(
   });
 }
 
-/** content の部分一致フィルタを生成。query が空なら undefined を返す */
-function buildContentFilter(
-  query?: string,
-): ((m: MemoRecord) => boolean) | undefined {
-  if (!query) return undefined;
-  const lowerQuery = query.toLowerCase();
-  return (m) => m.content.toLowerCase().includes(lowerQuery);
+function isThreadRootMemo(memo: MemoRecord): boolean {
+  try {
+    const parsed = JSON.parse(memo.metadataJson) as Record<string, unknown>;
+    const threadId = parsed.mfdiId;
+    const parentId = parsed.parentId;
+    return (
+      typeof threadId === "string" &&
+      threadId.length > 0 &&
+      (parentId == null || parentId === "")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 検索条件を 1 つの述語にまとめる。条件が無ければ undefined を返す。
+ */
+function buildMemoFilter(params: {
+  query?: string;
+  threadOnly?: boolean;
+}): ((m: MemoRecord) => boolean) | undefined {
+  const { query, threadOnly = false } = params;
+  const normalizedQuery = query?.trim().toLowerCase() ?? "";
+
+  if (!normalizedQuery && !threadOnly) {
+    return undefined;
+  }
+
+  return (memo) => {
+    if (normalizedQuery && !memo.content.toLowerCase().includes(normalizedQuery)) {
+      return false;
+    }
+    if (threadOnly && !isThreadRootMemo(memo)) {
+      return false;
+    }
+    return true;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -385,6 +416,7 @@ export class MFDIDatabase {
     topicId?: string,
     limit = 300,
     query?: string,
+    threadOnly = false,
   ): Promise<MemoRecord[]> {
     return this.withStoreCallback("memos", "readonly", async (s) => {
       const { index, range } = topicId
@@ -404,7 +436,7 @@ export class MFDIDatabase {
         index,
         range,
         "prev",
-        buildContentFilter(query),
+        buildMemoFilter({ query, threadOnly }),
         limit || 300,
       );
     });
@@ -429,8 +461,16 @@ export class MFDIDatabase {
     endDate: string;
     limit?: number;
     query?: string;
+    threadOnly?: boolean;
   }): Promise<MemoRecord[]> {
-    const { topicId, startDate, endDate, limit, query: searchQuery } = params;
+    const {
+      topicId,
+      startDate,
+      endDate,
+      limit,
+      query: searchQuery,
+      threadOnly = false,
+    } = params;
 
     return this.withStoreCallback("memos", "readonly", async (s) => {
       const { index, range } = topicId
@@ -452,7 +492,7 @@ export class MFDIDatabase {
         index,
         range,
         "prev",
-        buildContentFilter(searchQuery),
+        buildMemoFilter({ query: searchQuery, threadOnly }),
         limit || 300,
       ).then((results) => {
         // console.log(`[MFDIDatabase] getVisibleMemosByDateRange result count: ${results.length}`);

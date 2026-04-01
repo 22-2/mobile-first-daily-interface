@@ -9,6 +9,7 @@ type RefreshPostsContext = {
   displayMode: DisplayMode;
   timelineDayKey: string;
   searchQuery: string;
+  threadOnly: boolean;
 };
 
 /**
@@ -20,12 +21,13 @@ export function isPostsKey(key: string | string[]): boolean {
 }
 
 function getRefreshPostsContext(): RefreshPostsContext {
-  const { activeTopic, displayMode, date, searchQuery } = settingsStore.getState();
+  const { activeTopic, displayMode, date, searchQuery, threadOnly } = settingsStore.getState();
   return {
     activeTopic,
     displayMode,
     timelineDayKey: date.format("YYYY-MM-DD"),
     searchQuery,
+    threadOnly,
   };
 }
 
@@ -34,6 +36,7 @@ function getTimelineInfinitePostsKey({
   displayMode,
   timelineDayKey,
   searchQuery,
+  threadOnly,
 }: RefreshPostsContext): string {
   return serializeInfiniteKey(() => [
     "posts",
@@ -41,6 +44,7 @@ function getTimelineInfinitePostsKey({
     displayMode,
     timelineDayKey,
     searchQuery,
+    threadOnly,
     null,
   ]);
 }

@@ -1,5 +1,5 @@
-import type { Menu, WorkspaceLeaf } from "obsidian";
-import { ItemView, Scope, Setting, TFile } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
+import { ItemView, Menu, Scope, Setting, TFile } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { ensureExtension } from "src/core/path";
@@ -178,7 +178,7 @@ export class MFDIView extends ItemView {
     }
 
     // 検索UIをトグル表示。既に開いていれば閉じる。
-    this.addAction("search", "検索", () => {
+    const searchActionEl = this.addAction("search", "検索", () => {
       if (this.activeSearchControlEl) {
         this.activeSearchControlEl.detach();
         this.activeSearchControlEl = null;
@@ -203,7 +203,38 @@ export class MFDIView extends ItemView {
 
       this.activeSearchControlEl = searchSetting.controlEl;
       this.actionsEl.prepend(searchSetting.controlEl);
-    }).setAttr("data-mfdi-actions", "true");
+    });
+    searchActionEl.setAttr("data-mfdi-actions", "true");
+
+    searchActionEl.addEventListener("contextmenu", (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const menu = new Menu();
+      const applySearchKindFilter = (params: { threadOnly: boolean }) => {
+        // View側の状態を先に同期し、右クリックメニューのチェック状態と実データをずらさない。
+        this.state.threadOnly = params.threadOnly;
+        this.handlers.onChangeThreadOnly?.(params.threadOnly);
+      };
+
+      menu.addItem((item) =>
+        item
+          .setTitle("すべて")
+          .setChecked(!this.state.threadOnly)
+          .onClick(() => applySearchKindFilter({ threadOnly: false })),
+      );
+
+      menu.addSeparator();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("スレッドのみ")
+          .setChecked(this.state.threadOnly)
+          .onClick(() => applySearchKindFilter({ threadOnly: true })),
+      );
+
+      menu.showAtMouseEvent(e as unknown as MouseEvent);
+    });
 
     if (this.state.noteMode === "fixed") {
       this.setupEditableTitleBar();

@@ -8,6 +8,7 @@ interface RefreshPostsDeps {
   displayMode: DisplayMode;
   timelineDayKey: string;
   searchQuery: string;
+  threadOnly: boolean;
 }
 
 /**
@@ -18,6 +19,7 @@ export function createRefreshPosts({
   displayMode,
   timelineDayKey,
   searchQuery,
+  threadOnly,
 }: RefreshPostsDeps): RefreshPosts {
   return async () => {
     await refreshAllPosts({
@@ -25,6 +27,7 @@ export function createRefreshPosts({
       displayMode,
       timelineDayKey,
       searchQuery,
+      threadOnly,
     });
   };
 }

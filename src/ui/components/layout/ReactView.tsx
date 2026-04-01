@@ -174,6 +174,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         dateFilter: fixedDefaults.dateFilter,
         timeFilter: fixedDefaults.timeFilter,
         asTask: fixedDefaults.asTask,
+        threadOnly: fixedDefaults.threadOnly,
         // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
         activeTag: null,
         threadFocusRootId: null,
@@ -268,6 +269,7 @@ const ReactViewContent = () => {
       activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
+      threadOnly: s.threadOnly,
       dateFilter: s.dateFilter,
       sidebarOpen: s.sidebarOpen,
       setSidebarOpen: s.setSidebarOpen,
@@ -296,7 +298,6 @@ const ReactViewContent = () => {
   const filteredPosts = useFilteredPosts({
     posts,
     ...settings,
-    searchQuery: settings.searchQuery,
   });
 
   // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
@@ -304,7 +305,6 @@ const ReactViewContent = () => {
     posts,
     ...settings,
     includeThreadReplies: true,
-    searchQuery: settings.searchQuery,
   });
 
   useEffect(() => {
@@ -420,6 +420,7 @@ function useViewSync(view: MFDIView | null) {
     granularity,
     activeTopic,
     asTask,
+    threadOnly,
     timeFilter,
     dateFilter,
     displayMode,
@@ -431,6 +432,7 @@ function useViewSync(view: MFDIView | null) {
     setDateFilter,
     setActiveTopic,
     setAsTask,
+    setThreadOnly,
     setDisplayMode,
     setSidebarOpen,
     setSearchQuery,
@@ -439,6 +441,7 @@ function useViewSync(view: MFDIView | null) {
       granularity: state.granularity,
       activeTopic: state.activeTopic,
       asTask: state.asTask,
+      threadOnly: state.threadOnly,
       timeFilter: state.timeFilter,
       dateFilter: state.dateFilter,
       displayMode: state.displayMode,
@@ -450,6 +453,7 @@ function useViewSync(view: MFDIView | null) {
       setDateFilter: state.setDateFilter,
       setActiveTopic: state.setActiveTopic,
       setAsTask: state.setAsTask,
+      setThreadOnly: state.setThreadOnly,
       setDisplayMode: state.setDisplayMode,
       setSidebarOpen: state.setSidebarOpen,
       setSearchQuery: state.setSearchQuery,
@@ -498,6 +502,11 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     view.setStatePartial({ asTask });
   }, [view, asTask]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.setStatePartial({ threadOnly });
+  }, [view, threadOnly]);
 
   useEffect(() => {
     if (!view) return;
@@ -580,6 +589,16 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onChangeAsTask = undefined;
     };
   }, [view, setAsTask]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.handlers.onChangeThreadOnly = (nextThreadOnly: boolean) => {
+      setThreadOnly(nextThreadOnly);
+    };
+    return () => {
+      view.handlers.onChangeThreadOnly = undefined;
+    };
+  }, [view, setThreadOnly]);
 
   useEffect(() => {
     if (!view) return;

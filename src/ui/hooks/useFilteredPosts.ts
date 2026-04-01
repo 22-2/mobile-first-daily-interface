@@ -27,7 +27,6 @@ interface UseFilteredPostsProps {
   threadFocusRootId: string | null;
   viewNoteMode?: MFDINoteMode;
   includeThreadReplies?: boolean;
-  searchQuery?: string;
 }
 
 export const useFilteredPosts = ({
@@ -41,19 +40,10 @@ export const useFilteredPosts = ({
   threadFocusRootId,
   viewNoteMode = "periodic",
   includeThreadReplies = false,
-  searchQuery = "",
 }: UseFilteredPostsProps) => {
   return useMemo(() => {
-    let filtered = posts.filter((p) => isVisible(p.metadata));
-
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter((p) =>
-        p.message.toLowerCase().includes(lowerQuery),
-      );
-    }
-
-    const postsWithoutHidden = filtered;
+    // 検索条件は DB クエリに一本化し、UI 側での二重フィルタを避ける。
+    const postsWithoutHidden = posts.filter((p) => isVisible(p.metadata));
     const effectiveActiveTag = viewNoteMode === "fixed" ? null : activeTag;
     const postsMatchingTag =
       effectiveActiveTag == null
@@ -113,6 +103,5 @@ export const useFilteredPosts = ({
     threadFocusRootId,
     viewNoteMode,
     includeThreadReplies,
-    searchQuery,
   ]);
 };

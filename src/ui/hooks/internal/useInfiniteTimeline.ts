@@ -21,12 +21,13 @@ const PAGE_SIZE_DAYS = 14;
 export const useInfiniteTimeline = () => {
   const dbService = useMFDIDB();
 
-  const { activeTopic, displayMode, date, searchQuery } = useSettingsStore(
+  const { activeTopic, displayMode, date, searchQuery, threadOnly } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       displayMode: s.displayMode,
       date: s.date,
       searchQuery: s.searchQuery,
+      threadOnly: s.threadOnly,
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
@@ -58,13 +59,21 @@ export const useInfiniteTimeline = () => {
         displayMode,
         timelineDayKey,
         searchQuery,
+        threadOnly,
       });
     }, 30 * 1000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [activeTopic, displayMode, shouldFetchDb, searchQuery, timelineDayKey]);
+  }, [
+    activeTopic,
+    displayMode,
+    shouldFetchDb,
+    searchQuery,
+    threadOnly,
+    timelineDayKey,
+  ]);
 
   // ---------------------------------------------------------------------------
   // 無限クエリ
@@ -91,6 +100,7 @@ export const useInfiniteTimeline = () => {
         displayMode,
         timelineDayKey,
         searchQuery,
+        threadOnly,
         pageParam,
       ];
     },
@@ -113,6 +123,7 @@ export const useInfiniteTimeline = () => {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         query: searchQuery,
+        threadOnly,
       });
 
       const posts = records.map(memoRecordToPost);
@@ -125,6 +136,7 @@ export const useInfiniteTimeline = () => {
         endDate: startDate.clone().subtract(1, "ms").toISOString(),
         limit: 1,
         query: searchQuery,
+        threadOnly,
       });
 
       const result: TimelinePostsPage = {
