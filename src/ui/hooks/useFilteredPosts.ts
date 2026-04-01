@@ -44,6 +44,25 @@ export const useFilteredPosts = ({
   return useMemo(() => {
     // 検索条件は DB クエリに一本化し、UI 側での二重フィルタを避ける。
     const postsWithoutHidden = posts.filter((p) => isVisible(p.metadata));
+    const activeThreadRootId = threadFocusRootId;
+
+    // メンタルモデル: スレッド表示は「選択した rootId の会話を読む」モード。
+    // ここで activeTag を残したまま適用すると、タグ未設定の root/reply が全件除外され
+    // 「スレッドに入ったのに投稿が0件」に見える退行が起こるため、
+    // スレッドビューではタグ条件を無視して rootId のみで抽出する。
+    if (
+      activeThreadRootId &&
+      isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
+    ) {
+      const threadPosts = sortThreadPosts(
+        getThreadPosts(postsWithoutHidden, activeThreadRootId),
+        activeThreadRootId,
+      );
+      return includeThreadReplies
+        ? threadPosts
+        : threadPosts.filter(isVisibleRootPost);
+    }
+
     const effectiveActiveTag = viewNoteMode === "fixed" ? null : activeTag;
     const postsMatchingTag =
       effectiveActiveTag == null
@@ -51,20 +70,6 @@ export const useFilteredPosts = ({
         : postsWithoutHidden.filter((post) =>
             getPostTags(post.metadata).includes(effectiveActiveTag),
           );
-    const activeThreadRootId = threadFocusRootId;
-
-    if (
-      activeThreadRootId &&
-      isThreadView({ displayMode, threadFocusRootId: activeThreadRootId })
-    ) {
-      const threadPosts = sortThreadPosts(
-        getThreadPosts(postsMatchingTag, activeThreadRootId),
-        activeThreadRootId,
-      );
-      return includeThreadReplies
-        ? threadPosts
-        : threadPosts.filter(isVisibleRootPost);
-    }
 
     const visibleRoots = postsMatchingTag.filter(isVisibleRootPost);
 

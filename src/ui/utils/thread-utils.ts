@@ -114,9 +114,13 @@ export function buildPostFromEntry(params: {
 }
 
 export function memoRecordToPost(record: MemoRecord): Post {
-  const metadata = JSON.parse(record.metadataJson);
+  const metadata = JSON.parse(record.metadataJson) as Record<string, string>;
+
+  // メンタルモデル: Post.id は UI のスレッド判定キーとして使われる。
+  // ルート投稿で `id=record.id(path:offset)` のままだと `threadRootId(mfdiId)` と一致せず
+  // 返信扱いになってルートが非表示化されるため、metadata 由来のID解決を優先する。
   return {
-    id: record.id,
+    id: resolvePostId(metadata, record.path, record.startOffset),
     threadRootId: resolveThreadRootId(metadata),
     timestamp: window.moment(record.createdAt),
     noteDate: window.moment(record.createdAt).startOf("day"),
