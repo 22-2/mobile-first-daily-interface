@@ -2,10 +2,9 @@ import type {
   App,
   Editor,
   TAbstractFile,
-  TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { MarkdownView } from "obsidian";
+import { MarkdownView, TFile } from "obsidian";
 import type { Commands } from "obsidian-typings";
 import {
   joinWithSingleBoundaryNewline,
@@ -83,6 +82,16 @@ export class ObsidianAppShell {
   }
 
   async writeFile(path: string, content: string): Promise<void> {
+    const file = this.getAbstractFileByPath(path);
+    if (file instanceof TFile) {
+      // メンタルモデル: 投稿一覧の SSoT はファイル本文そのものではなく、
+      // Obsidian の changed イベントを契機に更新されるメタデータ/DB 側の結果。
+      // 既存ノートを adapter.write で直接上書きするとこの経路を即時に通れず、
+      // 「投稿した直後だけ古い一覧のまま」で focus 復帰時にだけ直る状態になりやすい。
+      await this.modifyVaultFile(file, content);
+      return;
+    }
+
     await this.unsafeApp.vault.adapter.write(path, content);
   }
 

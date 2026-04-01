@@ -38,6 +38,8 @@ vi.mock("swr", () => ({
 vi.mock("swr/infinite", () => {
   return {
     default: (...args: unknown[]) => useSWRInfiniteMock(...args),
+    unstable_serialize: (getKey: (pageIndex: number, previousPageData: null) => unknown) =>
+      `$inf$${JSON.stringify(getKey(0, null))}`,
   };
 });
 

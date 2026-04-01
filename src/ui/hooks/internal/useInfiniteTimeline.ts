@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
 import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
@@ -11,7 +10,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { isPostsKey } from "src/ui/utils/swr-utils";
+import { refreshAllPosts } from "src/ui/utils/swr-utils";
 import { useShallow } from "zustand/shallow";
 
 const PAGE_SIZE_DAYS = 14;
@@ -54,13 +53,18 @@ export const useInfiniteTimeline = () => {
         state.setDate(now);
       }
 
-      mutate(isPostsKey);
+      void refreshAllPosts({
+        activeTopic,
+        displayMode,
+        timelineDayKey,
+        searchQuery,
+      });
     }, 30 * 1000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [activeTopic, displayMode, shouldFetchDb]);
+  }, [activeTopic, displayMode, shouldFetchDb, searchQuery, timelineDayKey]);
 
   // ---------------------------------------------------------------------------
   // 無限クエリ

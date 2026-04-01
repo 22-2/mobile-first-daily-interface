@@ -1,6 +1,5 @@
-import { mutate } from "swr";
 import type { DisplayMode } from "src/ui/types";
-import { isPostsKey } from "src/ui/utils/swr-utils";
+import { refreshAllPosts } from "src/ui/utils/swr-utils";
 
 type RefreshPosts = (path?: string) => Promise<void>;
 
@@ -17,7 +16,6 @@ export function createRefreshPosts({
   displayMode,
 }: RefreshPostsDeps): RefreshPosts {
   return async () => {
-    // 全ての 'posts' に関連するキーを再検証する
-    await mutate(isPostsKey);
+    await refreshAllPosts();
   };
 }
