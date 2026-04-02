@@ -24,6 +24,17 @@ export default class MFDIPlugin extends Plugin {
   settings: Settings;
   view?: MFDIView;
 
+  private async initializeWorker(): Promise<void> {
+    // メンタルモデル: Worker 初期化は重くなりうるため、コマンド/ビュー登録をブロックしない。
+    // lazy ロード直後に command wrapper から実コマンドへ到達できることを優先する。
+    try {
+      const db = WorkerClient.get();
+      await db.initialize({ appId: this.shell.getAppId() });
+    } catch (e) {
+      console.error("Failed to initialize DB worker:", e);
+    }
+  }
+
   async onload() {
     this.app.workspace.onLayoutReady(async () => {
       this.shell = new ObsidianAppShell(this.app);
@@ -31,16 +42,11 @@ export default class MFDIPlugin extends Plugin {
 
       this.addSettingTab(new MFDISettingTab(this.app, this));
 
-      // Worker 側の DB サービスを初期化しておく。
-      // TagIndexer 等は WorkerClient 経由で DB を使うため、プラグイン起動時に初期化しておく。
-      try {
-        const db = WorkerClient.get();
-        await db.initialize({ appId: this.shell.getAppId() });
-      } catch (e) {
-        console.error("Failed to initialize DB worker:", e);
-      }
-
+      // 先にコマンド/ビュー登録を済ませて、lazy コマンド初回呼び出しで実コマンドまで届くようにする。
       this.activateBuiltinRegistry();
+
+      // Worker 初期化は非同期に開始（失敗はログのみ）。
+      void this.initializeWorker();
     });
   }
 
