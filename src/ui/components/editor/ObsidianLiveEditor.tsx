@@ -1,6 +1,12 @@
 import { type FakeEditor } from "@22-2/obsidian-magical-editor";
 import type { App, WorkspaceLeaf } from "obsidian";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { useFakeEditor } from "src/ui/components/editor/hooks";
 import { Box } from "src/ui/components/primitives/Box";
 import { cn } from "src/ui/components/primitives/utils";
@@ -48,6 +54,15 @@ export const ObsidianLiveEditor = forwardRef<
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const lastEditorChangeRef = useRef(initialValue);
+
+    const handleEditorChange = useCallback(
+      (text: string) => {
+        lastEditorChangeRef.current = text;
+        onChange(text);
+      },
+      [onChange],
+    );
 
     const editorRef = useFakeEditor(containerRef, {
       app,
@@ -56,7 +71,7 @@ export const ObsidianLiveEditor = forwardRef<
       placeholder,
       isReadOnly,
       readonlyPlaceholder,
-      onChange,
+      onChange: handleEditorChange,
       onSubmit,
     });
 
@@ -84,12 +99,17 @@ export const ObsidianLiveEditor = forwardRef<
       const editor = editorRef.current;
       if (!editor) return;
 
+      if (initialValue === lastEditorChangeRef.current) {
+        return;
+      }
+
       if (editor.getContentSnapshot() !== initialValue) {
         // メンタルモデル: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
-        // editor 実体へ明示反映して、store だけ更新されるズレを防ぐ。
+        // editor 由来の更新は除外し、外部同期だけを反映してカーソル巻き戻りを防ぐ。
         editor.setContent(initialValue);
+        lastEditorChangeRef.current = initialValue;
       }
-    }, [editorRef, initialValue]);
+    }, [initialValue]);
 
     return (
       <Box className={cn(className)} {...boxProps}>

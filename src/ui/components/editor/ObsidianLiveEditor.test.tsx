@@ -14,12 +14,18 @@ type MockEditorApi = {
 
 const editorState = vi.hoisted(() => ({
   api: null as MockEditorApi | null,
+  onChange: null as ((text: string) => void) | null,
 }));
 
 vi.mock("@22-2/obsidian-magical-editor", () => ({}));
 
 vi.mock("src/ui/components/editor/hooks", () => ({
-  useFakeEditor: vi.fn(() => ({ current: editorState.api })),
+  useFakeEditor: vi.fn(
+    (_containerRef: unknown, options: { onChange: (text: string) => void }) => {
+      editorState.onChange = options.onChange;
+      return { current: editorState.api };
+    },
+  ),
 }));
 
 function createMockEditor(snapshot = ""): MockEditorApi {
@@ -41,10 +47,12 @@ function createMockEditor(snapshot = ""): MockEditorApi {
 describe("ObsidianLiveEditor", () => {
   beforeEach(() => {
     editorState.api = createMockEditor("");
+    editorState.onChange = null;
   });
 
   afterEach(() => {
     editorState.api = null;
+    editorState.onChange = null;
   });
 
   it("mount 後に initialValue が更新されたら editor へ同期する", () => {
@@ -87,5 +95,32 @@ describe("ObsidianLiveEditor", () => {
     );
 
     expect(editorState.api?.setContent).not.toHaveBeenCalled();
+  });
+
+  it("editor 由来の入力更新では initialValue 同期で setContent しない", () => {
+    const onChange = vi.fn();
+    const view = render(
+      <ObsidianLiveEditor
+        ref={null}
+        leaf={{} as never}
+        app={{} as never}
+        initialValue=""
+        onChange={onChange}
+      />,
+    );
+
+    editorState.onChange?.("typed by editor");
+    view.rerender(
+      <ObsidianLiveEditor
+        ref={null}
+        leaf={{} as never}
+        app={{} as never}
+        initialValue="typed by editor"
+        onChange={onChange}
+      />,
+    );
+
+    expect(editorState.api?.setContent).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith("typed by editor");
   });
 });
