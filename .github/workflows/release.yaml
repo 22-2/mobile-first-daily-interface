@@ -8,11 +8,22 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: npm i -D --no-save conventional-changelog-conventionalcommits @semantic-release/git @semantic-release/exec
-      - uses: cycjimmy/semantic-release-action@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          semantic_version: 24.1.2
+          node-version: 22
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10
+      - run: >
+          pnpm dlx
+          --package=semantic-release@24.1.2
+          --package=conventional-changelog-conventionalcommits
+          --package=@semantic-release/commit-analyzer
+          --package=@semantic-release/release-notes-generator
+          --package=@semantic-release/github
+          --package=@semantic-release/git
+          --package=@semantic-release/exec
+          semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

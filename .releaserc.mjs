@@ -40,7 +40,8 @@ export default {
     [
       "@semantic-release/exec",
       {
-        prepareCmd: "bun ci && bun version-bump.mts ${nextRelease.version}",
+        // バージョン更新スクリプトだけが必要で、lockfile依存のinstallは不要。
+        prepareCmd: "pnpm dlx tsx version-bump.mts ${nextRelease.version}",
       },
     ],
     [
@@ -52,7 +53,8 @@ export default {
     [
       "@semantic-release/git",
       {
-        assets: ["package.json", "manifest.json", "versions.json", "bun.lockb"],
+        // リリース時に実際に更新されるファイルだけをコミットする。
+        assets: ["package.json", "manifest.json", "versions.json"],
         message:
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
