@@ -17,7 +17,7 @@ function updateVersion(version: string) {
   writeFileSync("versions.json", JSON.stringify(versions, null, "  "));
 }
 
-const [_1, _2, version] = Bun.argv;
+const [_1, _2, version] = process.argv;
 if (!version) {
   console.error("Required: ${version} (ex: bun version 1.2.3)");
   exit(1);
