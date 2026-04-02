@@ -1,76 +1,147 @@
 import { TFile } from "obsidian";
-import {
-  createBuiltinRegistry,
-  createCommandContribution,
-  createFixedNoteRegistryContribution,
-  createRibbonContribution,
-  createTagIndexLifecycleContribution,
-  createViewRegistrationContribution,
-} from "src/core/builtin-registry";
+import { activateBuiltins } from "src/core/builtin-registry";
+import type { BuiltinMainContext } from "src/core/builtin-registry";
 import { describe, expect, it, vi } from "vitest";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
+vi.mock("obsidian", () => {
+  class MockTFile {
+    path = "";
+    basename = "";
+    extension = "";
+  }
+
+  class MockWorkspaceLeaf {}
+
+  return {
+    TFile: MockTFile,
+    WorkspaceLeaf: MockWorkspaceLeaf,
+  };
+});
+
+const mocks = vi.hoisted(() => {
+  return {
+    around: vi.fn(() => () => {}),
+    createTagIndexExtension: vi.fn(),
+    createFixedNoteViewExtension: vi.fn(),
+    storageGet: vi.fn(),
+    storageSet: vi.fn(),
+    tagIndexExtension: {
+      fullScan: vi.fn(async () => {}),
+      handleFileChanged: vi.fn(async () => {}),
+      handleFileRenamed: vi.fn(async () => {}),
+      handleFileDeleted: vi.fn(async () => {}),
+      dispose: vi.fn(async () => {}),
+    },
+    fixedNoteViewExtension: {
+      convertMarkdownViewState: vi.fn((viewState: unknown) => viewState),
+      replaceOpenFixedMarkdownLeaves: vi.fn(async () => {}),
+    },
+  };
+});
+
+vi.mock("monkey-around", () => ({
+  around: mocks.around,
+}));
+
+vi.mock("src/extensions/tag-index-extension", () => ({
+  createTagIndexExtension: mocks.createTagIndexExtension,
+}));
+
+vi.mock("src/extensions/fixed-note-view-extension", () => ({
+  createFixedNoteViewExtension: mocks.createFixedNoteViewExtension,
+}));
+
+vi.mock("src/core/storage", () => ({
+  MFDIStorage: class {
+    get = mocks.storageGet;
+    set = mocks.storageSet;
+  },
+}));
+
 describe("builtin registry", () => {
-  it("activates contributions in registration order", () => {
-    const calls: string[] = [];
-    const context = { marker: "ctx" } as any;
-    const registry = createBuiltinRegistry([
-      {
-        id: "first",
-        activate: (receivedContext) => {
-          expect(receivedContext).toBe(context);
-          calls.push("first");
-        },
-      },
-      {
-        id: "second",
-        activate: () => {
-          calls.push("second");
-        },
-      },
-    ]);
+  it("activates built-ins and wires view, command, tag-index, and fixed-note lifecycles", async () => {
+    vi.clearAllMocks();
+    mocks.createTagIndexExtension.mockReturnValue(mocks.tagIndexExtension);
+    mocks.createFixedNoteViewExtension.mockReturnValue(
+      mocks.fixedNoteViewExtension,
+    );
+    mocks.storageGet.mockReturnValue(null);
 
-    registry.activate(context);
+    const layoutReadyCallbacks: Array<() => void | Promise<void>> = [];
+    const vaultHandlers = new Map<string, Array<(...args: unknown[]) => void>>();
+    const metadataCacheHandlers = new Map<
+      string,
+      Array<(...args: unknown[]) => void>
+    >();
 
-    expect(calls).toEqual(["first", "second"]);
-  });
-
-  it("registers the MFDI view through the contribution", () => {
+    const revealLeaf = vi.fn();
+    const getLeavesOfType = vi.fn(() => []);
+    const registerEvent = vi.fn();
+    const register = vi.fn();
     const registerView = vi.fn();
-    const createMFDIView = vi.fn((leaf) => ({ leaf }) as any);
-
-    createViewRegistrationContribution().activate({
-      registerView,
-      createMFDIView,
-    } as any);
-
-    expect(registerView).toHaveBeenCalledTimes(1);
-    const [viewType, creator] = registerView.mock.calls[0];
-    expect(viewType).toBe(VIEW_TYPE_MFDI);
-
-    const leaf = { id: "leaf" } as any;
-    expect(creator(leaf)).toEqual({ leaf });
-    expect(createMFDIView).toHaveBeenCalledWith(leaf);
-  });
-
-  it("registers ribbon and commands through built-in contributions", async () => {
     const addRibbonIcon = vi.fn();
     const addCommand = vi.fn((command) => command);
-    const attachMFDIView = vi.fn(async () => ({ id: "leaf" }) as any);
-    const revealLeaf = vi.fn();
+    const createMFDIView = vi.fn((leaf) => ({ leaf }));
     const createAndOpenFixedNote = vi.fn(async () => {});
+    const attachMFDIView = vi.fn(async () => ({ id: "leaf" }));
+    const saveSettings = vi.fn(async () => {});
+
+    const settings = {
+      fixedNoteFiles: [{ path: "old.md" }, { path: "keep.md" }],
+      fullScanIntervalHours: 24,
+    } as unknown as ReturnType<BuiltinMainContext["getSettings"]>;
+
+    const app = {
+      workspace: {
+        revealLeaf,
+        getLeavesOfType,
+        onLayoutReady: (callback: () => void | Promise<void>) => {
+          layoutReadyCallbacks.push(callback);
+        },
+      },
+      metadataCache: {
+        on: (event: string, callback: (...args: unknown[]) => void) => {
+          metadataCacheHandlers.set(event, [
+            ...(metadataCacheHandlers.get(event) ?? []),
+            callback,
+          ]);
+          return {};
+        },
+      },
+      vault: {
+        on: (event: string, callback: (...args: unknown[]) => void) => {
+          vaultHandlers.set(event, [...(vaultHandlers.get(event) ?? []), callback]);
+          return {};
+        },
+      },
+    };
 
     const context = {
+      app: app as unknown as BuiltinMainContext["app"],
+      shell: {} as BuiltinMainContext["shell"],
+      getSettings: () => settings,
+      saveSettings,
+      register,
+      registerEvent,
+      registerView,
       addRibbonIcon,
       addCommand,
-      attachMFDIView,
+      createMFDIView,
       createAndOpenFixedNote,
-      app: { workspace: { revealLeaf } },
-    } as any;
+      attachMFDIView,
+    } as unknown as BuiltinMainContext;
 
-    createRibbonContribution().activate(context);
-    createCommandContribution().activate(context);
+    activateBuiltins(context, "app-1");
+
+    expect(registerView).toHaveBeenCalledTimes(1);
+    const [viewType, viewCreator] = registerView.mock.calls[0] as [
+      string,
+      (leaf: unknown) => unknown,
+    ];
+    expect(viewType).toBe(VIEW_TYPE_MFDI);
+    expect(viewCreator({ id: "leaf-1" })).toEqual({ leaf: { id: "leaf-1" } });
 
     expect(addRibbonIcon).toHaveBeenCalledWith(
       "pencil",
@@ -79,146 +150,77 @@ describe("builtin registry", () => {
     );
     expect(addCommand).toHaveBeenCalledTimes(2);
 
-    const ribbonCallback = addRibbonIcon.mock.calls[0][2];
+    const ribbonCallback = addRibbonIcon.mock.calls[0]?.[2] as () => void;
     ribbonCallback();
     expect(attachMFDIView).toHaveBeenCalledWith({});
 
-    const openViewCommand = addCommand.mock.calls[0][0];
+    const openViewCommand = addCommand.mock.calls[0]?.[0] as {
+      callback: () => Promise<void>;
+    };
     await openViewCommand.callback();
     expect(revealLeaf).toHaveBeenCalledWith({ id: "leaf" });
 
-    const fixedNoteCommand = addCommand.mock.calls[1][0];
+    const fixedNoteCommand = addCommand.mock.calls[1]?.[0] as {
+      callback: () => Promise<void>;
+    };
     await fixedNoteCommand.callback();
     expect(createAndOpenFixedNote).toHaveBeenCalledTimes(1);
-  });
 
-  it("tag index lifecycle contribution wires layout-ready and vault events", async () => {
-    let onLayoutReadyCallback: (() => void) | undefined;
-    let changedCallback: ((file: TFile) => void) | undefined;
-    let renameCallback:
-      | ((file: TFile | null, oldPath: string) => void)
-      | undefined;
-    let deleteCallback: ((file: TFile | null) => void) | undefined;
+    expect(register).toHaveBeenCalledTimes(2);
+    expect(registerEvent).toHaveBeenCalledTimes(7);
+    expect(mocks.createTagIndexExtension).toHaveBeenCalledWith("app-1");
+    expect(mocks.createFixedNoteViewExtension).toHaveBeenCalledTimes(1);
+    expect(getLeavesOfType).toHaveBeenCalledWith("markdown");
 
-    const app = {
-      workspace: {
-        onLayoutReady: (callback: () => void) => {
-          onLayoutReadyCallback = callback;
-        },
-      },
-      metadataCache: {
-        on: (_event: string, callback: (file: TFile) => void) => {
-          changedCallback = callback;
-          return {} as any;
-        },
-      },
-      vault: {
-        on: (event: string, callback: (...args: any[]) => void) => {
-          if (event === "rename") renameCallback = callback as any;
-          if (event === "delete") deleteCallback = callback as any;
-          return {} as any;
-        },
-      },
-    } as any;
+    const layoutReadyCallback = layoutReadyCallbacks[0];
+    expect(layoutReadyCallback).toBeDefined();
+    await layoutReadyCallback?.();
+    expect(mocks.tagIndexExtension.fullScan).toHaveBeenCalledWith(
+      context.shell,
+      settings,
+    );
+    expect(mocks.storageSet).toHaveBeenCalledWith(
+      "lastFullScanAt",
+      expect.any(String),
+    );
 
-    const tagIndexExtension = {
-      fullScan: vi.fn(async () => {}),
-      handleFileChanged: vi.fn(async () => {}),
-      handleFileRenamed: vi.fn(async () => {}),
-      handleFileDeleted: vi.fn(async () => {}),
-      dispose: vi.fn(async () => {}),
-    };
-    const settings = { fixedNoteFiles: [] } as any;
-    const storage = { get: vi.fn(() => null), set: vi.fn() } as any;
-
-    createTagIndexLifecycleContribution(tagIndexExtension, storage).activate({
-      app,
-      shell: {} as any,
-      getSettings: () => settings,
-      saveSettings: vi.fn(async () => {}),
-      register: vi.fn(),
-      registerEvent: vi.fn(),
-      registerView: vi.fn(),
-      addRibbonIcon: vi.fn(),
-      addCommand: vi.fn(),
-      createMFDIView: vi.fn(),
-      createAndOpenFixedNote: vi.fn(async () => {}),
-      attachMFDIView: vi.fn(async () => undefined),
-    });
-
-    onLayoutReadyCallback?.();
     const file = Object.assign(new TFile(), {
-      path: "daily/2026-03-15.md",
-      basename: "2026-03-15",
-      extension: "md",
-    });
-    changedCallback?.(file);
-    renameCallback?.(file, "old.md");
-    deleteCallback?.(file);
-
-    expect(tagIndexExtension.fullScan).toHaveBeenCalledTimes(1);
-    expect(tagIndexExtension.handleFileChanged).toHaveBeenCalledWith(
-      {},
-      file,
-      settings,
-    );
-    expect(tagIndexExtension.handleFileRenamed).toHaveBeenCalledWith(
-      {},
-      file,
-      "old.md",
-      settings,
-    );
-    expect(tagIndexExtension.handleFileDeleted).toHaveBeenCalledWith(file.path);
-  });
-
-  it("fixed note registry contribution keeps settings in sync on rename and delete", async () => {
-    let renameCallback:
-      | ((file: TFile | null, oldPath: string) => void)
-      | undefined;
-    let deleteCallback: ((file: TFile | null) => void) | undefined;
-
-    const app = {
-      vault: {
-        on: (event: string, callback: (...args: any[]) => void) => {
-          if (event === "rename") renameCallback = callback as any;
-          if (event === "delete") deleteCallback = callback as any;
-          return {} as any;
-        },
-      },
-    } as any;
-
-    const settings = {
-      fixedNoteFiles: [{ path: "old.md" }, { path: "keep.md" }],
-    } as any;
-    const saveSettings = vi.fn(async () => {});
-
-    createFixedNoteRegistryContribution().activate({
-      app,
-      shell: {} as any,
-      getSettings: () => settings,
-      saveSettings,
-      register: vi.fn(),
-      registerEvent: vi.fn(),
-      registerView: vi.fn(),
-      addRibbonIcon: vi.fn(),
-      addCommand: vi.fn(),
-      createMFDIView: vi.fn(),
-      createAndOpenFixedNote: vi.fn(async () => {}),
-      attachMFDIView: vi.fn(async () => undefined),
-    });
-
-    const renamedFile = Object.assign(new TFile(), {
       path: "new.md",
       basename: "new",
       extension: "md",
     });
-    renameCallback?.(renamedFile, "old.md");
-    expect(settings.fixedNoteFiles).toEqual([
-      { path: "new.md" },
-      { path: "keep.md" },
-    ]);
 
-    deleteCallback?.(renamedFile);
+    for (const handler of vaultHandlers.get("create") ?? []) {
+      handler(file);
+    }
+    for (const handler of vaultHandlers.get("modify") ?? []) {
+      handler(file);
+    }
+    for (const handler of metadataCacheHandlers.get("changed") ?? []) {
+      handler(file);
+    }
+    for (const handler of vaultHandlers.get("rename") ?? []) {
+      handler(file, "old.md");
+    }
+    for (const handler of vaultHandlers.get("delete") ?? []) {
+      handler(file);
+    }
+
+    expect(mocks.tagIndexExtension.handleFileChanged).toHaveBeenCalledWith(
+      context.shell,
+      file,
+      settings,
+    );
+    expect(mocks.tagIndexExtension.handleFileRenamed).toHaveBeenCalledWith(
+      context.shell,
+      file,
+      "old.md",
+      settings,
+    );
+    expect(mocks.tagIndexExtension.handleFileDeleted).toHaveBeenCalledWith(
+      file.path,
+    );
+
     expect(settings.fixedNoteFiles).toEqual([{ path: "keep.md" }]);
     expect(saveSettings).toHaveBeenCalledTimes(2);
   });

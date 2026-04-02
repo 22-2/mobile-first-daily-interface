@@ -40,255 +40,197 @@ export interface BuiltinMainContext {
   ) => Promise<WorkspaceLeaf | undefined>;
 }
 
-interface BuiltinContribution {
-  id: string;
-  activate: (context: BuiltinMainContext) => void;
+function registerView(context: BuiltinMainContext): void {
+  context.registerView(VIEW_TYPE_MFDI, (leaf) => context.createMFDIView(leaf));
 }
 
-class BuiltinRegistry {
-  constructor(private readonly contributions: BuiltinContribution[]) {}
-
-  activate(context: BuiltinMainContext): void {
-    // main は host API の橋渡しだけを持ち、起動順は registry 側で固定する。
-    for (const contribution of this.contributions) {
-      contribution.activate(context);
-    }
-  }
+function registerRibbon(context: BuiltinMainContext): void {
+  context.addRibbonIcon("pencil", "Mobile First Daily Interface", () => {
+    void context.attachMFDIView({});
+  });
 }
 
-export function createViewRegistrationContribution(): BuiltinContribution {
-  return {
-    id: "view-registration",
-    activate: (context) => {
-      context.registerView(VIEW_TYPE_MFDI, (leaf) =>
-        context.createMFDIView(leaf),
-      );
+function registerCommands(context: BuiltinMainContext): void {
+  context.addCommand({
+    id: "mfdi-open-view",
+    name: "Open Mobile First Daily Interface",
+    callback: async () => {
+      const leaf = await context.attachMFDIView({});
+      if (leaf) context.app.workspace.revealLeaf(leaf);
     },
-  };
-}
+  });
 
-export function createRibbonContribution(): BuiltinContribution {
-  return {
-    id: "open-view-ribbon",
-    activate: (context) => {
-      context.addRibbonIcon("pencil", "Mobile First Daily Interface", () => {
-        void context.attachMFDIView({});
-      });
+  context.addCommand({
+    id: "mfdi-open-fixed-note-view",
+    name: "Create New MFDI Fixed Note",
+    callback: () => {
+      void context.createAndOpenFixedNote();
     },
-  };
-}
-
-export function createCommandContribution(): BuiltinContribution {
-  return {
-    id: "command-registration",
-    activate: (context) => {
-      context.addCommand({
-        id: "mfdi-open-view",
-        name: "Open Mobile First Daily Interface",
-        callback: async () => {
-          const leaf = await context.attachMFDIView({});
-          if (leaf) context.app.workspace.revealLeaf(leaf);
-        },
-      });
-
-      context.addCommand({
-        id: "mfdi-open-fixed-note-view",
-        name: "Create New MFDI Fixed Note",
-        callback: () => {
-          void context.createAndOpenFixedNote();
-        },
-      });
-    },
-  };
+  });
 }
 
 // extension を引数に取ることで contribution が自分の依存を所有し、context を汚染しない。
 // テスト時はモック extension を直接注入できる。
-export function createTagIndexLifecycleContribution(
+function setupTagIndexLifecycle(
   tagIndexExtension: TagIndexExtension,
   storage: MFDIStorage,
-): BuiltinContribution {
-  return {
-    id: "tag-index-lifecycle",
-    activate: (context) => {
-      // dispose は Plugin の unload 機構に委ねて main のフィールドを不要にする
-      context.register(() => {
-        void tagIndexExtension.dispose();
-      });
+  context: BuiltinMainContext,
+): void {
+  // dispose は Plugin の unload 機構に委ねて main のフィールドを不要にする
+  context.register(() => {
+    void tagIndexExtension.dispose();
+  });
 
-      context.app.workspace.onLayoutReady(async () => {
-        try {
-          const settings = context.getSettings();
-          const intervalHours = settings.fullScanIntervalHours ?? 24;
+  context.app.workspace.onLayoutReady(async () => {
+    try {
+      const settings = context.getSettings();
+      const intervalHours = settings.fullScanIntervalHours ?? 24;
 
-          const last = storage.get<string | null>("lastFullScanAt", null);
-          let shouldScan = false;
+      const last = storage.get<string | null>("lastFullScanAt", null);
+      let shouldScan = false;
 
-          if (!last) {
-            shouldScan = true;
-          } else {
-            // intervalHours が 0 の場合は、常に(起動のたびに)スキャンを実行する
-            const diffHours = window
-              .moment()
-              .diff(window.moment(last), "hours", true);
-            shouldScan = diffHours >= intervalHours;
-          }
+      if (!last) {
+        shouldScan = true;
+      } else {
+        // intervalHours が 0 の場合は、常に(起動のたびに)スキャンを実行する
+        const diffHours = window.moment().diff(window.moment(last), "hours", true);
+        shouldScan = diffHours >= intervalHours;
+      }
 
-          if (!shouldScan) {
-            return;
-          }
-          await tagIndexExtension.fullScan(context.shell, settings);
-          storage.set("lastFullScanAt", window.moment().toISOString());
-        } catch (e) {
-          console.error("Failed to run conditional full scan:", e);
-        }
-      });
+      if (!shouldScan) {
+        return;
+      }
+      await tagIndexExtension.fullScan(context.shell, settings);
+      storage.set("lastFullScanAt", window.moment().toISOString());
+    } catch (e) {
+      console.error("Failed to run conditional full scan:", e);
+    }
+  });
 
-      context.registerEvent(
-        context.app.vault.on("create", (file) => {
-          if (!(file instanceof TFile)) return;
-          // メンタルモデル: 日付跨ぎ投稿では「ノート新規作成 -> 直後に追記」が連続し、
-          // metadataCache.changed だけに依存すると初回インデックスを取りこぼすケースがある。
-          // create を拾っておくことで、少なくとも新規ノート自体は確実に DB へ流せる。
-          void tagIndexExtension.handleFileChanged(
-            context.shell,
-            file,
-            context.getSettings(),
-          );
-        }),
+  context.registerEvent(
+    context.app.vault.on("create", (file) => {
+      if (!(file instanceof TFile)) return;
+      // メンタルモデル: 日付跨ぎ投稿では「ノート新規作成 -> 直後に追記」が連続し、
+      // metadataCache.changed だけに依存すると初回インデックスを取りこぼすケースがある。
+      // create を拾っておくことで、少なくとも新規ノート自体は確実に DB へ流せる。
+      void tagIndexExtension.handleFileChanged(
+        context.shell,
+        file,
+        context.getSettings(),
       );
+    }),
+  );
 
-      context.registerEvent(
-        context.app.vault.on("modify", (file) => {
-          if (!(file instanceof TFile)) return;
-          // メンタルモデル: 投稿保存は Vault の modify 経由で発生するため、
-          // ここを一次トリガーにすると UI/DB の反映遅延を最小化できる。
-          void tagIndexExtension.handleFileChanged(
-            context.shell,
-            file,
-            context.getSettings(),
-          );
-        }),
+  context.registerEvent(
+    context.app.vault.on("modify", (file) => {
+      if (!(file instanceof TFile)) return;
+      // メンタルモデル: 投稿保存は Vault の modify 経由で発生するため、
+      // ここを一次トリガーにすると UI/DB の反映遅延を最小化できる。
+      void tagIndexExtension.handleFileChanged(
+        context.shell,
+        file,
+        context.getSettings(),
       );
+    }),
+  );
 
-      context.registerEvent(
-        context.app.metadataCache.on("changed", (file) => {
-          void tagIndexExtension.handleFileChanged(
-            context.shell,
-            file,
-            context.getSettings(),
-          );
-        }),
+  context.registerEvent(
+    context.app.metadataCache.on("changed", (file) => {
+      void tagIndexExtension.handleFileChanged(
+        context.shell,
+        file,
+        context.getSettings(),
       );
+    }),
+  );
 
-      context.registerEvent(
-        context.app.vault.on("rename", (file, oldPath) => {
-          if (!(file instanceof TFile)) return;
-          void tagIndexExtension.handleFileRenamed(
-            context.shell,
-            file,
-            oldPath,
-            context.getSettings(),
-          );
-        }),
+  context.registerEvent(
+    context.app.vault.on("rename", (file, oldPath) => {
+      if (!(file instanceof TFile)) return;
+      void tagIndexExtension.handleFileRenamed(
+        context.shell,
+        file,
+        oldPath,
+        context.getSettings(),
       );
+    }),
+  );
 
-      context.registerEvent(
-        context.app.vault.on("delete", (file) => {
-          if (!(file instanceof TFile)) return;
-          void tagIndexExtension.handleFileDeleted(file.path);
-        }),
-      );
-    },
-  };
+  context.registerEvent(
+    context.app.vault.on("delete", (file) => {
+      if (!(file instanceof TFile)) return;
+      void tagIndexExtension.handleFileDeleted(file.path);
+    }),
+  );
 }
 
-export function createFixedNoteRegistryContribution(): BuiltinContribution {
-  return {
-    id: "fixed-note-registry",
-    activate: (context) => {
-      context.registerEvent(
-        context.app.vault.on("rename", (file, oldPath) => {
-          if (!(file instanceof TFile)) return;
+function setupFixedNoteRegistry(context: BuiltinMainContext): void {
+  context.registerEvent(
+    context.app.vault.on("rename", (file, oldPath) => {
+      if (!(file instanceof TFile)) return;
 
-          const settings = context.getSettings();
-          const idx = settings.fixedNoteFiles.findIndex(
-            (entry) => entry.path === oldPath,
-          );
-          if (idx === -1) return;
-
-          settings.fixedNoteFiles = settings.fixedNoteFiles.map(
-            (entry, index) =>
-              index === idx ? { ...entry, path: file.path } : entry,
-          );
-          void context.saveSettings();
-        }),
+      const settings = context.getSettings();
+      const idx = settings.fixedNoteFiles.findIndex(
+        (entry) => entry.path === oldPath,
       );
+      if (idx === -1) return;
 
-      context.registerEvent(
-        context.app.vault.on("delete", (file) => {
-          if (!(file instanceof TFile)) return;
-
-          const settings = context.getSettings();
-          const filtered = settings.fixedNoteFiles.filter(
-            (entry) => entry.path !== file.path,
-          );
-          if (filtered.length === settings.fixedNoteFiles.length) return;
-
-          settings.fixedNoteFiles = filtered;
-          void context.saveSettings();
-        }),
+      settings.fixedNoteFiles = settings.fixedNoteFiles.map((entry, index) =>
+        index === idx ? { ...entry, path: file.path } : entry,
       );
-    },
-  };
+      void context.saveSettings();
+    }),
+  );
+
+  context.registerEvent(
+    context.app.vault.on("delete", (file) => {
+      if (!(file instanceof TFile)) return;
+
+      const settings = context.getSettings();
+      const filtered = settings.fixedNoteFiles.filter(
+        (entry) => entry.path !== file.path,
+      );
+      if (filtered.length === settings.fixedNoteFiles.length) return;
+
+      settings.fixedNoteFiles = filtered;
+      void context.saveSettings();
+    }),
+  );
 }
 
-function createFixedNoteViewLifecycleContribution(
+function setupFixedNoteViewLifecycle(
   fixedNoteViewExtension: FixedNoteViewExtension,
-): BuiltinContribution {
-  return {
-    id: "fixed-note-view-lifecycle",
-    activate: (context) => {
-      context.register(
-        around(WorkspaceLeaf.prototype, {
-          setViewState(original: Function) {
-            return function (this: WorkspaceLeaf, viewState, eState) {
-              const nextState =
-                fixedNoteViewExtension.convertMarkdownViewState(viewState);
-              return original.call(this, nextState, eState);
-            };
-          },
-        }),
-      );
+  context: BuiltinMainContext,
+): void {
+  context.register(
+    around(WorkspaceLeaf.prototype, {
+      setViewState(original: Function) {
+        return function (this: WorkspaceLeaf, viewState, eState) {
+          const nextState =
+            fixedNoteViewExtension.convertMarkdownViewState(viewState);
+          return original.call(this, nextState, eState);
+        };
+      },
+    }),
+  );
 
-      void fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
-        leaves: context.app.workspace.getLeavesOfType("markdown"),
-        attachMFDIView: context.attachMFDIView,
-      });
-    },
-  };
+  void fixedNoteViewExtension.replaceOpenFixedMarkdownLeaves({
+    leaves: context.app.workspace.getLeavesOfType("markdown"),
+    attachMFDIView: context.attachMFDIView,
+  });
 }
 
-// extension の生成はここに集約し、main.ts からは appId だけ受け取る。
-// 各 contribution ファクトリへの注入で依存が明示的になりテスト可能性が保たれる。
-export function createBuiltinContributions(
+// メンタルモデル: 初期化順が機能要件そのものなので、一般化せず直列で明示する。
+// ここを読めば起動時に何が登録されるかを追える状態にしておく。
+export function activateBuiltins(
+  context: BuiltinMainContext,
   appId: string,
-): BuiltinContribution[] {
-  return [
-    createViewRegistrationContribution(),
-    createRibbonContribution(),
-    createCommandContribution(),
-    createTagIndexLifecycleContribution(
-      createTagIndexExtension(appId),
-      new MFDIStorage(appId),
-    ),
-    createFixedNoteRegistryContribution(),
-    createFixedNoteViewLifecycleContribution(createFixedNoteViewExtension()),
-  ];
-}
+): void {
+  registerView(context);
+  registerRibbon(context);
+  registerCommands(context);
 
-export function createBuiltinRegistry(
-  contributions: BuiltinContribution[],
-): BuiltinRegistry {
-  return new BuiltinRegistry(contributions);
+  setupTagIndexLifecycle(createTagIndexExtension(appId), new MFDIStorage(appId), context);
+  setupFixedNoteRegistry(context);
+  setupFixedNoteViewLifecycle(createFixedNoteViewExtension(), context);
 }
