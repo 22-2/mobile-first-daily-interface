@@ -11,9 +11,27 @@ import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
+  useUnifiedPosts: vi.fn(() => ({
+    posts: (postsStore.getState() as any).posts ?? [],
+    loadMore: vi.fn(),
+    hasMore: false,
+    isLoading: false,
+    isValidating: false,
+  })),
+}));
+
 vi.mock("swr", () => ({
+  default: (_key: unknown, _fetcher?: unknown) => ({
+    data: undefined,
+    mutate: vi.fn(),
+    isValidating: false,
+    isLoading: false,
+    error: undefined,
+  }),
   mutate: vi.fn(),
 }));
 
@@ -149,7 +167,7 @@ describe("timeline note resolution", () => {
       asTask: false,
     });
 
-    postsStore.setState({ posts: [], tasks: [] });
+    postsStore.setState({ tasks: [] });
 
     editorStore.setState({
       inputSnapshot: "timeline post",
@@ -259,7 +277,7 @@ describe("timeline note resolution", () => {
     });
 
     expect(editorStore.getState().getInputValue()).toBe("from-snapshot");
-    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+    expect(editorStore.getState().canSubmit([])).toBe(
       true,
     );
   });
@@ -343,7 +361,7 @@ describe("timeline note resolution", () => {
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [threadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-1",
       displayMode: DISPLAY_MODE.FOCUS,
@@ -389,7 +407,7 @@ describe("timeline note resolution", () => {
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [threadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [threadRoot], tasks: [] });
     settingsStore.setState((state) => ({
       ...state,
       pluginSettings: {
@@ -403,7 +421,7 @@ describe("timeline note resolution", () => {
     mockInsertTextAfter.mockResolvedValue(undefined);
     mockRefreshPosts.mockResolvedValue(undefined);
 
-    expect(editorStore.getState().canSubmit(postsStore.getState().posts)).toBe(
+    expect(editorStore.getState().canSubmit([])).toBe(
       true,
     );
 
@@ -439,7 +457,7 @@ describe("timeline note resolution", () => {
       path: todayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [todayThreadRoot], tasks: [] });
+    (postsStore as any).setState({ posts: [todayThreadRoot], tasks: [] });
     settingsStore.setState({
       threadFocusRootId: "root-today-1",
       displayMode: DISPLAY_MODE.FOCUS,
@@ -705,7 +723,7 @@ note header
       path: yesterdayNote.path,
     } as any;
 
-    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    (postsStore as any).setState({ posts: [replyPost, rootPost], tasks: [] });
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);
@@ -788,7 +806,7 @@ prefix
     [posted::${today.toISOString()}]
 `;
 
-    postsStore.setState({ posts: [replyPost, rootPost], tasks: [] });
+    (postsStore as any).setState({ posts: [replyPost, rootPost], tasks: [] });
     settingsStore.setState({ threadFocusRootId: "root-1" });
 
     const mockReplaceRange = vi.fn().mockResolvedValue(undefined);

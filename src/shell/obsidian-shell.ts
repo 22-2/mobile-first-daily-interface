@@ -2,10 +2,9 @@ import type {
   App,
   Editor,
   TAbstractFile,
-  TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { MarkdownView } from "obsidian";
+import { MarkdownView, TFile } from "obsidian";
 import type { Commands } from "obsidian-typings";
 import {
   joinWithSingleBoundaryNewline,
@@ -83,6 +82,15 @@ export class ObsidianAppShell {
   }
 
   async writeFile(path: string, content: string): Promise<void> {
+    const existing = this.unsafeApp.vault.getAbstractFileByPath(path);
+
+    // メンタルモデル: adapter.write は Vault/MetadataCache の変更イベント経路を素通りしやすい。
+    // 既存ノート更新は vault.modify を使い、indexer と UI 同期を必ず発火させる。
+    if (existing instanceof TFile) {
+      await this.unsafeApp.vault.modify(existing, content);
+      return;
+    }
+
     await this.unsafeApp.vault.adapter.write(path, content);
   }
 
@@ -124,19 +132,16 @@ export class ObsidianAppShell {
     const content = await this.loadFile(file.path);
 
     if (!after) {
-      await this.writeFile(
-        file.path,
-        joinWithSingleBoundaryNewline(content, text),
-      );
+      // メンタルモデル: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
+      // path ベース書き込みだと adapter.write へ落ちて変更イベントを取りこぼす。
+      // insertTextAfter は TFile を受け取っているため、常に vault.modify を使う。
+      await this.modifyVaultFile(file, joinWithSingleBoundaryNewline(content, text));
       return;
     }
 
     const index = content.indexOf(after);
     if (index === -1) {
-      await this.writeFile(
-        file.path,
-        joinWithSingleBoundaryNewline(content, text),
-      );
+      await this.modifyVaultFile(file, joinWithSingleBoundaryNewline(content, text));
       return;
     }
 
@@ -144,7 +149,7 @@ export class ObsidianAppShell {
     const newContent =
       joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
       content.slice(insertIndex);
-    await this.writeFile(file.path, newContent);
+    await this.modifyVaultFile(file, newContent);
   }
 
   async cachedReadFile(file: TFile): Promise<string> {

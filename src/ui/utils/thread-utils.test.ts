@@ -1,11 +1,13 @@
 import moment from "moment";
 import type { Post } from "src/ui/types";
+import type { MemoRecord } from "src/db/mfdi-db";
 import {
   countVisibleRootPosts,
   createThreadId,
   getThreadPosts,
   isThreadReply,
   isThreadRoot,
+  memoRecordToPost,
   resolvePostId,
   resolveThreadRootId,
   sortThreadPosts,
@@ -84,5 +86,58 @@ describe("thread-utils", () => {
     expect(
       sortThreadPosts(threadPosts, "root-1").map((post) => post.id),
     ).toEqual(["reply-2", "reply-1", "root-1"]);
+  });
+
+  test("memoRecordToPost maps thread root to mfdiId so it stays visible", () => {
+    const memo: MemoRecord = {
+      id: "daily/2026-03-15.md:10",
+      path: "daily/2026-03-15.md",
+      noteName: "2026-03-15",
+      topicId: "",
+      noteGranularity: "day",
+      content: "root",
+      tags: [],
+      metadataJson: JSON.stringify({ mfdiId: "root-1" }),
+      startOffset: 10,
+      endOffset: 20,
+      bodyStartOffset: 12,
+      createdAt: "2026-03-15T10:00:00.000Z",
+      noteDate: "2026-03-15",
+      updatedAt: "2026-03-15T10:00:00.000Z",
+      archived: 0,
+      deleted: 0,
+    };
+
+    const post = memoRecordToPost(memo);
+    expect(post.id).toBe("root-1");
+    expect(post.threadRootId).toBe("root-1");
+    expect(isThreadRoot(post)).toBe(true);
+    expect(isThreadReply(post)).toBe(false);
+  });
+
+  test("memoRecordToPost keeps reply id as path:offset when mfdiId is absent", () => {
+    const memo: MemoRecord = {
+      id: "daily/2026-03-15.md:30",
+      path: "daily/2026-03-15.md",
+      noteName: "2026-03-15",
+      topicId: "",
+      noteGranularity: "day",
+      content: "reply",
+      tags: [],
+      metadataJson: JSON.stringify({ parentId: "root-1" }),
+      startOffset: 30,
+      endOffset: 40,
+      bodyStartOffset: 32,
+      createdAt: "2026-03-15T11:00:00.000Z",
+      noteDate: "2026-03-15",
+      updatedAt: "2026-03-15T11:00:00.000Z",
+      archived: 0,
+      deleted: 0,
+    };
+
+    const post = memoRecordToPost(memo);
+    expect(post.id).toBe("daily/2026-03-15.md:30");
+    expect(post.threadRootId).toBe("root-1");
+    expect(isThreadReply(post)).toBe(true);
   });
 });

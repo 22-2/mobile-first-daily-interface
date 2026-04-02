@@ -90,6 +90,7 @@ export function useFakeEditor(
 
   useEffect(() => {
     let active = true;
+    let isEditorReady = false;
 
     const init = async () => {
       if (!containerRef.current) return;
@@ -106,7 +107,7 @@ export function useFakeEditor(
 
       const editor = new FakeEditor(app, {
         onChange: (text: string) => {
-          if (active) composition.handleChange(text);
+          if (active && isEditorReady) composition.handleChange(text);
         },
         onEnter: (_editor: unknown, mod: boolean, shift: boolean) => {
           if (mod && !shift) {
@@ -135,6 +136,12 @@ export function useFakeEditor(
         editor.destroy();
         return;
       }
+
+      const latestInitialValue = optionsRef.current.initialValue ?? "";
+      // 非同期初期化中は internal snapshot だけ先に進み、DOM が空のまま残ることがある。
+      // ready 後に最新値を必ず再投入して、見た目と snapshot を同じソースへ揃える。
+      editor.setContent(latestInitialValue);
+      isEditorReady = true;
 
       const editorContainer = editor.view?.containerEl;
       if (!editorContainer) return;
@@ -167,6 +174,7 @@ export function useFakeEditor(
 
     return () => {
       active = false;
+      isEditorReady = false;
       composition.reset();
       const editor = editorRef.current;
       editorRef.current = null;

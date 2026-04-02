@@ -13,6 +13,21 @@ const moment = (momentModule as any).default ?? momentModule;
 (window as any).moment = moment;
 (window as any).activeDocument = document;
 
+// Provide a minimal Worker stub for the test environment so imports
+// that rely on `Worker` (e.g. Vite inline workers) don't throw in Node/JSDOM.
+if (typeof (globalThis as any).Worker === "undefined") {
+  class TestWorker {
+    onmessage: ((e: any) => void) | null = null;
+    onerror: ((e: any) => void) | null = null;
+    constructor(_script: string | Blob) {}
+    postMessage(_msg: unknown) {}
+    addEventListener(_type: string, _listener: any) {}
+    removeEventListener(_type: string, _listener: any) {}
+    terminate() {}
+  }
+  (globalThis as any).Worker = TestWorker as any;
+}
+
 // Default fake timers + deterministic system time for most tests.
 // Individual tests may override this if they need a different time.
 beforeEach(() => {

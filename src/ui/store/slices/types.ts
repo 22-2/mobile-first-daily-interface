@@ -46,6 +46,7 @@ export interface SettingsSlice {
   sidebarOpen: boolean;
   displayMode: DisplayMode;
   asTask: boolean;
+  threadOnly: boolean;
   searchQuery: string;
   threadFocusRootId: string | null;
   setActiveTopic: (topicId: string) => void;
@@ -58,6 +59,7 @@ export interface SettingsSlice {
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;
+  setThreadOnly: (threadOnly: boolean) => void;
   setThreadFocusRootId: (rootId: string | null, focusDate?: MomentLike) => void;
   handleClickHome: () => void;
   handleClickToday: () => void;
@@ -73,30 +75,9 @@ export interface SettingsSlice {
 }
 
 export interface PostsSlice {
-  posts: Post[];
   tasks: Task[];
-  setPosts: (posts: Post[]) => void;
   setTasks: (tasks: Task[]) => void;
-  updatePosts: (note: TFile) => Promise<void>;
   updateTasks: (note: TFile) => Promise<void>;
-  updatePostsForWeek: (
-    topicId: string,
-    date: MomentLike,
-  ) => Promise<Set<string>>;
-  updatePostsForDays: (
-    topicId: string,
-    date: MomentLike,
-    days: number,
-  ) => Promise<{
-    paths: Set<string>;
-    hasMore: boolean;
-    lastSearchedDate: MomentLike;
-  }>;
-  updatePostsFromDB: (params: {
-    topicId?: string;
-    limit?: number;
-  }) => Promise<void>;
-  getFilteredPosts: () => Post[];
 }
 
 export interface NoteSlice {

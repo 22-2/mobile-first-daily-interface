@@ -20,17 +20,27 @@ const settingsState = {
   displayMode: "timeline",
   date: moment("2026-03-15T00:00:00.000Z"),
   searchQuery: "",
+  threadOnly: false,
   setDate: setDateMock,
   getEffectiveDate: () => settingsState.date.clone(),
 };
 
 vi.mock("swr", () => ({
+  default: (_key: unknown, _fetcher?: unknown) => ({
+    data: undefined,
+    mutate: vi.fn(),
+    isValidating: false,
+    isLoading: false,
+    error: undefined,
+  }),
   mutate: (...args: unknown[]) => mutateMock(...args),
 }));
 
 vi.mock("swr/infinite", () => {
   return {
     default: (...args: unknown[]) => useSWRInfiniteMock(...args),
+    unstable_serialize: (getKey: (pageIndex: number, previousPageData: null) => unknown) =>
+      `$inf$${JSON.stringify(getKey(0, null))}`,
   };
 });
 
@@ -126,6 +136,7 @@ describe("useInfiniteTimeline", () => {
       "timeline",
       "2026-03-15",
       "",
+      false,
       null,
     ]);
 
@@ -140,6 +151,7 @@ describe("useInfiniteTimeline", () => {
       "timeline",
       "2026-03-16",
       "",
+      false,
       null,
     ]);
   });
@@ -151,7 +163,15 @@ describe("useInfiniteTimeline", () => {
     renderHook(() => useInfiniteTimeline());
 
     const fetcher = useSWRInfiniteMock.mock.calls[0][1];
-    await fetcher(["posts", "topic-a", "timeline", "2026-03-15", "", null]);
+    await fetcher([
+      "posts",
+      "topic-a",
+      "timeline",
+      "2026-03-15",
+      "",
+      false,
+      null,
+    ]);
 
     expect(getMemosMock).toHaveBeenCalled();
   });

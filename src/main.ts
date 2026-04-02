@@ -1,11 +1,8 @@
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import type { WorkspaceLeaf } from "obsidian";
 import { Plugin } from "obsidian";
+import { activateBuiltins } from "src/core/builtin-registry";
 import type { BuiltinMainContext } from "src/core/builtin-registry";
-import {
-  createBuiltinContributions,
-  createBuiltinRegistry,
-} from "src/core/builtin-registry";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
 import { WorkerClient } from "src/db/worker-client";
@@ -79,8 +76,8 @@ export default class MFDIPlugin extends Plugin {
   // ---------------------------------------------------------------------------
 
   private activateBuiltinRegistry() {
-    // main は host API と domain callback を束ねるだけにして、登録処理は registry 側へ寄せる。
-    // extension 生成は createBuiltinContributions に集約し、main は appId だけ渡す。
+    // メンタルモデル: 登録処理は activateBuiltins へ委譲し、main 側は入力(context)だけ作る。
+    // こうしておくと初期化の責務境界が明確で、plugin 固有 API の見通しを保てる。
     const context: BuiltinMainContext = {
       app: this.app,
       shell: this.shell,
@@ -102,9 +99,7 @@ export default class MFDIPlugin extends Plugin {
         this.attachMFDIView(state, preferredLeaf),
     };
 
-    createBuiltinRegistry(
-      createBuiltinContributions(this.shell.getAppId()),
-    ).activate(context);
+    activateBuiltins(context, this.shell.getAppId());
   }
 
   // leaf 探索込みの setViewState ラッパー。同一条件の leaf が既に存在する場合は再利用する。

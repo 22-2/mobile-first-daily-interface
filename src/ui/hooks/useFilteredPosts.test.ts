@@ -93,6 +93,35 @@ describe("useFilteredPosts", () => {
     ]);
   });
 
+  test("スレッド表示中は activeTag が残っていても対象スレッドを表示する", () => {
+    const posts = [
+      createPost({ id: "plain-1", metadata: { mfditags: "IT" } }),
+      createPost({ id: "root-1", threadRootId: "root-1", metadata: {} }),
+      createPost({
+        id: "reply-1",
+        threadRootId: "root-1",
+        startOffset: 20,
+        metadata: {},
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: "IT",
+        timeFilter: "all",
+        dateFilter: "today",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: "root-1",
+        includeThreadReplies: true,
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual(["reply-1", "root-1"]);
+  });
+
   test("activeTag があるとタグ一致の投稿だけ返す", () => {
     const posts = [
       createPost({ id: "it-1", metadata: { mfditags: "IT, Later" } }),

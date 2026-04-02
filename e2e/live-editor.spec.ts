@@ -139,6 +139,45 @@ async function getLiveEditorDOMContent(obsidian: ObsidianAPI) {
   });
 }
 
+async function getLiveEditorDebugState(obsidian: ObsidianAPI) {
+  return obsidian.page.evaluate(() => {
+    const leaf = app.workspace.getLeavesOfType("mfdi-view")[0];
+    if (!leaf) {
+      throw new Error("mfdi-view leaf not found");
+    }
+
+    if (!(leaf.view as MFDIView).handlers.onGetDebugStateForTesting) {
+      throw new Error("onGetDebugStateForTesting is not ready");
+    }
+
+    return (leaf.view as MFDIView).handlers.onGetDebugStateForTesting!();
+  });
+}
+
+async function expectLiveEditorRestoreState(
+  obsidian: ObsidianAPI,
+  expected: string,
+  options?: { expectedEditingPostMessage?: string | null },
+) {
+  await expect.poll(async () => {
+    return (await getLiveEditorDebugState(obsidian)).persistedInput;
+  }).toBe(expected);
+
+  await expect.poll(async () => {
+    return (await getLiveEditorDebugState(obsidian)).inputSnapshot;
+  }).toBe(expected);
+
+  await expect.poll(async () => {
+    return (await getLiveEditorDebugState(obsidian)).editorSnapshot;
+  }).toBe(expected);
+
+  if (options && "expectedEditingPostMessage" in options) {
+    await expect.poll(async () => {
+      return (await getLiveEditorDebugState(obsidian)).editingPostMessage;
+    }).toBe(options.expectedEditingPostMessage);
+  }
+}
+
 // DO NOT EDIT: This is a helper function for the test "ライブエディタで Escape キーでマルチカーソルが解除される" to create a multi-cursor selection in the live editor. It simulates the user action of adding a new cursor on the next line. The implementation uses Obsidian's API to manipulate the editor's selections directly.
 // copy from obsidian-advanced-cursor plugin:
 async function getLiveEditorSelectionCount(obsidian: ObsidianAPI): Promise<number> {
@@ -390,6 +429,9 @@ test.describe("MFDI live editor e2e", () => {
     await obsidian.closeTab();
     await obsidian.command("mobile-first-daily-interface:mfdi-open-view");
     await obsidian.waitForViewType("mfdi-view");
+    await expectLiveEditorRestoreState(obsidian, message, {
+      expectedEditingPostMessage: message,
+    });
     await expectLiveEditorContent(obsidian, message);
 
 
@@ -421,6 +463,9 @@ test.describe("MFDI live editor e2e", () => {
 
     const reopenedEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
     await expect(reopenedEditor).toBeVisible({ timeout: 15000 });
+    await expectLiveEditorRestoreState(obsidian, draft, {
+      expectedEditingPostMessage: null,
+    });
     await expectLiveEditorContent(obsidian, draft);
   });
 });

@@ -8,6 +8,13 @@ import { settingsStore } from "src/ui/store/settingsStore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("swr", () => ({
+  default: (_key: unknown, _fetcher?: unknown) => ({
+    data: undefined,
+    mutate: vi.fn(),
+    isValidating: false,
+    isLoading: false,
+    error: undefined,
+  }),
   mutate: vi.fn(),
 }));
 
@@ -74,7 +81,7 @@ describe("usePostActions - copyBlockIdLink", () => {
       granularity: "day",
     });
 
-    postsStore.setState({ posts: [] });
+    postsStore.setState({ tasks: [] });
 
     // Mock navigator.clipboard
     Object.assign(navigator, {

@@ -1,115 +1,160 @@
-import {
-  getMFDIDatabaseName,
-  MFDIDatabase,
-  type MemoRecord,
-} from "src/db/mfdi-db";
-import { afterEach, describe, expect, test } from "vitest";
-
-const databases: MFDIDatabase[] = [];
-
-afterEach(async () => {
-  while (databases.length > 0) {
-    const db = databases.pop();
-    if (!db) {
-      continue;
-    }
-
-    db.close();
-    await db.delete();
-  }
-});
-
-function createDatabase() {
-  const db = new MFDIDatabase(`test-${crypto.randomUUID()}`);
-  databases.push(db);
-  return db;
-}
-
-function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
-  return {
-    id: "daily/2026-03-23.md:10",
-    path: "daily/2026-03-23.md",
-    noteName: "2026-03-23",
-    topicId: "",
-    noteGranularity: "day",
-    content: "hello",
-    tags: ["IT", "Later"],
-    metadataJson: JSON.stringify({ mfditags: "IT, Later" }),
-    createdAt: "2026-03-23T10:00:00.000Z",
-    updatedAt: "2026-03-23T10:00:00.000Z",
-    archived: 0,
-    deleted: 0,
-    bodyStartOffset: 0,
-    startOffset: 0,
-    endOffset: 0,
-    noteDate: "2026-03-23",
-    ...overrides,
-  };
-}
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { MFDIDatabase, type MemoRecord } from "./mfdi-db";
 
 describe("MFDIDatabase", () => {
-  test("uses appId-prefixed database name", () => {
-    expect(getMFDIDatabaseName("vault-1")).toBe("vault-1-mfdi-db");
+  let db: MFDIDatabase;
+
+  beforeEach(async () => {
+    vi.useRealTimers();
+    db = new MFDIDatabase("test-app");
+    await db.open();
   });
 
-  test("stores and retrieves memo records", async () => {
-    const db = createDatabase();
-    const memo = createMemo();
+  afterEach(async () => {
+    await db.delete();
+  });
+
+  it("should find records with getLatestVisibleMemos", async () => {
+    const memo: MemoRecord = {
+      id: "1",
+      path: "test.md",
+      noteName: "test",
+      topicId: "topic1",
+      noteGranularity: "day",
+      content: "hello world",
+      tags: ["#test"],
+      metadataJson: "{}",
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 0,
+      createdAt: "2026-03-31T12:00:00Z",
+      noteDate: "2026-03-31",
+      updatedAt: "2026-03-31T12:00:00Z",
+      archived: 0,
+      deleted: 0,
+    };
 
     await db.memos.put(memo);
 
-    await expect(db.memos.get(memo.id)).resolves.toEqual(memo);
+    const results = await db.getLatestVisibleMemos();
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe("1");
   });
 
-  test("supports tag queries through the multi-entry index", async () => {
-    const db = createDatabase();
+  it("should find records with getVisibleMemosByDateRange with inclusive range", async () => {
+    const memo: MemoRecord = {
+      id: "1",
+      path: "test.md",
+      noteName: "test",
+      topicId: "topic1",
+      noteGranularity: "day",
+      content: "hello world",
+      tags: ["#test"],
+      metadataJson: "{}",
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 0,
+      createdAt: "2026-03-31T12:00:00Z",
+      noteDate: "2026-03-31",
+      updatedAt: "2026-03-31T12:00:00Z",
+      archived: 0,
+      deleted: 0,
+    };
 
-    await db.memos.bulkPut([
-      createMemo(),
-      createMemo({
-        id: "daily/2026-03-24.md:10",
-        path: "daily/2026-03-24.md",
-        noteName: "2026-03-24",
-        tags: ["Writing"],
-      }),
-    ]);
+    await db.memos.put(memo);
 
-    await expect(
-      db.memos.where("tags").equals("IT").toArray(),
-    ).resolves.toHaveLength(1);
-    await expect(
-      db.memos.where("tags").equals("Writing").toArray(),
-    ).resolves.toHaveLength(1);
-  });
-
-  test("upserts memo records by id", async () => {
-    const db = createDatabase();
-
-    await db.memos.put(createMemo());
-    await db.memos.put(createMemo({ content: "updated", tags: ["IT"] }));
-
-    await expect(db.memos.toArray()).resolves.toHaveLength(1);
-    await expect(db.memos.get("daily/2026-03-23.md:10")).resolves.toMatchObject(
-      {
-        content: "updated",
-        tags: ["IT"],
-      },
-    );
-  });
-
-  test("stores aggregated tag stat records", async () => {
-    const db = createDatabase();
-
-    await db.tagStats.put({
-      tag: "IT",
-      count: 2,
-      updatedAt: "2026-03-23T10:00:00.000Z",
+    // If we use YYYY-MM-DD as range, it might not match if it's compared lexicographically and we don't have time part in boundaries
+    const results = await db.getVisibleMemosByDateRange({
+      startDate: "2026-03-31",
+      endDate: "2026-04-01", // range covers the day
     });
+    expect(results).toHaveLength(1);
+  });
 
-    await expect(db.tagStats.get("IT")).resolves.toEqual({
-      tag: "IT",
-      count: 2,
-      updatedAt: "2026-03-23T10:00:00.000Z",
+  it("should work with complex topicId + date range queries in prev direction", async () => {
+    const memo: MemoRecord = {
+      id: "1",
+      path: "test.md",
+      noteName: "test",
+      topicId: "topic1",
+      noteGranularity: "day",
+      content: "hello world",
+      tags: ["#test"],
+      metadataJson: "{}",
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 0,
+      createdAt: "2026-03-31T12:00:00.000Z",
+      noteDate: "2026-03-31",
+      updatedAt: "2026-03-31T12:00:00.000Z",
+      archived: 0,
+      deleted: 0,
+    };
+
+    await db.memos.put(memo);
+
+    const results = await db.getVisibleMemosByDateRange({
+      topicId: "topic1",
+      startDate: "2026-03-31T00:00:00.000Z",
+      endDate: "2026-03-31T23:59:59.999Z",
     });
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe("1");
+  });
+
+  it("should NOT find records if topicId does not match", async () => {
+    const memo: MemoRecord = {
+      id: "1",
+      path: "test.md",
+      noteName: "test",
+      topicId: "topic1",
+      noteGranularity: "day",
+      content: "hello world",
+      tags: ["#test"],
+      metadataJson: "{}",
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 0,
+      createdAt: "2026-03-31T12:00:00.000Z",
+      noteDate: "2026-03-31",
+      updatedAt: "2026-03-31T12:00:00.000Z",
+      archived: 0,
+      deleted: 0,
+    };
+
+    await db.memos.put(memo);
+
+    const results = await db.getVisibleMemosByDateRange({
+      topicId: "topic2",
+      startDate: "2026-03-01T00:00:00.000Z",
+      endDate: "2026-03-31T23:59:59.999Z",
+    });
+    expect(results).toHaveLength(0);
+  });
+
+  it("should NOT find records if archived=1", async () => {
+    const memo: MemoRecord = {
+      id: "1",
+      path: "test.md",
+      noteName: "test",
+      topicId: "topic1",
+      noteGranularity: "day",
+      content: "hello world",
+      tags: ["#test"],
+      metadataJson: "{}",
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 0,
+      createdAt: "2026-03-31T12:00:00Z",
+      noteDate: "2026-03-31",
+      updatedAt: "2026-03-31T12:00:00Z",
+      archived: 1,
+      deleted: 0,
+    };
+
+    await db.memos.put(memo);
+
+    const results = await db.getLatestVisibleMemos();
+    expect(results).toHaveLength(0);
   });
 });

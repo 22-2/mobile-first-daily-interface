@@ -23,6 +23,7 @@ export const DEFAULT_VIEW_STATE = {
   dateFilter: DATE_FILTER_IDS.TODAY,
   timeFilter: TIME_FILTER_IDS.ALL,
   asTask: false,
+  threadOnly: false,
   activeTag: null,
   threadFocusRootId: null,
 } as const;
@@ -108,6 +109,7 @@ function resolveInitialSettingsState(
         DISPLAY_MODE.TIMELINE,
       ) ?? (DISPLAY_MODE.TIMELINE as DisplayMode),
     asTask: storage?.get<boolean>(STORAGE_KEYS.AS_TASK, false) ?? false,
+    threadOnly: false,
     searchQuery: "",
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
@@ -131,6 +133,7 @@ export const createSettingsSlice: StateCreator<
   sidebarOpen: false,
   displayMode: DISPLAY_MODE.TIMELINE as DisplayMode,
   asTask: false,
+  threadOnly: false,
   searchQuery: "",
   threadFocusRootId: null,
 
@@ -202,6 +205,11 @@ export const createSettingsSlice: StateCreator<
   setAsTask: (asTask) => {
     set({ asTask });
     persistValue(get(), STORAGE_KEYS.AS_TASK, asTask);
+  },
+
+  setThreadOnly: (threadOnly) => {
+    // 検索UIからの絞り込み状態を明示管理し、見た目と実際の抽出条件を常に一致させる。
+    set({ threadOnly });
   },
 
   setThreadFocusRootId: (threadFocusRootId, focusDate) => {

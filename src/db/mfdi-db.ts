@@ -1,5 +1,8 @@
-import Dexie, { type EntityTable } from "dexie";
 import type { Granularity } from "src/ui/types";
+
+// ---------------------------------------------------------------------------
+// Record types
+// ---------------------------------------------------------------------------
 
 export interface MemoRecord {
   id: string;
@@ -22,7 +25,7 @@ export interface MemoRecord {
 
 export interface MetaRecord {
   key: string;
-  value: string;
+  value: unknown;
 }
 
 export interface TagStatRecord {
@@ -35,125 +38,562 @@ export function getMFDIDatabaseName(appId: string): string {
   return `${appId}-mfdi-db`;
 }
 
-export class MFDIDatabase extends Dexie {
-  memos!: EntityTable<MemoRecord, "id">;
-  meta!: EntityTable<MetaRecord, "key">;
-  tagStats!: EntityTable<TagStatRecord, "tag">;
+// ---------------------------------------------------------------------------
+// Low-level IDB helpers
+// ---------------------------------------------------------------------------
 
-  constructor(appId: string) {
-    super(getMFDIDatabaseName(appId));
+/** IDBRequest を Promise に変換 */
+function req<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
-    this.version(6).stores({
-      memos:
-        "id, path, noteName, topicId, noteGranularity, noteDate, *tags, createdAt, updatedAt, archived, deleted, [topicId+noteGranularity], [archived+deleted], [topicId+archived+deleted], [archived+deleted+createdAt], [topicId+archived+deleted+createdAt]",
-      meta: "key",
-      tagStats: "tag, count, updatedAt",
+/**
+ * カーソルを走査して配列を返す。
+ * filter / limit はすべてここで完結させる。
+ */
+function cursorAll<T>(
+  source: IDBIndex | IDBObjectStore,
+  range: IDBKeyRange | null,
+  direction: IDBCursorDirection,
+  filter?: (v: T) => boolean,
+  limit?: number,
+): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const results: T[] = [];
+    const cursorReq = source.openCursor(range, direction);
+
+    cursorReq.onsuccess = () => {
+      const cursor = cursorReq.result;
+      if (!cursor || (limit != null && results.length >= limit)) {
+        return resolve(results);
+      }
+      const value = cursor.value as T;
+      if (!filter || filter(value)) {
+        results.push(value);
+      }
+      cursor.continue();
+    };
+
+    cursorReq.onerror = () => reject(cursorReq.error);
+  });
+}
+
+function isThreadRootMemo(memo: MemoRecord): boolean {
+  try {
+    const parsed = JSON.parse(memo.metadataJson) as Record<string, unknown>;
+    const threadId = parsed.mfdiId;
+    const parentId = parsed.parentId;
+    return (
+      typeof threadId === "string" &&
+      threadId.length > 0 &&
+      (parentId == null || parentId === "")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 検索条件を 1 つの述語にまとめる。条件が無ければ undefined を返す。
+ */
+function buildMemoFilter(params: {
+  query?: string;
+  threadOnly?: boolean;
+}): ((m: MemoRecord) => boolean) | undefined {
+  const { query, threadOnly = false } = params;
+  const normalizedQuery = query?.trim().toLowerCase() ?? "";
+
+  if (!normalizedQuery && !threadOnly) {
+    return undefined;
+  }
+
+  return (memo) => {
+    if (normalizedQuery && !memo.content.toLowerCase().includes(normalizedQuery)) {
+      return false;
+    }
+    if (threadOnly && !isThreadRootMemo(memo)) {
+      return false;
+    }
+    return true;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Store accessor types
+// ---------------------------------------------------------------------------
+
+/** トランザクション取得コールバック */
+type StoreCallbackResolver = <T>(
+  name: StoreName,
+  mode: IDBTransactionMode,
+  callback: (store: IDBObjectStore) => Promise<T> | T,
+) => Promise<T>;
+
+// ---------------------------------------------------------------------------
+// Store accessor classes
+// ---------------------------------------------------------------------------
+
+class MemoStore {
+  readonly _name = "memos" as const;
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
+
+  clear(): Promise<undefined> {
+    return this.perform("readwrite", (s) => req(s.clear()));
+  }
+
+  get(id: string): Promise<MemoRecord | undefined> {
+    return this.perform("readonly", (s) => req(s.get(id)));
+  }
+
+  put(item: MemoRecord): Promise<IDBValidKey> {
+    return this.perform("readwrite", (s) => req(s.put(item)));
+  }
+
+  delete(id: string): Promise<undefined> {
+    return this.perform("readwrite", (s) => req(s.delete(id)));
+  }
+
+  toArray(): Promise<MemoRecord[]> {
+    return this.perform("readonly", (s) => req(s.getAll()));
+  }
+
+  bulkPut(items: MemoRecord[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(items.map((item) => req(s.put(item))));
     });
   }
 
-  /**
-   * 投稿が存在する日付をすべて取得する
-   */
-  async getAllActiveDates(): Promise<string[]> {
-    const activeMemos = await this.memos
-      .where("archived")
-      .equals(0)
-      .and((m) => m.deleted === 0)
-      .toArray();
+  where(indexName: string) {
+    return {
+      equals: (value: unknown) => ({
+        toArray: (): Promise<MemoRecord[]> => {
+          return this.perform("readonly", (s) =>
+            req(s.index(indexName).getAll(IDBKeyRange.only(value))),
+          );
+        },
+        delete: (): Promise<void> => {
+          return this.perform("readwrite", (s) => {
+            const request = s
+              .index(indexName)
+              .openKeyCursor(IDBKeyRange.only(value));
+            return new Promise<void>((resolve, reject) => {
+              request.onsuccess = () => {
+                const cursor = request.result;
+                if (cursor) {
+                  s.delete(cursor.primaryKey);
+                  cursor.continue();
+                } else {
+                  resolve();
+                }
+              };
+              request.onerror = () => reject(request.error);
+            });
+          });
+        },
+      }),
+    };
+  }
+}
 
-    const dateSet = new Set(activeMemos.map((m) => m.noteDate));
+class MetaStore {
+  readonly _name = "meta" as const;
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
+
+  clear(): Promise<undefined> {
+    return this.perform("readwrite", (s) => req(s.clear()));
+  }
+
+  put(item: MetaRecord): Promise<IDBValidKey> {
+    return this.perform("readwrite", (s) => req(s.put(item)));
+  }
+
+  get(key: string): Promise<MetaRecord | undefined> {
+    return this.perform("readonly", (s) => req(s.get(key)));
+  }
+}
+
+class TagStatStore {
+  readonly _name = "tagStats" as const;
+  constructor(private readonly withStore: StoreCallbackResolver) {}
+
+  private perform<T>(
+    mode: IDBTransactionMode,
+    callback: (s: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    return this.withStore(this._name, mode, callback);
+  }
+
+  clear(): Promise<undefined> {
+    return this.perform("readwrite", (s) => req(s.clear()));
+  }
+
+  put(item: TagStatRecord): Promise<IDBValidKey> {
+    return this.perform("readwrite", (s) => req(s.put(item)));
+  }
+
+  get(tag: string): Promise<TagStatRecord | undefined> {
+    return this.perform("readonly", (s) => req(s.get(tag)));
+  }
+
+  toArray(): Promise<TagStatRecord[]> {
+    return this.perform("readonly", (s) => req(s.getAll()));
+  }
+
+  bulkPut(items: TagStatRecord[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(items.map((item) => req(s.put(item))));
+    });
+  }
+
+  bulkGet(tags: string[]): Promise<(TagStatRecord | undefined)[]> {
+    return this.perform("readonly", async (s) => {
+      return Promise.all(tags.map((tag) => req(s.get(tag))));
+    });
+  }
+
+  bulkDelete(tags: string[]): Promise<void> {
+    return this.perform("readwrite", async (s) => {
+      await Promise.all(tags.map((tag) => req(s.delete(tag))));
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Transaction context
+// ---------------------------------------------------------------------------
+
+type StoreName = "memos" | "meta" | "tagStats";
+
+interface TransactableStore {
+  readonly _name: StoreName;
+}
+
+// ---------------------------------------------------------------------------
+// Database
+// ---------------------------------------------------------------------------
+
+const DB_VERSION = 6;
+
+/**
+ * Dexie を完全に排除し、生の IndexedDB をラップしたデータベースクラス。
+ *
+ * 【設計意図（メンタルモデル）】
+ * 1. 既存の Repository や Service との互換性を最小限の変更で維持するため、
+ *    Dexie の API サブセット（memos.where(...).equals(...).toArray() 等）をエミュレートしています。
+ * 2. 生の IDBTransaction は、イベントループのティックやリクエストの有無で自動コミットされるため、
+ *    callback 内で非同期処理を行う transaction() メソッドでは Promise でライフサイクルを管理します。
+ * 3. 複数の Repository が同じトランザクションを共有できるよう、`_activeTx` による簡易的な
+ *    トランザクション再利用（ネスト風の挙動）を実装しています。これにより、原子性を担保します。
+ */
+export class MFDIDatabase {
+  private readonly _db: Promise<IDBDatabase>;
+  private readonly _name: string;
+  private _txStack: IDBTransaction[] = [];
+
+  // store accessor インスタンスは一度だけ生成する
+  public readonly memos: MemoStore;
+  public readonly meta: MetaStore;
+  public readonly tagStats: TagStatStore;
+
+  constructor(appId: string) {
+    this._name = getMFDIDatabaseName(appId);
+    // インスタンス作成時に Promise を初期化
+    this._db = this.openDatabase();
+
+    const withStore = this.withStoreCallback.bind(this);
+    this.memos = new MemoStore(withStore);
+    this.meta = new MetaStore(withStore);
+    this.tagStats = new TagStatStore(withStore);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
+  async open(): Promise<this> {
+    await this._db;
+    return this;
+  }
+
+  async close(): Promise<void> {
+    const db = await this._db;
+    db.close();
+  }
+
+  async delete(): Promise<void> {
+    await this.close();
+    await new Promise<void>((resolve, reject) => {
+      const r = indexedDB.deleteDatabase(this._name);
+      r.onsuccess = () => resolve();
+      r.onerror = () => reject(r.error);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Transaction
+  // ---------------------------------------------------------------------------
+
+  async transaction<T>(
+    mode: "rw" | "r",
+    stores: TransactableStore[],
+    callback: () => Promise<T>,
+  ): Promise<T> {
+    const db = await this._db;
+    const storeNames = stores.map((s) => s._name);
+    const idbMode: IDBTransactionMode =
+      mode === "rw" ? "readwrite" : "readonly";
+    const tx = db.transaction(storeNames, idbMode);
+
+    this._txStack.push(tx);
+    const cleanup = () => {
+      this._txStack = this._txStack.filter((item) => item !== tx);
+    };
+
+    return new Promise<T>((resolve, reject) => {
+      let result: T;
+      let callbackError: unknown;
+
+      tx.oncomplete = () => {
+        cleanup();
+        resolve(result);
+      };
+      tx.onerror = () => {
+        cleanup();
+        reject(callbackError ?? tx.error);
+      };
+      tx.onabort = () => {
+        cleanup();
+        reject(callbackError ?? new Error("Transaction aborted"));
+      };
+
+      callback()
+        .then((res) => {
+          result = res;
+        })
+        .catch((err) => {
+          callbackError = err;
+          tx.abort();
+        });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Queries
+  // ---------------------------------------------------------------------------
+
+  async getAllActiveDates(): Promise<string[]> {
+    const memos = await this.withStoreCallback(
+      "memos",
+      "readonly",
+      async (s) => {
+        const index = s.index("[archived+deleted]");
+        const range = IDBKeyRange.only([0, 0]);
+        return cursorAll<MemoRecord>(index, range, "next", undefined, undefined);
+      },
+    );
+    const dateSet = new Set(memos.map((m) => m.noteDate));
     return Array.from(dateSet).sort();
   }
 
-  /**
-   * 未アーカイブ・未削除のメモを最新順に取得する（インデックス検索）
-   */
   async getLatestVisibleMemos(
     topicId?: string,
     limit = 300,
     query?: string,
+    threadOnly = false,
   ): Promise<MemoRecord[]> {
-    let collection;
-    if (topicId) {
-      collection = this.memos
-        .where("[topicId+archived+deleted+createdAt]")
-        .between([topicId, 0, 0, ""], [topicId, 0, 0, "\uffff"])
-        .reverse();
-    } else {
-      collection = this.memos
-        .where("[archived+deleted+createdAt]")
-        .between([0, 0, ""], [0, 0, "\uffff"])
-        .reverse();
-    }
+    return this.withStoreCallback("memos", "readonly", async (s) => {
+      const { index, range } = topicId
+        ? {
+            index: s.index("[topicId+archived+deleted+createdAt]"),
+            range: IDBKeyRange.bound(
+              [topicId, 0, 0, ""],
+              [topicId, 0, 0, "\uffff"],
+            ),
+          }
+        : {
+            index: s.index("[archived+deleted+createdAt]"),
+            range: IDBKeyRange.bound([0, 0, ""], [0, 0, "\uffff"]),
+          };
 
-    if (query) {
-      const lowerQuery = query.toLowerCase();
-      collection = collection.filter((m) =>
-        m.content.toLowerCase().includes(lowerQuery),
+      return cursorAll<MemoRecord>(
+        index,
+        range,
+        "prev",
+        buildMemoFilter({ query, threadOnly }),
+        limit || 300,
       );
-    }
-
-    return await collection.limit(limit).toArray();
+    });
   }
 
-  /**
-   * 未アーカイブ・未削除のメモ総数を取得する（インデックス検索）
-   */
   async countVisibleMemos(topicId?: string): Promise<number> {
-    if (topicId) {
-      return await this.memos
-        .where("[topicId+archived+deleted]")
-        .equals([topicId, 0, 0])
-        .count();
-    }
-
-    return await this.memos
-      .where("[archived+deleted]")
-      .equals([0, 0] as any)
-      .count();
+    return this.withStoreCallback("memos", "readonly", async (s) => {
+      if (topicId) {
+        return req(
+          s
+            .index("[topicId+archived+deleted]")
+            .count(IDBKeyRange.only([topicId, 0, 0])),
+        );
+      }
+      return req(s.index("[archived+deleted]").count(IDBKeyRange.only([0, 0])));
+    });
   }
 
-  /**
-   * 指定期間内の未アーカイブ・未削除のメモを取得する（インデックス検索）
-   */
   async getVisibleMemosByDateRange(params: {
     topicId?: string;
     startDate: string;
     endDate: string;
     limit?: number;
     query?: string;
+    threadOnly?: boolean;
   }): Promise<MemoRecord[]> {
-    const { topicId, startDate, endDate, limit, query: searchQuery } = params;
-    let collection;
+    const {
+      topicId,
+      startDate,
+      endDate,
+      limit,
+      query: searchQuery,
+      threadOnly = false,
+    } = params;
 
-    if (topicId) {
-      collection = this.memos
-        .where("[topicId+archived+deleted+createdAt]")
-        .between(
-          [topicId, 0, 0, startDate],
-          [topicId, 0, 0, endDate],
-          true,
-          true,
-        );
-    } else {
-      collection = this.memos
-        .where("[archived+deleted+createdAt]")
-        .between([0, 0, startDate], [0, 0, endDate], true, true);
+    return this.withStoreCallback("memos", "readonly", async (s) => {
+      const { index, range } = topicId
+        ? {
+            index: s.index("[topicId+archived+deleted+createdAt]"),
+            range: IDBKeyRange.bound(
+              [topicId, 0, 0, startDate],
+              [topicId, 0, 0, endDate],
+            ),
+          }
+        : {
+            index: s.index("[archived+deleted+createdAt]"),
+            range: IDBKeyRange.bound([0, 0, startDate], [0, 0, endDate]),
+          };
+
+      // console.log(`[MFDIDatabase] getVisibleMemosByDateRange: topicId="${topicId}", range=[${startDate}, ${endDate}], limit=${limit}`);
+
+      return cursorAll<MemoRecord>(
+        index,
+        range,
+        "prev",
+        buildMemoFilter({ query: searchQuery, threadOnly }),
+        limit || 300,
+      ).then((results) => {
+        // console.log(`[MFDIDatabase] getVisibleMemosByDateRange result count: ${results.length}`);
+        return results;
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private helpers
+  // ---------------------------------------------------------------------------
+
+  /** store を取得してコールバックを実行する内部ユーティリティ */
+  private async withStoreCallback<T>(
+    name: StoreName,
+    mode: IDBTransactionMode,
+    callback: (store: IDBObjectStore) => Promise<T> | T,
+  ): Promise<T> {
+    // スタック末尾（最も内側）のトランザクションを優先して再利用
+    for (let i = this._txStack.length - 1; i >= 0; i--) {
+      const tx = this._txStack[i];
+      if ([...tx.objectStoreNames].includes(name)) {
+        // 要求されたモードが readonly なら再利用可能。
+        // readwrite の場合、再利用する tx も readwrite である必要がある。
+        if (mode === "readonly" || tx.mode === "readwrite") {
+          return callback(tx.objectStore(name));
+        }
+      }
     }
 
-    collection = collection.reverse();
+    const db = await this._db;
+    const tx = db.transaction(name, mode);
+    return callback(tx.objectStore(name));
+  }
 
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      collection = collection.filter((m) =>
-        m.content.toLowerCase().includes(lowerQuery),
-      );
+  private openDatabase(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const openReq = indexedDB.open(this._name, DB_VERSION);
+
+      openReq.onupgradeneeded = () => {
+        const db = openReq.result;
+        MFDIDatabase.migrate(db, openReq.transaction!);
+      };
+
+      openReq.onsuccess = () => resolve(openReq.result);
+      openReq.onerror = () => reject(openReq.error);
+    });
+  }
+
+  /** スキーママイグレーション（onupgradeneeded から切り出し） */
+  private static migrate(db: IDBDatabase, tx: IDBTransaction): void {
+    // ---- memos --------------------------------------------------------------
+    const memoStore = db.objectStoreNames.contains("memos")
+      ? tx.objectStore("memos")
+      : db.createObjectStore("memos", { keyPath: "id" });
+
+    const addIndex = (
+      name: string,
+      keyPath: string | string[],
+      opts?: IDBIndexParameters,
+    ) => {
+      if (!memoStore.indexNames.contains(name)) {
+        memoStore.createIndex(name, keyPath, opts);
+      }
+    };
+
+    addIndex("path", "path");
+    addIndex("noteName", "noteName");
+    addIndex("topicId", "topicId");
+    addIndex("noteGranularity", "noteGranularity");
+    addIndex("noteDate", "noteDate");
+    addIndex("tags", "tags", { multiEntry: true });
+    addIndex("createdAt", "createdAt");
+    addIndex("updatedAt", "updatedAt");
+    addIndex("archived", "archived");
+    addIndex("deleted", "deleted");
+    addIndex("[topicId+noteGranularity]", ["topicId", "noteGranularity"]);
+    addIndex("[archived+deleted]", ["archived", "deleted"]);
+    addIndex("[topicId+archived+deleted]", ["topicId", "archived", "deleted"]);
+    addIndex("[archived+deleted+createdAt]", [
+      "archived",
+      "deleted",
+      "createdAt",
+    ]);
+    addIndex("[topicId+archived+deleted+createdAt]", [
+      "topicId",
+      "archived",
+      "deleted",
+      "createdAt",
+    ]);
+
+    // ---- meta ---------------------------------------------------------------
+    if (!db.objectStoreNames.contains("meta")) {
+      db.createObjectStore("meta", { keyPath: "key" });
     }
 
-    if (limit) {
-      collection = collection.limit(limit);
+    // ---- tagStats -----------------------------------------------------------
+    if (!db.objectStoreNames.contains("tagStats")) {
+      const tagStore = db.createObjectStore("tagStats", { keyPath: "tag" });
+      tagStore.createIndex("count", "count");
+      tagStore.createIndex("updatedAt", "updatedAt");
     }
-
-    return await collection.toArray();
   }
 }

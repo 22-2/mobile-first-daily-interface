@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Settings } from "src/settings";
 import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
@@ -16,6 +16,7 @@ import {
   ComponentContextProvider,
   useObsidianComponent,
 } from "src/ui/context/ComponentContext";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
@@ -32,7 +33,8 @@ import {
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
-import { useSettingsStore } from "src/ui/store/settingsStore";
+import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type {
   DateFilter,
   DisplayMode,
@@ -93,7 +95,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     [viewNoteMode],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // メンタルモデル: 子の live editor は mount 時の passive effect で初期化される。
+    // ここで hydration が遅れると、空の初期 state が先に editor/localStorage へ流れて復元値を潰す。
     initializeAppStore(
       {
         shell,
@@ -124,20 +128,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   const {
-    posts,
-    updatePosts,
     updateTasks,
-    updatePostsForWeek,
-    updatePostsForDays,
-    updatePostsFromDB,
   } = usePostsStore(
     useShallow((state) => ({
-      posts: state.posts,
-      updatePosts: state.updatePosts,
       updateTasks: state.updateTasks,
-      updatePostsForWeek: state.updatePostsForWeek,
-      updatePostsForDays: state.updatePostsForDays,
-      updatePostsFromDB: state.updatePostsFromDB,
     })),
   );
 
@@ -180,6 +174,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         dateFilter: fixedDefaults.dateFilter,
         timeFilter: fixedDefaults.timeFilter,
         asTask: fixedDefaults.asTask,
+        threadOnly: fixedDefaults.threadOnly,
         // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
         activeTag: null,
         threadFocusRootId: null,
@@ -199,46 +194,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     fixedNotePath,
   ]);
 
-  useEffect(() => {
-    if (viewNoteMode === "fixed") return;
-    if (isTimelineView(displayMode)) {
-      updatePostsFromDB({ topicId: activeTopic });
-    }
-  }, [viewNoteMode, displayMode, activeTopic, updatePostsFromDB, searchQuery]);
+  // updatePostsFromDB is no longer needed here as SWR handles it
 
-  useEffect(() => {
-    if (viewNoteMode === "fixed") return;
-    if (!capabilities.supportsPeriodMenus) return;
-    if (granularity !== "day" || asTask) return;
-
-    if (dateFilter === "this_week") {
-      updatePostsForWeek(activeTopic, date).then((paths) => {
-        replacePaths(paths);
-      });
-      return;
-    }
-
-    if (["3d", "5d", "7d"].includes(dateFilter)) {
-      const days = parseInt(dateFilter, 10);
-      if (!Number.isNaN(days)) {
-        updatePostsForDays(activeTopic, date, days).then(({ paths }) => {
-          replacePaths(paths);
-        });
-      }
-    }
-  }, [
-    date,
-    dateFilter,
-    granularity,
-    asTask,
-    activeTopic,
-    replacePaths,
-    updatePostsForWeek,
-    updatePostsForDays,
-    capabilities.supportsPeriodMenus,
-    viewNoteMode,
-    searchQuery,
-  ]);
+  // updatePostsForWeek and updatePostsForDays are no longer needed here as SWR handles it
 
   useEffect(() => {
     if (!isReadOnly && inputRef.current) {
@@ -258,14 +216,12 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!currentDailyNote) return;
 
     const promises: Promise<void>[] = [updateTasks(currentDailyNote)];
-    if (viewNoteMode === "fixed" || dateFilter === "today") {
-      promises.push(updatePosts(currentDailyNote));
-    }
+    // updatePosts is no longer needed here
     Promise.all(promises);
   }, [
     currentDailyNote,
     dateFilter,
-    updatePosts,
+    // updatePosts,
     updateTasks,
     viewNoteMode,
     searchQuery,
@@ -313,6 +269,7 @@ const ReactViewContent = () => {
       activeTag: s.activeTag,
       granularity: s.granularity,
       asTask: s.asTask,
+      threadOnly: s.threadOnly,
       dateFilter: s.dateFilter,
       sidebarOpen: s.sidebarOpen,
       setSidebarOpen: s.setSidebarOpen,
@@ -323,12 +280,8 @@ const ReactViewContent = () => {
     })),
   );
 
-  const { tasks, posts } = usePostsStore(
-    useShallow((s) => ({
-      tasks: s.tasks,
-      posts: s.posts,
-    })),
-  );
+  const { posts } = useUnifiedPosts();
+  const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
 
   const { currentDailyNote } = useNoteStore(
     useShallow((s) => ({
@@ -345,7 +298,6 @@ const ReactViewContent = () => {
   const filteredPosts = useFilteredPosts({
     posts,
     ...settings,
-    searchQuery: settings.searchQuery,
   });
 
   // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
@@ -353,7 +305,6 @@ const ReactViewContent = () => {
     posts,
     ...settings,
     includeThreadReplies: true,
-    searchQuery: settings.searchQuery,
   });
 
   useEffect(() => {
@@ -469,6 +420,7 @@ function useViewSync(view: MFDIView | null) {
     granularity,
     activeTopic,
     asTask,
+    threadOnly,
     timeFilter,
     dateFilter,
     displayMode,
@@ -480,6 +432,7 @@ function useViewSync(view: MFDIView | null) {
     setDateFilter,
     setActiveTopic,
     setAsTask,
+    setThreadOnly,
     setDisplayMode,
     setSidebarOpen,
     setSearchQuery,
@@ -488,6 +441,7 @@ function useViewSync(view: MFDIView | null) {
       granularity: state.granularity,
       activeTopic: state.activeTopic,
       asTask: state.asTask,
+      threadOnly: state.threadOnly,
       timeFilter: state.timeFilter,
       dateFilter: state.dateFilter,
       displayMode: state.displayMode,
@@ -499,6 +453,7 @@ function useViewSync(view: MFDIView | null) {
       setDateFilter: state.setDateFilter,
       setActiveTopic: state.setActiveTopic,
       setAsTask: state.setAsTask,
+      setThreadOnly: state.setThreadOnly,
       setDisplayMode: state.setDisplayMode,
       setSidebarOpen: state.setSidebarOpen,
       setSearchQuery: state.setSearchQuery,
@@ -520,7 +475,7 @@ function useViewSync(view: MFDIView | null) {
     return store.getState().handleClickOpenDailyNote(shell, settings);
   }, [store, shell, settings]);
 
-  const { setCurrentDailyNote, setPosts, setTasks } = store.getState();
+  const { setCurrentDailyNote, setTasks } = store.getState();
 
   const inputRefVal = useRef(inputSnapshot);
   const sidebarOpenRef = useRef(sidebarOpen);
@@ -547,6 +502,11 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     view.setStatePartial({ asTask });
   }, [view, asTask]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.setStatePartial({ threadOnly });
+  }, [view, threadOnly]);
 
   useEffect(() => {
     if (!view) return;
@@ -598,7 +558,6 @@ function useViewSync(view: MFDIView | null) {
         setDateFilter("today");
       }
       setCurrentDailyNote(null);
-      setPosts([]);
       setTasks([]);
     };
     return () => {
@@ -610,7 +569,6 @@ function useViewSync(view: MFDIView | null) {
     setTimeFilter,
     setDateFilter,
     setCurrentDailyNote,
-    setPosts,
     setTasks,
   ]);
 
@@ -631,6 +589,16 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onChangeAsTask = undefined;
     };
   }, [view, setAsTask]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.handlers.onChangeThreadOnly = (nextThreadOnly: boolean) => {
+      setThreadOnly(nextThreadOnly);
+    };
+    return () => {
+      view.handlers.onChangeThreadOnly = undefined;
+    };
+  }, [view, setThreadOnly]);
 
   useEffect(() => {
     if (!view) return;
@@ -729,4 +697,25 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onGetLiveEditorContentForTesting = undefined;
     };
   }, [view, syncInputSession, getInputValue]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.handlers.onGetDebugStateForTesting = () => {
+      const state = settingsStore.getState();
+      const appState = store.getState();
+      return {
+        settingsDateIso: state.date.toISOString(),
+        displayMode: state.displayMode,
+        activeTopic: state.activeTopic,
+        inputSnapshot: appState.inputSnapshot,
+        editingPostMessage: appState.editingPost?.message ?? null,
+        persistedInput: appState.storage?.get<string>(STORAGE_KEYS.INPUT, "") ?? "",
+        editorSnapshot: appState.inputRef.current?.getContentSnapshot() ?? null,
+      };
+    };
+
+    return () => {
+      view.handlers.onGetDebugStateForTesting = undefined;
+    };
+  }, [view, store]);
 }

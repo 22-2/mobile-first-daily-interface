@@ -44,6 +44,7 @@ export interface IDBService {
     startDate?: string;
     endDate?: string;
     query?: string;
+    threadOnly?: boolean;
     limit?: number;
   }): Promise<MemoRecord[]>;
 

@@ -129,11 +129,10 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   handleChangeTopic: (topicId) => {
-    const { activeTopic, setActiveTopic, setPosts, setTasks } = get();
+    const { activeTopic, setActiveTopic, setTasks } = get();
     if (activeTopic === topicId) return;
     setActiveTopic(topicId);
     set({ currentDailyNote: null });
-    setPosts([]);
     setTasks([]);
   },
 });

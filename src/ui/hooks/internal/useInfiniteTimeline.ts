@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
 import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
@@ -11,6 +10,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { refreshAllPosts } from "src/ui/utils/swr-utils";
 import { useShallow } from "zustand/shallow";
 
 const PAGE_SIZE_DAYS = 14;
@@ -21,18 +21,20 @@ const PAGE_SIZE_DAYS = 14;
 export const useInfiniteTimeline = () => {
   const dbService = useMFDIDB();
 
-  const { activeTopic, displayMode, date, searchQuery } = useSettingsStore(
+  const { activeTopic, displayMode, date, searchQuery, threadOnly } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       displayMode: s.displayMode,
       date: s.date,
       searchQuery: s.searchQuery,
+      threadOnly: s.threadOnly,
     })),
   );
   const timelineDayKey = date.format("YYYY-MM-DD");
-  // activeDocument は、Obsidianの変数で、現在アクティブなウィンドウドキュメントを指す。これを使って、ユーザーが実際にタイムラインを見ているかどうかを判断する。
-  const shouldFetchDb =
-    isTimelineView(displayMode) && activeDocument.hasFocus();
+  // Determine whether DB fetches should run for the timeline view.
+  // Use the view-mode check at runtime inside timers to avoid TDZ/closure
+  // issues in some test environments where globals are stubbed differently.
+  const shouldFetchDb = isTimelineView(displayMode);
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
@@ -41,7 +43,8 @@ export const useInfiniteTimeline = () => {
   useEffect(() => {
     // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
     const timer = window.setInterval(() => {
-      if (!shouldFetchDb) {
+      // タイムライン非表示中、またはウィンドウがフォーカスされていない場合は何もしない
+      if (!isTimelineView(displayMode) || !(typeof activeDocument !== "undefined" && activeDocument.hasFocus())) {
         return;
       }
 
@@ -51,19 +54,26 @@ export const useInfiniteTimeline = () => {
         state.setDate(now);
       }
 
-      mutate(
-        (key) =>
-          Array.isArray(key) &&
-          key[0] === "posts" &&
-          key[1] === activeTopic &&
-          key[2] === displayMode,
-      );
+      void refreshAllPosts({
+        activeTopic,
+        displayMode,
+        timelineDayKey,
+        searchQuery,
+        threadOnly,
+      });
     }, 30 * 1000);
 
     return () => {
       window.clearInterval(timer);
     };
-  }, [activeTopic, displayMode, shouldFetchDb]);
+  }, [
+    activeTopic,
+    displayMode,
+    shouldFetchDb,
+    searchQuery,
+    threadOnly,
+    timelineDayKey,
+  ]);
 
   // ---------------------------------------------------------------------------
   // 無限クエリ
@@ -90,6 +100,7 @@ export const useInfiniteTimeline = () => {
         displayMode,
         timelineDayKey,
         searchQuery,
+        threadOnly,
         pageParam,
       ];
     },
@@ -112,6 +123,7 @@ export const useInfiniteTimeline = () => {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         query: searchQuery,
+        threadOnly,
       });
 
       const posts = records.map(memoRecordToPost);
@@ -124,6 +136,7 @@ export const useInfiniteTimeline = () => {
         endDate: startDate.clone().subtract(1, "ms").toISOString(),
         limit: 1,
         query: searchQuery,
+        threadOnly,
       });
 
       const result: TimelinePostsPage = {
@@ -135,9 +148,7 @@ export const useInfiniteTimeline = () => {
 
       return result;
     },
-    {
-      revalidateFirstPage: false,
-    },
+    {},
   );
 
   const hasNextPage =
@@ -161,7 +172,14 @@ export const useInfiniteTimeline = () => {
     if (hasNextPage && !isValidating) setSize(size + 1);
   }, [hasNextPage, isValidating, size, setSize]);
 
-  return { allPosts, loadMore, hasMore: hasNextPage, isFetchingNextPage };
+  return useMemo(() => ({
+    allPosts,
+    loadMore,
+    hasMore: hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isValidating,
+  }), [allPosts, loadMore, hasNextPage, isFetchingNextPage, isLoading, isValidating]);
 };
 
 export { resolveTimelineCacheBucket };

@@ -1,7 +1,11 @@
 import { MFDIDatabase, type MemoRecord } from "src/db/mfdi-db";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const databases: MFDIDatabase[] = [];
+
+beforeEach(() => {
+  vi.useRealTimers();
+});
 
 afterEach(async () => {
   while (databases.length > 0) {
@@ -85,5 +89,55 @@ describe("MFDIDatabase Search", () => {
     const results = await db.getLatestVisibleMemos(undefined, 10, "case");
     expect(results).toHaveLength(1);
     expect(results[0].content).toBe("Case Insensitive Search");
+  });
+
+  test("getLatestVisibleMemos filters by threadOnly", async () => {
+    const db = createDatabase();
+    await db.memos.bulkPut([
+      createMemo({
+        content: "thread root",
+        metadataJson: JSON.stringify({ mfdiId: "root-1" }),
+      }),
+      createMemo({
+        content: "thread reply",
+        metadataJson: JSON.stringify({ mfdiId: "reply-1", parentId: "root-1" }),
+      }),
+      createMemo({ content: "plain post", metadataJson: JSON.stringify({}) }),
+    ]);
+
+    const results = await db.getLatestVisibleMemos(undefined, 10, undefined, true);
+    expect(results).toHaveLength(1);
+    expect(results[0].content).toBe("thread root");
+  });
+
+  test("getVisibleMemosByDateRange combines query and threadOnly", async () => {
+    const db = createDatabase();
+    await db.memos.bulkPut([
+      createMemo({
+        content: "apple root",
+        noteDate: "2026-01-01",
+        metadataJson: JSON.stringify({ mfdiId: "root-2" }),
+      }),
+      createMemo({
+        content: "apple reply",
+        noteDate: "2026-01-02",
+        metadataJson: JSON.stringify({ mfdiId: "reply-2", parentId: "root-2" }),
+      }),
+      createMemo({
+        content: "banana root",
+        noteDate: "2026-01-03",
+        metadataJson: JSON.stringify({ mfdiId: "root-3" }),
+      }),
+    ]);
+
+    const results = await db.getVisibleMemosByDateRange({
+      startDate: "2026-01-01",
+      endDate: "2026-01-05",
+      query: "apple",
+      threadOnly: true,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].content).toBe("apple root");
   });
 });

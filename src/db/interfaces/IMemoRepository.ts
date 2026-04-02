@@ -13,6 +13,7 @@ export interface IMemoRepository {
     topicId?: string,
     limit?: number,
     query?: string,
+    threadOnly?: boolean,
   ): Promise<MemoRecord[]>;
 
   /**
@@ -29,6 +30,7 @@ export interface IMemoRepository {
     endDate: string;
     limit?: number;
     query?: string;
+    threadOnly?: boolean;
   }): Promise<MemoRecord[]>;
 
   /**

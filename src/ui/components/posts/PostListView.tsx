@@ -7,7 +7,7 @@ import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
@@ -46,11 +46,12 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { posts } = usePostsStore(
-    useShallow((s) => ({
-      posts: s.posts,
-    })),
-  );
+  const { 
+    posts: allPosts, 
+    loadMore, 
+    hasMore, 
+    isLoading 
+  } = useUnifiedPosts();
 
   const {
     editingPostOffset,
@@ -68,7 +69,6 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { allPosts, loadMore, hasMore } = useInfiniteTimeline();
   const {
     handleClickTime,
     deletePost,
@@ -83,7 +83,7 @@ export const PostListView: React.FC = memo(() => {
   const timelineView = isTimelineView(settings.displayMode);
 
   const filteredPosts = useFilteredPosts({
-    posts: timelineView ? allPosts : posts,
+    posts: allPosts,
     ...settings,
     includeThreadReplies: true,
   });
@@ -330,11 +330,11 @@ export const PostListView: React.FC = memo(() => {
     if (editingPostOffset === null) return;
     if (editingPost && editingPost.startOffset === editingPostOffset) return;
 
-    const realPost = posts.find((p) => p.startOffset === editingPostOffset);
+    const realPost = allPosts.find((p) => p.startOffset === editingPostOffset);
     if (realPost) {
       setEditingPost(realPost);
     }
-  }, [posts, editingPostOffset, editingPost, setEditingPost]);
+  }, [allPosts, editingPostOffset, editingPost, setEditingPost]);
 
   // 無限スクロールのトリガー (初期読み込みなどでリストが空の場合のケア)
   useEffect(() => {

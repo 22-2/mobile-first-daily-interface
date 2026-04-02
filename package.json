@@ -64,8 +64,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "comlink": "^4.4.2",
-    "dexie": "^4.4.1",
-    "dexie-react-hooks": "^4.4.0",
     "monkey-around": "^3.0.0",
     "p-queue": "^9.1.0",
     "preact": "^10.29.0",
