@@ -156,6 +156,14 @@ describe("useInfiniteTimeline", () => {
     ]);
   });
 
+  it("スクロール後に更新した投稿も即時反映できるよう全ページ再検証を有効化する", () => {
+    renderHook(() => useInfiniteTimeline());
+
+    expect(useSWRInfiniteMock.mock.calls[0][2]).toMatchObject({
+      revalidateAll: true,
+    });
+  });
+
   it("queryFn で getMemos が呼ばれる", async () => {
     const getMemosMock = vi.fn().mockResolvedValue([]);
     vi.mocked(useMFDIDB).mockReturnValue({ getMemos: getMemosMock } as any);

@@ -148,7 +148,13 @@ export const useInfiniteTimeline = () => {
 
       return result;
     },
-    {},
+    {
+      // メンタルモデル: タグ更新などで global mutate(infiniteKey) を呼ぶ経路では、
+      // SWR Infinite の bound mutate が立てる「全ページ再検証フラグ」が入らない。
+      // 既定値のままだと 1 ページ目だけ新鮮化され、スクロールで読み込んだ後続ページは
+      // 古い投稿メタデータのまま残るため、タイムライン側で常に全ロード済みページを再検証する。
+      revalidateAll: true,
+    },
   );
 
   const hasNextPage =
