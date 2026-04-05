@@ -5,7 +5,7 @@ import {
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
 } from "src/ui/hooks/internal/timelinePosts";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
+import { WorkerClient } from "src/db/worker-client";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
@@ -19,8 +19,6 @@ const PAGE_SIZE_DAYS = 14;
  * タイムラインモード（無限スクロール）のデータ取得と管理を担当するHook。
  */
 export const useInfiniteTimeline = () => {
-  const dbService = useMFDIDB();
-
   const { activeTopic, displayMode, date, searchQuery, threadOnly } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
@@ -105,6 +103,7 @@ export const useInfiniteTimeline = () => {
       ];
     },
     async (key) => {
+      const dbService = WorkerClient.get();
       const pageParam = key[key.length - 1];
 
       const baseDate = resolveTimelineBaseDate(

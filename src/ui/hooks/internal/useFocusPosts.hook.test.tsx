@@ -29,6 +29,7 @@ const mocked = vi.hoisted(() => {
 
   return {
     getMemos: vi.fn(),
+    getDb: vi.fn(),
     loadFile: vi.fn(),
     settings,
   };
@@ -42,10 +43,10 @@ vi.mock("src/ui/context/AppContext", () => ({
   }),
 }));
 
-vi.mock("src/ui/hooks/useMFDIDB", () => ({
-  useMFDIDB: () => ({
-    getMemos: mocked.getMemos,
-  }),
+vi.mock("src/db/worker-client", () => ({
+  WorkerClient: {
+    get: () => mocked.getDb(),
+  },
 }));
 
 vi.mock("src/ui/store/settingsStore", () => ({
@@ -96,7 +97,11 @@ describe("useFocusPosts hook integration", () => {
     // SWRの内部タイマー駆動を止めないため、このテスト群だけ実時間タイマーを使う。
     vi.useRealTimers();
     mocked.getMemos.mockReset();
+    mocked.getDb.mockReset();
     mocked.loadFile.mockReset();
+    mocked.getDb.mockReturnValue({
+      getMemos: mocked.getMemos,
+    });
     mocked.settings.activeTopic = "work";
     mocked.settings.date = window.moment("2026-04-06T12:34:56.000Z");
     mocked.settings.granularity = "day";
@@ -135,6 +140,7 @@ describe("useFocusPosts hook integration", () => {
     });
 
     expect(mocked.getMemos).not.toHaveBeenCalled();
+    expect(mocked.getDb).not.toHaveBeenCalled();
     expect(mocked.loadFile).toHaveBeenCalledWith("MFDI/Inbox.mfdi.md");
   });
 
@@ -163,6 +169,7 @@ describe("useFocusPosts hook integration", () => {
         topicId: "work",
       }),
     );
+    expect(mocked.getDb).toHaveBeenCalledTimes(1);
   });
 
   it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {
@@ -191,6 +198,7 @@ describe("useFocusPosts hook integration", () => {
     });
 
     expect(mocked.getMemos).not.toHaveBeenCalled();
+    expect(mocked.getDb).not.toHaveBeenCalled();
     expect(mocked.loadFile).toHaveBeenCalledWith(
       "home/着ぐるみ購入についてあれこれ.mfdi.md",
     );

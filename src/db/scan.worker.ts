@@ -83,7 +83,7 @@ self.addEventListener("unhandledrejection", (ev: PromiseRejectionEvent) => {
 
 // ── Worker bootstrap ──────────────────────────────────────────────────────────
 
-console.log(TAG, "Worker loading...");
+// console.log(TAG, "Worker loading...");
 
 try {
   let dbService: DexieDBService | null = null;

@@ -4,7 +4,7 @@ import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
 import { normalizeFixedNotePath } from "src/core/fixed-note";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
+import { WorkerClient } from "src/db/worker-client";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { useShallow } from "zustand/shallow";
@@ -23,7 +23,6 @@ function isThreadRootMetadata(metadata: Record<string, string>): boolean {
  */
 export const useFocusPosts = () => {
   const { shell } = useAppContext();
-  const dbService = useMFDIDB();
   const {
     activeTopic,
     date,
@@ -138,6 +137,7 @@ export const useFocusPosts = () => {
           });
       }
 
+      const dbService = WorkerClient.get();
       const records = await dbService.getMemos({
         topicId: effectiveTopic,
         startDate,

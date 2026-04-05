@@ -2,7 +2,6 @@
 import { act, renderHook } from "@testing-library/react";
 import moment from "moment";
 import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const useSWRInfiniteMock = vi.fn();
@@ -14,6 +13,7 @@ const setPostsMock = vi.fn();
 const setDateMock = vi.fn();
 const loadFileMock = vi.fn(async (_path: string) => "");
 const cachedReadFileMock = vi.fn(async () => "");
+const workerGetMock = vi.fn();
 
 const settingsState = {
   activeTopic: "topic-a",
@@ -89,8 +89,10 @@ vi.mock("./timelinePosts", () => ({
     createTimelinePageFetcherMock(...args),
 }));
 
-vi.mock("src/ui/hooks/useMFDIDB", () => ({
-  useMFDIDB: vi.fn(() => ({ id: "mock-db" })),
+vi.mock("src/db/worker-client", () => ({
+  WorkerClient: {
+    get: () => workerGetMock(),
+  },
 }));
 
 describe("useInfiniteTimeline", () => {
@@ -111,6 +113,9 @@ describe("useInfiniteTimeline", () => {
       lastSearchedDate: moment("2026-03-15T00:00:00.000Z"),
     });
     createTimelinePageFetcherMock.mockReturnValue(fetchPageMock);
+    workerGetMock.mockReturnValue({
+      getMemos: vi.fn().mockResolvedValue([]),
+    });
 
     useSWRInfiniteMock.mockReturnValue({
       data: undefined,
@@ -166,7 +171,7 @@ describe("useInfiniteTimeline", () => {
 
   it("queryFn で getMemos が呼ばれる", async () => {
     const getMemosMock = vi.fn().mockResolvedValue([]);
-    vi.mocked(useMFDIDB).mockReturnValue({ getMemos: getMemosMock } as any);
+    workerGetMock.mockReturnValue({ getMemos: getMemosMock });
 
     renderHook(() => useInfiniteTimeline());
 
