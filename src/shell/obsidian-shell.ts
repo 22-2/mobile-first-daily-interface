@@ -84,7 +84,7 @@ export class ObsidianAppShell {
   async writeFile(path: string, content: string): Promise<void> {
     const existing = this.unsafeApp.vault.getAbstractFileByPath(path);
 
-    // メンタルモデル: adapter.write は Vault/MetadataCache の変更イベント経路を素通りしやすい。
+    // 意図: adapter.write は Vault/MetadataCache の変更イベント経路を素通りしやすい。
     // 既存ノート更新は vault.modify を使い、indexer と UI 同期を必ず発火させる。
     if (existing instanceof TFile) {
       await this.unsafeApp.vault.modify(existing, content);
@@ -132,7 +132,7 @@ export class ObsidianAppShell {
     const content = await this.loadFile(file.path);
 
     if (!after) {
-      // メンタルモデル: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
+      // 意図: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
       // path ベース書き込みだと adapter.write へ落ちて変更イベントを取りこぼす。
       // insertTextAfter は TFile を受け取っているため、常に vault.modify を使う。
       await this.modifyVaultFile(file, joinWithSingleBoundaryNewline(content, text));

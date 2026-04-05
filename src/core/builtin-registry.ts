@@ -110,7 +110,7 @@ function setupTagIndexLifecycle(
   context.registerEvent(
     context.app.vault.on("create", (file) => {
       if (!(file instanceof TFile)) return;
-      // メンタルモデル: 日付跨ぎ投稿では「ノート新規作成 -> 直後に追記」が連続し、
+      // 意図: 日付跨ぎ投稿では「ノート新規作成 -> 直後に追記」が連続し、
       // metadataCache.changed だけに依存すると初回インデックスを取りこぼすケースがある。
       // create を拾っておくことで、少なくとも新規ノート自体は確実に DB へ流せる。
       void tagIndexExtension.handleFileChanged(
@@ -124,7 +124,7 @@ function setupTagIndexLifecycle(
   context.registerEvent(
     context.app.vault.on("modify", (file) => {
       if (!(file instanceof TFile)) return;
-      // メンタルモデル: 投稿保存は Vault の modify 経由で発生するため、
+      // 意図: 投稿保存は Vault の modify 経由で発生するため、
       // ここを一次トリガーにすると UI/DB の反映遅延を最小化できる。
       void tagIndexExtension.handleFileChanged(
         context.shell,
@@ -220,7 +220,7 @@ function setupFixedNoteViewLifecycle(
   });
 }
 
-// メンタルモデル: 初期化順が機能要件そのものなので、一般化せず直列で明示する。
+// 意図: 初期化順が機能要件そのものなので、一般化せず直列で明示する。
 // ここを読めば起動時に何が登録されるかを追える状態にしておく。
 export function activateBuiltins(
   context: BuiltinMainContext,

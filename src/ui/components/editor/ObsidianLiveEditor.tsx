@@ -104,7 +104,7 @@ export const ObsidianLiveEditor = forwardRef<
       }
 
       if (editor.getContentSnapshot() !== initialValue) {
-        // メンタルモデル: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
+        // 意図: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
         // editor 由来の更新は除外し、外部同期だけを反映してカーソル巻き戻りを防ぐ。
         editor.setContent(initialValue);
         lastEditorChangeRef.current = initialValue;

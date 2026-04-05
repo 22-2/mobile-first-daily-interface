@@ -46,7 +46,7 @@ export const useFilteredPosts = ({
     const postsWithoutHidden = posts.filter((p) => isVisible(p.metadata));
     const activeThreadRootId = threadFocusRootId;
 
-    // メンタルモデル: スレッド表示は「選択した rootId の会話を読む」モード。
+    // 意図: スレッド表示は「選択した rootId の会話を読む」モード。
     // ここで activeTag を残したまま適用すると、タグ未設定の root/reply が全件除外され
     // 「スレッドに入ったのに投稿が0件」に見える退行が起こるため、
     // スレッドビューではタグ条件を無視して rootId のみで抽出する。

@@ -102,7 +102,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 
   useLayoutEffect(() => {
-    // メンタルモデル: 子の live editor は mount 時の passive effect で初期化される。
+    // 意図: 子の live editor は mount 時の passive effect で初期化される。
     // ここで hydration が遅れると、空の初期 state が先に editor/localStorage へ流れて復元値を潰す。
     initializeAppStore(
       {

@@ -25,7 +25,7 @@ export default class MFDIPlugin extends Plugin {
   view?: MFDIView;
 
   private async initializeWorker(): Promise<void> {
-    // メンタルモデル: Worker 初期化は重くなりうるため、コマンド/ビュー登録をブロックしない。
+    // 意図: Worker 初期化は重くなりうるため、コマンド/ビュー登録をブロックしない。
     // lazy ロード直後に command wrapper から実コマンドへ到達できることを優先する。
     try {
       const db = WorkerClient.get();
@@ -82,7 +82,7 @@ export default class MFDIPlugin extends Plugin {
   // ---------------------------------------------------------------------------
 
   private activateBuiltinRegistry() {
-    // メンタルモデル: 登録処理は activateBuiltins へ委譲し、main 側は入力(context)だけ作る。
+    // 意図: 登録処理は activateBuiltins へ委譲し、main 側は入力(context)だけ作る。
     // こうしておくと初期化の責務境界が明確で、plugin 固有 API の見通しを保てる。
     const context: BuiltinMainContext = {
       app: this.app,

@@ -2,7 +2,7 @@ import type { MouseEventHandler, ReactNode } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // 目的: スクロールコンテナ内で右下に表示される「トップへ戻る」ボタンを提供する
-// メンタルモデル: 単純な可視性制御（visible prop）とクリックでスクロール動作をトリガーするだけの小さなプリミティブ。
+// 意図: 単純な可視性制御（visible prop）とクリックでスクロール動作をトリガーするだけの小さなプリミティブ。
 // 理由: コンポーネントを分離することで、他のリストや長いコンテンツにも再利用できるようにする
 export type FloatingButtonProps = {
   onClick?: MouseEventHandler<HTMLButtonElement>;

@@ -450,7 +450,7 @@ export const usePostActions = () => {
         isTimelineView(settingsState.displayMode) &&
         !settingsState.date.isSame(targetDate, "day")
       ) {
-        // メンタルモデル: 日付跨ぎ直後は submit 冒頭の setDate だけだと、
+        // 意図: 日付跨ぎ直後は submit 冒頭の setDate だけだと、
         // 非同期処理をまたぐ間にタイムライン基準日が旧日のまま再検証されることがある。
         // 実際に投稿先ノートが確定した時点で再度同期し、refreshPosts の対象日を固定する。
         settingsState.setDate(targetDate.clone());
@@ -479,7 +479,7 @@ export const usePostActions = () => {
     if (!editorState.canSubmit(allPosts)) return;
 
     // タイムライン表示中は submit のたびに基準日を「いま」に同期する。
-    // メンタルモデル: 日付跨ぎ直後は stale な日付のまま再検証されると、
+    // 意図: 日付跨ぎ直後は stale な日付のまま再検証されると、
     // DBに投稿があってもタイムライン範囲外となり UI が空表示になる。
     if (isTimelineView(settingsState.displayMode)) {
       settingsState.setDate(window.moment());

@@ -14,7 +14,7 @@ function BoxInner<T extends ElementType = "div">(
   ref: Ref<unknown>,
 ) {
   // 目的: Tailwind クラスを渡せるようにして、既存の Chakra `Box` の代替として使えるようにする
-  // メンタルモデル: 最小限のラッパーで余計な振る舞いを持たせない
+  // 意図: 最小限のラッパーで余計な振る舞いを持たせない
   const Comp = as ?? "div";
   return createElement(
     Comp,
