@@ -1,5 +1,12 @@
 import type { App } from "obsidian";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { Settings } from "src/settings";
 import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
@@ -7,7 +14,7 @@ import { InputArea } from "src/ui/components/InputArea";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
-import { Box, Flex } from "src/ui/components/primitives";
+import { Box, Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
@@ -18,6 +25,7 @@ import {
 } from "src/ui/context/ComponentContext";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useCSSLoaded } from "src/ui/hooks/useCSSLoaded";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
@@ -50,8 +58,6 @@ import {
 } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
-
-
 export const ReactView = ({
   app,
   settings,
@@ -70,9 +76,9 @@ export const ReactView = ({
     <AppContextProvider app={app} settings={settings}>
       <ComponentContextProvider component={view}>
         <AppStoreProvider store={storeRef.current}>
-            <MFDIAppRoot>
-              <ReactViewContent />
-            </MFDIAppRoot>
+          <MFDIAppRoot>
+            <ReactViewContent />
+          </MFDIAppRoot>
         </AppStoreProvider>
       </ComponentContextProvider>
     </AppContextProvider>
@@ -127,9 +133,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })),
   );
 
-  const {
-    updateTasks,
-  } = usePostsStore(
+  const { updateTasks } = usePostsStore(
     useShallow((state) => ({
       updateTasks: state.updateTasks,
     })),
@@ -255,6 +259,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const ReactViewContent = () => {
   const component = useObsidianComponent() as MFDIView;
+  const isCSSLoaded = useCSSLoaded();
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
@@ -368,6 +373,20 @@ const ReactViewContent = () => {
     ((dateFilter === "today" && !currentDailyNote) ||
       (asTask ? tasks.length === 0 : filteredPosts.length === 0));
 
+  const content = useMemo(() => {
+    if (!isCSSLoaded) {
+      return;
+    }
+
+    return isEmpty ? (
+      <EmptyState granularity={granularity} />
+    ) : asTask ? (
+      <TaskListView />
+    ) : (
+      <PostListView />
+    );
+  }, [isEmpty, asTask, granularity, isCSSLoaded]);
+
   return (
     <Flex
       className="root h-full w-full overflow-hidden relative"
@@ -387,13 +406,7 @@ const ReactViewContent = () => {
           className="mfdi-scroll-container flex-col flex-grow overflow-y-scroll overflow-x-hidden"
           ref={scrollContainerRef}
         >
-          {isEmpty ? (
-            <EmptyState granularity={granularity} />
-          ) : asTask ? (
-            <TaskListView />
-          ) : (
-            <PostListView />
-          )}
+          {content}
         </Flex>
       </Flex>
 
@@ -406,6 +419,20 @@ const ReactViewContent = () => {
           <SidebarScales viewedDate={sideBarViewDate} />
           <TagList />
         </Box>
+      )}
+
+      {!isCSSLoaded && (
+        <div
+          style={{
+            position: "absolute",
+            inset: "0",
+            zIndex: 20,
+            backgroundColor: "var(--background-primary)",
+            display: "flex",
+          }}
+        >
+          <Spinner className="size-6 text-[var(--text-muted)] [animation-duration:0.8s]" />
+        </div>
       )}
     </Flex>
   );
@@ -709,7 +736,8 @@ function useViewSync(view: MFDIView | null) {
         activeTopic: state.activeTopic,
         inputSnapshot: appState.inputSnapshot,
         editingPostMessage: appState.editingPost?.message ?? null,
-        persistedInput: appState.storage?.get<string>(STORAGE_KEYS.INPUT, "") ?? "",
+        persistedInput:
+          appState.storage?.get<string>(STORAGE_KEYS.INPUT, "") ?? "",
         editorSnapshot: appState.inputRef.current?.getContentSnapshot() ?? null,
       };
     };

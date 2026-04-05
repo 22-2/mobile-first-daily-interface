@@ -1,18 +1,11 @@
-import React from "react";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { cn } from "src/ui/components/primitives/utils";
+import type { BoxProps } from "src/ui/components/primitives/Box";
 
-export type SpinnerProps = {
-  size?: number;
-  className?: string;
-} & React.HTMLAttributes<HTMLDivElement>;
+function Spinner({ className, ...props }: BoxProps) {
+  return (
+    <ObsidianIcon name="loader"  className={cn("size-4 animate-spin", className)} {...props} />
+  )
+}
 
-export const Spinner = ({ size = 16, className, ...rest }: SpinnerProps) => (
-  <div
-    role="status"
-    aria-hidden
-    className={className}
-    style={{ width: size, height: size }}
-    {...rest}
-  />
-);
-
-Spinner.displayName = "Spinner";
+export { Spinner }
