@@ -58,8 +58,8 @@ importers:
         version: 5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
       '@22-2/esbuild-plugin-obsidian-copy':
-        specifier: 0.1.1
-        version: 0.1.1
+        specifier: 0.1.2
+        version: 0.1.2
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.1.0(jiti@2.6.1))
@@ -162,8 +162,8 @@ importers:
 
 packages:
 
-  '@22-2/esbuild-plugin-obsidian-copy@0.1.1':
-    resolution: {integrity: sha512-CoFCH3MZIRljlWpgqyIFIiuU9lDxWFxdXrZbftSB6+tiZXw6O/ffYgkJY0fAVvjJiPVw+9VDJmDfyO7gcoCwSg==, tarball: https://npm.pkg.github.com/download/@22-2/esbuild-plugin-obsidian-copy/0.1.1/35e6d2dca9358a774a9750d48684352f260eb4c9}
+  '@22-2/esbuild-plugin-obsidian-copy@0.1.2':
+    resolution: {integrity: sha512-EVPXGkm8DEvvjh09rVmh+/VD7KM+/GTOg6Mxt5uZiXzNY6HpJO72XfSkYvOIQDhuYwwqbVueFWC6GZWY6yS9xg==, tarball: https://npm.pkg.github.com/download/@22-2/esbuild-plugin-obsidian-copy/0.1.2/441004f4cb120a7d86046b8baadef683e4685d0d}
 
   '@22-2/obsidian-magical-editor@1.0.2':
     resolution: {integrity: sha512-u7teXF/fui3Cn2AZam8wBK58SXUK1x8ZntgPRi1yB4HDI8wSGhfDbTL0aWNvWb668hU84DbkMCiDNgGX7NaN6Q==, tarball: https://npm.pkg.github.com/download/@22-2/obsidian-magical-editor/1.0.2/e6f4185ef46aa3a0b3dd62dbc863c7d9b62cae79}
@@ -4848,7 +4848,7 @@ packages:
 
 snapshots:
 
-  '@22-2/esbuild-plugin-obsidian-copy@0.1.1': {}
+  '@22-2/esbuild-plugin-obsidian-copy@0.1.2': {}
 
   '@22-2/obsidian-magical-editor@1.0.2(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))':
     dependencies:

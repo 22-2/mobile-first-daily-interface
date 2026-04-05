@@ -23,7 +23,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@22-2/esbuild-plugin-obsidian-copy": "0.1.1",
+    "@22-2/esbuild-plugin-obsidian-copy": "0.1.2",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.2",
