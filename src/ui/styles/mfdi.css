@@ -8,7 +8,7 @@
   user-select: text !important;
 }
 
-[data-type="mfdi-view"] .cm-line.cm-active {
+:is([data-type="mfdi-view"], .magical-editor-modal-editor-area) .cm-line.cm-active {
     background-color: var(--active-line-bg);
     box-shadow: -25vw 0 var(--active-line-bg), 25vw 0 var(--active-line-bg);
 }
