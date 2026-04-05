@@ -1,0 +1,198 @@
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { SWRConfig } from "swr";
+import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+interface MockSettingsState {
+  activeTopic: string;
+  date: moment.Moment;
+  granularity: "day" | "week" | "month" | "year";
+  dateFilter: string;
+  searchQuery: string;
+  threadOnly: boolean;
+  viewNoteMode: "periodic" | "fixed";
+  fixedNotePath: string | null;
+}
+
+const mocked = vi.hoisted(() => {
+  const settings: MockSettingsState = {
+    activeTopic: "work",
+    date: window.moment("2026-04-06T12:34:56.000Z"),
+    granularity: "day",
+    dateFilter: "today",
+    searchQuery: "",
+    threadOnly: false,
+    viewNoteMode: "periodic",
+    fixedNotePath: null,
+  };
+
+  return {
+    getMemos: vi.fn(),
+    loadFile: vi.fn(),
+    settings,
+  };
+});
+
+vi.mock("src/ui/context/AppContext", () => ({
+  useAppContext: () => ({
+    shell: {
+      loadFile: mocked.loadFile,
+    },
+  }),
+}));
+
+vi.mock("src/ui/hooks/useMFDIDB", () => ({
+  useMFDIDB: () => ({
+    getMemos: mocked.getMemos,
+  }),
+}));
+
+vi.mock("src/ui/store/settingsStore", () => ({
+  useSettingsStore: <T,>(selector: (state: MockSettingsState) => T): T =>
+    selector(mocked.settings),
+}));
+
+type MemoRecordLike = {
+  id: string;
+  path: string;
+  content: string;
+  createdAt: string;
+  metadataJson: string;
+  startOffset: number;
+  endOffset: number;
+  bodyStartOffset: number;
+};
+
+function createMemoRecord(overrides: Partial<MemoRecordLike>): MemoRecordLike {
+  return {
+    id: overrides.id ?? "memo-1",
+    path: overrides.path ?? "daily/2026-04-06.md",
+    content: overrides.content ?? "message",
+    createdAt: overrides.createdAt ?? "2026-04-06T12:00:00.000Z",
+    metadataJson: overrides.metadataJson ?? "{}",
+    startOffset: overrides.startOffset ?? 10,
+    endOffset: overrides.endOffset ?? 20,
+    bodyStartOffset: overrides.bodyStartOffset ?? 12,
+  };
+}
+
+const swrWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return React.createElement(
+    SWRConfig,
+    {
+      value: {
+        provider: () => new Map(),
+        dedupingInterval: 0,
+        errorRetryCount: 0,
+      },
+    },
+    children,
+  );
+};
+
+describe("useFocusPosts hook integration", () => {
+  beforeEach(() => {
+    // SWRの内部タイマー駆動を止めないため、このテスト群だけ実時間タイマーを使う。
+    vi.useRealTimers();
+    mocked.getMemos.mockReset();
+    mocked.loadFile.mockReset();
+    mocked.settings.activeTopic = "work";
+    mocked.settings.date = window.moment("2026-04-06T12:34:56.000Z");
+    mocked.settings.granularity = "day";
+    mocked.settings.dateFilter = "today";
+    mocked.settings.searchQuery = "";
+    mocked.settings.threadOnly = false;
+    mocked.settings.viewNoteMode = "periodic";
+    mocked.settings.fixedNotePath = null;
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("fixedモードではtopicIdを渡さず fixedNotePath で投稿を絞る", async () => {
+    mocked.settings.viewNoteMode = "fixed";
+    mocked.settings.fixedNotePath = "MFDI/Inbox.mfdi.md";
+    mocked.settings.searchQuery = "";
+    mocked.settings.threadOnly = false;
+
+    mocked.loadFile.mockResolvedValue([
+      "## Thino",
+      "- 12:00:00 from-fixed [mfdiId::root-1]",
+      "- 12:01:00 from-other",
+    ].join("\n"));
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "from-fixed",
+        "from-other",
+      ]);
+    });
+
+    expect(mocked.getMemos).not.toHaveBeenCalled();
+    expect(mocked.loadFile).toHaveBeenCalledWith("MFDI/Inbox.mfdi.md");
+  });
+
+  it("periodicモードではactiveTopicで取得し path絞り込みしない", async () => {
+    mocked.settings.viewNoteMode = "periodic";
+    mocked.settings.activeTopic = "work";
+
+    mocked.getMemos.mockResolvedValue([
+      createMemoRecord({ id: "a", content: "first" }),
+      createMemoRecord({ id: "b", content: "second" }),
+    ]);
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "first",
+        "second",
+      ]);
+    });
+
+    expect(mocked.getMemos).toHaveBeenCalledWith(
+      expect.objectContaining({
+        topicId: "work",
+      }),
+    );
+  });
+
+  it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {
+    mocked.settings.viewNoteMode = "fixed";
+    mocked.settings.activeTopic = "";
+    mocked.settings.dateFilter = "all";
+    mocked.settings.fixedNotePath = "home/着ぐるみ購入についてあれこれ.mfdi.md";
+    mocked.settings.threadOnly = true;
+    mocked.settings.searchQuery = "wanted";
+
+    mocked.loadFile.mockResolvedValue([
+      "## Thino",
+      "- 18:33:04 wanted [posted::2026-03-29T09:33:04.314Z] [mfdiId::root-1]",
+      "- 18:34:00 wanted reply [posted::2026-03-29T09:34:00.000Z] [mfdiId::reply-1] [parentId::root-1]",
+      "- 18:35:00 other [posted::2026-03-29T09:35:00.000Z]",
+    ].join("\n"));
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "wanted",
+      ]);
+    });
+
+    expect(mocked.getMemos).not.toHaveBeenCalled();
+    expect(mocked.loadFile).toHaveBeenCalledWith(
+      "home/着ぐるみ購入についてあれこれ.mfdi.md",
+    );
+  });
+});

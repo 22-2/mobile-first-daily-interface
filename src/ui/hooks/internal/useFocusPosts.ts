@@ -1,5 +1,9 @@
 import useSWR from "swr";
 import { useMemo } from "react";
+import { resolveTimestamp } from "src/core/post-utils";
+import { parseThinoEntries } from "src/core/thino";
+import { normalizeFixedNotePath } from "src/core/fixed-note";
+import { useAppContext } from "src/ui/context/AppContext";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
@@ -7,13 +11,29 @@ import { useShallow } from "zustand/shallow";
 import type { Post } from "src/ui/types";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 
+function isThreadRootMetadata(metadata: Record<string, string>): boolean {
+  const threadId = metadata.mfdiId;
+  const parentId = metadata.parentId;
+  return !!threadId && !parentId;
+}
+
 /**
  * フォーカスモード（特定期間の1回読み切り）のデータ取得を担当するHook。
  * 常に IndexedDB から最新のデータを取得する。
  */
 export const useFocusPosts = () => {
+  const { shell } = useAppContext();
   const dbService = useMFDIDB();
-  const { activeTopic, date, granularity, dateFilter, searchQuery, threadOnly } = useSettingsStore(
+  const {
+    activeTopic,
+    date,
+    granularity,
+    dateFilter,
+    searchQuery,
+    threadOnly,
+    viewNoteMode,
+    fixedNotePath,
+  } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
       date: s.date,
@@ -21,10 +41,16 @@ export const useFocusPosts = () => {
       dateFilter: s.dateFilter,
       searchQuery: s.searchQuery,
       threadOnly: s.threadOnly,
+      viewNoteMode: s.viewNoteMode,
+      fixedNotePath: s.fixedNotePath,
     })),
   );
+  const isFixedMode = viewNoteMode === "fixed";
+  const normalizedFixedPath = useMemo(
+    () => normalizeFixedNotePath(fixedNotePath ?? ""),
+    [fixedNotePath],
+  );
 
-  // 取得範囲（startDate, endDate）を決定
   const { startDate, endDate } = useMemo(() => {
     let start = date.clone().startOf("day");
     let end = date.clone().endOf("day");
@@ -48,39 +74,86 @@ export const useFocusPosts = () => {
 
     return {
       startDate: start.toISOString(),
-      endDate: end.toISOString()
+      endDate: end.toISOString(),
     };
   }, [date, granularity, dateFilter]);
 
-  const { data: records, mutate, isValidating, error } = useSWR(
+  const effectiveTopic = isFixedMode ? undefined : activeTopic;
+
+  const { data: posts, mutate, isValidating, error } = useSWR<Post[]>(
     [
       "posts",
       "focus",
-      activeTopic,
+      effectiveTopic,
       startDate,
       endDate,
       searchQuery,
       threadOnly,
+      viewNoteMode,
+      normalizedFixedPath,
+      date.toISOString(),
     ],
     async () => {
-      return await dbService.getMemos({
-        topicId: activeTopic,
+      if (isFixedMode) {
+        // fixedノートはDBインデックスではなく、ノート本文を直接読んで表示する。
+        if (!normalizedFixedPath) return [];
+
+        let content = "";
+        try {
+          content = await shell.loadFile(normalizedFixedPath);
+        } catch {
+          return [];
+        }
+
+        const query = searchQuery.trim().toLowerCase();
+
+        return parseThinoEntries(content)
+          .filter((entry) => {
+            if (query && !entry.message.toLowerCase().includes(query)) {
+              return false;
+            }
+            if (threadOnly && !isThreadRootMetadata(entry.metadata)) {
+              return false;
+            }
+            return true;
+          })
+          .map((entry) => {
+            const timestamp = resolveTimestamp(entry.time, date, entry.metadata);
+
+            return {
+              id: entry.metadata.mfdiId ?? `${normalizedFixedPath}:${entry.startOffset}`,
+              threadRootId:
+                entry.metadata.parentId ?? entry.metadata.mfdiId ?? null,
+              timestamp,
+              noteDate: timestamp.clone().startOf("day"),
+              message: entry.message,
+              metadata: entry.metadata,
+              offset: entry.offset,
+              startOffset: entry.startOffset,
+              endOffset: entry.endOffset,
+              bodyStartOffset: entry.bodyStartOffset,
+              kind: "thino",
+              path: normalizedFixedPath,
+            } as Post;
+          });
+      }
+
+      const records = await dbService.getMemos({
+        topicId: effectiveTopic,
         startDate,
         endDate,
         query: searchQuery,
         threadOnly,
       });
+
+      return records.map(memoRecordToPost);
     }
   );
 
-  const posts = useMemo(() => {
-    return (records ?? []).map(memoRecordToPost);
-  }, [records]);
-
   return useMemo(() => ({
-    posts,
+    posts: posts ?? [],
     mutate,
-    isLoading: !records && !error,
+    isLoading: !posts && !error,
     isValidating,
-  }), [posts, mutate, records, error, isValidating]);
+  }), [posts, mutate, error, isValidating]);
 };

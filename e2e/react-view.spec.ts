@@ -96,6 +96,15 @@ async function getReactViewDebugSnapshot(obsidian: ObsidianAPI): Promise<ReactVi
     const listEl = document.querySelector(".list") as HTMLElement | null;
     const leaf = app.workspace.getLeavesOfType("mfdi-view")[0];
     const activeFile = app.workspace.getActiveFile();
+    const viewState = (leaf?.view as MFDIView | undefined)?.getState?.();
+    const viewDateValue = viewState?.date;
+    const viewDate =
+      viewDateValue &&
+      typeof viewDateValue === "object" &&
+      "format" in viewDateValue &&
+      typeof viewDateValue.format === "function"
+        ? viewDateValue.format("YYYY-MM-DD")
+        : null;
 
     return {
       listText: listEl?.innerText ?? "",
@@ -105,9 +114,9 @@ async function getReactViewDebugSnapshot(obsidian: ObsidianAPI): Promise<ReactVi
         .some((el) => (el as HTMLElement).innerText?.includes("タイムライン表示中")),
       activeFilePath: activeFile?.path ?? null,
       mfdiLeafCount: app.workspace.getLeavesOfType("mfdi-view").length,
-      displayMode: (leaf?.view as MFDIView | undefined)?.getState?.().displayMode ?? null,
-      viewDate: (leaf?.view as MFDIView | undefined)?.getState?.().date?.format?.("YYYY-MM-DD") ?? null,
-      viewActiveTopic: (leaf?.view as MFDIView | undefined)?.getState?.().activeTopic ?? null,
+      displayMode: viewState?.displayMode ?? null,
+      viewDate,
+      viewActiveTopic: viewState?.activeTopic ?? null,
       settingsDateIso:
         (leaf?.view as MFDIView | undefined)?.handlers.onGetDebugStateForTesting?.().settingsDateIso ?? null,
       settingsDisplayMode:
@@ -268,4 +277,5 @@ test.describe("MFDI react view e2e", () => {
 
     await waitForListContainsMessage(obsidian, message, 15000);
   });
+
 });
