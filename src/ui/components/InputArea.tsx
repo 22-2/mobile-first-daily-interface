@@ -11,21 +11,15 @@ import {
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
-import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import {
   getCenterIndicatorLabel,
   isDefaultViewState,
 } from "src/ui/utils/view-state";
-import { isVisible } from "src/ui/utils/post-metadata";
-import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
-import { isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 import type { MFDIView } from "../view/MFDIView";

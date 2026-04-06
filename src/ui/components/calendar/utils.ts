@@ -1,4 +1,3 @@
-import useSWR from "swr";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
@@ -7,6 +6,7 @@ import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
 
 // ─────────────────────────────────────────────

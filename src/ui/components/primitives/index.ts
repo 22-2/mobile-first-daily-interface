@@ -1,10 +1,8 @@
-export { Badge } from "src/ui/components/primitives/Badge";
 export { Box } from "src/ui/components/primitives/Box";
 export { Button } from "src/ui/components/primitives/Button";
 export { Checkbox } from "src/ui/components/primitives/Checkbox";
 export { Divider } from "src/ui/components/primitives/Divider";
 export { Flex } from "src/ui/components/primitives/Flex";
-export { Grid } from "src/ui/components/primitives/Grid";
 export { Heading } from "src/ui/components/primitives/Heading";
 export { HStack } from "src/ui/components/primitives/HStack";
 export { Image } from "src/ui/components/primitives/Image";

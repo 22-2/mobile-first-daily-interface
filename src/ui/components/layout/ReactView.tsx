@@ -18,18 +18,19 @@ import { Box, Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import {
   ComponentContextProvider,
   useObsidianComponent,
 } from "src/ui/context/ComponentContext";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useCSSLoaded } from "src/ui/hooks/useCSSLoaded";
 import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import type { AppStoreApi } from "src/ui/store/appStore";
 import {
   AppStoreProvider,
@@ -42,7 +43,6 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
-import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type {
   DateFilter,
   DisplayMode,

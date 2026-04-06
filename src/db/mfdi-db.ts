@@ -23,7 +23,7 @@ export interface MemoRecord {
   deleted: 0 | 1;
 }
 
-export interface MetaRecord {
+interface MetaRecord {
   key: string;
   value: unknown;
 }
@@ -34,7 +34,7 @@ export interface TagStatRecord {
   updatedAt: string;
 }
 
-export function getMFDIDatabaseName(appId: string): string {
+function getMFDIDatabaseName(appId: string): string {
   return `${appId}-mfdi-db`;
 }
 
@@ -111,7 +111,10 @@ function buildMemoFilter(params: {
   }
 
   return (memo) => {
-    if (normalizedQuery && !memo.content.toLowerCase().includes(normalizedQuery)) {
+    if (
+      normalizedQuery &&
+      !memo.content.toLowerCase().includes(normalizedQuery)
+    ) {
       return false;
     }
     if (threadOnly && !isThreadRootMemo(memo)) {
@@ -405,7 +408,13 @@ export class MFDIDatabase {
       async (s) => {
         const index = s.index("[archived+deleted]");
         const range = IDBKeyRange.only([0, 0]);
-        return cursorAll<MemoRecord>(index, range, "next", undefined, undefined);
+        return cursorAll<MemoRecord>(
+          index,
+          range,
+          "next",
+          undefined,
+          undefined,
+        );
       },
     );
     const dateSet = new Set(memos.map((m) => m.noteDate));

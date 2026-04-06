@@ -3,9 +3,15 @@ import { useMemo } from "react";
 import { Box } from "src/ui/components/primitives";
 import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import { isTimelineView } from "src/ui/utils/view-mode";
-import { useCapabilities, useCurrentTime, useFilterMenu, useGranularityMenu, useSettings } from "./hooks";
 import type { Granularity } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
+import {
+  useCapabilities,
+  useCurrentTime,
+  useFilterMenu,
+  useGranularityMenu,
+  useSettings,
+} from "./hooks";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -62,7 +68,8 @@ export const DateDisplay: FC = () => {
   const capabilities = useCapabilities(viewNoteMode);
 
   const dateLabel = useMemo(
-    () => getDateLabel({ isFixedNote, currentTime, date, granularity, dateFilter }),
+    () =>
+      getDateLabel({ isFixedNote, currentTime, date, granularity, dateFilter }),
     [isFixedNote, currentTime, date, granularity, dateFilter],
   );
 

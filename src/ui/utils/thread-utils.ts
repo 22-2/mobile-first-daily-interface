@@ -53,7 +53,7 @@ export function getThreadPosts(posts: Post[], rootId: string): Post[] {
   return posts.filter((post) => post.threadRootId === rootId);
 }
 
-export function sortPostsDescending(posts: Post[]): Post[] {
+function sortPostsDescending(posts: Post[]): Post[] {
   return [...posts].sort((left, right) => {
     const byTimestamp = right.timestamp.valueOf() - left.timestamp.valueOf();
     if (byTimestamp !== 0) {

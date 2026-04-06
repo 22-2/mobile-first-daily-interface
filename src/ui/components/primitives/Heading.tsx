@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type HeadingProps = React.HTMLAttributes<HTMLHeadingElement> & {
+type HeadingProps = React.HTMLAttributes<HTMLHeadingElement> & {
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
   className?: string;
 };

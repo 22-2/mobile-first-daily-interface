@@ -48,7 +48,6 @@ describe("usePostActions - copyBlockIdLink", () => {
   beforeEach(() => {
     vi.useRealTimers();
 
-
     mockApp = {
       vault: {
         getAbstractFileByPath: vi.fn((path: string) =>

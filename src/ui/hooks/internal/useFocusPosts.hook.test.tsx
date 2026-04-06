@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import React from "react";
-import { SWRConfig } from "swr";
 import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
+import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 interface MockSettingsState {
@@ -122,11 +122,13 @@ describe("useFocusPosts hook integration", () => {
     mocked.settings.searchQuery = "";
     mocked.settings.threadOnly = false;
 
-    mocked.loadFile.mockResolvedValue([
-      "## Thino",
-      "- 12:00:00 from-fixed [mfdiId::root-1]",
-      "- 12:01:00 from-other",
-    ].join("\n"));
+    mocked.loadFile.mockResolvedValue(
+      [
+        "## Thino",
+        "- 12:00:00 from-fixed [mfdiId::root-1]",
+        "- 12:01:00 from-other",
+      ].join("\n"),
+    );
 
     const { result } = renderHook(() => useFocusPosts(), {
       wrapper: swrWrapper,
@@ -180,12 +182,14 @@ describe("useFocusPosts hook integration", () => {
     mocked.settings.threadOnly = true;
     mocked.settings.searchQuery = "wanted";
 
-    mocked.loadFile.mockResolvedValue([
-      "## Thino",
-      "- 18:33:04 wanted [posted::2026-03-29T09:33:04.314Z] [mfdiId::root-1]",
-      "- 18:34:00 wanted reply [posted::2026-03-29T09:34:00.000Z] [mfdiId::reply-1] [parentId::root-1]",
-      "- 18:35:00 other [posted::2026-03-29T09:35:00.000Z]",
-    ].join("\n"));
+    mocked.loadFile.mockResolvedValue(
+      [
+        "## Thino",
+        "- 18:33:04 wanted [posted::2026-03-29T09:33:04.314Z] [mfdiId::root-1]",
+        "- 18:34:00 wanted reply [posted::2026-03-29T09:34:00.000Z] [mfdiId::reply-1] [parentId::root-1]",
+        "- 18:35:00 other [posted::2026-03-29T09:35:00.000Z]",
+      ].join("\n"),
+    );
 
     const { result } = renderHook(() => useFocusPosts(), {
       wrapper: swrWrapper,

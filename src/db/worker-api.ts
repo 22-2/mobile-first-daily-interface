@@ -10,19 +10,19 @@ export interface ScannableNote {
   content: string;
 }
 
-export interface WorkerTimings {
+interface WorkerTimings {
   started: number;
   finished: number;
   noteCount: number;
   bytes: number;
 }
 
-export interface ScanResultEnvelope {
+interface ScanResultEnvelope {
   records: MemoRecord[];
   timings?: WorkerTimings;
 }
 
-export interface ScanWorkerAPI {
+interface ScanWorkerAPI {
   // Worker is stateless and only exposes parsing methods.
   // Both methods return an envelope that may include worker-side timings.
   scanFiles(

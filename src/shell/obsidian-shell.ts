@@ -1,9 +1,4 @@
-import type {
-  App,
-  Editor,
-  TAbstractFile,
-  WorkspaceLeaf,
-} from "obsidian";
+import type { App, Editor, TAbstractFile, WorkspaceLeaf } from "obsidian";
 import { MarkdownView, TFile } from "obsidian";
 import type { Commands } from "obsidian-typings";
 import {
@@ -135,13 +130,19 @@ export class ObsidianAppShell {
       // 意図: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
       // path ベース書き込みだと adapter.write へ落ちて変更イベントを取りこぼす。
       // insertTextAfter は TFile を受け取っているため、常に vault.modify を使う。
-      await this.modifyVaultFile(file, joinWithSingleBoundaryNewline(content, text));
+      await this.modifyVaultFile(
+        file,
+        joinWithSingleBoundaryNewline(content, text),
+      );
       return;
     }
 
     const index = content.indexOf(after);
     if (index === -1) {
-      await this.modifyVaultFile(file, joinWithSingleBoundaryNewline(content, text));
+      await this.modifyVaultFile(
+        file,
+        joinWithSingleBoundaryNewline(content, text),
+      );
       return;
     }
 

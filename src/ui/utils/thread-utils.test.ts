@@ -1,6 +1,6 @@
 import moment from "moment";
-import type { Post } from "src/ui/types";
 import type { MemoRecord } from "src/db/mfdi-db";
+import type { Post } from "src/ui/types";
 import {
   countVisibleRootPosts,
   createThreadId,

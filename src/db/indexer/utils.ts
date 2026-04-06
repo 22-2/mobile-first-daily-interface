@@ -20,7 +20,7 @@ export function normalizeTopics(topics: Topic[]): Topic[] {
   return [...map.values()];
 }
 
-export function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
+function isSameTarget(a: ScanTarget, b: ScanTarget): boolean {
   return (
     a.path === b.path &&
     a.topicId === b.topicId &&
@@ -89,13 +89,13 @@ export async function toScannableNote(
   };
 }
 
-export function generateBatchId(): string {
+function generateBatchId(): string {
   return crypto.randomUUID
     ? crypto.randomUUID()
     : `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function estimateBytes(notes: ScannableNote[]): number {
+function estimateBytes(notes: ScannableNote[]): number {
   try {
     const enc = new TextEncoder();
     return notes.reduce((sum, n) => sum + enc.encode(n.content).length, 0);

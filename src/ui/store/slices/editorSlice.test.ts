@@ -19,13 +19,15 @@ type MockEditorHandle = {
   focus: ReturnType<typeof vi.fn>;
 };
 
-function createMockStorage(initialValues: Record<string, unknown> = {}): MockStorageHandle {
+function createMockStorage(
+  initialValues: Record<string, unknown> = {},
+): MockStorageHandle {
   const values = new Map<string, unknown>(Object.entries(initialValues));
 
-  const set = vi.fn(<T,>(key: string, value: T) => {
+  const set = vi.fn(<T>(key: string, value: T) => {
     values.set(key, value);
   });
-  const get = vi.fn(<T,>(key: string, defaultValue: T): T => {
+  const get = vi.fn(<T>(key: string, defaultValue: T): T => {
     return values.has(key) ? (values.get(key) as T) : defaultValue;
   });
   const remove = vi.fn((key: string) => {
@@ -144,8 +146,12 @@ describe("editorSlice", () => {
     expect(restoredPost?.path).toBe(post.path);
     expect(restoredPost?.message).toBe(post.message);
     expect(restoredPost?.metadata).toEqual(post.metadata);
-    expect(restoredPost?.timestamp.toISOString()).toBe(post.timestamp.toISOString());
-    expect(restoredPost?.noteDate.toISOString()).toBe(post.noteDate.toISOString());
+    expect(restoredPost?.timestamp.toISOString()).toBe(
+      post.timestamp.toISOString(),
+    );
+    expect(restoredPost?.noteDate.toISOString()).toBe(
+      post.noteDate.toISOString(),
+    );
     expect(store.getState().editingPostOffset).toBe(post.startOffset);
   });
 });

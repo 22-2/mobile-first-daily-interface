@@ -1,8 +1,8 @@
 import { unpatchToggleSourceCommand } from "@22-2/obsidian-magical-editor";
 import type { WorkspaceLeaf } from "obsidian";
 import { Plugin } from "obsidian";
-import { activateBuiltins } from "src/core/builtin-registry";
 import type { BuiltinMainContext } from "src/core/builtin-registry";
+import { activateBuiltins } from "src/core/builtin-registry";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
 import { WorkerClient } from "src/db/worker-client";

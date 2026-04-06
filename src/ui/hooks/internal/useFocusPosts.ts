@@ -1,15 +1,15 @@
-import useSWR from "swr";
 import { useMemo } from "react";
+import { normalizeFixedNotePath } from "src/core/fixed-note";
 import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
-import { normalizeFixedNotePath } from "src/core/fixed-note";
-import { useAppContext } from "src/ui/context/AppContext";
 import { WorkerClient } from "src/db/worker-client";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { memoRecordToPost } from "src/ui/utils/thread-utils";
-import { useShallow } from "zustand/shallow";
-import type { Post } from "src/ui/types";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useSettingsStore } from "src/ui/store/settingsStore";
+import type { Post } from "src/ui/types";
+import { memoRecordToPost } from "src/ui/utils/thread-utils";
+import useSWR from "swr";
+import { useShallow } from "zustand/shallow";
 
 function isThreadRootMetadata(metadata: Record<string, string>): boolean {
   const threadId = metadata.mfdiId;
@@ -79,7 +79,12 @@ export const useFocusPosts = () => {
 
   const effectiveTopic = isFixedMode ? undefined : activeTopic;
 
-  const { data: posts, mutate, isValidating, error } = useSWR<Post[]>(
+  const {
+    data: posts,
+    mutate,
+    isValidating,
+    error,
+  } = useSWR<Post[]>(
     [
       "posts",
       "focus",
@@ -117,10 +122,16 @@ export const useFocusPosts = () => {
             return true;
           })
           .map((entry) => {
-            const timestamp = resolveTimestamp(entry.time, date, entry.metadata);
+            const timestamp = resolveTimestamp(
+              entry.time,
+              date,
+              entry.metadata,
+            );
 
             return {
-              id: entry.metadata.mfdiId ?? `${normalizedFixedPath}:${entry.startOffset}`,
+              id:
+                entry.metadata.mfdiId ??
+                `${normalizedFixedPath}:${entry.startOffset}`,
               threadRootId:
                 entry.metadata.parentId ?? entry.metadata.mfdiId ?? null,
               timestamp,
@@ -147,13 +158,16 @@ export const useFocusPosts = () => {
       });
 
       return records.map(memoRecordToPost);
-    }
+    },
   );
 
-  return useMemo(() => ({
-    posts: posts ?? [],
-    mutate,
-    isLoading: !posts && !error,
-    isValidating,
-  }), [posts, mutate, error, isValidating]);
+  return useMemo(
+    () => ({
+      posts: posts ?? [],
+      mutate,
+      isLoading: !posts && !error,
+      isValidating,
+    }),
+    [posts, mutate, error, isValidating],
+  );
 };

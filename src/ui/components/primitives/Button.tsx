@@ -4,7 +4,7 @@ import { cn } from "src/ui/components/primitives/utils";
 
 // Button: Tailwind ベースのシンプルなボタンコンポーネント。
 // 目的: 既存 Chakra Button の代替として見た目を整えつつ、Props の互換を保つ。
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "ghost" | "default" | "accent";
   size?: "sm" | "md" | "lg";
   className?: string;

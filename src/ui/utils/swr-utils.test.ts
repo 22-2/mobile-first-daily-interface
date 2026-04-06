@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { unstable_serialize as serializeKey } from "swr";
-import useSWR from "swr";
-import { unstable_serialize as serializeInfiniteKey } from "swr/infinite";
-import useSWRInfinite from "swr/infinite";
-import { describe, expect, it, vi } from "vitest";
 import { isPostsKey, refreshAllPosts } from "src/ui/utils/swr-utils";
+import useSWR, { unstable_serialize as serializeKey } from "swr";
+import useSWRInfinite, {
+  unstable_serialize as serializeInfiniteKey,
+} from "swr/infinite";
+import { describe, expect, it, vi } from "vitest";
 
 describe("isPostsKey", () => {
   it("元の配列キーを posts 系として判定する", () => {
-    expect(isPostsKey(["posts", "focus", "topic-a"])) .toBe(true);
-    expect(isPostsKey(["calendar", "2026-03-15"])) .toBe(false);
+    expect(isPostsKey(["posts", "focus", "topic-a"])).toBe(true);
+    expect(isPostsKey(["calendar", "2026-03-15"])).toBe(false);
   });
 
   it("useSWR のシリアライズ済みキーを posts 系として判定する", () => {
@@ -28,15 +28,17 @@ describe("isPostsKey", () => {
   });
 
   it("useSWRInfinite の親キーを posts 系として判定する", () => {
-    const serializedKey = serializeInfiniteKey((pageIndex, previousPageData) => [
-      "posts",
-      "topic-a",
-      "timeline",
-      "2026-03-15",
-      "",
-      false,
-      pageIndex === 0 ? null : previousPageData,
-    ]);
+    const serializedKey = serializeInfiniteKey(
+      (pageIndex, previousPageData) => [
+        "posts",
+        "topic-a",
+        "timeline",
+        "2026-03-15",
+        "",
+        false,
+        pageIndex === 0 ? null : previousPageData,
+      ],
+    );
 
     expect(isPostsKey(serializedKey)).toBe(true);
   });

@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type ImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
+type ImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   className?: string;
 };
 

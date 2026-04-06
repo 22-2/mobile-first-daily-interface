@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo } from "react";
-import useSWRInfinite from "swr/infinite";
+import { WorkerClient } from "src/db/worker-client";
 import type { TimelinePostsPage } from "src/ui/hooks/internal/timelinePosts";
 import {
   resolveTimelineBaseDate,
   resolveTimelineCacheBucket,
 } from "src/ui/hooks/internal/timelinePosts";
-import { WorkerClient } from "src/db/worker-client";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { refreshAllPosts } from "src/ui/utils/swr-utils";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { refreshAllPosts } from "src/ui/utils/swr-utils";
+import useSWRInfinite from "swr/infinite";
 import { useShallow } from "zustand/shallow";
 
 const PAGE_SIZE_DAYS = 14;
@@ -19,15 +19,16 @@ const PAGE_SIZE_DAYS = 14;
  * タイムラインモード（無限スクロール）のデータ取得と管理を担当するHook。
  */
 export const useInfiniteTimeline = () => {
-  const { activeTopic, displayMode, date, searchQuery, threadOnly } = useSettingsStore(
-    useShallow((s) => ({
-      activeTopic: s.activeTopic,
-      displayMode: s.displayMode,
-      date: s.date,
-      searchQuery: s.searchQuery,
-      threadOnly: s.threadOnly,
-    })),
-  );
+  const { activeTopic, displayMode, date, searchQuery, threadOnly } =
+    useSettingsStore(
+      useShallow((s) => ({
+        activeTopic: s.activeTopic,
+        displayMode: s.displayMode,
+        date: s.date,
+        searchQuery: s.searchQuery,
+        threadOnly: s.threadOnly,
+      })),
+    );
   const timelineDayKey = date.format("YYYY-MM-DD");
   // Determine whether DB fetches should run for the timeline view.
   // Use the view-mode check at runtime inside timers to avoid TDZ/closure
@@ -42,7 +43,10 @@ export const useInfiniteTimeline = () => {
     // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
     const timer = window.setInterval(() => {
       // タイムライン非表示中、またはウィンドウがフォーカスされていない場合は何もしない
-      if (!isTimelineView(displayMode) || !(typeof activeDocument !== "undefined" && activeDocument.hasFocus())) {
+      if (
+        !isTimelineView(displayMode) ||
+        !(typeof activeDocument !== "undefined" && activeDocument.hasFocus())
+      ) {
         return;
       }
 
@@ -90,7 +94,10 @@ export const useInfiniteTimeline = () => {
       const pageParam =
         pageIndex === 0
           ? null
-          : previousPageData!.lastSearchedDate.clone().subtract(1, "day").format();
+          : previousPageData!.lastSearchedDate
+              .clone()
+              .subtract(1, "day")
+              .format();
 
       return [
         "posts",
@@ -177,14 +184,24 @@ export const useInfiniteTimeline = () => {
     if (hasNextPage && !isValidating) setSize(size + 1);
   }, [hasNextPage, isValidating, size, setSize]);
 
-  return useMemo(() => ({
-    allPosts,
-    loadMore,
-    hasMore: hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isValidating,
-  }), [allPosts, loadMore, hasNextPage, isFetchingNextPage, isLoading, isValidating]);
+  return useMemo(
+    () => ({
+      allPosts,
+      loadMore,
+      hasMore: hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      isValidating,
+    }),
+    [
+      allPosts,
+      loadMore,
+      hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      isValidating,
+    ],
+  );
 };
 
 export { resolveTimelineCacheBucket };

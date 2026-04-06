@@ -47,8 +47,6 @@ vi.mock("src/core/note-source", () => ({
   getPeriodicNoteDate: vi.fn(),
 }));
 
-
-
 describe("MiniCalendar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,9 +68,7 @@ describe("MiniCalendar", () => {
       activeTopic: "",
     });
 
-    const { getByText } = render(
-      <MiniCalendar />,
-    );
+    const { getByText } = render(<MiniCalendar />);
     expect(getByText("2026年")).toBeDefined();
     expect(getByText("3月")).toBeDefined();
   });
@@ -88,9 +84,7 @@ describe("MiniCalendar", () => {
     // In MiniCalendar, posts are just used to show dots (activityDates)
     // The range calculation is internal to calcSelectedRange and buildWeeksInMonth
 
-    const { getByText, getAllByText } = render(
-      <MiniCalendar />,
-    );
+    const { getByText, getAllByText } = render(<MiniCalendar />);
     // 3/9 itself should have the selected day class (accent color)
     // 3/3 to 3/8 should be in the selected range (active hover bg)
     // We'll just ensure it renders and doesn't crash, the UI checks are handled by Chakra styles
@@ -112,9 +106,7 @@ describe("MiniCalendar", () => {
       activeTopic: "",
     });
 
-    const { container } = render(
-      <MiniCalendar />,
-    );
+    const { container } = render(<MiniCalendar />);
     const dayCell = container.querySelector(".mini-calendar__day-cell");
 
     expect(dayCell).toBeTruthy();

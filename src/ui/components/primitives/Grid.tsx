@@ -1,13 +1,13 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type GridProps = React.HTMLAttributes<HTMLDivElement> & {
+type GridProps = React.HTMLAttributes<HTMLDivElement> & {
   cols?: number;
   gap?: string | number;
   className?: string;
 };
 
-export const Grid = ({
+const Grid = ({
   cols = 2,
   gap = "0.5rem",
   className,

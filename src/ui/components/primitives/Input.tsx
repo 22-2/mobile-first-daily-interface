@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // Input: Tailwind ベースのシンプルな input コンポーネント。
-export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   className?: string;
 };
 

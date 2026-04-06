@@ -1,4 +1,3 @@
-import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { Menu, Notice } from "obsidian";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
@@ -7,18 +6,18 @@ import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MomentLike, Post } from "src/ui/types";
 import { getRawTagMetadata } from "src/ui/utils/post-metadata";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
+import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
 import { cn } from "../primitives/utils";
 
@@ -46,12 +45,7 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { 
-    posts: allPosts, 
-    loadMore, 
-    hasMore, 
-    isLoading 
-  } = useUnifiedPosts();
+  const { posts: allPosts, loadMore, hasMore, isLoading } = useUnifiedPosts();
 
   const {
     editingPostOffset,

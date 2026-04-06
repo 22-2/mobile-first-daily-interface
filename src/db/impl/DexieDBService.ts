@@ -46,7 +46,6 @@ export class DexieDBService implements IDBService {
     this.channel?.postMessage({ type: "mfdi-db-updated", detail });
   }
 
-
   async scanAllNotes(notes: ScannableNote[]): Promise<void> {
     return this.enqueue(async () => {
       if (!this.db || !this.memoRepo || !this.tagStatsRepo)

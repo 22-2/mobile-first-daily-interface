@@ -4,8 +4,12 @@ import { usePostsStore } from "src/ui/store/postsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
+import {
+  formatFixedNoteLabel,
+  formatLabel,
+  getVisibleRootCount,
+} from "./helper";
 import { useDbTotalCount, useSettings, useTotalCount } from "./hooks";
-import { getVisibleRootCount, formatFixedNoteLabel, formatLabel } from "./helper";
 
 export const ResultCount: FC = () => {
   const settings = useSettings();

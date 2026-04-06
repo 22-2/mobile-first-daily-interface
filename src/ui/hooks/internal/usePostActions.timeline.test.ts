@@ -11,7 +11,6 @@ import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
@@ -277,9 +276,7 @@ describe("timeline note resolution", () => {
     });
 
     expect(editorStore.getState().getInputValue()).toBe("from-snapshot");
-    expect(editorStore.getState().canSubmit([])).toBe(
-      true,
-    );
+    expect(editorStore.getState().canSubmit([])).toBe(true);
   });
 
   it("inputRef が空文字でも handleSubmit は snapshot を投稿する", async () => {
@@ -421,9 +418,7 @@ describe("timeline note resolution", () => {
     mockInsertTextAfter.mockResolvedValue(undefined);
     mockRefreshPosts.mockResolvedValue(undefined);
 
-    expect(editorStore.getState().canSubmit([])).toBe(
-      true,
-    );
+    expect(editorStore.getState().canSubmit([])).toBe(true);
 
     const { result } = renderHook(() => usePostActions());
 

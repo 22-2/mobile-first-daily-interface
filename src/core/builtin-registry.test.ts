@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
-import { activateBuiltins } from "src/core/builtin-registry";
 import type { BuiltinMainContext } from "src/core/builtin-registry";
+import { activateBuiltins } from "src/core/builtin-registry";
 import { describe, expect, it, vi } from "vitest";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
@@ -70,7 +70,10 @@ describe("builtin registry", () => {
     mocks.storageGet.mockReturnValue(null);
 
     const layoutReadyCallbacks: Array<() => void | Promise<void>> = [];
-    const vaultHandlers = new Map<string, Array<(...args: unknown[]) => void>>();
+    const vaultHandlers = new Map<
+      string,
+      Array<(...args: unknown[]) => void>
+    >();
     const metadataCacheHandlers = new Map<
       string,
       Array<(...args: unknown[]) => void>
@@ -112,7 +115,10 @@ describe("builtin registry", () => {
       },
       vault: {
         on: (event: string, callback: (...args: unknown[]) => void) => {
-          vaultHandlers.set(event, [...(vaultHandlers.get(event) ?? []), callback]);
+          vaultHandlers.set(event, [
+            ...(vaultHandlers.get(event) ?? []),
+            callback,
+          ]);
           return {};
         },
       },

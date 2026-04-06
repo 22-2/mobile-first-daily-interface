@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // Tag: Chakra互換のラベル/バッジ。size/variant/colorScheme/borderRadiusをサポート。
-export type TagProps = HTMLAttributes<HTMLSpanElement> & {
+type TagProps = HTMLAttributes<HTMLSpanElement> & {
   size?: "sm" | "md" | "lg";
   variant?: "subtle" | "solid" | "outline";
   colorScheme?: string;

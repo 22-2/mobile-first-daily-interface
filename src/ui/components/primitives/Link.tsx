@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
-export type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   className?: string;
 };
 

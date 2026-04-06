@@ -1,7 +1,7 @@
 import { Menu } from "obsidian";
 import { useEffect, useMemo, useState } from "react";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import type { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -9,15 +9,14 @@ import type { DisplayMode } from "src/ui/types";
 import { isVisible } from "src/ui/utils/post-metadata";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { type MFDINoteMode, getMFDIViewCapabilities } from "src/ui/view/state";
+import { getMFDIViewCapabilities, type MFDINoteMode } from "src/ui/view/state";
 import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
 
 export function useDbTotalCount(activeTopic: string | undefined) {
   const db = useMFDIDB();
-  const { data } = useSWR(
-    db ? ["dbTotalCount", activeTopic] : null,
-    () => db!.countMemos(activeTopic),
+  const { data } = useSWR(db ? ["dbTotalCount", activeTopic] : null, () =>
+    db!.countMemos(activeTopic),
   );
   return data;
 }
@@ -40,7 +39,7 @@ export const useGranularityMenu = () => {
     useShallow((s) => ({
       granularity: s.granularity,
       setGranularity: s.setGranularity,
-    }))
+    })),
   );
 
   return (e: React.MouseEvent) => {
@@ -64,7 +63,7 @@ export const useFilterMenu = () => {
       activeTopic: s.activeTopic,
       setTimeFilter: s.setTimeFilter,
       setDateFilter: s.setDateFilter,
-    }))
+    })),
   );
   const { setTimeFilter, setDateFilter } = state;
 
@@ -92,7 +91,7 @@ export function useSettings() {
       threadFocusRootId: s.threadFocusRootId,
       timeFilter: s.timeFilter,
       viewNoteMode: s.viewNoteMode,
-    }))
+    })),
   );
 }
 
@@ -115,7 +114,6 @@ export function useCurrentTime(enabled: boolean) {
 export function useCapabilities(viewNoteMode: MFDINoteMode) {
   return useMemo(
     () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
-    [viewNoteMode]
+    [viewNoteMode],
   );
 }
-

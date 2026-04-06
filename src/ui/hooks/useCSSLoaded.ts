@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 const TARGET_SELECTOR = '[data-type="mfdi-view"] .cm-scroller';
 
@@ -33,7 +33,7 @@ export function useCSSLoaded() {
       } else {
         raf = requestAnimationFrame(handleFrame); // ロードされてなければ次のフレームで再チェック
       }
-    }
+    };
 
     let raf = requestAnimationFrame(handleFrame);
     return () => cancelAnimationFrame(raf);

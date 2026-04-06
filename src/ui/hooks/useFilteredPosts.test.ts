@@ -119,7 +119,10 @@ describe("useFilteredPosts", () => {
       }),
     );
 
-    expect(result.current.map((post) => post.id)).toEqual(["reply-1", "root-1"]);
+    expect(result.current.map((post) => post.id)).toEqual([
+      "reply-1",
+      "root-1",
+    ]);
   });
 
   test("activeTag があるとタグ一致の投稿だけ返す", () => {

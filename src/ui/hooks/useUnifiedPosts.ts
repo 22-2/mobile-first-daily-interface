@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { useSettingsStore } from "src/ui/store/settingsStore";
-import { isTimelineView } from "src/ui/utils/view-mode";
-import { useShallow } from "zustand/shallow";
-import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
 import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
+import { useInfiniteTimeline } from "src/ui/hooks/internal/useInfiniteTimeline";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { DisplayMode } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
 import type { MFDINoteMode } from "src/ui/view/state";
+import { useShallow } from "zustand/shallow";
 
 export function shouldUseTimelineView(params: {
   displayMode: DisplayMode;
@@ -26,7 +26,7 @@ export const useUnifiedPosts = () => {
     useShallow((s) => ({
       displayMode: s.displayMode,
       viewNoteMode: s.viewNoteMode,
-    }))
+    })),
   );
 
   const timelineView = shouldUseTimelineView({ displayMode, viewNoteMode });

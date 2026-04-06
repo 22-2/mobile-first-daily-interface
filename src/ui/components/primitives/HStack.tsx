@@ -3,7 +3,7 @@ import { createElement, forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // HStack: 横並びのスタック（Tailwind クラスで表現）。埋め込み style を使わない。
-export type HStackProps<T extends ElementType = "div"> = {
+type HStackProps<T extends ElementType = "div"> = {
   as?: T;
   gap?: string | number;
   align?: "center" | "start" | "end" | string;

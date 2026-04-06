@@ -9,7 +9,7 @@ export type TimelinePostsPage = {
   lastSearchedDate: MomentLike;
 };
 
-export const TIMELINE_CACHE_INVALIDATE_MS = 3 * 60 * 1000;
+const TIMELINE_CACHE_INVALIDATE_MS = 3 * 60 * 1000;
 
 export function resolveTimelineCacheBucket(
   nowMs: number = Date.now(),
@@ -29,9 +29,7 @@ export function resolveTimelineBaseDate(
   return pageParam ? window.moment(pageParam) : getEffectiveDate().clone();
 }
 
-export function createTimelinePageFetcher({
-  db,
-}: CreateTimelinePageFetcherDeps) {
+function createTimelinePageFetcher({ db }: CreateTimelinePageFetcherDeps) {
   return async (
     topicId: string,
     baseDate: MomentLike,

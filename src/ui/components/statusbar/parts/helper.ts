@@ -13,7 +13,9 @@ export function formatLabel(
   totalSuffix: string,
   asTask: boolean,
 ) {
-  return asTask ? `${currentCount} tasks` : `${currentCount}${totalSuffix} posts`;
+  return asTask
+    ? `${currentCount} tasks`
+    : `${currentCount}${totalSuffix} posts`;
 }
 
 export function formatFixedNoteLabel(

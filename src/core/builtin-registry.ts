@@ -93,7 +93,9 @@ function setupTagIndexLifecycle(
         shouldScan = true;
       } else {
         // intervalHours が 0 の場合は、常に(起動のたびに)スキャンを実行する
-        const diffHours = window.moment().diff(window.moment(last), "hours", true);
+        const diffHours = window
+          .moment()
+          .diff(window.moment(last), "hours", true);
         shouldScan = diffHours >= intervalHours;
       }
 
@@ -230,7 +232,11 @@ export function activateBuiltins(
   registerRibbon(context);
   registerCommands(context);
 
-  setupTagIndexLifecycle(createTagIndexExtension(appId), new MFDIStorage(appId), context);
+  setupTagIndexLifecycle(
+    createTagIndexExtension(appId),
+    new MFDIStorage(appId),
+    context,
+  );
   setupFixedNoteRegistry(context);
   setupFixedNoteViewLifecycle(createFixedNoteViewExtension(), context);
 }

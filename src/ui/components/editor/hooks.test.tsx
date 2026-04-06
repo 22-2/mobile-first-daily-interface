@@ -202,9 +202,7 @@ describe("useFakeEditor", () => {
   it("snapshot が一致していても ready 後に最新 initialValue を再適用する", async () => {
     const onChange = vi.fn();
 
-    render(
-      <HookHarness initialValue="already-restored" onChange={onChange} />,
-    );
+    render(<HookHarness initialValue="already-restored" onChange={onChange} />);
 
     await act(async () => {
       await Promise.resolve();

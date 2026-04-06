@@ -8,9 +8,12 @@
   user-select: text !important;
 }
 
-:is([data-type="mfdi-view"], .magical-editor-modal-editor-area) .cm-line.cm-active {
-    background-color: var(--active-line-bg);
-    box-shadow: -25vw 0 var(--active-line-bg), 25vw 0 var(--active-line-bg);
+:is([data-type="mfdi-view"], .magical-editor-modal-editor-area)
+  .cm-line.cm-active {
+  background-color: var(--active-line-bg);
+  box-shadow:
+    -25vw 0 var(--active-line-bg),
+    25vw 0 var(--active-line-bg);
 }
 
 [data-type="mfdi-view"] .mfdi-date-input,

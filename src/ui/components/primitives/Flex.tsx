@@ -3,7 +3,7 @@ import React, { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // Flex: Tailwind クラスで表現する flex ラッパー。埋め込み style を使わない。
-export type FlexProps<T extends ElementType = "div"> = {
+type FlexProps<T extends ElementType = "div"> = {
   as?: T;
   direction?: "row" | "column" | "row-reverse" | "column-reverse";
   align?: "center" | "start" | "end" | "stretch" | "baseline" | string;

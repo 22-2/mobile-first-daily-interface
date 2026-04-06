@@ -1,8 +1,8 @@
-import { mutate } from "swr";
-import { unstable_serialize as serializeInfiniteKey } from "swr/infinite";
 import { settingsStore } from "src/ui/store/settingsStore";
 import type { DisplayMode } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { mutate } from "swr";
+import { unstable_serialize as serializeInfiniteKey } from "swr/infinite";
 
 type RefreshPostsContext = {
   activeTopic: string;
@@ -21,7 +21,8 @@ export function isPostsKey(key: string | string[]): boolean {
 }
 
 function getRefreshPostsContext(): RefreshPostsContext {
-  const { activeTopic, displayMode, date, searchQuery, threadOnly } = settingsStore.getState();
+  const { activeTopic, displayMode, date, searchQuery, threadOnly } =
+    settingsStore.getState();
   return {
     activeTopic,
     displayMode,

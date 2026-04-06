@@ -1,13 +1,12 @@
 import { TFile } from "obsidian";
 import { useEffect } from "react";
-import { mutate } from "swr";
 import { resolveNoteSource } from "src/core/note-source";
 import { useAppStore, useCurrentAppStore } from "src/ui/store/appStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { isTimelineView } from "src/ui/utils/view-mode";
 import { isPostsKey } from "src/ui/utils/swr-utils";
+import { mutate } from "swr";
 import { useShallow } from "zustand/shallow";
 
 export function useNoteSync() {
@@ -83,7 +82,7 @@ export function useNoteSync() {
       }
 
       // 削除時のポスト更新も Worker からの通知に任せる。
-      
+
       if (file.path !== currentDailyNote?.path) return;
       setDate(date.clone());
       setTasks([]);

@@ -3,7 +3,7 @@ import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { resolveTimestamp, toText } from "src/core/post-utils";
-import { TAG_METADATA_KEY, serializeMfdiTags } from "src/core/tags";
+import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
 import { parseThinoEntries } from "src/core/thino";
 import { useAppContext } from "src/ui/context/AppContext";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
@@ -14,10 +14,10 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
 import {
-  THREAD_METADATA_KEYS,
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
+  THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
@@ -121,10 +121,7 @@ export const usePostActions = () => {
 
   /** 投稿が見つからなかった場合にNoticeを表示しリフレッシュする */
   const notifyNotFoundAndRefresh = useCallback(
-    async (
-      path: string,
-      message = "投稿の位置を再特定できませんでした",
-    ) => {
+    async (path: string, message = "投稿の位置を再特定できませんでした") => {
       new Notice(message);
       await refreshPosts(path);
     },
@@ -247,7 +244,12 @@ export const usePostActions = () => {
           post.noteDate,
           { ...post.metadata, ...buildMetadata(post) },
         );
-        await shell.replaceRange(post.path, post.startOffset, post.endOffset, text);
+        await shell.replaceRange(
+          post.path,
+          post.startOffset,
+          post.endOffset,
+          text,
+        );
       }
 
       if (
@@ -465,7 +467,10 @@ export const usePostActions = () => {
       await refreshPosts(note.path);
 
       // フォーカスモードでは、投稿後に基準日を「いま」に同期する。
-      if (settingsState.viewNoteMode === "periodic" && settingsState.displayMode === "focus") {
+      if (
+        settingsState.viewNoteMode === "periodic" &&
+        settingsState.displayMode === "focus"
+      ) {
         settingsState.setDate(window.moment());
       }
 
@@ -499,7 +504,8 @@ export const usePostActions = () => {
     const currentInput = editorState.getInputValue();
 
     if (editorState.editingPost) return handleEditSubmit(currentInput);
-    if (settingsState.threadFocusRootId) return handleThreadReplySubmit(currentInput);
+    if (settingsState.threadFocusRootId)
+      return handleThreadReplySubmit(currentInput);
     return handleNewPostSubmit(currentInput);
   }, [
     allPosts,

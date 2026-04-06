@@ -3,7 +3,7 @@ import React, { forwardRef } from "react";
 import { cn } from "src/ui/components/primitives/utils";
 
 // VStack: 縦並びのスタック。Chakra互換APIでgap/align/justifyをサポート。
-export type VStackProps<T extends ElementType = "div"> = {
+type VStackProps<T extends ElementType = "div"> = {
   as?: T;
   gap?: string | number;
   align?: "center" | "start" | "end" | "stretch" | string;
