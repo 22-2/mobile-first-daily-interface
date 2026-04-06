@@ -2,6 +2,7 @@ import type { MFDIStorage } from "src/core/storage";
 import type { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { createAppStore } from "src/ui/store/appStore";
+import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { Post } from "src/ui/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -102,7 +103,7 @@ describe("editorSlice", () => {
     const store = createAppStore();
     const persistedInput = "restored draft";
     const { storage, set: setStorage } = createMockStorage({
-      [STORAGE_KEYS.INPUT]: persistedInput,
+      [STORAGE_KEYS.INPUT_PERIODIC]: persistedInput,
     });
     const { inputRef, setContent } = createMockEditor("");
 
@@ -120,14 +121,17 @@ describe("editorSlice", () => {
     vi.runAllTimers();
 
     expect(setContent).toHaveBeenCalledWith(persistedInput);
-    expect(setStorage).toHaveBeenCalledWith(STORAGE_KEYS.INPUT, persistedInput);
+    expect(setStorage).toHaveBeenCalledWith(
+      STORAGE_KEYS.INPUT_PERIODIC,
+      persistedInput,
+    );
   });
 
   it("hydrateEditorState は編集中投稿の復元情報も再構築する", () => {
     const store = createAppStore();
     const post = buildPostFixture("editing draft");
     const { storage } = createMockStorage({
-      [STORAGE_KEYS.INPUT]: post.message,
+      [STORAGE_KEYS.INPUT_PERIODIC]: post.message,
       [STORAGE_KEYS.EDITING_POST_OFFSET]: post.startOffset,
       [STORAGE_KEYS.EDITING_POST_ID]: post.id,
       [STORAGE_KEYS.EDITING_POST_PATH]: post.path,
@@ -153,5 +157,70 @@ describe("editorSlice", () => {
       post.noteDate.toISOString(),
     );
     expect(store.getState().editingPostOffset).toBe(post.startOffset);
+  });
+
+  it("view切替時にperiodic/fixedで入力復元を分離する", () => {
+    const fixedPathA = "MFDI/a.mfdi.md";
+    const store = createAppStore();
+    const { storage, set: setStorage } = createMockStorage({
+      [STORAGE_KEYS.INPUT_PERIODIC]: "periodic draft",
+      [getInputStorageKey("fixed", fixedPathA)]: "fixed draft",
+    });
+    const { inputRef, setContent } = createMockEditor("");
+
+    store.setState({
+      storage,
+      inputRef,
+      viewNoteMode: "periodic",
+      inputSnapshot: "periodic in-memory",
+    });
+
+    store
+      .getState()
+      .setViewContext({ noteMode: "fixed", fixedNotePath: fixedPathA });
+
+    expect(store.getState().viewNoteMode).toBe("fixed");
+    expect(store.getState().inputSnapshot).toBe("fixed draft");
+    expect(setContent).toHaveBeenLastCalledWith("fixed draft");
+    expect(setStorage).toHaveBeenCalledWith(
+      getInputStorageKey("periodic", null),
+      "periodic in-memory",
+    );
+    expect(setStorage).toHaveBeenCalledWith(
+      getInputStorageKey("fixed", fixedPathA),
+      "fixed draft",
+    );
+  });
+
+  it("fixedノート間の切替で入力復元をファイル単位に分離する", () => {
+    const fixedPathA = "MFDI/a.mfdi.md";
+    const fixedPathB = "MFDI/b.mfdi.md";
+    const store = createAppStore();
+    const { storage, set: setStorage } = createMockStorage({
+      [getInputStorageKey("fixed", fixedPathA)]: "draft-a",
+      [getInputStorageKey("fixed", fixedPathB)]: "draft-b",
+    });
+    const { inputRef, setContent } = createMockEditor("");
+
+    store.setState({
+      storage,
+      inputRef,
+      viewNoteMode: "fixed",
+      fixedNotePath: fixedPathA,
+      inputSnapshot: "draft-a-modified",
+    });
+
+    store
+      .getState()
+      .setViewContext({ noteMode: "fixed", fixedNotePath: fixedPathB });
+
+    expect(store.getState().viewNoteMode).toBe("fixed");
+    expect(store.getState().fixedNotePath).toBe(fixedPathB);
+    expect(store.getState().inputSnapshot).toBe("draft-b");
+    expect(setContent).toHaveBeenLastCalledWith("draft-b");
+    expect(setStorage).toHaveBeenCalledWith(
+      getInputStorageKey("fixed", fixedPathA),
+      "draft-a-modified",
+    );
   });
 });

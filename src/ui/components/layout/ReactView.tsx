@@ -18,7 +18,6 @@ import { Box, Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
-import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import {
   ComponentContextProvider,
@@ -43,6 +42,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
+import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type {
   DateFilter,
   DisplayMode,
@@ -737,7 +737,10 @@ function useViewSync(view: MFDIView | null) {
         inputSnapshot: appState.inputSnapshot,
         editingPostMessage: appState.editingPost?.message ?? null,
         persistedInput:
-          appState.storage?.get<string>(STORAGE_KEYS.INPUT, "") ?? "",
+          appState.storage?.get<string>(
+            getInputStorageKey(appState.viewNoteMode, appState.fixedNotePath),
+            "",
+          ) ?? "",
         editorSnapshot: appState.inputRef.current?.getContentSnapshot() ?? null,
       };
     };

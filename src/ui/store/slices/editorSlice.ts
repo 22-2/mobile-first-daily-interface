@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "src/ui/config/consntants";
+import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
 
@@ -61,18 +62,21 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
 
   const persistInput = (input: string, mode: PersistMode) => {
+    const { viewNoteMode, fixedNotePath } = get();
+    const inputStorageKey = getInputStorageKey(viewNoteMode, fixedNotePath);
+
     if (inputPersistTimer !== null) {
       clearTimeout(inputPersistTimer);
       inputPersistTimer = null;
     }
 
     if (mode === "immediate") {
-      get().storage?.set(STORAGE_KEYS.INPUT, input);
+      get().storage?.set(inputStorageKey, input);
       return;
     }
 
     inputPersistTimer = setTimeout(() => {
-      get().storage?.set(STORAGE_KEYS.INPUT, input);
+      get().storage?.set(inputStorageKey, input);
       inputPersistTimer = null;
     }, 50);
   };
@@ -200,10 +204,13 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const { storage, replaceInput } = get();
+      const { storage, replaceInput, viewNoteMode, fixedNotePath } = get();
       if (!storage) return;
 
-      const persistedInput = storage.get<string>(STORAGE_KEYS.INPUT, "");
+      const persistedInput = storage.get<string>(
+        getInputStorageKey(viewNoteMode, fixedNotePath),
+        "",
+      );
       const persistedEditingOffset = storage.get<number | null>(
         STORAGE_KEYS.EDITING_POST_OFFSET,
         null,

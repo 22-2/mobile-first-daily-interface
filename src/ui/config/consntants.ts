@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   DISPLAY_MODE: "displayMode",
   AS_TASK: "asTask",
   INPUT: "input",
+  INPUT_PERIODIC: "inputPeriodic",
+  INPUT_FIXED: "inputFixed",
   EDITING_POST_GRANULARITY: "editingPostGranularity",
   EDITING_POST_OFFSET: "editingPostOffset",
   EDITING_POST_DATE: "editingPostDate",
