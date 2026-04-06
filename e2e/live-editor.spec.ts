@@ -2,6 +2,9 @@ import type { Locator, Page } from "@playwright/test";
 import path from "node:path";
 import type { ObsidianAPI } from "obsidian-e2e-toolkit";
 import { expect, test } from "obsidian-e2e-toolkit";
+import { createStorageKey, getStorageKeyPrefix } from "src/core/storage";
+import { STORAGE_KEYS } from "src/ui/config/consntants";
+import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { MFDIView } from "src/ui/view/MFDIView";
 
 const PLUGIN_PATH = path.resolve(".");
@@ -229,13 +232,40 @@ const WAIT = {
 
 /** localStorage の mfdi 入力値を検証する */
 async function expectLocalStorage(obsidian: ObsidianAPI, expected: string) {
+  const appId = await obsidian.page.evaluate(() => app.appId);
+  const periodicKey = createStorageKey(
+    appId,
+    getInputStorageKey("periodic", null),
+  );
+  const legacyKey = createStorageKey(appId, STORAGE_KEYS.INPUT);
+  const fixedPrefix = `${getStorageKeyPrefix(appId)}${STORAGE_KEYS.INPUT_FIXED}:`;
+
   await expect
     .poll(() =>
-      obsidian.page.evaluate(
-        () => localStorage.getItem(`mfdi-${app.appId}-input`),
-      ),
+      obsidian.page.evaluate(({ expected, periodicKey, legacyKey, fixedPrefix }) => {
+        const candidateValues: string[] = [];
+
+        const periodicInput = localStorage.getItem(periodicKey);
+        const legacyInput = localStorage.getItem(legacyKey);
+
+        if (typeof periodicInput === "string") candidateValues.push(periodicInput);
+        if (typeof legacyInput === "string") candidateValues.push(legacyInput);
+
+        // 意図: fixed入力はファイルパスごとのキーなので、prefix一致で横断して検証する。
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          if (!key.startsWith(fixedPrefix)) continue;
+          const value = localStorage.getItem(key);
+          if (typeof value === "string") {
+            candidateValues.push(value);
+          }
+        }
+
+        return candidateValues.some((value) => value.includes(expected));
+      }, { expected, periodicKey, legacyKey, fixedPrefix }),
     )
-    .toContain(expected);
+    .toBe(true);
 }
 
 /** ライブエディタの状態（state / DOM）を一括検証する */

@@ -1,3 +1,11 @@
+export function getStorageKeyPrefix(appId: string): string {
+  return `mfdi-${appId}-`;
+}
+
+export function createStorageKey(appId: string, key: string): string {
+  return `${getStorageKeyPrefix(appId)}${key}`;
+}
+
 export class MFDIStorage {
   private appId: string;
 
@@ -6,7 +14,7 @@ export class MFDIStorage {
   }
 
   private getKey(key: string): string {
-    return `mfdi-${this.appId}-${key}`;
+    return createStorageKey(this.appId, key);
   }
 
   set<T>(key: string, value: T): void {
