@@ -3,22 +3,21 @@ import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { resolveTimestamp, toText } from "src/core/post-utils";
-import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
+import { TAG_METADATA_KEY, serializeMfdiTags } from "src/core/tags";
 import { parseThinoEntries } from "src/core/thino";
 import { useAppContext } from "src/ui/context/AppContext";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
-import { usePostsStore } from "src/ui/store/postsStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
 import {
+  THREAD_METADATA_KEYS,
   buildPostFromEntry,
   createThreadId,
   isThreadRoot,
-  THREAD_METADATA_KEYS,
 } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { useShallow } from "zustand/shallow";
@@ -390,6 +389,7 @@ export const usePostActions = () => {
       const targetDate = settingsState.getEffectiveDate();
       const metadata: Record<string, string> = {};
 
+      // 日をまたぐ投稿には `posted` を付与（同日投稿は通常通りタイムスタンプ）
       if (
         settingsState.viewNoteMode === "fixed" ||
         !targetDate.isSame(now, "day")
@@ -404,11 +404,14 @@ export const usePostActions = () => {
         undefined,
         metadata,
       );
+
+      // テキストが空なら投稿しない（空タスクも不可）
       if (!text) {
-        editorState.clearInput();
+        new Notice("空の投稿はできません");
         return;
       }
 
+      // 投稿先ノートを解決する。固定ノートモードなら常に同じノート、そうでなければ基準日に応じたノート。
       const noteSource = resolveNoteSource({
         shell,
         date: targetDate,
@@ -419,11 +422,14 @@ export const usePostActions = () => {
       });
 
       let note = noteState.currentDailyNote;
+
+      // 固定ノートモードでない場合は、基準日に応じたノートを解決する
       if (noteSource.mode !== "fixed") {
         note = noteSource.resolveCurrentNote();
       }
 
       if (!note) {
+        // 存在しない場合はノートを作成してから再度解決する（特にタイムラインモード）
         note = await store
           .getState()
           .createNoteWithInsertAfter(
@@ -457,6 +463,11 @@ export const usePostActions = () => {
       }
 
       await refreshPosts(note.path);
+
+      // フォーカスモードでは、投稿後に基準日を「いま」に同期する。
+      if (settingsState.viewNoteMode === "periodic" && settingsState.displayMode === "focus") {
+        settingsState.setDate(window.moment());
+      }
 
       editorState.clearInput();
       editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
