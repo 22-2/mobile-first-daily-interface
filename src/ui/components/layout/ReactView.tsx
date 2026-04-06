@@ -487,15 +487,13 @@ function useViewSync(view: MFDIView | null) {
     })),
   );
 
-  const { inputSnapshot, getInputValue, replaceInput, syncInputSession } =
-    useEditorStore(
-      useShallow((state) => ({
-        inputSnapshot: state.inputSnapshot,
-        getInputValue: state.getInputValue,
-        replaceInput: state.replaceInput,
-        syncInputSession: state.syncInputSession,
-      })),
-    );
+  const { inputSnapshot, getInputValue, replaceInput } = useEditorStore(
+    useShallow((state) => ({
+      inputSnapshot: state.inputSnapshot,
+      getInputValue: state.getInputValue,
+      replaceInput: state.replaceInput,
+    })),
+  );
 
   const { handleSubmit } = usePostActions();
   const handleClickOpenDailyNote = useCallback(() => {
@@ -712,8 +710,10 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
+    // テスト用: 外部から内容を設定するため replaceInput を使う
+    // （syncInputSession はエディタ→ストア片方向専用）
     view.handlers.onSetLiveEditorContentForTesting = (content: string) => {
-      syncInputSession(content);
+      replaceInput(content);
     };
     view.handlers.onGetLiveEditorContentForTesting = () => {
       return getInputValue();
@@ -723,7 +723,7 @@ function useViewSync(view: MFDIView | null) {
       view.handlers.onSetLiveEditorContentForTesting = undefined;
       view.handlers.onGetLiveEditorContentForTesting = undefined;
     };
-  }, [view, syncInputSession, getInputValue]);
+  }, [view, replaceInput, getInputValue]);
 
   useEffect(() => {
     if (!view) return;

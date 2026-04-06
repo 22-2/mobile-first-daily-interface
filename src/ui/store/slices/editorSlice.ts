@@ -17,7 +17,6 @@ type PersistMode = "debounced" | "immediate";
 
 type UpdateSessionInputOptions = {
   updateEditor?: boolean;
-  syncEditorIfStale?: boolean;
   persistMode?: PersistMode;
 };
 
@@ -82,28 +81,18 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     input: string,
     options: UpdateSessionInputOptions = {},
   ) => {
-    const {
-      updateEditor,
-      syncEditorIfStale,
-      persistMode = "debounced",
-    } = options;
+    const { updateEditor, persistMode = "debounced" } = options;
 
     set({ inputSnapshot: input });
     persistInput(input, persistMode);
 
-    // React の state だけでなく live editor も更新しないと内容が同期されない
-    const inputRef = get().inputRef.current;
-
+    // updateEditor: 外部から内容を差し替える場合のみ live editor を同期する。
+    // エディタの onChange 由来（syncInputSession）では呼ばない。
+    // エディタは既に最新値を持っており、setContent を呼び返すと
+    // getContentSnapshot のタイミング差で onChange→setContent→onChange… の
+    // 再帰サイクルが生じ、入力フリーズの原因になるため。
     if (updateEditor) {
-      inputRef?.setContent(input);
-      return;
-    }
-
-    if (syncEditorIfStale && inputRef) {
-      const editorSnapshot = inputRef.getContentSnapshot();
-      if (editorSnapshot !== input) {
-        inputRef.setContent(input);
-      }
+      get().inputRef.current?.setContent(input);
     }
   };
 
@@ -117,7 +106,6 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     syncInputSession: (input) => {
       updateSessionInput(input, {
         persistMode: "debounced",
-        syncEditorIfStale: true,
       });
     },
 
@@ -212,7 +200,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const { storage, syncInputSession } = get();
+      const { storage, replaceInput } = get();
       if (!storage) return;
 
       const persistedInput = storage.get<string>(STORAGE_KEYS.INPUT, "");
@@ -266,7 +254,9 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       }));
 
       // ストレージから復元した内容で live editor も同期する
-      setTimeout(() => syncInputSession(persistedInput));
+      // replaceInput を使い、エディタへ直接 setContent する（syncInputSession は
+      // エディタ→ストアの片方向専用のため）
+      setTimeout(() => replaceInput(persistedInput));
     },
   };
 };
