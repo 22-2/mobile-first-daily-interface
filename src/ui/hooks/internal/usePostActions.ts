@@ -464,6 +464,10 @@ export const usePostActions = () => {
         settingsState.setDate(targetDate.clone());
       }
 
+
+      editorState.clearInput();
+      shell.trigger("mfdi:scroll-to-top");
+
       await refreshPosts(note.path);
 
       // フォーカスモードでは、投稿後に基準日を「いま」に同期する。
@@ -474,8 +478,6 @@ export const usePostActions = () => {
         settingsState.setDate(window.moment());
       }
 
-      editorState.clearInput();
-      editorState.scrollContainerRef.current?.scrollTo({ top: 0 });
     },
     [
       shell,

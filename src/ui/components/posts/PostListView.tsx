@@ -20,12 +20,14 @@ import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
 import { cn } from "../primitives/utils";
+import { useAppContext } from "src/ui/context/AppContext";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }
   | { type: "divider"; date: MomentLike; key: string };
 
 export const PostListView: React.FC = memo(() => {
+  const { shell } = useAppContext();
   const { showTextInput, confirmDeleteAction } = useObsidianUi();
   const settings = useSettingsStore(
     useShallow((s) => ({
@@ -330,6 +332,13 @@ export const PostListView: React.FC = memo(() => {
     }
   }, [allPosts, editingPostOffset, editingPost, setEditingPost]);
 
+  useEffect(() => {
+    shell.on("mfdi:scroll-to-top", scrollToTop);
+    return () => {
+      shell.off("mfdi:scroll-to-top", scrollToTop);
+    };
+  }, []);
+
   // 無限スクロールのトリガー (初期読み込みなどでリストが空の場合のケア)
   useEffect(() => {
     if (threadView) return;
@@ -389,7 +398,7 @@ export const PostListView: React.FC = memo(() => {
           "up-button fixed",
           settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8",
         )}
-        onClick={scrollToTop}
+        onClick={() => shell.trigger("mfdi:scroll-to-top")}
         visible={showScrollTop}
       >
         <ObsidianIcon

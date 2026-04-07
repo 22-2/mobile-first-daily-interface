@@ -44,6 +44,28 @@ export class ObsidianAppShell {
     return this.unsafeApp.workspace;
   }
 
+  trigger(eventName: string, ...args: unknown[]) {
+    this.getWorkspace().trigger(eventName, ...args);
+  }
+
+  on(
+    eventName: string,
+    callback: (this: WorkspaceLeaf, ...args: unknown[]) => void,
+  ) {
+    const w = this.getWorkspace();
+    // @ts-expect-error
+    w.on(eventName, callback.bind(w));
+  }
+
+  off(
+    eventName: string,
+    callback: (this: WorkspaceLeaf, ...args: unknown[]) => void,
+  ) {
+    const w = this.getWorkspace();
+    // @ts-expect-error
+    w.off(eventName, callback.bind(w));
+  }
+
   getMetadataCache() {
     return this.unsafeApp.metadataCache;
   }
