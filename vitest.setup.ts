@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-
+import moment from "moment";
 // Ensure tests run in a consistent timezone across environments.
 // Using 'Asia/Tokyo' preserves existing expectations in tests that
 // assert formatted local times (e.g. 16:00:00 JST).
@@ -7,15 +7,16 @@ process.env.TZ = "Asia/Tokyo";
 
 import { afterEach, beforeEach, vi } from "vitest";
 
+const windowAny = window as any;
+windowAny.moment = moment;
+
 // Load moment after TZ is set so it picks up the intended timezone.
-const momentModule = await import("moment");
-const moment = (momentModule as any).default ?? momentModule;
-(window as any).moment = moment;
-(window as any).activeDocument = document;
+windowAny.moment = moment;
+windowAny.activeDocument = document;
 
 // Provide a minimal Worker stub for the test environment so imports
 // that rely on `Worker` (e.g. Vite inline workers) don't throw in Node/JSDOM.
-if (typeof (globalThis as any).Worker === "undefined") {
+if (windowAny.Worker === "undefined") {
   class TestWorker {
     onmessage: ((e: any) => void) | null = null;
     onerror: ((e: any) => void) | null = null;
@@ -25,7 +26,7 @@ if (typeof (globalThis as any).Worker === "undefined") {
     removeEventListener(_type: string, _listener: any) {}
     terminate() {}
   }
-  (globalThis as any).Worker = TestWorker as any;
+  windowAny.Worker = TestWorker as any;
 }
 
 // Default fake timers + deterministic system time for most tests.
@@ -39,8 +40,3 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
 });
-
-if (typeof globalThis.structuredClone === "undefined") {
-  globalThis.structuredClone = <T>(value: T): T =>
-    JSON.parse(JSON.stringify(value)) as T;
-}

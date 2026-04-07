@@ -23,7 +23,11 @@ vi.mock("src/ui/components/editor/hooks", () => ({
   useFakeEditor: vi.fn(
     (_containerRef: unknown, options: { onChange: (text: string) => void }) => {
       editorState.onChange = options.onChange;
-      return { current: editorState.api };
+      // 実 hook の返り値契約に合わせ、component 側が editorRef/isSyncingRef を安全に参照できるようにする。
+      return {
+        editorRef: { current: editorState.api },
+        isSyncingRef: { current: false },
+      };
     },
   ),
 }));
