@@ -76,11 +76,20 @@ interface UseFakeEditorOptions {
   onSubmit?: () => void;
 }
 
+export interface UseFakeEditorResult {
+  editorRef: React.RefObject<FakeEditor | null>;
+  /** true の間は setContent 由来の onChange エコーバックを抑止する */
+  isSyncingRef: React.RefObject<boolean>;
+}
+
 export function useFakeEditor(
   containerRef: React.RefObject<HTMLDivElement | null>,
   options: UseFakeEditorOptions,
-) {
+): UseFakeEditorResult {
   const editorRef = useRef<FakeEditor | null>(null);
+  // setContent → CodeMirror dispatch → onChange が同期発火するため、
+  // プログラム的な setContent 中は onChange を抑止して再帰サイクルを防ぐ。
+  const isSyncingRef = useRef(false);
   const optionsRef = useLatestRef(options);
 
   const composition = useCompositionGuard({
@@ -107,7 +116,13 @@ export function useFakeEditor(
 
       const editor = new FakeEditor(app, {
         onChange: (text: string) => {
-          if (active && isEditorReady) composition.handleChange(text);
+          // isSyncingRef: プログラム的な setContent 由来のエコーを破棄する。
+          // FakeEditor の setContent → editor.setValue → CM6 dispatch で
+          // onChange が同期発火するため、ガード無しだと
+          // onChange → syncInputSession → set() → re-render → useEffect → setContent
+          // の再帰サイクルが散発的に発生し入力フリーズを引き起こす。
+          if (active && isEditorReady && !isSyncingRef.current)
+            composition.handleChange(text);
         },
         onEnter: (_editor: unknown, mod: boolean, shift: boolean) => {
           if (mod && !shift) {
@@ -140,7 +155,9 @@ export function useFakeEditor(
       const latestInitialValue = optionsRef.current.initialValue ?? "";
       // 非同期初期化中は internal snapshot だけ先に進み、DOM が空のまま残ることがある。
       // ready 後に最新値を必ず再投入して、見た目と snapshot を同じソースへ揃える。
+      isSyncingRef.current = true;
       editor.setContent(latestInitialValue);
+      isSyncingRef.current = false;
       isEditorReady = true;
 
       const editorContainer = editor.view?.containerEl;
@@ -182,5 +199,5 @@ export function useFakeEditor(
     };
   }, []); // Intentionally empty: editor is initialized once per mount.
 
-  return editorRef;
+  return { editorRef, isSyncingRef };
 }

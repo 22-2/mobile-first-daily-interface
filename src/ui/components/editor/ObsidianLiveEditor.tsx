@@ -64,7 +64,7 @@ export const ObsidianLiveEditor = forwardRef<
       [onChange],
     );
 
-    const editorRef = useFakeEditor(containerRef, {
+    const { editorRef, isSyncingRef } = useFakeEditor(containerRef, {
       app,
       leaf,
       initialValue,
@@ -82,7 +82,12 @@ export const ObsidianLiveEditor = forwardRef<
       getContentSnapshot: () => editorRef.current?.getContentSnapshot() ?? "",
       subscribeContent: (listener) =>
         editorRef.current?.subscribeContent(listener) ?? (() => {}),
-      setContent: (text) => editorRef.current?.setContent(text),
+      setContent: (text) => {
+        // プログラム的 setContent 中は onChange エコーを抑止する
+        isSyncingRef.current = true;
+        editorRef.current?.setContent(text);
+        isSyncingRef.current = false;
+      },
     }));
 
     // Sync read-only state after mount
@@ -106,7 +111,9 @@ export const ObsidianLiveEditor = forwardRef<
       if (editor.getContentSnapshot() !== initialValue) {
         // 意図: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
         // editor 由来の更新は除外し、外部同期だけを反映してカーソル巻き戻りを防ぐ。
+        isSyncingRef.current = true;
         editor.setContent(initialValue);
+        isSyncingRef.current = false;
         lastEditorChangeRef.current = initialValue;
       }
     }, [initialValue]);
