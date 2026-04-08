@@ -132,6 +132,7 @@ describe("timeline note resolution", () => {
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: vi.fn(),
         loadFile: vi.fn(async () => ""),
@@ -497,6 +498,7 @@ describe("timeline note resolution", () => {
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -556,6 +558,7 @@ note header
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => shiftedContent),
@@ -618,6 +621,7 @@ note header
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -734,6 +738,7 @@ note header
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => content),
@@ -809,6 +814,7 @@ prefix
       app: mockApp,
       shell: {
         ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: vi.fn(async () => shiftedContent),
@@ -882,7 +888,8 @@ prefix
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       shell: {
-        ...mockApp,
+          ...mockApp,
+          trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,
@@ -965,7 +972,8 @@ prefix
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       shell: {
-        ...mockApp,
+          ...mockApp,
+          trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,
