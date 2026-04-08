@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { excludeWikiLink } from "src/core/strings";
 import type { Task } from "src/core/task-text";
-import { BaseCard } from "src/ui/components/BaseCard";
+import { CardContent } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
 import { Box, Checkbox, HStack } from "src/ui/components/primitives";
@@ -26,7 +26,7 @@ export const TaskView = memo(
   }) => {
     return (
       <Card>
-        <BaseCard
+        <CardContent
           timestamp={task.timestamp}
           granularity={granularity}
           isDimmed={disabled}
@@ -46,7 +46,7 @@ export const TaskView = memo(
               <ObsidianMarkdown content={excludeWikiLink(task.name)} />
             </Box>
           </HStack>
-        </BaseCard>
+        </CardContent>
       </Card>
     );
   },

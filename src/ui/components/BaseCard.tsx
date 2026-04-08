@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Flex, HStack, Spacer, Tag } from "src/ui/components/primitives";
+import { Box, Flex, HStack, Tag } from "src/ui/components/primitives";
 import {
   DISPLAY_DATE_TIME_FORMAT,
   DISPLAY_TIME_FORMAT,
@@ -11,7 +11,6 @@ interface BaseCardProps {
   timestamp: MomentLike;
   granularity: Granularity;
   dateFilter?: DateFilter;
-  showFullTimestamp?: boolean;
   isDimmed: boolean;
   onContextMenu?: (e: React.MouseEvent) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
@@ -20,11 +19,10 @@ interface BaseCardProps {
   footerRightAddon?: React.ReactNode;
 }
 
-export const BaseCard: React.FC<BaseCardProps> = ({
+export const CardContent: React.FC<BaseCardProps> = ({
   timestamp,
   granularity,
   dateFilter,
-  showFullTimestamp = false,
   isDimmed,
   onContextMenu,
   onDoubleClick,
@@ -70,6 +68,15 @@ export const BaseCard: React.FC<BaseCardProps> = ({
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
+
+      {/* 時刻は本文の起点として見つけやすい位置に固定する。 */}
+      <HStack className="header px-[var(--size-4-1)] pb-[var(--size-2-2)] text-[var(--text-muted)] text-[80%] items-start justify-start">
+        <Tag className="text-xs px-0 py-0.5 rounded-full bg-[var(--tag-bg)] text-[var(--tag-fg)]">
+          {/* fixedノートは複数日が混在しうるので、時刻だけだと投稿の文脈を失う。 */}
+          {timestamp.format(DISPLAY_DATE_TIME_FORMAT)}
+        </Tag>
+      </HStack>
+
       <Box
         className={`flex-1 mfdi-scroll-area ${
           clickToActivate ? (activated ? "activated" : "not-activated") : ""
@@ -78,26 +85,12 @@ export const BaseCard: React.FC<BaseCardProps> = ({
         {children}
       </Box>
 
-      {/* Footer */}
-      <HStack className="footer px-[var(--size-4-1)] text-[var(--text-muted)] text-[80%] pt-0 items-center gap-[var(--size-2-3)]">
-        {footerAddon}
-
-        <Spacer />
-
-        <HStack className="tag-list gap-[var(--size-2-1)]">
+      {(footerAddon || footerRightAddon) && (
+        <HStack className="footer px-[var(--size-4-1)] pt-[var(--size-2-2)] text-[var(--text-muted)] text-[80%] items-center justify-end gap-[var(--size-2-3)] flex-wrap">
           {footerRightAddon}
-          <Tag className="text-xs px-2 py-0.5 rounded-full bg-[var(--tag-bg)] text-[var(--tag-fg)]">
-            {/* fixedノートは複数日が混在しうるので、時刻だけだと投稿の文脈を失う。 */}
-            {timestamp.format(
-              showFullTimestamp
-                ? DISPLAY_DATE_TIME_FORMAT
-                : granularity === "day" && dateFilter !== "this_week"
-                  ? DISPLAY_TIME_FORMAT
-                  : DISPLAY_DATE_TIME_FORMAT,
-            )}
-          </Tag>
+          {footerAddon}
         </HStack>
-      </HStack>
+      )}
     </Flex>
   );
 };

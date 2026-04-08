@@ -5,13 +5,13 @@ import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { useAppStore } from "src/ui/store/appStore";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import type { DateFilter, Granularity, Post } from "src/ui/types";
-import { getPostTags } from "src/ui/utils/post-metadata";
+import { PINNED_METADATA_KEY, getPostTags } from "src/ui/utils/post-metadata";
 
 import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
 import { createMeta } from "src/core/meta";
 import { pickUrls } from "src/core/strings";
 import { isPresent } from "src/core/types";
-import { BaseCard } from "src/ui/components/BaseCard";
+import { CardContent } from "src/ui/components/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
@@ -62,17 +62,17 @@ export const PostCardView = React.memo(
 
     return (
       <Card className={className} style={style}>
-        <BaseCard
+        <CardContent
           timestamp={post.timestamp}
           granularity={granularity}
           dateFilter={dateFilter}
-          showFullTimestamp={viewNoteMode === "fixed"}
           isDimmed={isDimmed}
           onContextMenu={(e) => onContextMenu?.(post, e)}
           onDoubleClick={() => !isDimmed && onEdit?.(post)}
           footerAddon={
             tags.length > 0 ? (
-              <HStack className="footer flex-wrap gap-[var(--size-2-3)]">
+              <HStack className="footer flex-wrap justify-end gap-[var(--size-2-3)]">
+                {/* タグは一覧の識別子なので、視線の終点になる右下へまとめる。 */}
                 {tags.map((tag) => (
                   <Tag
                     key={tag}
@@ -122,7 +122,7 @@ export const PostCardView = React.memo(
               </Box>
             )}
           </VStack>
-        </BaseCard>
+        </CardContent>
       </Card>
     );
   },

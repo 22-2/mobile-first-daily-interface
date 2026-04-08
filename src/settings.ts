@@ -21,7 +21,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "Thino",
   insertAfter: "## Thino",
-  enabledCardView: true,
+  enabledCardView: false,
   clickToActivateScroll: true,
   allowEditingPastNotes: false,
   updateDateStrategy: "never",
