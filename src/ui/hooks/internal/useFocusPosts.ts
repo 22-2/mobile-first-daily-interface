@@ -3,6 +3,7 @@ import { normalizeFixedNotePath } from "src/core/fixed-note";
 import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
 import { WorkerClient } from "src/db/worker-client";
+import { resolveTopicNotePath } from "src/lib/daily-notes";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -49,6 +50,11 @@ export const useFocusPosts = () => {
     () => normalizeFixedNotePath(fixedNotePath ?? ""),
     [fixedNotePath],
   );
+  const periodicPathFilter = useMemo(() => {
+    if (isFixedMode) return null;
+    if (granularity !== "month" && granularity !== "year") return null;
+    return resolveTopicNotePath(date, granularity, activeTopic, shell);
+  }, [isFixedMode, granularity, date, activeTopic, shell]);
 
   const { startDate, endDate } = useMemo(() => {
     let start = date.clone().startOf("day");
@@ -95,6 +101,7 @@ export const useFocusPosts = () => {
       threadOnly,
       viewNoteMode,
       normalizedFixedPath,
+      periodicPathFilter,
       date.toISOString(),
     ],
     async () => {
@@ -157,7 +164,13 @@ export const useFocusPosts = () => {
         threadOnly,
       });
 
-      return records.map(memoRecordToPost);
+      const posts = records.map(memoRecordToPost);
+      if (!periodicPathFilter) {
+        return posts;
+      }
+
+      // 月/年 granularity は「期間内の全投稿」ではなく、対応する periodic ノートの投稿だけを表示する。
+      return posts.filter((post) => post.path === periodicPathFilter);
     },
   );
 

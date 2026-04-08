@@ -39,6 +39,8 @@ vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: () => ({
     shell: {
       loadFile: mocked.loadFile,
+      getCommunityPlugin: () => undefined,
+      getInternalPluginById: () => undefined,
     },
   }),
 }));
@@ -172,6 +174,66 @@ describe("useFocusPosts hook integration", () => {
       }),
     );
     expect(mocked.getDb).toHaveBeenCalledTimes(1);
+  });
+
+  it("month granularity は月次ノートの path の投稿だけを表示する", async () => {
+    mocked.settings.viewNoteMode = "periodic";
+    mocked.settings.granularity = "month";
+    mocked.settings.date = window.moment("2026-04-20T09:00:00.000Z");
+    mocked.settings.activeTopic = "";
+
+    mocked.getMemos.mockResolvedValue([
+      createMemoRecord({
+        id: "month-note",
+        path: "2026-04.md",
+        content: "from-month-note",
+      }),
+      createMemoRecord({
+        id: "daily-note",
+        path: "2026-04-20.md",
+        content: "from-daily-note",
+      }),
+    ]);
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "from-month-note",
+      ]);
+    });
+  });
+
+  it("year granularity は年次ノートの path の投稿だけを表示する", async () => {
+    mocked.settings.viewNoteMode = "periodic";
+    mocked.settings.granularity = "year";
+    mocked.settings.date = window.moment("2026-07-20T09:00:00.000Z");
+    mocked.settings.activeTopic = "";
+
+    mocked.getMemos.mockResolvedValue([
+      createMemoRecord({
+        id: "year-note",
+        path: "2026.md",
+        content: "from-year-note",
+      }),
+      createMemoRecord({
+        id: "daily-note",
+        path: "2026-07-20.md",
+        content: "from-daily-note",
+      }),
+    ]);
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "from-year-note",
+      ]);
+    });
   });
 
   it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {
