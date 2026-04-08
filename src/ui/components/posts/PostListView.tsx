@@ -24,7 +24,8 @@ import { useAppContext } from "src/ui/context/AppContext";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }
-  | { type: "divider"; date: MomentLike; key: string };
+  | { type: "divider"; date: MomentLike; key: string }
+  | { type: "pinned-divider"; key: string };
 
 export const PostListView: React.FC = memo(() => {
   const { shell } = useAppContext();
@@ -283,7 +284,29 @@ export const PostListView: React.FC = memo(() => {
       (post) => post.startOffset !== editingPostOffset,
     );
 
-    postsToDisplay.forEach((post) => {
+    const pinnedPosts = postsToDisplay.filter((post) => isPinned(post.metadata));
+    const unpinnedPosts = postsToDisplay.filter(
+      (post) => !isPinned(post.metadata),
+    );
+
+    if (pinnedPosts.length > 0) {
+      // 意図: ピン留め投稿は日付グループとは独立して、
+      // リスト最上部の専用セクションにまとめて表示する。
+      list.push({
+        type: "pinned-divider",
+        key: "divider-pinned",
+      });
+
+      pinnedPosts.forEach((post) => {
+        list.push({
+          type: "post",
+          post,
+          key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+        });
+      });
+    }
+
+    unpinnedPosts.forEach((post) => {
       const currentDate = post.timestamp.format("YYYY-MM-DD");
       const shouldShowDividers =
         // fixedノートは複数日の投稿が混在するため、常にdividerを表示する
@@ -383,6 +406,8 @@ export const PostListView: React.FC = memo(() => {
           >
             {item.type === "divider" ? (
               <DateDivider date={item.date} />
+            ) : item.type === "pinned-divider" ? (
+              <PinnedDivider />
             ) : (
               <PostCardView
                 post={item.post}
@@ -438,3 +463,16 @@ const ListFooter = memo(
     );
   },
 );
+
+const PinnedDivider = memo(() => {
+  return (
+    <Box className="mfdi-date-divider flex items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]">
+      <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
+      <Box className="flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold text-[var(--text-muted)] whitespace-nowrap tracking-[0.05em] uppercase">
+        <ObsidianIcon name="pin" boxSize="0.95em" />
+        <span>ピン留め</span>
+      </Box>
+      <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
+    </Box>
+  );
+});
