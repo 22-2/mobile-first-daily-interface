@@ -288,6 +288,7 @@ export const PostListView: React.FC = memo(() => {
     const unpinnedPosts = postsToDisplay.filter(
       (post) => !isPinned(post.metadata),
     );
+    const hasPinnedSection = pinnedPosts.length > 0;
 
     if (pinnedPosts.length > 0) {
       // 意図: ピン留め投稿は日付グループとは独立して、
@@ -317,8 +318,11 @@ export const PostListView: React.FC = memo(() => {
       const isDateChanged = lastDate !== currentDate;
       const isFirstItem = lastDate === null;
       const isDateInPast = post.timestamp.isBefore(new Date(), "day");
+      const shouldShowTodayDividerAfterPinned = hasPinnedSection && isFirstItem;
       const showDivider =
-        shouldShowDividers && isDateChanged && (!isFirstItem || isDateInPast);
+        shouldShowDividers &&
+        isDateChanged &&
+        (!isFirstItem || isDateInPast || shouldShowTodayDividerAfterPinned);
 
       if (showDivider) {
         list.push({
@@ -469,7 +473,7 @@ const PinnedDivider = memo(() => {
     <Box className="mfdi-date-divider flex items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]">
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
       <Box className="flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold text-[var(--text-muted)] whitespace-nowrap tracking-[0.05em] uppercase">
-        <ObsidianIcon name="pin" boxSize="0.95em" />
+        <ObsidianIcon className="cursor-default" name="pin" boxSize="0.95em" />
         <span>ピン留め</span>
       </Box>
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
