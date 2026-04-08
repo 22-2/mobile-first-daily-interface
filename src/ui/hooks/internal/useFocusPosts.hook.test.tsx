@@ -41,8 +41,25 @@ vi.mock("src/ui/context/AppContext", () => ({
       loadFile: mocked.loadFile,
       getCommunityPlugin: () => undefined,
       getInternalPluginById: () => undefined,
+      getAbstractFileByPath: vi.fn(() => null),
+      getVault: vi.fn(() => ({
+        getAbstractFileByPath: vi.fn(() => null),
+        getRoot: vi.fn(() => null),
+      })),
     },
   }),
+}));
+
+vi.mock("src/core/note-source", () => ({
+  resolvePeriodicNote: (shell: unknown, date: any, granularity: string) => {
+    if (granularity === "month") {
+      return { path: date.format("YYYY-MM") + ".md" };
+    }
+    if (granularity === "year") {
+      return { path: date.format("YYYY") + ".md" };
+    }
+    return null;
+  },
 }));
 
 vi.mock("src/db/worker-client", () => ({
@@ -182,18 +199,13 @@ describe("useFocusPosts hook integration", () => {
     mocked.settings.date = window.moment("2026-04-20T09:00:00.000Z");
     mocked.settings.activeTopic = "";
 
-    mocked.getMemos.mockResolvedValue([
-      createMemoRecord({
-        id: "month-note",
-        path: "2026-04.md",
-        content: "from-month-note",
-      }),
-      createMemoRecord({
-        id: "daily-note",
-        path: "2026-04-20.md",
-        content: "from-daily-note",
-      }),
-    ]);
+    mocked.loadFile.mockResolvedValue(
+      [
+        "## Thino",
+        "- 09:00:00 from-month-note [mfdiId::month-1]",
+        "- 09:01:00 another month entry",
+      ].join("\n"),
+    );
 
     const { result } = renderHook(() => useFocusPosts(), {
       wrapper: swrWrapper,
@@ -202,8 +214,11 @@ describe("useFocusPosts hook integration", () => {
     await waitFor(() => {
       expect(result.current.posts.map((post) => post.message)).toEqual([
         "from-month-note",
+        "another month entry",
       ]);
     });
+
+    expect(mocked.loadFile).toHaveBeenCalled();
   });
 
   it("year granularity は年次ノートの path の投稿だけを表示する", async () => {
@@ -212,18 +227,13 @@ describe("useFocusPosts hook integration", () => {
     mocked.settings.date = window.moment("2026-07-20T09:00:00.000Z");
     mocked.settings.activeTopic = "";
 
-    mocked.getMemos.mockResolvedValue([
-      createMemoRecord({
-        id: "year-note",
-        path: "2026.md",
-        content: "from-year-note",
-      }),
-      createMemoRecord({
-        id: "daily-note",
-        path: "2026-07-20.md",
-        content: "from-daily-note",
-      }),
-    ]);
+    mocked.loadFile.mockResolvedValue(
+      [
+        "## Thino",
+        "- 09:00:00 from-year-note [mfdiId::year-1]",
+        "- 09:01:00 another year entry",
+      ].join("\n"),
+    );
 
     const { result } = renderHook(() => useFocusPosts(), {
       wrapper: swrWrapper,
@@ -232,8 +242,11 @@ describe("useFocusPosts hook integration", () => {
     await waitFor(() => {
       expect(result.current.posts.map((post) => post.message)).toEqual([
         "from-year-note",
+        "another year entry",
       ]);
     });
+
+    expect(mocked.loadFile).toHaveBeenCalled();
   });
 
   it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {

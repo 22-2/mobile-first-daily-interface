@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { normalizeFixedNotePath } from "src/core/fixed-note";
+import { resolvePeriodicNote } from "src/core/note-source";
 import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
 import { WorkerClient } from "src/db/worker-client";
-import { resolveTopicNotePath } from "src/lib/daily-notes";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
+import { buildPostFromEntry } from "src/ui/utils/thread-utils";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
@@ -50,10 +51,11 @@ export const useFocusPosts = () => {
     () => normalizeFixedNotePath(fixedNotePath ?? ""),
     [fixedNotePath],
   );
-  const periodicPathFilter = useMemo(() => {
+  const periodicNoteFile = useMemo(() => {
     if (isFixedMode) return null;
     if (granularity !== "month" && granularity !== "year") return null;
-    return resolveTopicNotePath(date, granularity, activeTopic, shell);
+    // 月/年 granularity はノートファイルを直接読む（DB側の path 登録状態に依存しない）
+    return resolvePeriodicNote(shell, date, granularity, activeTopic);
   }, [isFixedMode, granularity, date, activeTopic, shell]);
 
   const { startDate, endDate } = useMemo(() => {
@@ -101,7 +103,7 @@ export const useFocusPosts = () => {
       threadOnly,
       viewNoteMode,
       normalizedFixedPath,
-      periodicPathFilter,
+      periodicNoteFile?.path,
       date.toISOString(),
     ],
     async () => {
@@ -155,6 +157,42 @@ export const useFocusPosts = () => {
           });
       }
 
+      // 月/年 granularity はノートファイルを直接読むことで常に最新の内容を反映する
+      if (periodicNoteFile) {
+        try {
+          const content = await shell.loadFile(periodicNoteFile.path);
+          const query = searchQuery.trim().toLowerCase();
+
+          return parseThinoEntries(content)
+            .filter((entry) => {
+              if (query && !entry.message.toLowerCase().includes(query)) {
+                return false;
+              }
+              if (threadOnly && !isThreadRootMetadata(entry.metadata)) {
+                return false;
+              }
+              return true;
+            })
+            .map((entry) => {
+              const timestamp = resolveTimestamp(
+                entry.time,
+                date,
+                entry.metadata,
+              );
+
+              return buildPostFromEntry({
+                ...entry,
+                path: periodicNoteFile.path,
+                noteDate: timestamp.clone().startOf(granularity),
+                resolveTimestamp,
+              });
+            });
+        } catch {
+          console.error("Failed to load periodic note file:", periodicNoteFile.path);
+          return [];
+        }
+      }
+
       const dbService = WorkerClient.get();
       const records = await dbService.getMemos({
         topicId: effectiveTopic,
@@ -165,12 +203,7 @@ export const useFocusPosts = () => {
       });
 
       const posts = records.map(memoRecordToPost);
-      if (!periodicPathFilter) {
-        return posts;
-      }
-
-      // 月/年 granularity は「期間内の全投稿」ではなく、対応する periodic ノートの投稿だけを表示する。
-      return posts.filter((post) => post.path === periodicPathFilter);
+      return posts;
     },
   );
 
