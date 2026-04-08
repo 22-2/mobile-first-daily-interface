@@ -2,7 +2,12 @@ import { resolveMemoTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
 import type { MemoRecord } from "src/db/mfdi-db";
 import type { ScannableNote } from "src/db/worker-api";
-import { getPostTags, isArchived, isDeleted } from "src/ui/utils/post-metadata";
+import {
+  getPostTags,
+  isArchived,
+  isDeleted,
+  isPinned,
+} from "src/ui/utils/post-metadata";
 
 export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
   return parseThinoEntries(file.content).map((entry) => {
@@ -29,6 +34,7 @@ export function buildMemoRecordsForNote(file: ScannableNote): MemoRecord[] {
       noteDate: file.noteDate,
       archived: isArchived(entry.metadata) ? 1 : 0,
       deleted: isDeleted(entry.metadata) ? 1 : 0,
+      pinned: isPinned(entry.metadata) ? 1 : 0,
     };
   });
 }

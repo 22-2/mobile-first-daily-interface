@@ -21,6 +21,7 @@ export interface MemoRecord {
   updatedAt: string;
   archived: 0 | 1;
   deleted: 0 | 1;
+  pinned: 0 | 1;
 }
 
 interface MetaRecord {
@@ -122,6 +123,49 @@ function buildMemoFilter(params: {
     }
     return true;
   };
+}
+
+function buildVisibleMemoPinnedRange(
+  store: IDBObjectStore,
+  params: {
+    topicId?: string;
+    pinned: 0 | 1;
+    startDate?: string;
+    endDate?: string;
+  },
+): { index: IDBIndex; range: IDBKeyRange } {
+  const { topicId, pinned, startDate, endDate } = params;
+
+  if (startDate != null && endDate != null) {
+    return topicId
+      ? {
+          index: store.index("[topicId+archived+deleted+pinned+createdAt]"),
+          range: IDBKeyRange.bound(
+            [topicId, 0, 0, pinned, startDate],
+            [topicId, 0, 0, pinned, endDate],
+          ),
+        }
+      : {
+          index: store.index("[archived+deleted+pinned+createdAt]"),
+          range: IDBKeyRange.bound(
+            [0, 0, pinned, startDate],
+            [0, 0, pinned, endDate],
+          ),
+        };
+  }
+
+  return topicId
+    ? {
+        index: store.index("[topicId+archived+deleted+pinned+createdAt]"),
+        range: IDBKeyRange.bound(
+          [topicId, 0, 0, pinned, ""],
+          [topicId, 0, 0, pinned, "\uffff"],
+        ),
+      }
+    : {
+        index: store.index("[archived+deleted+pinned+createdAt]"),
+        range: IDBKeyRange.bound([0, 0, pinned, ""], [0, 0, pinned, "\uffff"]),
+      };
 }
 
 // ---------------------------------------------------------------------------
@@ -292,7 +336,7 @@ interface TransactableStore {
 // Database
 // ---------------------------------------------------------------------------
 
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 
 /**
  * Dexie を完全に排除し、生の IndexedDB をラップしたデータベースクラス。
@@ -427,27 +471,11 @@ export class MFDIDatabase {
     query?: string,
     threadOnly = false,
   ): Promise<MemoRecord[]> {
-    return this.withStoreCallback("memos", "readonly", async (s) => {
-      const { index, range } = topicId
-        ? {
-            index: s.index("[topicId+archived+deleted+createdAt]"),
-            range: IDBKeyRange.bound(
-              [topicId, 0, 0, ""],
-              [topicId, 0, 0, "\uffff"],
-            ),
-          }
-        : {
-            index: s.index("[archived+deleted+createdAt]"),
-            range: IDBKeyRange.bound([0, 0, ""], [0, 0, "\uffff"]),
-          };
-
-      return cursorAll<MemoRecord>(
-        index,
-        range,
-        "prev",
-        buildMemoFilter({ query, threadOnly }),
-        limit || 300,
-      );
+    return this.getPinnedFirstVisibleMemos({
+      topicId,
+      limit,
+      query,
+      threadOnly,
     });
   }
 
@@ -481,32 +509,63 @@ export class MFDIDatabase {
       threadOnly = false,
     } = params;
 
-    return this.withStoreCallback("memos", "readonly", async (s) => {
-      const { index, range } = topicId
-        ? {
-            index: s.index("[topicId+archived+deleted+createdAt]"),
-            range: IDBKeyRange.bound(
-              [topicId, 0, 0, startDate],
-              [topicId, 0, 0, endDate],
-            ),
-          }
-        : {
-            index: s.index("[archived+deleted+createdAt]"),
-            range: IDBKeyRange.bound([0, 0, startDate], [0, 0, endDate]),
-          };
+    return this.getPinnedFirstVisibleMemos({
+      topicId,
+      startDate,
+      endDate,
+      limit,
+      query: searchQuery,
+      threadOnly,
+    });
+  }
 
-      // console.log(`[MFDIDatabase] getVisibleMemosByDateRange: topicId="${topicId}", range=[${startDate}, ${endDate}], limit=${limit}`);
+  private async getPinnedFirstVisibleMemos(params: {
+    topicId?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    query?: string;
+    threadOnly?: boolean;
+  }): Promise<MemoRecord[]> {
+    const {
+      topicId,
+      startDate,
+      endDate,
+      limit,
+      query,
+      threadOnly = false,
+    } = params;
+    const filter = buildMemoFilter({ query, threadOnly });
+    const effectiveLimit = limit || 300;
 
-      return cursorAll<MemoRecord>(
-        index,
-        range,
-        "prev",
-        buildMemoFilter({ query: searchQuery, threadOnly }),
-        limit || 300,
-      ).then((results) => {
-        // console.log(`[MFDIDatabase] getVisibleMemosByDateRange result count: ${results.length}`);
-        return results;
-      });
+    return this.withStoreCallback("memos", "readonly", async (store) => {
+      const results: MemoRecord[] = [];
+
+      // 意図: DB 取得段階でも pinned → timestamp の順を作っておくことで、
+      // タイムラインのページング中もピン留めが先頭に寄りやすくなる。
+      for (const pinned of [1, 0] as const) {
+        if (results.length >= effectiveLimit) {
+          break;
+        }
+
+        const { index, range } = buildVisibleMemoPinnedRange(store, {
+          topicId,
+          pinned,
+          startDate,
+          endDate,
+        });
+
+        const batch = await cursorAll<MemoRecord>(
+          index,
+          range,
+          "prev",
+          filter,
+          effectiveLimit - results.length,
+        );
+        results.push(...batch);
+      }
+
+      return results;
     });
   }
 
@@ -578,6 +637,7 @@ export class MFDIDatabase {
     addIndex("updatedAt", "updatedAt");
     addIndex("archived", "archived");
     addIndex("deleted", "deleted");
+    addIndex("pinned", "pinned");
     addIndex("[topicId+noteGranularity]", ["topicId", "noteGranularity"]);
     addIndex("[archived+deleted]", ["archived", "deleted"]);
     addIndex("[topicId+archived+deleted]", ["topicId", "archived", "deleted"]);
@@ -586,12 +646,45 @@ export class MFDIDatabase {
       "deleted",
       "createdAt",
     ]);
+    addIndex("[archived+deleted+pinned+createdAt]", [
+      "archived",
+      "deleted",
+      "pinned",
+      "createdAt",
+    ]);
     addIndex("[topicId+archived+deleted+createdAt]", [
       "topicId",
       "archived",
       "deleted",
       "createdAt",
     ]);
+    addIndex("[topicId+archived+deleted+pinned+createdAt]", [
+      "topicId",
+      "archived",
+      "deleted",
+      "pinned",
+      "createdAt",
+    ]);
+
+    const pinnedBackfillRequest = memoStore.openCursor();
+    pinnedBackfillRequest.onsuccess = () => {
+      const cursor = pinnedBackfillRequest.result;
+      if (!cursor) {
+        return;
+      }
+
+      const value = cursor.value as Partial<MemoRecord>;
+      if (value.pinned !== 0 && value.pinned !== 1) {
+        // 意図: 既存DBは pinned 列を持たないため、upgrade時に 0 を埋めないと
+        // 新しい compound index から未ピン投稿が見えなくなる。
+        cursor.update({
+          ...value,
+          pinned: 0,
+        });
+      }
+
+      cursor.continue();
+    };
 
     // ---- meta ---------------------------------------------------------------
     if (!db.objectStoreNames.contains("meta")) {

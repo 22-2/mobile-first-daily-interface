@@ -22,7 +22,7 @@ interface ScanResultEnvelope {
   timings?: WorkerTimings;
 }
 
-interface ScanWorkerAPI {
+export interface ScanWorkerAPI {
   // Worker is stateless and only exposes parsing methods.
   // Both methods return an envelope that may include worker-side timings.
   scanFiles(

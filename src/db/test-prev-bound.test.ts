@@ -17,12 +17,14 @@ describe("IndexedDB prev bound test", () => {
       createdAt: "2026-03-31T10:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     } as any);
     await db.memos.put({
       id: "2",
       createdAt: "2026-03-31T11:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     } as any);
 
     const startDate = "2026-03-31T00:00:00.000Z";

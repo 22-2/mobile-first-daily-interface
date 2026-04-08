@@ -148,6 +148,76 @@ describe("useFilteredPosts", () => {
     expect(result.current.map((post) => post.id)).toEqual(["it-1"]);
   });
 
+  test("ピン留めは先頭に寄せ、ピン留め同士は投稿日時順で並ぶ", () => {
+    const posts = [
+      createPost({
+        id: "plain-latest",
+        timestamp: moment("2026-03-15T12:00:00.000Z"),
+      }),
+      createPost({
+        id: "pinned-earlier",
+        timestamp: moment("2026-03-15T09:00:00.000Z"),
+        metadata: { pinned: "1" },
+        startOffset: 20,
+      }),
+      createPost({
+        id: "pinned-latest",
+        timestamp: moment("2026-03-15T11:00:00.000Z"),
+        metadata: { pinned: "1" },
+        startOffset: 40,
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: null,
+        timeFilter: "all",
+        dateFilter: "today",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: null,
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual([
+      "pinned-latest",
+      "pinned-earlier",
+      "plain-latest",
+    ]);
+  });
+
+  test("latest フィルタはピン留めより先に時刻で最新投稿を選ぶ", () => {
+    const posts = [
+      createPost({
+        id: "older-pinned",
+        timestamp: moment("2026-03-15T09:00:00.000Z"),
+        metadata: { pinned: "1" },
+      }),
+      createPost({
+        id: "latest-plain",
+        timestamp: moment("2026-03-15T12:00:00.000Z"),
+        startOffset: 20,
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useFilteredPosts({
+        posts,
+        activeTag: null,
+        timeFilter: "latest",
+        dateFilter: "today",
+        asTask: false,
+        granularity: "day",
+        displayMode: DISPLAY_MODE.FOCUS,
+        threadFocusRootId: null,
+      }),
+    );
+
+    expect(result.current.map((post) => post.id)).toEqual(["latest-plain"]);
+  });
+
   test("fixed note では現在時刻基準の日付フィルタを適用する", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-18T12:00:00.000Z"));

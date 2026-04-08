@@ -106,6 +106,7 @@ describe("thread-utils", () => {
       updatedAt: "2026-03-15T10:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     const post = memoRecordToPost(memo);
@@ -133,6 +134,7 @@ describe("thread-utils", () => {
       updatedAt: "2026-03-15T11:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     const post = memoRecordToPost(memo);

@@ -32,6 +32,7 @@ describe("MFDIDatabase", () => {
       updatedAt: "2026-03-31T12:00:00Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     await db.memos.put(memo);
@@ -59,6 +60,7 @@ describe("MFDIDatabase", () => {
       updatedAt: "2026-03-31T12:00:00Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     await db.memos.put(memo);
@@ -89,6 +91,7 @@ describe("MFDIDatabase", () => {
       updatedAt: "2026-03-31T12:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     await db.memos.put(memo);
@@ -120,6 +123,7 @@ describe("MFDIDatabase", () => {
       updatedAt: "2026-03-31T12:00:00.000Z",
       archived: 0,
       deleted: 0,
+      pinned: 0,
     };
 
     await db.memos.put(memo);
@@ -150,11 +154,81 @@ describe("MFDIDatabase", () => {
       updatedAt: "2026-03-31T12:00:00Z",
       archived: 1,
       deleted: 0,
+      pinned: 0,
     };
 
     await db.memos.put(memo);
 
     const results = await db.getLatestVisibleMemos();
     expect(results).toHaveLength(0);
+  });
+
+  it("should return pinned memos first while keeping createdAt order within each group", async () => {
+    await db.memos.bulkPut([
+      {
+        id: "plain-latest",
+        path: "test.md",
+        noteName: "test",
+        topicId: "topic1",
+        noteGranularity: "day",
+        content: "plain latest",
+        tags: [],
+        metadataJson: "{}",
+        startOffset: 0,
+        endOffset: 10,
+        bodyStartOffset: 0,
+        createdAt: "2026-03-31T12:00:00.000Z",
+        noteDate: "2026-03-31",
+        updatedAt: "2026-03-31T12:00:00.000Z",
+        archived: 0,
+        deleted: 0,
+        pinned: 0,
+      },
+      {
+        id: "pinned-earlier",
+        path: "test.md",
+        noteName: "test",
+        topicId: "topic1",
+        noteGranularity: "day",
+        content: "pinned earlier",
+        tags: [],
+        metadataJson: '{"pinned":"1"}',
+        startOffset: 20,
+        endOffset: 30,
+        bodyStartOffset: 20,
+        createdAt: "2026-03-31T09:00:00.000Z",
+        noteDate: "2026-03-31",
+        updatedAt: "2026-03-31T09:00:00.000Z",
+        archived: 0,
+        deleted: 0,
+        pinned: 1,
+      },
+      {
+        id: "pinned-latest",
+        path: "test.md",
+        noteName: "test",
+        topicId: "topic1",
+        noteGranularity: "day",
+        content: "pinned latest",
+        tags: [],
+        metadataJson: '{"pinned":"1"}',
+        startOffset: 40,
+        endOffset: 50,
+        bodyStartOffset: 40,
+        createdAt: "2026-03-31T11:00:00.000Z",
+        noteDate: "2026-03-31",
+        updatedAt: "2026-03-31T11:00:00.000Z",
+        archived: 0,
+        deleted: 0,
+        pinned: 1,
+      },
+    ]);
+
+    const results = await db.getLatestVisibleMemos();
+    expect(results.map((memo) => memo.id)).toEqual([
+      "pinned-latest",
+      "pinned-earlier",
+      "plain-latest",
+    ]);
   });
 });

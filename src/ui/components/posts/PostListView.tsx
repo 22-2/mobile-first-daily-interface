@@ -13,7 +13,7 @@ import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MomentLike, Post } from "src/ui/types";
-import { getRawTagMetadata } from "src/ui/utils/post-metadata";
+import { getRawTagMetadata, isPinned } from "src/ui/utils/post-metadata";
 import { isThreadReply, isThreadRoot } from "src/ui/utils/thread-utils";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
@@ -73,6 +73,7 @@ export const PostListView: React.FC = memo(() => {
     archivePost,
     createThread,
     setPostTags,
+    setPostPinned,
     copyBlockIdLink,
   } = usePostActions();
 
@@ -111,6 +112,16 @@ export const PostListView: React.FC = memo(() => {
       menu.addItem((item) => {
         item.setTitle("実験的").setIcon("beaker");
         const sub = item.setSubmenu();
+
+        sub.addItem((si) =>
+          si
+            .setTitle(isPinned(post.metadata) ? "ピン留め解除" : "ピン留め")
+            .setIcon("pin")
+            .setDisabled(isReadOnly)
+            .onClick(() => {
+              setPostPinned(post, !isPinned(post.metadata));
+            }),
+        );
 
         sub.addItem((si) =>
           si
@@ -251,6 +262,7 @@ export const PostListView: React.FC = memo(() => {
       isReadOnly,
       movePostToTomorrow,
       setPostTags,
+      setPostPinned,
       setDate,
       setDisplayMode,
       startEdit,

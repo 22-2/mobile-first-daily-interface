@@ -1,5 +1,7 @@
 import { parseMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
 
+export const PINNED_METADATA_KEY = "pinned";
+
 export function getPostTags(metadata: Record<string, string>): string[] {
   return parseMfdiTags(metadata);
 }
@@ -10,6 +12,10 @@ export function isArchived(metadata: Record<string, string>): boolean {
 
 export function isDeleted(metadata: Record<string, string>): boolean {
   return metadata.deleted != null && metadata.deleted.length > 0;
+}
+
+export function isPinned(metadata: Record<string, string>): boolean {
+  return metadata[PINNED_METADATA_KEY] != null;
 }
 
 // Helper: 投稿がユーザーに表示されるべきかを判定するユーティリティ。

@@ -13,6 +13,7 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
+import { PINNED_METADATA_KEY } from "src/ui/utils/post-metadata";
 import {
   buildPostFromEntry,
   createThreadId,
@@ -464,7 +465,6 @@ export const usePostActions = () => {
         settingsState.setDate(targetDate.clone());
       }
 
-
       editorState.clearInput();
       shell.trigger("mfdi:scroll-to-top");
 
@@ -477,7 +477,6 @@ export const usePostActions = () => {
       ) {
         settingsState.setDate(window.moment());
       }
-
     },
     [
       shell,
@@ -640,6 +639,23 @@ export const usePostActions = () => {
           return rest;
         }
         return { ...metadata, [TAG_METADATA_KEY]: serializedTags };
+      });
+    },
+    [replacePostAndRefresh],
+  );
+
+  /** 投稿のピン留め状態を更新する */
+  const setPostPinned = useCallback(
+    async (post: Post, pinned: boolean) => {
+      await replacePostAndRefresh(post, (metadata) => {
+        if (!pinned) {
+          // 意図: 空文字を残すと「キーがあるので pinned 扱い」と再解釈されうるため、
+          // 解除時はキーごと削除して保存形式を正規化する。
+          const { [PINNED_METADATA_KEY]: _removed, ...rest } = metadata;
+          return rest;
+        }
+
+        return { ...metadata, [PINNED_METADATA_KEY]: "1" };
       });
     },
     [replacePostAndRefresh],
@@ -827,6 +843,7 @@ export const usePostActions = () => {
     permanentlyDeletePost,
     archivePost,
     setPostTags,
+    setPostPinned,
     movePostToTomorrow,
     handleClickTime,
     copyBlockIdLink,

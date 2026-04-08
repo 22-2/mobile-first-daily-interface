@@ -39,6 +39,7 @@ function createMemo(overrides: Partial<MemoRecord> = {}): MemoRecord {
     updatedAt: `${overrides.noteDate || "2026-03-23"}T10:00:00.000Z`,
     archived: 0,
     deleted: 0,
+    pinned: 0,
     bodyStartOffset: 0,
     startOffset: 0,
     endOffset: 0,
