@@ -15,6 +15,7 @@ export const WeekRow: React.FC<WeekRowProps> = ({
   activityDates,
   onSelectDay,
   onSelectWeek,
+  onClickHome,
 }) => {
   const isWeekSelected =
     (granularity === "week" ||
@@ -33,7 +34,14 @@ export const WeekRow: React.FC<WeekRowProps> = ({
             ? "text-[var(--color-accent)] border-[var(--color-accent)]"
             : "text-[var(--text-muted)] border-transparent",
         )}
-        onClick={() => onSelectWeek(week[0])}
+        onClick={() => {
+          // 同じ週を再クリックしたときは「絞り込み解除」の意図としてHomeへ戻す。
+          if (isWeekSelected) {
+            onClickHome();
+            return;
+          }
+          onSelectWeek(week[0]);
+        }}
       >
         {week[0].isoWeek()}
       </Box>

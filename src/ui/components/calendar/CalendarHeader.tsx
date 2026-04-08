@@ -11,7 +11,17 @@ export const CalendarHeader: React.FC<{
   granularity: string;
   onPrev: (e: React.MouseEvent) => void;
   onNext: (e: React.MouseEvent) => void;
-}> = ({ viewDate, date, granularity, onPrev, onNext }) => {
+  onSelectYear: (e: React.MouseEvent) => void;
+  onSelectMonth: (e: React.MouseEvent) => void;
+}> = ({
+  viewDate,
+  date,
+  granularity,
+  onPrev,
+  onNext,
+  onSelectYear,
+  onSelectMonth,
+}) => {
   const isSameYear = viewDate.isSame(date, "year");
   const isSameMonth = viewDate.isSame(date, "month");
 
@@ -25,21 +35,23 @@ export const CalendarHeader: React.FC<{
       <div className="mini-calendar__month-label flex items-center gap-1 ml-[var(--size-4-2)]">
         <span
           className={cn(
-            "font-bold text-lg",
+            "font-bold text-lg cursor-pointer rounded-[4px] px-1 hover:bg-[var(--background-modifier-hover)]",
             highlightYear
               ? "text-[var(--color-accent)]"
               : "text-[var(--text-normal)]",
           )}
+          onClick={onSelectYear}
         >
           {viewDate.format("YYYY年")}
         </span>
         <span
           className={cn(
-            "font-bold text-lg",
+            "font-bold text-lg cursor-pointer rounded-[4px] px-1 hover:bg-[var(--background-modifier-hover)]",
             highlightMonth
               ? "text-[var(--color-accent)]"
               : "text-[var(--text-normal)]",
           )}
+          onClick={onSelectMonth}
         >
           {viewDate.format("M月")}
         </span>

@@ -83,6 +83,7 @@ export function useMiniCalendar() {
     setDateFilter,
     setDisplayMode,
     activeTopic,
+    handleClickHome,
   } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -93,6 +94,7 @@ export function useMiniCalendar() {
       setDateFilter: s.setDateFilter,
       setDisplayMode: s.setDisplayMode,
       activeTopic: s.activeTopic,
+      handleClickHome: s.handleClickHome,
     })),
   );
 
@@ -159,6 +161,37 @@ export function useMiniCalendar() {
     setDate(weekStart.clone());
   };
 
+  const handleSelectYear = () => {
+    const isSelectedYear = granularity === "year" && date.isSame(viewDate, "year");
+
+    // 同じ年を再クリックした時は、SidebarScalesと同じ操作感でHomeへ戻す。
+    if (isSelectedYear) {
+      handleClickHome();
+      return;
+    }
+
+    setDisplayMode(DISPLAY_MODE.FOCUS);
+    setGranularity("year");
+    setDateFilter("today");
+    setDate(viewDate.clone());
+  };
+
+  const handleSelectMonth = () => {
+    const isSelectedMonth =
+      granularity === "month" && date.isSame(viewDate, "month");
+
+    // 同じ月を再クリックした時は、絞り込みを解除してHomeへ戻す。
+    if (isSelectedMonth) {
+      handleClickHome();
+      return;
+    }
+
+    setDisplayMode(DISPLAY_MODE.FOCUS);
+    setGranularity("month");
+    setDateFilter("today");
+    setDate(viewDate.clone());
+  };
+
   const activityDates = useMemo(() => {
     if (!shell) return new Set<string>();
     const notes = listPeriodicNotes(shell, "day", activeTopic);
@@ -190,6 +223,9 @@ export function useMiniCalendar() {
     handleNextMonth,
     handleSelectDay,
     handleSelectWeek,
+    handleSelectYear,
+    handleSelectMonth,
+    handleClickHome,
     setDate,
     setGranularity,
     setDateFilter,

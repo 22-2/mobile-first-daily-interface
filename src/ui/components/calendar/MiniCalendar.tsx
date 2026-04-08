@@ -25,6 +25,9 @@ export const MiniCalendar: React.FC<{
     handleNextMonth,
     handleSelectDay,
     handleSelectWeek,
+    handleSelectYear,
+    handleSelectMonth,
+    handleClickHome,
   } = useMiniCalendar();
 
   useEffect(() => {
@@ -39,6 +42,14 @@ export const MiniCalendar: React.FC<{
         granularity={granularity}
         onPrev={handlePrevMonth}
         onNext={handleNextMonth}
+        onSelectYear={(e) => {
+          e.stopPropagation();
+          handleSelectYear();
+        }}
+        onSelectMonth={(e) => {
+          e.stopPropagation();
+          handleSelectMonth();
+        }}
       />
 
       <div className="mini-calendar__grid grid grid-cols-8 gap-1 w-full text-center text-sm">
@@ -67,6 +78,7 @@ export const MiniCalendar: React.FC<{
             activityDates={activityDates}
             onSelectDay={handleSelectDay}
             onSelectWeek={handleSelectWeek}
+            onClickHome={handleClickHome}
           />
         ))}
       </div>

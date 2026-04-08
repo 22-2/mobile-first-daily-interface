@@ -25,4 +25,5 @@ export interface WeekRowProps {
   activityDates: Set<string>;
   onSelectDay: (day: moment.Moment) => void;
   onSelectWeek: (weekStart: moment.Moment) => void;
+  onClickHome: () => void;
 }

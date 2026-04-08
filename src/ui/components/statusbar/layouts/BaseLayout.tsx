@@ -19,17 +19,18 @@ export const BaseLayout: FC<BaseLayoutProps> = ({
     <HStack
       className={clsx(
         "base-layout",
-        "w-full opacity-80",
+        // 横幅100%に左右marginを足すとはみ出すため、paddingで余白を確保する。
+        "w-full min-w-0 opacity-80",
         "text-[length:var(--font-ui-smaller)] text-[var(--text-muted)]",
-        "mx-[var(--size-4-4)] my-[var(--size-4-2)]",
+        "px-[var(--size-4-4)] my-[var(--size-4-2)]",
         className,
       )}
       gap={0}
       justify="between"
       {...props}
     >
-      {left && <Box>{left}</Box>}
-      {right && <Box>{right}</Box>}
+      {left && <Box className="min-w-0 truncate">{left}</Box>}
+      {right && <Box className="min-w-0 truncate text-right">{right}</Box>}
     </HStack>
   );
 };

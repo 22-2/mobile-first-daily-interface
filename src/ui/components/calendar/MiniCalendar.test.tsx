@@ -116,4 +116,56 @@ describe("MiniCalendar", () => {
     expect(settingsStore.getState().dateFilter).toBe("today");
     expect(settingsStore.getState().granularity).toBe("day");
   });
+
+  it("年・月ラベルは再クリックでhandleClickHome相当の状態に戻る", () => {
+    settingsStore.setState({
+      date: moment("2026-03-09T00:00:00.000Z"),
+      granularity: "day",
+      dateFilter: "today",
+      displayMode: DISPLAY_MODE.FOCUS,
+      activeTopic: "",
+    });
+
+    const { getByText } = render(<MiniCalendar />);
+
+    fireEvent.click(getByText("2026年"));
+    expect(settingsStore.getState().granularity).toBe("year");
+
+    // 同じ年の再クリックは「絞り込み解除」の意図としてHomeへ戻す。
+    fireEvent.click(getByText("2026年"));
+    expect(settingsStore.getState().granularity).toBe("day");
+    expect(settingsStore.getState().dateFilter).toBe("today");
+
+    fireEvent.click(getByText("3月"));
+    expect(settingsStore.getState().granularity).toBe("month");
+
+    fireEvent.click(getByText("3月"));
+    expect(settingsStore.getState().granularity).toBe("day");
+    expect(settingsStore.getState().dateFilter).toBe("today");
+  });
+
+  it("選択済みの週番号を再クリックするとhandleClickHome相当の状態に戻る", () => {
+    settingsStore.setState({
+      date: moment("2026-03-09T00:00:00.000Z"),
+      granularity: "day",
+      dateFilter: "this_week",
+      displayMode: DISPLAY_MODE.FOCUS,
+      activeTopic: "",
+    });
+
+    const { container } = render(<MiniCalendar />);
+    const selectedWeek = moment("2026-03-09T00:00:00.000Z").isoWeek().toString();
+    const weekButtons = Array.from(
+      container.querySelectorAll(".mini-calendar__week-number"),
+    );
+    const selectedWeekButton = weekButtons.find(
+      (el) => el.textContent?.trim() === selectedWeek,
+    );
+
+    expect(selectedWeekButton).toBeTruthy();
+    fireEvent.click(selectedWeekButton as HTMLElement);
+
+    expect(settingsStore.getState().granularity).toBe("day");
+    expect(settingsStore.getState().dateFilter).toBe("today");
+  });
 });
