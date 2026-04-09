@@ -463,7 +463,9 @@ export const PostListView: React.FC = memo(() => {
                 onClick={() => toggleCollapsedGroup(item.groupKey)}
               />
             ) : item.type === "pinned-divider" ? (
-              <PinnedDivider
+              <DateDivider
+                label="ピン留め"
+                leadingIconName="pin"
                 collapsed={item.collapsed}
                 onClick={() => toggleCollapsedGroup(item.groupKey)}
               />
@@ -520,42 +522,5 @@ const ListFooter = memo(
         {hasMore ? "読み込み中..." : "これ以上投稿はありません"}
       </Box>
     );
-  },
-);
-
-const PinnedDivider = memo(
-  ({
-    collapsed,
-    onClick,
-  }: {
-    collapsed: boolean;
-    onClick: () => void;
-  }) => {
-  return (
-    <Box
-      className="mfdi-date-divider flex items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onClick();
-        }
-      }}
-    >
-      <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
-      <Box className="flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold text-[var(--text-muted)] whitespace-nowrap tracking-[0.05em] uppercase">
-        <ObsidianIcon
-          className="cursor-pointer"
-          name={collapsed ? "chevron-right" : "chevron-down"}
-          boxSize="0.95em"
-        />
-        <ObsidianIcon className="cursor-pointer" name="pin" boxSize="0.95em" />
-        <span>ピン留め</span>
-      </Box>
-      <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
-    </Box>
-  );
   },
 );

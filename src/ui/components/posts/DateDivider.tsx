@@ -5,21 +5,28 @@ import { Box, Flex, Text } from "src/ui/components/primitives";
 import type { MomentLike } from "src/ui/types";
 
 interface DateDividerProps {
-  date: MomentLike;
+  date?: MomentLike;
+  label?: string;
+  leadingIconName?: string;
   collapsed?: boolean;
   onClick?: () => void;
 }
 
 export const DateDivider: FC<DateDividerProps> = ({
   date,
+  label,
+  leadingIconName,
   collapsed = false,
   onClick,
 }) => {
   const clickable = typeof onClick === "function";
+  const title =
+    label ??
+    (date ? replaceDayToJa(date.format("YYYY-MM-DD (ddd)")) : "");
 
   return (
     <Flex
-      className="mfdi-date-divider items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
+      className="mfdi-date-divider items-center py-[var(--size-4-2)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={onClick}
@@ -43,7 +50,10 @@ export const DateDivider: FC<DateDividerProps> = ({
             boxSize="0.95em"
           />
         )}
-        {replaceDayToJa(date.format("YYYY-MM-DD (ddd)"))}
+        {leadingIconName && (
+          <ObsidianIcon className="cursor-pointer" name={leadingIconName} boxSize="0.95em" />
+        )}
+        {title}
       </Text>
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
     </Flex>
