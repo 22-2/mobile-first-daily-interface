@@ -5,7 +5,7 @@ import { DateDivider } from "src/ui/components/posts/DateDivider";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DISPLAY_MODE, STORAGE_KEYS } from "src/ui/config/consntants";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
@@ -24,11 +24,17 @@ import { useAppContext } from "src/ui/context/AppContext";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }
-  | { type: "divider"; date: MomentLike; key: string }
-  | { type: "pinned-divider"; key: string };
+  | {
+      type: "divider";
+      date: MomentLike;
+      key: string;
+      groupKey: string;
+      collapsed: boolean;
+    }
+  | { type: "pinned-divider"; key: string; groupKey: string; collapsed: boolean };
 
 export const PostListView: React.FC = memo(() => {
-  const { shell } = useAppContext();
+  const { shell, storage } = useAppContext();
   const { showTextInput, confirmDeleteAction } = useObsidianUi();
   const settings = useSettingsStore(
     useShallow((s) => ({
@@ -102,6 +108,32 @@ export const PostListView: React.FC = memo(() => {
     setThreadFocusRootId,
   } = settings;
   const threadView = isThreadView({ displayMode, threadFocusRootId });
+
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<string[]>(() =>
+    storage.get<string[]>(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, []),
+  );
+  const collapsedGroupSet = useMemo(
+    () => new Set(collapsedGroupKeys),
+    [collapsedGroupKeys],
+  );
+
+  const toggleCollapsedGroup = useCallback(
+    (groupKey: string) => {
+      setCollapsedGroupKeys((prev) => {
+        const nextSet = new Set(prev);
+        if (nextSet.has(groupKey)) {
+          nextSet.delete(groupKey);
+        } else {
+          nextSet.add(groupKey);
+        }
+        const next = [...nextSet];
+        // 意図: 開閉状態を保存し、次回表示時に同じグループ状態を復元する。
+        storage.set(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, next);
+        return next;
+      });
+    },
+    [storage],
+  );
 
   const showPostContextMenu = useCallback(
     (post: Post, e: React.MouseEvent) => {
@@ -279,6 +311,7 @@ export const PostListView: React.FC = memo(() => {
   const displayedPostsWithDividers = useMemo(() => {
     const list: TimelineItem[] = [];
     let lastDate: string | null = null;
+    let currentDateGroupCollapsed = false;
 
     const postsToDisplay = filteredPosts.filter(
       (post) => post.startOffset !== editingPostOffset,
@@ -289,6 +322,8 @@ export const PostListView: React.FC = memo(() => {
       (post) => !isPinned(post.metadata),
     );
     const hasPinnedSection = pinnedPosts.length > 0;
+    const pinnedGroupKey = "pinned";
+    const isPinnedCollapsed = collapsedGroupSet.has(pinnedGroupKey);
 
     if (pinnedPosts.length > 0) {
       // 意図: ピン留め投稿は日付グループとは独立して、
@@ -296,15 +331,19 @@ export const PostListView: React.FC = memo(() => {
       list.push({
         type: "pinned-divider",
         key: "divider-pinned",
+        groupKey: pinnedGroupKey,
+        collapsed: isPinnedCollapsed,
       });
 
-      pinnedPosts.forEach((post) => {
-        list.push({
-          type: "post",
-          post,
-          key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+      if (!isPinnedCollapsed) {
+        pinnedPosts.forEach((post) => {
+          list.push({
+            type: "post",
+            post,
+            key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+          });
         });
-      });
+      }
     }
 
     unpinnedPosts.forEach((post) => {
@@ -325,18 +364,26 @@ export const PostListView: React.FC = memo(() => {
         (!isFirstItem || isDateInPast || shouldShowTodayDividerAfterPinned);
 
       if (showDivider) {
+        const groupKey = `date-${currentDate}`;
+        currentDateGroupCollapsed = collapsedGroupSet.has(groupKey);
         list.push({
           type: "divider",
           date: post.timestamp,
           key: `divider-${currentDate}`,
+          groupKey,
+          collapsed: currentDateGroupCollapsed,
         });
+      } else if (isDateChanged) {
+        currentDateGroupCollapsed = false;
       }
 
-      list.push({
-        type: "post",
-        post,
-        key: `post-${post.timestamp.valueOf()}-${post.offset}`,
-      });
+      if (!currentDateGroupCollapsed) {
+        list.push({
+          type: "post",
+          post,
+          key: `post-${post.timestamp.valueOf()}-${post.offset}`,
+        });
+      }
 
       lastDate = currentDate;
     });
@@ -349,6 +396,7 @@ export const PostListView: React.FC = memo(() => {
     displayMode,
     dateFilter,
     settings.viewNoteMode,
+    collapsedGroupSet,
   ]);
 
   const vRef = useRef<VirtualizerHandle>(null);
@@ -409,9 +457,16 @@ export const PostListView: React.FC = memo(() => {
             }}
           >
             {item.type === "divider" ? (
-              <DateDivider date={item.date} />
+              <DateDivider
+                date={item.date}
+                collapsed={item.collapsed}
+                onClick={() => toggleCollapsedGroup(item.groupKey)}
+              />
             ) : item.type === "pinned-divider" ? (
-              <PinnedDivider />
+              <PinnedDivider
+                collapsed={item.collapsed}
+                onClick={() => toggleCollapsedGroup(item.groupKey)}
+              />
             ) : (
               <PostCardView
                 post={item.post}
@@ -468,15 +523,39 @@ const ListFooter = memo(
   },
 );
 
-const PinnedDivider = memo(() => {
+const PinnedDivider = memo(
+  ({
+    collapsed,
+    onClick,
+  }: {
+    collapsed: boolean;
+    onClick: () => void;
+  }) => {
   return (
-    <Box className="mfdi-date-divider flex items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]">
+    <Box
+      className="mfdi-date-divider flex items-center py-[var(--size-4-4)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+    >
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
       <Box className="flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold text-[var(--text-muted)] whitespace-nowrap tracking-[0.05em] uppercase">
-        <ObsidianIcon className="cursor-default" name="pin" boxSize="0.95em" />
+        <ObsidianIcon
+          className="cursor-pointer"
+          name={collapsed ? "chevron-right" : "chevron-down"}
+          boxSize="0.95em"
+        />
+        <ObsidianIcon className="cursor-pointer" name="pin" boxSize="0.95em" />
         <span>ピン留め</span>
       </Box>
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
     </Box>
   );
-});
+  },
+);
