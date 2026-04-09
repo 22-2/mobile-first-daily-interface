@@ -256,3 +256,7 @@ If your plugin does not need CSS, delete this file.
 .mfdi-draft-list-modal .modal-close-button {
   display: none; /* We have our own Back button */
 }
+
+.mfdi-modal-editor {
+  width: 98vw !important;
+}
