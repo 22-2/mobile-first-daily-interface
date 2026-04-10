@@ -22,6 +22,8 @@ export const DateDivider: FC<DateDividerProps> = ({
   onContextMenu,
 }) => {
   const clickable = typeof onClick === "function";
+  // 意図: 当日のdividerだけ視認性を上げ、時系列の現在位置を見失いにくくする。
+  const isTodayDivider = date?.isSame(new Date(), "day") ?? false;
   const title =
     label ??
     (date ? replaceDayToJa(date.format("YYYY-MM-DD (ddd)")) : "");
@@ -45,7 +47,11 @@ export const DateDivider: FC<DateDividerProps> = ({
       }
     >
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
-      <Text className="flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold text-[var(--text-muted)] whitespace-nowrap tracking-[0.05em] uppercase">
+      <Text
+        className={`flex items-center gap-1 text-[length:var(--font-ui-small)] font-semibold whitespace-nowrap tracking-[0.05em] uppercase ${
+          isTodayDivider ? "text-[var(--interactive-accent)]" : "text-[var(--text-muted)]"
+        }`}
+      >
         {clickable && (
           <ObsidianIcon
             className="cursor-pointer"
