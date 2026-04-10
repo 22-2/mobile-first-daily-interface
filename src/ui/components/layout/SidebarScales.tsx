@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { resolvePeriodicNote } from "src/core/note-source";
 import { parseThinoEntries } from "src/core/thino";
+import { NavButton } from "src/ui/components/common/NavButton";
 import {
   SidebarItemCount,
   SidebarSectionHeader,
@@ -22,9 +23,10 @@ interface Counts {
   tasks: number;
 }
 
-export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
-  viewedDate,
-}) => {
+export const SidebarScales: React.FC<{
+  viewedDate?: moment.Moment;
+  onViewDateChange?: (next: moment.Moment) => void;
+}> = ({ viewedDate, onViewDateChange }) => {
   const shell = useAppStore((s) => s.shell);
   const {
     date,
@@ -117,13 +119,34 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
     );
   };
 
+  const handleMoveViewMonth = useCallback(
+    (delta: -1 | 1) => {
+      // 意図: サイドバー見出しの左右操作で、MiniCalendar と同じ表示月を同期して移動する。
+      onViewDateChange?.(baseDate.clone().add(delta, "month"));
+    },
+    [baseDate, onViewDateChange],
+  );
+
+  const handleResetViewMonth = useCallback(() => {
+    // 意図: 見出し中央クリックで現在月に戻し、左右移動後に素早くホーム位置へ復帰できるようにする。
+    onViewDateChange?.(window.moment());
+  }, [onViewDateChange]);
+
   return (
     <VStack className="mfdi-sidebar-scales items-stretch gap-0 pt-2 mt-2">
       <SidebarSectionHeader>
-        <HStack className="gap-2 items-center">
+        <HStack className="gap-1 items-center">
+          <NavButton direction="left" onClick={() => handleMoveViewMonth(-1)} />
           <SidebarSectionHeader>
-            年月日別
+            <Text
+              as="span"
+              className="cursor-pointer hover:text-[var(--text-accent)]"
+              onClick={handleResetViewMonth}
+            >
+              年月日別
+            </Text>
           </SidebarSectionHeader>
+          <NavButton direction="right" onClick={() => handleMoveViewMonth(1)} />
         </HStack>
         {loading && (
           <Spinner className="size-3 text-[var(--text-faint)] animate-spin [animation-duration:0.8s]" />

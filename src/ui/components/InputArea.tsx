@@ -22,27 +22,8 @@ import {
 } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
-import type { MFDIView } from "../view/MFDIView";
-
-const NavButton: FC<{
-  direction: "left" | "right";
-  onClick: () => void;
-  step: number;
-}> = ({ direction, onClick, step }) => {
-  return (
-    <HStack
-      className={`mfdi-nav-button mfdi-nav-button-${direction} cursor-pointer ${
-        direction === "left" ? "flex-row" : "flex-row-reverse"
-      } gap-0`}
-      onClick={onClick}
-    >
-      <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />
-      {step > 1 && (
-        <Box className="text-sm font-bold text-[var(--text-muted)]">{step}</Box>
-      )}
-    </HStack>
-  );
-};
+import type { MFDIView } from "src/ui/view/MFDIView";
+import { NavButton } from "src/ui/components/common/NavButton";
 
 const DisplayModeIndicator: FC<{
   displayMode: "focus" | "timeline";
@@ -164,7 +145,7 @@ const InputAreaControl: FC = memo(() => {
     [handleChangeCalendarDateAction],
   );
 
-  const step = getMoveStep();
+  // const step = getMoveStep();
 
   return (
     <Flex
@@ -196,7 +177,6 @@ const InputAreaControl: FC = memo(() => {
             <NavButton
               direction="left"
               onClick={handleClickMovePrevious}
-              step={step}
             />
             <HStack className="mfdi-date-controls gap-[0.2em]">
               <Input
@@ -211,7 +191,6 @@ const InputAreaControl: FC = memo(() => {
             <NavButton
               direction="right"
               onClick={handleClickMoveNext}
-              step={step}
             />
           </>
         )}

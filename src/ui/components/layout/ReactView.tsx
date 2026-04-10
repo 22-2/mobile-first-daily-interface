@@ -416,7 +416,10 @@ const ReactViewContent = () => {
           className={`${effectivelyOpen ? "flex w-[260px] min-w-[260px] ml-[var(--size-4-2)]" : "hidden w-0 min-w-0"} h-full flex-col py-[var(--size-4-2)] px-0 mr-[var(--size-4-2)] transition-all duration-200 overflow-hidden`}
         >
           <MiniCalendar onViewDateChange={setSideBarViewDate} />
-          <SidebarScales viewedDate={sideBarViewDate} />
+          <SidebarScales
+            viewedDate={sideBarViewDate}
+            onViewDateChange={setSideBarViewDate}
+          />
           <TagList />
         </Box>
       )}
