@@ -427,7 +427,7 @@ test.describe("MFDI live editor e2e", () => {
 
     // 編集モードに入る
     await obsidian.page.locator(".list .base-card").first().dblclick();
-    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
+    expect(obsidian.page.locator(".list .base-card").first()).toHaveClass("mfdi-card--highlighted");
     await expectLiveEditorContent(obsidian, message);
 
     // 編集して更新
@@ -437,7 +437,6 @@ test.describe("MFDI live editor e2e", () => {
     await obsidian.page.getByRole("button", { name: "更新" }).click();
 
     // 更新後の検証
-    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
     await expectLiveEditorContent(obsidian, "");
     await expect.poll(() => obsidian.page.locator(".list .base-card").all()).toHaveLength(1);
     await expect.poll(() => obsidian.page.locator(".list .base-card").first().textContent()).toContain(editedMessage);
@@ -452,7 +451,7 @@ test.describe("MFDI live editor e2e", () => {
 
     // 編集モードに入る
     await obsidian.page.locator(".list .base-card").first().dblclick();
-    expect(obsidian.page.locator(".list .base-card").first()).toBeHidden();
+    expect(obsidian.page.locator(".list .base-card").first()).toHaveClass("mfdi-card--highlighted");
     await expectLiveEditorContent(obsidian, message);
 
     // タブを閉じて再度開く
@@ -472,7 +471,6 @@ test.describe("MFDI live editor e2e", () => {
     await obsidian.page.getByRole("button", { name: "更新" }).click();
 
     // 更新後の検証
-    await obsidian.page.locator(".list .base-card").first().waitFor({ state: "visible" });
     await expectLiveEditorContent(obsidian, "");
     await expect.poll(() => obsidian.page.locator(".list .base-card").all()).toHaveLength(1);
     await expect.poll(() => obsidian.page.locator(".list .base-card").first().textContent()).toContain(editedMessage);
