@@ -26,7 +26,7 @@ export const CalendarHeader: React.FC<{
   const isSameMonth = viewDate.isSame(date, "month");
 
   const highlightYear =
-    (granularity === "year" && isSameYear) ||
+    ((granularity === "year" || granularity === "quarter") && isSameYear) ||
     (granularity === "month" && isSameMonth);
   const highlightMonth = granularity === "month" && isSameMonth;
 

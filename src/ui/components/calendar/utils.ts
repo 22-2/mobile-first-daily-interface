@@ -2,6 +2,7 @@ import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import type { Week } from "src/ui/components/calendar/types";
+import { getGranularityRange } from "src/ui/config/granularity-config";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useAppStore } from "src/ui/store/appStore";
@@ -28,46 +29,6 @@ function buildWeeksInMonth(viewDate: moment.Moment): Week[] {
     weeks.push(days.slice(i, i + 7));
   }
   return weeks;
-}
-function calcSelectedRange(
-  date: moment.Moment,
-  granularity: string,
-  dateFilter: string,
-): { rangeStart: moment.Moment; rangeEnd: moment.Moment } {
-  if (granularity === "week") {
-    return {
-      rangeStart: date.clone().startOf("isoWeek"),
-      rangeEnd: date.clone().endOf("isoWeek"),
-    };
-  }
-  if (granularity !== "day" || dateFilter === "today") {
-    return {
-      rangeStart: date
-        .clone()
-        .startOf(granularity as moment.unitOfTime.StartOf),
-      rangeEnd: date.clone().endOf(granularity as moment.unitOfTime.StartOf),
-    };
-  }
-  if (dateFilter === "this_week") {
-    return {
-      rangeStart: date.clone().startOf("isoWeek"),
-      rangeEnd: date.clone().endOf("isoWeek"),
-    };
-  }
-  const days = parseInt(dateFilter, 10);
-  if (!isNaN(days)) {
-    return {
-      rangeStart: date
-        .clone()
-        .subtract(days - 1, "days")
-        .startOf("day"),
-      rangeEnd: date.clone().endOf("day"),
-    };
-  }
-  return {
-    rangeStart: date.clone().startOf("day"),
-    rangeEnd: date.clone().endOf("day"),
-  };
 }
 // ─────────────────────────────────────────────
 // カスタムフック (変更なし)
@@ -204,11 +165,7 @@ export function useMiniCalendar() {
   }, [shell, activeTopic, dbActiveDates]);
 
   const weeks = useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
-  const { rangeStart, rangeEnd } = calcSelectedRange(
-    date,
-    granularity,
-    dateFilter as string,
-  );
+  const { rangeStart, rangeEnd } = getGranularityRange(date, granularity, dateFilter as string);
 
   return {
     date,

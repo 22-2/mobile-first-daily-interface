@@ -2,9 +2,11 @@ import type { TFile } from "obsidian";
 import type { Topic } from "src/core/topic";
 import { getDateFromFilename } from "src/lib/daily-notes/utils";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { Granularity, MomentLike } from "src/ui/types";
-
-const GRANULARITIES: Granularity[] = ["day", "week", "month", "year"];
+import {
+  GRANULARITIES,
+  type Granularity,
+} from "src/ui/config/granularity-config";
+import type { MomentLike } from "src/ui/types";
 
 interface NoteFileIdentity {
   topicId: string;
@@ -54,5 +56,3 @@ export function inferNoteIdentityFromFile(
 ): NoteFileIdentity | null {
   return inferNoteIdentityFromFilename(file.basename, topics, shell);
 }
-
-export { GRANULARITIES };

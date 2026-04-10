@@ -4,6 +4,7 @@ import {
   getDailyNoteSettings,
   getDateUID,
   getMonthlyNoteSettings,
+  getQuarterlyNoteSettings,
   getTopicNote,
   getYearlyNoteSettings,
   resolveTopicNotePath,
@@ -124,6 +125,29 @@ describe("daily-notes-interface utility", () => {
       expect(settings.folder).toBe("Periodic/Yearly");
       expect(settings.format).toBe("YYYY");
     });
+
+    it("quarterly は enabled=false でも periodic-notes の設定を使う", () => {
+      (window as any).app.plugins.getPlugin = vi.fn((id: string) => {
+        if (id === "periodic-notes") {
+          return {
+            settings: {
+              quarterly: {
+                enabled: false,
+                format: "YYYY-[Q]Q",
+                folder: "Periodic/Quarterly",
+                template: "",
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const settings = getQuarterlyNoteSettings(getShell());
+
+      expect(settings.folder).toBe("Periodic/Quarterly");
+      expect(settings.format).toBe("YYYY-[Q]Q");
+    });
   });
 
   describe("resolveTopicNotePath", () => {
@@ -160,6 +184,29 @@ describe("daily-notes-interface utility", () => {
       const path = resolveTopicNotePath(date, "month", "", getShell());
 
       expect(path).toBe("Periodic/Monthly/2026-03.md");
+    });
+
+    it("quarter は periodic-notes の folder 設定を反映する", () => {
+      (window as any).app.plugins.getPlugin = vi.fn((id: string) => {
+        if (id === "periodic-notes") {
+          return {
+            settings: {
+              quarterly: {
+                enabled: false,
+                format: "YYYY-[Q]Q",
+                folder: "Periodic/Quarterly",
+                template: "",
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const date = window.moment("2026-05-04");
+      const path = resolveTopicNotePath(date, "quarter", "", getShell());
+
+      expect(path).toBe("Periodic/Quarterly/2026-Q2.md");
     });
   });
 

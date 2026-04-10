@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 interface MockSettingsState {
   activeTopic: string;
   date: moment.Moment;
-  granularity: "day" | "week" | "month" | "year";
+  granularity: "day" | "week" | "month" | "quarter" | "year";
   dateFilter: string;
   searchQuery: string;
   threadOnly: boolean;
@@ -54,6 +54,9 @@ vi.mock("src/core/note-source", () => ({
   resolvePeriodicNote: (shell: unknown, date: any, granularity: string) => {
     if (granularity === "month") {
       return { path: date.format("YYYY-MM") + ".md" };
+    }
+    if (granularity === "quarter") {
+      return { path: date.format("YYYY-[Q]Q") + ".md" };
     }
     if (granularity === "year") {
       return { path: date.format("YYYY") + ".md" };
@@ -247,6 +250,34 @@ describe("useFocusPosts hook integration", () => {
     });
 
     expect(mocked.loadFile).toHaveBeenCalled();
+  });
+
+  it("quarter granularity は四半期ノートの path の投稿だけを表示する", async () => {
+    mocked.settings.viewNoteMode = "periodic";
+    mocked.settings.granularity = "quarter";
+    mocked.settings.date = window.moment("2026-05-20T09:00:00.000Z");
+    mocked.settings.activeTopic = "";
+
+    mocked.loadFile.mockResolvedValue(
+      [
+        "## Thino",
+        "- 09:00:00 from-quarter-note [mfdiId::quarter-1]",
+        "- 09:01:00 another quarter entry",
+      ].join("\n"),
+    );
+
+    const { result } = renderHook(() => useFocusPosts(), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.posts.map((post) => post.message)).toEqual([
+        "from-quarter-note",
+        "another quarter entry",
+      ]);
+    });
+
+    expect(mocked.loadFile).toHaveBeenCalledWith("2026-Q2.md");
   });
 
   it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {

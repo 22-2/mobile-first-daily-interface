@@ -180,9 +180,7 @@ const InputAreaControl: FC = memo(() => {
             />
             <HStack className="mfdi-date-controls gap-[0.2em]">
               <Input
-                className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${
-                  granularity === "year" ? "w-[6.5em]" : "w-[10em]"
-                }`}
+                className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${GRANULARITY_CONFIG[granularity].inputWidthClass}`}
                 type={GRANULARITY_CONFIG[granularity].inputType}
                 value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
                 onChange={handleChangeCalendarDate}

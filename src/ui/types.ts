@@ -4,10 +4,11 @@ import type {
   DATE_FILTER_OPTIONS,
   TIME_FILTER_OPTIONS,
 } from "src/ui/config/filter-config";
+import type { Granularity } from "src/ui/config/granularity-config";
+
+export type { Granularity } from "src/ui/config/granularity-config";
 
 export type MomentLike = Moment;
-
-export type Granularity = "day" | "week" | "month" | "year";
 
 /** 時間単位のフィルター型を config から自動推論 */
 export type TimeFilter = (typeof TIME_FILTER_OPTIONS)[number]["id"];

@@ -1,6 +1,9 @@
 import type { Menu } from "obsidian";
-import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import type { Granularity } from "src/ui/types";
+import {
+  GRANULARITIES,
+  GRANULARITY_CONFIG,
+  type Granularity,
+} from "src/ui/config/granularity-config";
 
 export function addGranularityMenuItems(
   menu: Menu,
@@ -12,8 +15,7 @@ export function addGranularityMenuItems(
   menu.addItem((item) => {
     item.setTitle("表示スケール").setIcon("calendar").setDisabled(true);
   });
-  const granularities: Granularity[] = ["day", "week", "month", "year"];
-  for (const g of granularities) {
+  for (const g of GRANULARITIES) {
     menu.addItem((item) => {
       item
         .setTitle(GRANULARITY_CONFIG[g].menuLabel)

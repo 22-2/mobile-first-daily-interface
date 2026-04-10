@@ -63,4 +63,17 @@ describe("note file identity inference", () => {
     expect(identity?.topicId).toBe("writing");
     expect(identity?.granularity).toBe("month");
   });
+
+  test("infers a quarterly note", () => {
+    const identity = inferNoteIdentityFromFilename(
+      "2026-Q2",
+      ["", "writing"],
+      shell as any,
+    );
+
+    expect(identity).not.toBeNull();
+    expect(identity?.topicId).toBe("");
+    expect(identity?.granularity).toBe("quarter");
+    expect(identity?.noteDate.format("YYYY-[Q]Q")).toBe("2026-Q2");
+  });
 });

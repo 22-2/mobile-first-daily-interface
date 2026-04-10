@@ -1,12 +1,12 @@
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import type { ScanTarget } from "src/db/indexer/types";
-import { GRANULARITIES } from "src/db/note-file-identity";
 import type { ScannableNote } from "src/db/worker-api";
 import { getAllTopicNotes } from "src/lib/daily-notes";
 import { getDateFromFile } from "src/lib/daily-notes/utils";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { GRANULARITIES } from "src/ui/config/granularity-config";
 
 // ---------------------------------------------------------------------------
 // Pure helpers

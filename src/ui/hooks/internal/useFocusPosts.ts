@@ -4,7 +4,10 @@ import { resolvePeriodicNote } from "src/core/note-source";
 import { resolveTimestamp } from "src/core/post-utils";
 import { parseThinoEntries } from "src/core/thino";
 import { WorkerClient } from "src/db/worker-client";
-import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
+import {
+  getGranularityRange,
+  GRANULARITY_CONFIG,
+} from "src/ui/config/granularity-config";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
@@ -53,35 +56,23 @@ export const useFocusPosts = () => {
   );
   const periodicNoteFile = useMemo(() => {
     if (isFixedMode) return null;
-    if (granularity !== "month" && granularity !== "year") return null;
-    // 月/年 granularity はノートファイルを直接読む（DB側の path 登録状態に依存しない）
+    if (!GRANULARITY_CONFIG[granularity].readsDirectlyFromPeriodicNote) {
+      return null;
+    }
+    // 意図: granularity ごとの本文直読み判定を config に寄せて、quarter 追加時の分岐漏れを防ぐ。
     return resolvePeriodicNote(shell, date, granularity, activeTopic);
   }, [isFixedMode, granularity, date, activeTopic, shell]);
 
   const { startDate, endDate } = useMemo(() => {
-    let start = date.clone().startOf("day");
-    let end = date.clone().endOf("day");
-
-    if (granularity === "week" || dateFilter === DATE_FILTER_IDS.THIS_WEEK) {
-      start = date.clone().startOf("isoWeek");
-      end = date.clone().endOf("isoWeek");
-    } else if (granularity === "month") {
-      start = date.clone().startOf("month");
-      end = date.clone().endOf("month");
-    } else if (granularity === "year") {
-      start = date.clone().startOf("year");
-      end = date.clone().endOf("year");
-    } else if (dateFilter === "3d") {
-      start = date.clone().subtract(2, "days").startOf("day");
-    } else if (dateFilter === "5d") {
-      start = date.clone().subtract(4, "days").startOf("day");
-    } else if (dateFilter === "7d") {
-      start = date.clone().subtract(6, "days").startOf("day");
-    }
+    const { rangeStart, rangeEnd } = getGranularityRange(
+      date,
+      granularity,
+      dateFilter,
+    );
 
     return {
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
+      startDate: rangeStart.toISOString(),
+      endDate: rangeEnd.toISOString(),
     };
   }, [date, granularity, dateFilter]);
 

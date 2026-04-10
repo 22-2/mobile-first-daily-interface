@@ -1,6 +1,7 @@
 import type React from "react";
 import { DayCell } from "src/ui/components/calendar/DayCell";
 import type { WeekRowProps } from "src/ui/components/calendar/types";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { Box } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 
@@ -23,7 +24,7 @@ export const WeekRow: React.FC<WeekRowProps> = ({
     week[0].isSame(date, "isoWeek");
   const isSingleDaySelected = granularity === "day" && dateFilter === "today";
 
-  const showRangeHighlight = granularity !== "month" && granularity !== "year";
+  const showRangeHighlight = GRANULARITY_CONFIG[granularity].showCalendarRangeHighlight;
 
   return (
     <>
