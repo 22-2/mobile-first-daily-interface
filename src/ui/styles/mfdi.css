@@ -401,14 +401,17 @@ If your plugin does not need CSS, delete this file.
 }
 
 [data-type="mfdi-view"] .mfdi-card--highlighted,
-.mfdi-card--highlighted {
+[data-type="mfdi-view"] .mfdi-card--highlighted:hover,
+.mfdi-card--highlighted,
+.mfdi-card--highlighted:hover {
+  /* :hover セレクタも列挙し、hover:bg-* による上書きを防ぐ */
   background: color-mix(
     in srgb,
     var(--interactive-accent) 8%,
     var(--background-primary)
-  );
+  )!important;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--interactive-accent) 40%, transparent),
     0 0 0 4px color-mix(in srgb, var(--interactive-accent) 14%, transparent),
-    var(--shadow-xs);
+    var(--shadow-xs)!important;
 }
