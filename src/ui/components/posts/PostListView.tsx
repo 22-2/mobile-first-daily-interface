@@ -47,6 +47,7 @@ export const PostListView: React.FC = memo(() => {
       setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
       asTask: s.asTask,
+      searchQuery: s.searchQuery,
       isReadOnly: s.isReadOnly(),
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
@@ -102,12 +103,17 @@ export const PostListView: React.FC = memo(() => {
     displayMode,
     dateFilter,
     isReadOnly,
+    searchQuery,
     setDate,
     setDisplayMode,
     threadFocusRootId,
     setThreadFocusRootId,
   } = settings;
   const threadView = isThreadView({ displayMode, threadFocusRootId });
+  // 意図: divider折りたたみはタイムライン通常表示時のみ有効にし、
+  // 他モードや検索中に投稿が見えなくなる混乱を防ぐ。
+  const canCollapseDividers =
+    timelineView && !threadView && searchQuery.trim().length === 0;
 
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<string[]>(() =>
     storage.get<string[]>(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, []),
@@ -119,6 +125,9 @@ export const PostListView: React.FC = memo(() => {
 
   const toggleCollapsedGroup = useCallback(
     (groupKey: string) => {
+      if (!canCollapseDividers) {
+        return;
+      }
       setCollapsedGroupKeys((prev) => {
         const nextSet = new Set(prev);
         if (nextSet.has(groupKey)) {
@@ -132,7 +141,7 @@ export const PostListView: React.FC = memo(() => {
         return next;
       });
     },
-    [storage],
+    [canCollapseDividers, storage],
   );
 
   const showPostContextMenu = useCallback(
@@ -323,7 +332,8 @@ export const PostListView: React.FC = memo(() => {
     );
     const hasPinnedSection = pinnedPosts.length > 0;
     const pinnedGroupKey = "pinned";
-    const isPinnedCollapsed = collapsedGroupSet.has(pinnedGroupKey);
+    const isPinnedCollapsed =
+      canCollapseDividers && collapsedGroupSet.has(pinnedGroupKey);
 
     if (pinnedPosts.length > 0) {
       // 意図: ピン留め投稿は日付グループとは独立して、
@@ -365,7 +375,8 @@ export const PostListView: React.FC = memo(() => {
 
       if (showDivider) {
         const groupKey = `date-${currentDate}`;
-        currentDateGroupCollapsed = collapsedGroupSet.has(groupKey);
+        currentDateGroupCollapsed =
+          canCollapseDividers && collapsedGroupSet.has(groupKey);
         list.push({
           type: "divider",
           date: post.timestamp,
@@ -396,8 +407,103 @@ export const PostListView: React.FC = memo(() => {
     displayMode,
     dateFilter,
     settings.viewNoteMode,
+    canCollapseDividers,
     collapsedGroupSet,
   ]);
+
+  const visibleDividerGroupKeys = useMemo(
+    () =>
+      displayedPostsWithDividers
+        .filter(
+          (item): item is Extract<TimelineItem, { groupKey: string }> =>
+            item.type === "divider" || item.type === "pinned-divider",
+        )
+        .map((item) => item.groupKey),
+    [displayedPostsWithDividers],
+  );
+
+  const hasVisibleDividers = visibleDividerGroupKeys.length > 0;
+  const areAllVisibleDividersCollapsed =
+    hasVisibleDividers &&
+    visibleDividerGroupKeys.every((groupKey) => collapsedGroupSet.has(groupKey));
+  const areAllVisibleDividersExpanded =
+    hasVisibleDividers &&
+    visibleDividerGroupKeys.every((groupKey) => !collapsedGroupSet.has(groupKey));
+
+  const collapseVisibleDividers = useCallback(() => {
+    if (!canCollapseDividers) {
+      return;
+    }
+    setCollapsedGroupKeys((prev) => {
+      const nextSet = new Set(prev);
+      visibleDividerGroupKeys.forEach((groupKey) => {
+        nextSet.add(groupKey);
+      });
+      const next = [...nextSet];
+      // 意図: 右クリックメニューからの一括折りたたみ結果も永続化して再表示時に維持する。
+      storage.set(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, next);
+      return next;
+    });
+  }, [canCollapseDividers, storage, visibleDividerGroupKeys]);
+
+  const expandVisibleDividers = useCallback(() => {
+    if (!canCollapseDividers) {
+      return;
+    }
+    setCollapsedGroupKeys((prev) => {
+      const nextSet = new Set(prev);
+      visibleDividerGroupKeys.forEach((groupKey) => {
+        nextSet.delete(groupKey);
+      });
+      const next = [...nextSet];
+      // 意図: 右クリックメニューからの一括展開結果も永続化して再表示時に維持する。
+      storage.set(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, next);
+      return next;
+    });
+  }, [canCollapseDividers, storage, visibleDividerGroupKeys]);
+
+  const showDividerContextMenu = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const menu = new Menu();
+
+      menu.addItem((item) =>
+        item
+          .setTitle("表示中のdividerをすべて折りたたむ")
+          .setIcon("chevrons-up-down")
+          .setDisabled(
+            !canCollapseDividers ||
+              !hasVisibleDividers ||
+              areAllVisibleDividersCollapsed,
+          )
+          .onClick(collapseVisibleDividers),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("表示中のdividerをすべて展開する")
+          .setIcon("rows")
+          .setDisabled(
+            !canCollapseDividers ||
+              !hasVisibleDividers ||
+              areAllVisibleDividersExpanded,
+          )
+          .onClick(expandVisibleDividers),
+      );
+
+      menu.showAtMouseEvent(event as unknown as MouseEvent);
+    },
+    [
+      canCollapseDividers,
+      areAllVisibleDividersCollapsed,
+      areAllVisibleDividersExpanded,
+      collapseVisibleDividers,
+      expandVisibleDividers,
+      hasVisibleDividers,
+    ],
+  );
 
   const vRef = useRef<VirtualizerHandle>(null);
 
@@ -460,14 +566,24 @@ export const PostListView: React.FC = memo(() => {
               <DateDivider
                 date={item.date}
                 collapsed={item.collapsed}
-                onClick={() => toggleCollapsedGroup(item.groupKey)}
+                onClick={
+                  canCollapseDividers
+                    ? () => toggleCollapsedGroup(item.groupKey)
+                    : undefined
+                }
+                onContextMenu={showDividerContextMenu}
               />
             ) : item.type === "pinned-divider" ? (
               <DateDivider
                 label="ピン留め"
                 leadingIconName="pin"
                 collapsed={item.collapsed}
-                onClick={() => toggleCollapsedGroup(item.groupKey)}
+                onClick={
+                  canCollapseDividers
+                    ? () => toggleCollapsedGroup(item.groupKey)
+                    : undefined
+                }
+                onContextMenu={showDividerContextMenu}
               />
             ) : (
               <PostCardView

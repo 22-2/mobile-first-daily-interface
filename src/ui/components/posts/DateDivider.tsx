@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, MouseEventHandler } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { replaceDayToJa } from "src/core/strings";
 import { Box, Flex, Text } from "src/ui/components/primitives";
@@ -10,6 +10,7 @@ interface DateDividerProps {
   leadingIconName?: string;
   collapsed?: boolean;
   onClick?: () => void;
+  onContextMenu?: MouseEventHandler<HTMLDivElement>;
 }
 
 export const DateDivider: FC<DateDividerProps> = ({
@@ -18,6 +19,7 @@ export const DateDivider: FC<DateDividerProps> = ({
   leadingIconName,
   collapsed = false,
   onClick,
+  onContextMenu,
 }) => {
   const clickable = typeof onClick === "function";
   const title =
@@ -30,6 +32,7 @@ export const DateDivider: FC<DateDividerProps> = ({
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       onKeyDown={
         clickable
           ? (event) => {

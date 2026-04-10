@@ -21,6 +21,7 @@ export const WeekRow: React.FC<WeekRowProps> = ({
     (granularity === "week" ||
       (granularity === "day" && dateFilter === "this_week")) &&
     week[0].isSame(date, "isoWeek");
+  const isSingleDaySelected = granularity === "day" && dateFilter === "today";
 
   const showRangeHighlight = granularity !== "month" && granularity !== "year";
 
@@ -55,7 +56,14 @@ export const WeekRow: React.FC<WeekRowProps> = ({
           isCurrentMonth={day.isSame(viewDate, "month")}
           hasPost={activityDates.has(day.format("YYYY-MM-DD"))}
           showRangeHighlight={showRangeHighlight}
-          onClick={onSelectDay}
+          onClick={(clickedDay) => {
+            // 同じ日セルの再クリックは「絞り込み解除」の意図としてHomeへ戻す。
+            if (isSingleDaySelected && clickedDay.isSame(date, "day")) {
+              onClickHome();
+              return;
+            }
+            onSelectDay(clickedDay);
+          }}
         />
       ))}
     </>
