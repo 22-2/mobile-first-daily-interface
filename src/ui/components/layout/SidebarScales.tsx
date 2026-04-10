@@ -154,6 +154,9 @@ export const SidebarScales: React.FC<{
     onViewDateChange?.(window.moment());
   }, [onViewDateChange]);
 
+  // 意図: 既に現在月を表示中なら「戻す」操作は無効化し、誤操作感と不要な強調表示を避ける。
+  const isViewingCurrentMonth = baseDate.isSame(window.moment(), "month");
+
   return (
     <VStack className="mfdi-sidebar-scales items-stretch gap-0 pt-2 mt-2">
       <SidebarSectionHeader
@@ -169,8 +172,10 @@ export const SidebarScales: React.FC<{
           <NavButton className="group-hover:visible invisible" direction="left" onClick={() => handleMoveViewMonth(-1)} />
           <Text
             as="span"
-            className="cursor-pointer hover:text-[var(--text-accent)]"
-            onClick={handleResetViewMonth}
+            className={cn(
+              !isViewingCurrentMonth && "cursor-pointer text-[var(--text-accent)]",
+            )}
+            onClick={isViewingCurrentMonth ? undefined : handleResetViewMonth}
           >
             年月日別
           </Text>
