@@ -122,7 +122,7 @@ export const SidebarScales: React.FC<{ viewedDate?: moment.Moment }> = ({
       <SidebarSectionHeader>
         <HStack className="gap-2 items-center">
           <SidebarSectionHeader>
-            年月日別の投稿
+            年月日別
           </SidebarSectionHeader>
         </HStack>
         {loading && (
