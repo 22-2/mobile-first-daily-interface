@@ -1,10 +1,10 @@
-import type { MarkdownView } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { resolveTimestamp, toText } from "src/core/post-utils";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";
 import { parseThinoEntries } from "src/core/thino";
+import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
@@ -38,7 +38,15 @@ export const usePostActions = () => {
       searchQuery: s.searchQuery,
       threadOnly: s.threadOnly,
       asTask: s.asTask,
+      setAsTask: s.setAsTask,
       setDate: s.setDate,
+      setGranularity: s.setGranularity,
+      setTimeFilter: s.setTimeFilter,
+      setDateFilter: s.setDateFilter,
+      setActiveTag: s.setActiveTag,
+      setSearchQuery: s.setSearchQuery,
+      setThreadOnly: s.setThreadOnly,
+      setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
       isReadOnly: s.isReadOnly(),
       displayMode: s.displayMode,
@@ -58,6 +66,7 @@ export const usePostActions = () => {
       inputRef: s.inputRef,
       scrollContainerRef: s.scrollContainerRef,
       editingPost: s.editingPost,
+      setHighlightedPost: s.setHighlightedPost,
       canSubmit: s.canSubmit,
       cancelEdit: s.cancelEdit,
     })),
@@ -800,40 +809,37 @@ export const usePostActions = () => {
     ],
   );
 
-  /** 投稿をクリックしてエディタで該当箇所をハイライト */
+  /** 投稿を同じ MFDI タブの focused モードで開き、一覧上でハイライトする */
   const handleClickTime = useCallback(
-    (post: Post) => {
-      (async () => {
-        const latestPost = await findLatestPost(post);
-        if (!latestPost) {
-          await notifyNotFoundAndRefresh(post.path);
-          return;
-        }
+    async (post: Post) => {
+      const latestPost = await findLatestPost(post);
+      if (!latestPost) {
+        await notifyNotFoundAndRefresh(post.path);
+        return;
+      }
 
-        const noteFile = shell.getAbstractFileByPath(latestPost.path);
-        if (!(noteFile instanceof TFile)) return;
+      // 意図: exact jump は MFDI 内の文脈を保ったまま対象日へ移動したいので、
+      // 外部 leaf ではなく focused/day/all の状態へ寄せて一覧上の強調表示へ統一する。
+      if (
+        editorState.editingPost &&
+        (editorState.editingPost.id !== latestPost.id ||
+          editorState.editingPost.path !== latestPost.path)
+      ) {
+        editorState.cancelEdit();
+      }
 
-        const leaf = shell.getLeaf(true);
-        await shell.revealLeaf(leaf);
-        await leaf.openFile(noteFile, { active: true });
-
-        const editor = shell.getWorkspace().activeEditor as MarkdownView;
-        const startPos = editor.editor!.offsetToPos(latestPost.bodyStartOffset);
-        const endPos = editor.editor!.offsetToPos(
-          latestPost.bodyStartOffset + latestPost.message.length,
-        );
-
-        queueMicrotask(() => {
-          editor.editMode!.highlightSearchMatches([
-            {
-              from: { line: startPos.line, ch: startPos.ch },
-              to: { line: endPos.line, ch: endPos.ch },
-            },
-          ]);
-        });
-      })();
+      settingsState.setAsTask(false);
+      settingsState.setThreadOnly(false);
+      settingsState.setActiveTag(null);
+      settingsState.setSearchQuery("");
+      settingsState.setTimeFilter("all");
+      settingsState.setGranularity("day");
+      settingsState.setDateFilter("today");
+      settingsState.setDate(latestPost.noteDate.clone());
+      settingsState.setDisplayMode(DISPLAY_MODE.FOCUS);
+      editorState.setHighlightedPost(latestPost);
     },
-    [shell, findLatestPost, notifyNotFoundAndRefresh],
+    [editorState, findLatestPost, notifyNotFoundAndRefresh, settingsState],
   );
 
   return {

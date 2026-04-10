@@ -29,6 +29,7 @@ export const PostCardView = React.memo(
     onContextMenu,
     onEdit,
     onOpenBacklinks,
+    isHighlighted = false,
     isThreadFocused = false,
     onToggleThreadFocus,
     className,
@@ -41,6 +42,7 @@ export const PostCardView = React.memo(
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
     onOpenBacklinks?: (post: Post) => void;
+    isHighlighted?: boolean;
     isThreadFocused?: boolean;
     onToggleThreadFocus?: (post: Post) => void;
     className?: string;
@@ -71,7 +73,7 @@ export const PostCardView = React.memo(
           {backlinkCount > 0 && (
             <Box
               aria-label={backlinkButtonLabel}
-              className="items-center gap-1 rounded-md px-1 py-0.5 text-[85%] transition-colors hover:bg-[var(--background-modifier-hover)]"
+              className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[85%] transition-colors hover:bg-[var(--background-modifier-hover)]"
               ref={(ref: HTMLElement | null) => {
                 // 意図: footer の数字だけでは意味が伝わりにくいので、
                 // アイコンに触れた時点で参照数だと分かるようにする。
@@ -113,7 +115,12 @@ export const PostCardView = React.memo(
       ) : undefined;
 
     return (
-      <Card className={className} style={style}>
+      <Card
+        className={[className, isHighlighted ? "mfdi-card--highlighted" : ""]
+          .filter(Boolean)
+          .join(" ")}
+        style={style}
+      >
         <CardContent
           timestamp={post.timestamp}
           granularity={granularity}

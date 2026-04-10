@@ -476,6 +476,77 @@ describe("timeline note resolution", () => {
     );
   });
 
+  it("handleClickTime は同じ MFDI タブを focused/day/all へ切り替えて対象投稿をハイライトする", async () => {
+    const targetPost = {
+      id: `${yesterdayNote.path}:0`,
+      threadRootId: null,
+      timestamp: yesterday.clone().hour(14).minute(39).second(0),
+      noteDate: yesterday.clone().startOf("day"),
+      message: "jump target",
+      metadata: {},
+      offset: 0,
+      startOffset: 0,
+      endOffset: 10,
+      bodyStartOffset: 2,
+      kind: "thino",
+      path: yesterdayNote.path,
+    } as any;
+
+    settingsStore.setState((state) => ({
+      ...state,
+      activeTag: "IT",
+      granularity: "month",
+      dateFilter: "7d",
+      timeFilter: "latest",
+      displayMode: DISPLAY_MODE.TIMELINE,
+      asTask: true,
+      threadOnly: true,
+      searchQuery: "abc",
+    }));
+
+    editorStore.setState({
+      editingPost: {
+        ...targetPost,
+        id: "editing-post",
+        message: "editing",
+      },
+    });
+
+    (useAppContext as any).mockReturnValue({
+      app: mockApp,
+      shell: {
+        ...mockApp,
+        trigger: vi.fn(),
+        insertTextAfter: mockInsertTextAfter,
+        replaceRange: vi.fn(),
+        loadFile: vi.fn(async () => ["## Thino", "- 14:39:00 jump target", ""].join("\n")),
+      },
+      settings: {
+        insertAfter: "## Thino",
+        updateDateStrategy: "never",
+      },
+    });
+
+    const { result } = renderHook(() => usePostActions());
+
+    await act(async () => {
+      await result.current.handleClickTime(targetPost);
+    });
+
+    const nextState = settingsStore.getState();
+    expect(nextState.displayMode).toBe(DISPLAY_MODE.FOCUS);
+    expect(nextState.granularity).toBe("day");
+    expect(nextState.dateFilter).toBe("today");
+    expect(nextState.timeFilter).toBe("all");
+    expect(nextState.asTask).toBe(false);
+    expect(nextState.threadOnly).toBe(false);
+    expect(nextState.activeTag).toBeNull();
+    expect(nextState.searchQuery).toBe("");
+    expect(nextState.date.isSame(yesterday, "day")).toBe(true);
+    expect(editorStore.getState().highlightedPost?.message).toBe("jump target");
+    expect(editorStore.getState().editingPost).toBeNull();
+  });
+
   it("スレッド作成では自動でスレッド表示へ切り替える", async () => {
     const plainPost = {
       id: `${yesterdayNote.path}:0`,

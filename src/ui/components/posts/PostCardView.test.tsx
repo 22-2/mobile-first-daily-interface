@@ -90,11 +90,11 @@ describe("PostCardView", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "被リンク 2件をプレビュー" }));
+    fireEvent.click(screen.getByLabelText("被リンク 2件をプレビュー"));
 
     expect(onOpenBacklinks).toHaveBeenCalledWith(post);
     expect(
-      screen.getByRole("button", { name: "被リンク 2件をプレビュー" }),
+      screen.getByLabelText("被リンク 2件をプレビュー"),
     ).toBeDefined();
     expect(screen.getByText("2")).toBeDefined();
     expect(screen.getByLabelText("スレッドを表示")).toBeDefined();
@@ -106,5 +106,15 @@ describe("PostCardView", () => {
     render(<PostCardView post={post} backlinkCount={0} granularity="day" />);
 
     expect(screen.queryByLabelText(/被リンク/)).toBeNull();
+  });
+
+  it("highlight 指定時はカードに強調クラスを付ける", () => {
+    const post = createPost({ id: "post-highlight", threadRootId: null });
+
+    const { container } = render(
+      <PostCardView post={post} backlinkCount={0} granularity="day" isHighlighted />,
+    );
+
+    expect(container.querySelector(".mfdi-card--highlighted")).not.toBeNull();
   });
 });

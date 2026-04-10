@@ -104,6 +104,8 @@ export interface EditorSlice {
   inputSnapshot: string;
   editingPost: Post | null;
   editingPostOffset: number | null;
+  highlightedPost: Post | null;
+  highlightRequestId: number;
   inputRef: RefObject<ObsidianLiveEditorRef | null>;
   scrollContainerRef: RefObject<HTMLDivElement | null>;
   syncInputSession: (v: string) => void;
@@ -112,6 +114,8 @@ export interface EditorSlice {
   getInputValue: () => string;
   setEditingPostOffset: (offset: number | null) => void;
   setEditingPost: (post: Post | null) => void;
+  setHighlightedPost: (post: Post | null) => void;
+  clearHighlightedPost: () => void;
   setInputRef: (ref: RefObject<ObsidianLiveEditorRef | null>) => void;
   setScrollContainerRef: (ref: RefObject<HTMLDivElement | null>) => void;
   startEdit: (post: Post) => void;

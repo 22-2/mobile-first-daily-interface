@@ -34,6 +34,15 @@ type TimelineItem =
     }
   | { type: "pinned-divider"; key: string; groupKey: string; collapsed: boolean };
 
+function isSamePostReference(left: Post, right: Post): boolean {
+  return (
+    left.id === right.id ||
+    (left.path === right.path &&
+      left.timestamp.valueOf() === right.timestamp.valueOf() &&
+      left.message.trim() === right.message.trim())
+  );
+}
+
 export const PostListView: React.FC = memo(() => {
   const { shell, storage } = useAppContext();
   const { showTextInput, confirmDeleteAction, openBacklinkPreview } =
@@ -62,6 +71,8 @@ export const PostListView: React.FC = memo(() => {
   const {
     editingPostOffset,
     editingPost,
+    highlightedPost,
+    highlightRequestId,
     startEdit,
     setEditingPost,
     scrollContainerRef,
@@ -69,6 +80,8 @@ export const PostListView: React.FC = memo(() => {
     useShallow((s) => ({
       editingPostOffset: s.editingPostOffset,
       editingPost: s.editingPost,
+      highlightedPost: s.highlightedPost,
+      highlightRequestId: s.highlightRequestId,
       startEdit: s.startEdit,
       setEditingPost: s.setEditingPost,
       scrollContainerRef: s.scrollContainerRef,
@@ -346,9 +359,7 @@ export const PostListView: React.FC = memo(() => {
     let lastDate: string | null = null;
     let currentDateGroupCollapsed = false;
 
-    const postsToDisplay = filteredPosts.filter(
-      (post) => post.startOffset !== editingPostOffset,
-    );
+    const postsToDisplay = filteredPosts;
 
     const pinnedPosts = postsToDisplay.filter((post) => isPinned(post.metadata));
     const unpinnedPosts = postsToDisplay.filter(
@@ -426,7 +437,6 @@ export const PostListView: React.FC = memo(() => {
     return list;
   }, [
     filteredPosts,
-    editingPostOffset,
     granularity,
     displayMode,
     dateFilter,
@@ -556,6 +566,28 @@ export const PostListView: React.FC = memo(() => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!highlightedPost) {
+      return;
+    }
+
+    const targetIndex = displayedPostsWithDividers.findIndex(
+      (item) =>
+        item.type === "post" && isSamePostReference(item.post, highlightedPost),
+    );
+    if (targetIndex === -1) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      vRef.current?.scrollToIndex(targetIndex, { align: "center" });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [displayedPostsWithDividers, highlightedPost, highlightRequestId]);
+
   // 無限スクロールのトリガー (初期読み込みなどでリストが空の場合のケア)
   useEffect(() => {
     if (threadView) return;
@@ -610,22 +642,36 @@ export const PostListView: React.FC = memo(() => {
                 onContextMenu={showDividerContextMenu}
               />
             ) : (
-              <PostCardView
-                post={item.post}
-                backlinkCount={backlinkCounts.get(item.post.id) ?? 0}
-                granularity={granularity}
-                dateFilter={dateFilter}
-                onEdit={startEdit}
-                onOpenBacklinks={openBacklinkPreviewForPost}
-                onContextMenu={showPostContextMenu}
-                isThreadFocused={item.post.id === threadFocusRootId}
-                onToggleThreadFocus={(post) => {
-                  setThreadFocusRootId(
-                    threadFocusRootId === post.id ? null : post.id,
-                    post.noteDate,
-                  );
-                }}
-              />
+              (() => {
+                const isEditing =
+                  editingPost != null
+                    ? isSamePostReference(item.post, editingPost)
+                    : editingPostOffset !== null &&
+                      item.post.startOffset === editingPostOffset;
+                const isJumpHighlighted =
+                  highlightedPost != null &&
+                  isSamePostReference(item.post, highlightedPost);
+
+                return (
+                  <PostCardView
+                    post={item.post}
+                    backlinkCount={backlinkCounts.get(item.post.id) ?? 0}
+                    granularity={granularity}
+                    dateFilter={dateFilter}
+                    isHighlighted={isEditing || isJumpHighlighted}
+                    onEdit={startEdit}
+                    onOpenBacklinks={openBacklinkPreviewForPost}
+                    onContextMenu={showPostContextMenu}
+                    isThreadFocused={item.post.id === threadFocusRootId}
+                    onToggleThreadFocus={(post) => {
+                      setThreadFocusRootId(
+                        threadFocusRootId === post.id ? null : post.id,
+                        post.noteDate,
+                      );
+                    }}
+                  />
+                );
+              })()
             )}
           </Box>
         ))}

@@ -277,6 +277,17 @@ If your plugin does not need CSS, delete this file.
   font-size: var(--font-ui-smaller);
 }
 
+.mfdi-backlink-preview__section-title {
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+}
+
+.mfdi-backlink-preview__target {
+  display: grid;
+  gap: var(--size-2-3);
+}
+
 .mfdi-backlink-preview__list {
   display: grid;
   gap: var(--size-2-3);
@@ -316,6 +327,25 @@ If your plugin does not need CSS, delete this file.
 .mfdi-backlink-preview__item:focus-visible {
   box-shadow: 0 0 0 2px
     color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+}
+
+.mfdi-backlink-preview__item--target {
+  cursor: default;
+  border-color: color-mix(
+    in srgb,
+    var(--interactive-accent) 48%,
+    var(--background-modifier-border)
+  );
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 8%,
+    var(--background-primary-alt)
+  );
+}
+
+.mfdi-backlink-preview__item--target:hover,
+.mfdi-backlink-preview__item--target:focus-visible {
+  transform: none;
 }
 
 .mfdi-backlink-preview__item > * {
@@ -368,4 +398,17 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-muted);
   padding: var(--size-4-3) 0;
   text-align: center;
+}
+
+[data-type="mfdi-view"] .mfdi-card--highlighted,
+.mfdi-card--highlighted {
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 8%,
+    var(--background-primary)
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--interactive-accent) 40%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--interactive-accent) 14%, transparent),
+    var(--shadow-xs);
 }

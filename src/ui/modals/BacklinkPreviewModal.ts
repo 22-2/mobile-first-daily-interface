@@ -57,7 +57,19 @@ export class BacklinkPreviewModal extends MFDIBaseModal<void> {
   renderBody(bodyEl: HTMLElement): void {
     bodyEl.createDiv({
       cls: "mfdi-backlink-preview__summary",
-      text: "参照元をクリックするとジャンプします。",
+      text: "参照元をクリックすると、その日の focused モードで開いて該当投稿をハイライトします。",
+    });
+
+    bodyEl.createDiv({
+      cls: "mfdi-backlink-preview__section-title",
+      text: "参照されている投稿",
+    });
+    const targetEl = bodyEl.createDiv({ cls: "mfdi-backlink-preview__target" });
+    this.renderStaticItem(targetEl, this.options.targetPost);
+
+    bodyEl.createDiv({
+      cls: "mfdi-backlink-preview__section-title",
+      text: `参照元 ${this.options.sourcePosts.length}件`,
     });
 
     const listEl = bodyEl.createDiv({ cls: "mfdi-backlink-preview__list" });
@@ -98,7 +110,18 @@ export class BacklinkPreviewModal extends MFDIBaseModal<void> {
       void this.options.onSelectPost(post);
     });
 
-    const metaEl = buttonEl.createDiv({ cls: "mfdi-backlink-preview__meta" });
+    this.renderItemContent(buttonEl, post);
+  }
+
+  private renderStaticItem(container: HTMLElement, post: Post): void {
+    const itemEl = container.createDiv({
+      cls: "mfdi-backlink-preview__item mfdi-backlink-preview__item--target",
+    });
+    this.renderItemContent(itemEl, post);
+  }
+
+  private renderItemContent(container: HTMLElement, post: Post): void {
+    const metaEl = container.createDiv({ cls: "mfdi-backlink-preview__meta" });
     metaEl.createDiv({
       cls: "mfdi-backlink-preview__time",
       text: post.timestamp.format(DISPLAY_DATE_TIME_FORMAT),
@@ -111,11 +134,11 @@ export class BacklinkPreviewModal extends MFDIBaseModal<void> {
       });
     }
 
-    buttonEl.createDiv({
+    container.createDiv({
       cls: "mfdi-backlink-preview__path",
       text: post.path,
     });
-    buttonEl.createDiv({
+    container.createDiv({
       cls: "mfdi-backlink-preview__preview",
       text: buildBacklinkPreviewText(post.message),
     });

@@ -104,6 +104,8 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     inputSnapshot: "",
     editingPost: null,
     editingPostOffset: null,
+    highlightedPost: null,
+    highlightRequestId: 0,
     inputRef: { current: null },
     scrollContainerRef: { current: null },
 
@@ -136,6 +138,18 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
     setEditingPost: (post) => {
       set({ editingPost: post, editingPostOffset: post?.startOffset ?? null });
+    },
+
+    setHighlightedPost: (post) => {
+      set((state) => ({
+        highlightedPost: post,
+        highlightRequestId:
+          post !== null ? state.highlightRequestId + 1 : state.highlightRequestId,
+      }));
+    },
+
+    clearHighlightedPost: () => {
+      set({ highlightedPost: null });
     },
 
     setInputRef: (inputRef) => set({ inputRef }),

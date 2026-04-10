@@ -164,6 +164,10 @@ describe("BacklinkPreviewModal", () => {
       onSelectPost,
     });
 
+    expect(screen.getByText("参照されている投稿")).toBeDefined();
+    expect(screen.getByText("参照元 1件")).toBeDefined();
+    expect(screen.getAllByText(targetPost.path)).toHaveLength(2);
+
     fireEvent.click(screen.getByRole("button", { name: /preview line 1/i }));
 
     expect(onSelectPost).toHaveBeenCalledWith(sourcePost);
