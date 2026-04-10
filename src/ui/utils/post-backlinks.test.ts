@@ -2,6 +2,7 @@ import moment from "moment";
 import type { Post } from "src/ui/types";
 import {
   buildPostBacklinkCountMap,
+  buildTargetPostBacklinkPostsMap,
   extractBlockLinkTargets,
 } from "src/ui/utils/post-backlinks";
 import { describe, expect, test } from "vitest";
@@ -60,6 +61,37 @@ describe("post-backlinks", () => {
     const result = buildPostBacklinkCountMap([target, sourceA, sourceB]);
 
     expect(result.get(target.id)).toBe(2);
+  });
+
+  test("buildTargetPostBacklinkPostsMap は duplicate link を source 投稿単位でまとめて返す", () => {
+    const target = createPost({
+      id: "target",
+      path: "daily/2026-04-09.md",
+      metadata: { blockId: "a054d5" },
+    });
+    const olderSource = createPost({
+      id: "older-source",
+      path: "daily/2026-04-10.md",
+      startOffset: 20,
+      timestamp: moment("2026-04-10T08:00:00.000Z"),
+      message: "[[2026-04-09#^a054d5|older]]",
+    });
+    const newerSource = createPost({
+      id: "newer-source",
+      path: "daily/2026-04-11.md",
+      startOffset: 40,
+      timestamp: moment("2026-04-11T09:00:00.000Z"),
+      message: "[[2026-04-09#^a054d5|new]]\n[[2026-04-09#^a054d5|dup]]",
+    });
+
+    const result = buildTargetPostBacklinkPostsMap([
+      target,
+    ], [olderSource, newerSource]);
+
+    expect(result.get(target.id)?.map((post) => post.id)).toEqual([
+      "newer-source",
+      "older-source",
+    ]);
   });
 
   test("同一ノート内の [[#^blockId]] も解決する", () => {

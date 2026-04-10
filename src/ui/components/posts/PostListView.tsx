@@ -7,7 +7,7 @@ import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE, STORAGE_KEYS } from "src/ui/config/consntants";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { usePostBacklinkCounts } from "src/ui/hooks/usePostBacklinkCounts";
+import { usePostBacklinks } from "src/ui/hooks/usePostBacklinkCounts";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
@@ -36,7 +36,8 @@ type TimelineItem =
 
 export const PostListView: React.FC = memo(() => {
   const { shell, storage } = useAppContext();
-  const { showTextInput, confirmDeleteAction } = useObsidianUi();
+  const { showTextInput, confirmDeleteAction, openBacklinkPreview } =
+    useObsidianUi();
   const settings = useSettingsStore(
     useShallow((s) => ({
       activeTag: s.activeTag,
@@ -93,7 +94,8 @@ export const PostListView: React.FC = memo(() => {
     ...settings,
     includeThreadReplies: true,
   });
-  const backlinkCounts = usePostBacklinkCounts(filteredPosts);
+  const { countMap: backlinkCounts, postsMap: backlinkPosts } =
+    usePostBacklinks(filteredPosts);
 
   const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
@@ -317,6 +319,26 @@ export const PostListView: React.FC = memo(() => {
       confirmDeleteAction,
       copyBlockIdLink,
     ],
+  );
+
+  const openBacklinkPreviewForPost = useCallback(
+    (post: Post) => {
+      const sourcePosts = backlinkPosts.get(post.id) ?? [];
+      if (sourcePosts.length === 0) {
+        return;
+      }
+
+      // 意図: exact jump は既存の投稿ジャンプロジックに一本化して、
+      // modal 側で別の移動実装を持たないようにする。
+      openBacklinkPreview({
+        targetPost: post,
+        sourcePosts,
+        onSelectPost: (sourcePost) => {
+          handleClickTime(sourcePost);
+        },
+      });
+    },
+    [backlinkPosts, openBacklinkPreview, handleClickTime],
   );
 
   const displayedPostsWithDividers = useMemo(() => {
@@ -594,6 +616,7 @@ export const PostListView: React.FC = memo(() => {
                 granularity={granularity}
                 dateFilter={dateFilter}
                 onEdit={startEdit}
+                onOpenBacklinks={openBacklinkPreviewForPost}
                 onContextMenu={showPostContextMenu}
                 isThreadFocused={item.post.id === threadFocusRootId}
                 onToggleThreadFocus={(post) => {

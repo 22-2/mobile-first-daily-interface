@@ -6,6 +6,10 @@ import {
 } from "src/ui/modals/DeleteConfirmModal";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { showInputModal } from "src/ui/modals/InputModal";
+import {
+  openBacklinkPreviewModal,
+  type BacklinkPreviewModalOptions,
+} from "src/ui/modals/BacklinkPreviewModal";
 import type { MFDIEditorModalOptions } from "src/ui/modals/MFDIEditorModal";
 import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";
@@ -49,6 +53,14 @@ export function useObsidianUi() {
     [shell],
   );
 
+  const openBacklinkPreview = useCallback(
+    (options: BacklinkPreviewModalOptions) => {
+      // Obsidian の Modal 生成は raw app 依存なので、呼び出し側には options だけを渡させる。
+      return openBacklinkPreviewModal(shell.getRawApp(), options);
+    },
+    [shell],
+  );
+
   return useMemo(
     () => ({
       openDraftList,
@@ -56,6 +68,7 @@ export function useObsidianUi() {
       confirmDelete,
       confirmDeleteAction,
       openModalEditor,
+      openBacklinkPreview,
     }),
     [
       openDraftList,
@@ -63,6 +76,7 @@ export function useObsidianUi() {
       confirmDelete,
       confirmDeleteAction,
       openModalEditor,
+      openBacklinkPreview,
     ],
   );
 }

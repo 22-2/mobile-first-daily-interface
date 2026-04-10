@@ -28,6 +28,7 @@ export const PostCardView = React.memo(
     dateFilter,
     onContextMenu,
     onEdit,
+    onOpenBacklinks,
     isThreadFocused = false,
     onToggleThreadFocus,
     className,
@@ -39,6 +40,7 @@ export const PostCardView = React.memo(
     dateFilter?: DateFilter;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
     onEdit?: (post: Post) => void;
+    onOpenBacklinks?: (post: Post) => void;
     isThreadFocused?: boolean;
     onToggleThreadFocus?: (post: Post) => void;
     className?: string;
@@ -62,29 +64,34 @@ export const PostCardView = React.memo(
       : "スレッドを表示";
     const tags = getPostTags(post.metadata);
     const backlinkLabel = `被リンク ${backlinkCount}件`;
+    const backlinkButtonLabel = `${backlinkLabel}をプレビュー`;
     const footerRightAddon =
       backlinkCount > 0 || isThreadRoot(post) ? (
         <HStack className="items-center gap-[var(--size-2-2)]">
           {backlinkCount > 0 && (
-            <HStack
-              aria-label={backlinkLabel}
-              className="items-center gap-1 text-[85%]"
-              ref={(ref: HTMLDivElement | null) => {
+            <Box
+              aria-label={backlinkButtonLabel}
+              className="items-center gap-1 rounded-md px-1 py-0.5 text-[85%] transition-colors hover:bg-[var(--background-modifier-hover)]"
+              ref={(ref: HTMLElement | null) => {
                 // 意図: footer の数字だけでは意味が伝わりにくいので、
                 // アイコンに触れた時点で参照数だと分かるようにする。
-                ref && setTooltip(ref, backlinkLabel);
+                ref && setTooltip(ref, backlinkButtonLabel);
+              }}
+              onClick={(e: React.MouseEvent<HTMLElement>) => {
+                e.stopPropagation();
+                onOpenBacklinks?.(post);
               }}
             >
               <ObsidianIcon
                 aria-hidden="true"
-                className="cursor-default px-0 py-0 hover:text-[var(--text-muted)]"
+                className="pointer-events-none px-0 py-0 hover:text-[var(--text-muted)]"
                 name="link"
                 size="0.95em"
               />
               <Box as="span" className="text-[75%] leading-none">
                 {backlinkCount}
               </Box>
-            </HStack>
+            </Box>
           )}
 
           {isThreadRoot(post) && (
@@ -136,7 +143,7 @@ export const PostCardView = React.memo(
           <VStack align="stretch" gap={3}>
             {/* Message Body */}
             <Box className="text-[93%] px-1 break-words">
-              <ObsidianMarkdown content={post.message} />
+              <ObsidianMarkdown content={post.message} sourcePath={post.path} />
             </Box>
 
             {settings?.enabledCardView && (

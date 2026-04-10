@@ -3,7 +3,10 @@ import { renderHook, waitFor } from "@testing-library/react";
 import moment from "moment";
 import React from "react";
 import type { MemoRecord } from "src/db/mfdi-db";
-import { usePostBacklinkCounts } from "src/ui/hooks/usePostBacklinkCounts";
+import {
+  usePostBacklinkCounts,
+  usePostBacklinks,
+} from "src/ui/hooks/usePostBacklinkCounts";
 import type { Post } from "src/ui/types";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -146,5 +149,48 @@ describe("usePostBacklinkCounts", () => {
 
     expect(mocked.countMemos).toHaveBeenCalledWith("work");
     expect(mocked.getMemos).toHaveBeenCalledWith({ topicId: "work", limit: 2 });
+  });
+
+  it("source 投稿一覧を preview 用に新しい順で返す", async () => {
+    const target = createPost({
+      id: "target",
+      path: "daily/2026-04-09.md",
+      metadata: { blockId: "plain-1" },
+    });
+
+    mocked.countMemos.mockResolvedValue(2);
+    mocked.getMemos.mockResolvedValue([
+      createMemoRecord({
+        id: "daily/2026-04-10.md:10",
+        path: "daily/2026-04-10.md",
+        noteName: "2026-04-10",
+        content: "[[2026-04-09#^plain-1|older]]",
+        createdAt: "2026-04-10T08:00:00.000Z",
+        noteDate: "2026-04-10",
+        updatedAt: "2026-04-10T08:00:00.000Z",
+      }),
+      createMemoRecord({
+        id: "daily/2026-04-11.md:20",
+        path: "daily/2026-04-11.md",
+        noteName: "2026-04-11",
+        content: "[[2026-04-09#^plain-1|newer]]",
+        startOffset: 20,
+        endOffset: 30,
+        bodyStartOffset: 22,
+        createdAt: "2026-04-11T09:00:00.000Z",
+        noteDate: "2026-04-11",
+        updatedAt: "2026-04-11T09:00:00.000Z",
+      }),
+    ]);
+
+    const { result } = renderHook(() => usePostBacklinks([target]), {
+      wrapper: swrWrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current.postsMap.get("target")?.map((post) => post.id)).toEqual(
+        ["daily/2026-04-11.md:20", "daily/2026-04-10.md:10"],
+      );
+    });
   });
 });

@@ -128,14 +128,29 @@ export function buildPostBacklinkCountMap(posts: Post[]): Map<string, number> {
   return buildTargetPostBacklinkCountMap(posts, posts);
 }
 
-export function buildTargetPostBacklinkCountMap(
+function sortBacklinkPosts(posts: Post[]): Post[] {
+  return [...posts].sort((left, right) => {
+    const byTimestamp = right.timestamp.valueOf() - left.timestamp.valueOf();
+    if (byTimestamp !== 0) {
+      return byTimestamp;
+    }
+
+    return right.startOffset - left.startOffset;
+  });
+}
+
+export function buildTargetPostBacklinkPostsMap(
   targetPosts: Post[],
   sourcePosts: Post[],
-): Map<string, number> {
-  const visibleTargetPosts = targetPosts.filter((post) => isVisible(post.metadata));
-  const visibleSourcePosts = sourcePosts.filter((post) => isVisible(post.metadata));
+): Map<string, Post[]> {
+  const visibleTargetPosts = targetPosts.filter((post) =>
+    isVisible(post.metadata),
+  );
+  const visibleSourcePosts = sourcePosts.filter((post) =>
+    isVisible(post.metadata),
+  );
   const index = createPostBlockIndex(visibleTargetPosts);
-  const sourceIdsByTargetId = new Map<string, Set<string>>();
+  const sourcePostsByTargetId = new Map<string, Map<string, Post>>();
 
   for (const sourcePost of visibleSourcePosts) {
     const referencedTargetIds = new Set<string>();
@@ -149,19 +164,41 @@ export function buildTargetPostBacklinkCountMap(
     }
 
     for (const targetId of referencedTargetIds) {
-      const sourceIds = sourceIdsByTargetId.get(targetId);
-      if (sourceIds) {
-        sourceIds.add(sourcePost.id);
+      const sourcePostsMap = sourcePostsByTargetId.get(targetId);
+      if (sourcePostsMap) {
+        sourcePostsMap.set(sourcePost.id, sourcePost);
       } else {
-        sourceIdsByTargetId.set(targetId, new Set([sourcePost.id]));
+        sourcePostsByTargetId.set(
+          targetId,
+          new Map([[sourcePost.id, sourcePost]]),
+        );
       }
     }
   }
 
   return new Map(
-    Array.from(sourceIdsByTargetId.entries(), ([targetId, sourceIds]) => [
+    Array.from(sourcePostsByTargetId.entries(), ([targetId, sourcePostsMap]) => [
       targetId,
-      sourceIds.size,
+      // 意図: preview はピン留め順より「どの投稿から最近参照されたか」を追いたいので、
+      // source 側は時系列の降順で揃えて modal の一覧を安定させる。
+      sortBacklinkPosts(Array.from(sourcePostsMap.values())),
+    ]),
+  );
+}
+
+export function buildTargetPostBacklinkCountMap(
+  targetPosts: Post[],
+  sourcePosts: Post[],
+): Map<string, number> {
+  const sourcePostsByTargetId = buildTargetPostBacklinkPostsMap(
+    targetPosts,
+    sourcePosts,
+  );
+
+  return new Map(
+    Array.from(sourcePostsByTargetId.entries(), ([targetId, matchingPosts]) => [
+      targetId,
+      matchingPosts.length,
     ]),
   );
 }

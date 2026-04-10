@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import moment from "moment";
 import React from "react";
 import { PostCardView } from "src/ui/components/posts/PostCardView";
@@ -78,17 +78,24 @@ describe("PostCardView", () => {
       threadRootId: "root-1",
       metadata: { blockId: "a054d5" },
     });
+    const onOpenBacklinks = vi.fn();
 
     render(
       <PostCardView
         post={post}
         backlinkCount={2}
         granularity="day"
+        onOpenBacklinks={onOpenBacklinks}
         onToggleThreadFocus={() => {}}
       />,
     );
 
-    expect(screen.getByLabelText("被リンク 2件")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "被リンク 2件をプレビュー" }));
+
+    expect(onOpenBacklinks).toHaveBeenCalledWith(post);
+    expect(
+      screen.getByRole("button", { name: "被リンク 2件をプレビュー" }),
+    ).toBeDefined();
     expect(screen.getByText("2")).toBeDefined();
     expect(screen.getByLabelText("スレッドを表示")).toBeDefined();
   });

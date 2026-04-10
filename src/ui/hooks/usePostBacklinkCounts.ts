@@ -3,10 +3,16 @@ import { useMemo } from "react";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
-import { buildTargetPostBacklinkCountMap } from "src/ui/utils/post-backlinks";
+import {
+  buildTargetPostBacklinkCountMap,
+  buildTargetPostBacklinkPostsMap,
+} from "src/ui/utils/post-backlinks";
 import useSWR from "swr";
 
-export function usePostBacklinkCounts(targetPosts: Post[]): Map<string, number> {
+export function usePostBacklinks(targetPosts: Post[]): {
+  countMap: Map<string, number>;
+  postsMap: Map<string, Post[]>;
+} {
   const db = useMFDIDB();
   const activeTopic = useSettingsStore((state) => state.activeTopic);
   const topicId = activeTopic || undefined;
@@ -26,8 +32,21 @@ export function usePostBacklinkCounts(targetPosts: Post[]): Map<string, number> 
     },
   );
 
-  return useMemo(
+  const postsMap = useMemo(
+    () => buildTargetPostBacklinkPostsMap(targetPosts, sourcePosts),
+    [targetPosts, sourcePosts],
+  );
+  const countMap = useMemo(
     () => buildTargetPostBacklinkCountMap(targetPosts, sourcePosts),
     [targetPosts, sourcePosts],
   );
+
+  return useMemo(
+    () => ({ countMap, postsMap }),
+    [countMap, postsMap],
+  );
+}
+
+export function usePostBacklinkCounts(targetPosts: Post[]): Map<string, number> {
+  return usePostBacklinks(targetPosts).countMap;
 }
