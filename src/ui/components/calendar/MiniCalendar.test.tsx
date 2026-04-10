@@ -154,7 +154,9 @@ describe("MiniCalendar", () => {
     });
 
     const { container } = render(<MiniCalendar />);
-    const selectedWeek = moment("2026-03-09T00:00:00.000Z").isoWeek().toString();
+    const selectedWeek = moment("2026-03-09T00:00:00.000Z")
+      .isoWeek()
+      .toString();
     const weekButtons = Array.from(
       container.querySelectorAll(".mini-calendar__week-number"),
     );

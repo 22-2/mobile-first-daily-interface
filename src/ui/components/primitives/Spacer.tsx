@@ -5,7 +5,7 @@ type SpacerProps = React.HTMLAttributes<HTMLDivElement> & {
   className?: string;
 };
 
-export const Spacer = ({ className, ...rest }: SpacerProps) => (
+const Spacer = ({ className, ...rest }: SpacerProps) => (
   <div className={cn("flex-1", className)} {...rest} />
 );
 

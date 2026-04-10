@@ -1,4 +1,3 @@
-import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { useMemo } from "react";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -7,6 +6,7 @@ import {
   buildTargetPostBacklinkCountMap,
   buildTargetPostBacklinkPostsMap,
 } from "src/ui/utils/post-backlinks";
+import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import useSWR from "swr";
 
 export function usePostBacklinks(targetPosts: Post[]): {
@@ -41,12 +41,11 @@ export function usePostBacklinks(targetPosts: Post[]): {
     [targetPosts, sourcePosts],
   );
 
-  return useMemo(
-    () => ({ countMap, postsMap }),
-    [countMap, postsMap],
-  );
+  return useMemo(() => ({ countMap, postsMap }), [countMap, postsMap]);
 }
 
-export function usePostBacklinkCounts(targetPosts: Post[]): Map<string, number> {
+export function usePostBacklinkCounts(
+  targetPosts: Post[],
+): Map<string, number> {
   return usePostBacklinks(targetPosts).countMap;
 }

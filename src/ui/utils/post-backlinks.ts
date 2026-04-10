@@ -177,12 +177,15 @@ export function buildTargetPostBacklinkPostsMap(
   }
 
   return new Map(
-    Array.from(sourcePostsByTargetId.entries(), ([targetId, sourcePostsMap]) => [
-      targetId,
-      // 意図: preview はピン留め順より「どの投稿から最近参照されたか」を追いたいので、
-      // source 側は時系列の降順で揃えて modal の一覧を安定させる。
-      sortBacklinkPosts(Array.from(sourcePostsMap.values())),
-    ]),
+    Array.from(
+      sourcePostsByTargetId.entries(),
+      ([targetId, sourcePostsMap]) => [
+        targetId,
+        // 意図: preview はピン留め順より「どの投稿から最近参照されたか」を追いたいので、
+        // source 側は時系列の降順で揃えて modal の一覧を安定させる。
+        sortBacklinkPosts(Array.from(sourcePostsMap.values())),
+      ],
+    ),
   );
 }
 

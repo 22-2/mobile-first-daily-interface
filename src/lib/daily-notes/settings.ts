@@ -123,7 +123,10 @@ function resolveGranularitySettings(
       return normalizePeriodicSettings(periodicSettings, defaultFormat);
     }
 
-    if (usePeriodicNotesWhenEnabled && shouldUsePeriodicNotesSettings(shell, periodicity)) {
+    if (
+      usePeriodicNotesWhenEnabled &&
+      shouldUsePeriodicNotesSettings(shell, periodicity)
+    ) {
       return normalizePeriodicSettings(periodicSettings, defaultFormat);
     }
 

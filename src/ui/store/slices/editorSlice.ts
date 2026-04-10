@@ -144,7 +144,9 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       set((state) => ({
         highlightedPost: post,
         highlightRequestId:
-          post !== null ? state.highlightRequestId + 1 : state.highlightRequestId,
+          post !== null
+            ? state.highlightRequestId + 1
+            : state.highlightRequestId,
       }));
     },
 

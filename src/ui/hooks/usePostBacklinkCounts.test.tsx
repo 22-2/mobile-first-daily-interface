@@ -188,9 +188,9 @@ describe("usePostBacklinkCounts", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.postsMap.get("target")?.map((post) => post.id)).toEqual(
-        ["daily/2026-04-11.md:20", "daily/2026-04-10.md:10"],
-      );
+      expect(
+        result.current.postsMap.get("target")?.map((post) => post.id),
+      ).toEqual(["daily/2026-04-11.md:20", "daily/2026-04-10.md:10"]);
     });
   });
 });

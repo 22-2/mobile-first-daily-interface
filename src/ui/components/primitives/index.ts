@@ -8,7 +8,6 @@ export { HStack } from "src/ui/components/primitives/HStack";
 export { Image } from "src/ui/components/primitives/Image";
 export { Input } from "src/ui/components/primitives/Input";
 export { Link } from "src/ui/components/primitives/Link";
-export { Spacer } from "src/ui/components/primitives/Spacer";
 export { Spinner } from "src/ui/components/primitives/Spinner";
 export { Tag } from "src/ui/components/primitives/Tag";
 export { Text } from "src/ui/components/primitives/Text";

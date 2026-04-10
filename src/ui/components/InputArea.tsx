@@ -1,5 +1,6 @@
 import type { ChangeEvent, FC } from "react";
 import { memo, useCallback, useMemo } from "react";
+import { NavButton } from "src/ui/components/common/NavButton";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { Box, Button, Flex, HStack, Input } from "src/ui/components/primitives";
@@ -20,10 +21,9 @@ import {
   getCenterIndicatorLabel,
   isDefaultViewState,
 } from "src/ui/utils/view-state";
+import type { MFDIView } from "src/ui/view/MFDIView";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
-import type { MFDIView } from "src/ui/view/MFDIView";
-import { NavButton } from "src/ui/components/common/NavButton";
 
 const DisplayModeIndicator: FC<{
   displayMode: "focus" | "timeline";
@@ -174,10 +174,7 @@ const InputAreaControl: FC = memo(() => {
           />
         ) : (
           <>
-            <NavButton
-              direction="left"
-              onClick={handleClickMovePrevious}
-            />
+            <NavButton direction="left" onClick={handleClickMovePrevious} />
             <HStack className="mfdi-date-controls gap-[0.2em]">
               <Input
                 className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${GRANULARITY_CONFIG[granularity].inputWidthClass}`}
@@ -186,10 +183,7 @@ const InputAreaControl: FC = memo(() => {
                 onChange={handleChangeCalendarDate}
               />
             </HStack>
-            <NavButton
-              direction="right"
-              onClick={handleClickMoveNext}
-            />
+            <NavButton direction="right" onClick={handleClickMoveNext} />
           </>
         )}
       </HStack>

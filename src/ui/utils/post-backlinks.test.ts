@@ -84,9 +84,10 @@ describe("post-backlinks", () => {
       message: "[[2026-04-09#^a054d5|new]]\n[[2026-04-09#^a054d5|dup]]",
     });
 
-    const result = buildTargetPostBacklinkPostsMap([
-      target,
-    ], [olderSource, newerSource]);
+    const result = buildTargetPostBacklinkPostsMap(
+      [target],
+      [olderSource, newerSource],
+    );
 
     expect(result.get(target.id)?.map((post) => post.id)).toEqual([
       "newer-source",

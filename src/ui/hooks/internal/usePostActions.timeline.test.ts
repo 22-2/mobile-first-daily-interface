@@ -519,7 +519,9 @@ describe("timeline note resolution", () => {
         trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: vi.fn(),
-        loadFile: vi.fn(async () => ["## Thino", "- 14:39:00 jump target", ""].join("\n")),
+        loadFile: vi.fn(async () =>
+          ["## Thino", "- 14:39:00 jump target", ""].join("\n"),
+        ),
       },
       settings: {
         insertAfter: "## Thino",
@@ -959,8 +961,8 @@ prefix
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       shell: {
-          ...mockApp,
-          trigger: vi.fn(),
+        ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,
@@ -1043,8 +1045,8 @@ prefix
     (useAppContext as any).mockReturnValue({
       app: mockApp,
       shell: {
-          ...mockApp,
-          trigger: vi.fn(),
+        ...mockApp,
+        trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
         replaceRange: mockReplaceRange,
         loadFile: mockLoadFile,

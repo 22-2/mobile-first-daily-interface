@@ -1,7 +1,7 @@
 import {
+  getGranularityRange,
   GRANULARITIES,
   GRANULARITY_CONFIG,
-  getGranularityRange,
 } from "src/ui/config/granularity-config";
 import { describe, expect, it } from "vitest";
 

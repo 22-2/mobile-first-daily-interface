@@ -76,7 +76,7 @@ interface UseFakeEditorOptions {
   onSubmit?: () => void;
 }
 
-export interface UseFakeEditorResult {
+interface UseFakeEditorResult {
   editorRef: React.RefObject<FakeEditor | null>;
   /** true の間は setContent 由来の onChange エコーバックを抑止する */
   isSyncingRef: React.RefObject<boolean>;

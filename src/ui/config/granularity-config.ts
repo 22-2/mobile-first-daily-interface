@@ -4,7 +4,13 @@
 import type { Moment } from "moment";
 import { DATE_FILTER_IDS } from "src/ui/config/filter-config";
 
-export const GRANULARITIES = ["day", "week", "month", "quarter", "year"] as const;
+export const GRANULARITIES = [
+  "day",
+  "week",
+  "month",
+  "quarter",
+  "year",
+] as const;
 
 export type Granularity = (typeof GRANULARITIES)[number];
 
@@ -164,7 +170,10 @@ export function getGranularityRange(
   const days = Number.parseInt(dateFilter, 10);
   if (!Number.isNaN(days)) {
     return {
-      rangeStart: date.clone().subtract(days - 1, "days").startOf("day"),
+      rangeStart: date
+        .clone()
+        .subtract(days - 1, "days")
+        .startOf("day"),
       rangeEnd: date.clone().endOf("day"),
     };
   }

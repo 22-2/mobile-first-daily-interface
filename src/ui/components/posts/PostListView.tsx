@@ -6,10 +6,11 @@ import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE, STORAGE_KEYS } from "src/ui/config/consntants";
+import { useAppContext } from "src/ui/context/AppContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { usePostBacklinks } from "src/ui/hooks/usePostBacklinkCounts";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
+import { usePostBacklinks } from "src/ui/hooks/usePostBacklinkCounts";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -21,7 +22,6 @@ import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
 import { cn } from "../primitives/utils";
-import { useAppContext } from "src/ui/context/AppContext";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }
@@ -32,7 +32,12 @@ type TimelineItem =
       groupKey: string;
       collapsed: boolean;
     }
-  | { type: "pinned-divider"; key: string; groupKey: string; collapsed: boolean };
+  | {
+      type: "pinned-divider";
+      key: string;
+      groupKey: string;
+      collapsed: boolean;
+    };
 
 function isSamePostReference(left: Post, right: Post): boolean {
   return (
@@ -361,7 +366,9 @@ export const PostListView: React.FC = memo(() => {
 
     const postsToDisplay = filteredPosts;
 
-    const pinnedPosts = postsToDisplay.filter((post) => isPinned(post.metadata));
+    const pinnedPosts = postsToDisplay.filter((post) =>
+      isPinned(post.metadata),
+    );
     const unpinnedPosts = postsToDisplay.filter(
       (post) => !isPinned(post.metadata),
     );
@@ -459,10 +466,14 @@ export const PostListView: React.FC = memo(() => {
   const hasVisibleDividers = visibleDividerGroupKeys.length > 0;
   const areAllVisibleDividersCollapsed =
     hasVisibleDividers &&
-    visibleDividerGroupKeys.every((groupKey) => collapsedGroupSet.has(groupKey));
+    visibleDividerGroupKeys.every((groupKey) =>
+      collapsedGroupSet.has(groupKey),
+    );
   const areAllVisibleDividersExpanded =
     hasVisibleDividers &&
-    visibleDividerGroupKeys.every((groupKey) => !collapsedGroupSet.has(groupKey));
+    visibleDividerGroupKeys.every(
+      (groupKey) => !collapsedGroupSet.has(groupKey),
+    );
 
   const collapseVisibleDividers = useCallback(() => {
     if (!canCollapseDividers) {

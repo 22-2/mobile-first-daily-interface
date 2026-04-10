@@ -11,8 +11,10 @@ import {
 import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
-import { buildPostFromEntry } from "src/ui/utils/thread-utils";
-import { memoRecordToPost } from "src/ui/utils/thread-utils";
+import {
+  buildPostFromEntry,
+  memoRecordToPost,
+} from "src/ui/utils/thread-utils";
 import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
 
@@ -179,7 +181,10 @@ export const useFocusPosts = () => {
               });
             });
         } catch {
-          console.error("Failed to load periodic note file:", periodicNoteFile.path);
+          console.error(
+            "Failed to load periodic note file:",
+            periodicNoteFile.path,
+          );
           return [];
         }
       }

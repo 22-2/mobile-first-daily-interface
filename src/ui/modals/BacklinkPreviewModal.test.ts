@@ -6,7 +6,15 @@ import {
   openBacklinkPreviewModal,
 } from "src/ui/modals/BacklinkPreviewModal";
 import type { Post } from "src/ui/types";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 type TestHTMLElement = HTMLElement & {
   addClass?: (...classNames: string[]) => void;
@@ -171,6 +179,8 @@ describe("BacklinkPreviewModal", () => {
     fireEvent.click(screen.getByRole("button", { name: /preview line 1/i }));
 
     expect(onSelectPost).toHaveBeenCalledWith(sourcePost);
-    expect(document.body.querySelector(".mfdi-backlink-preview-modal")).toBeNull();
+    expect(
+      document.body.querySelector(".mfdi-backlink-preview-modal"),
+    ).toBeNull();
   });
 });

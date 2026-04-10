@@ -172,7 +172,9 @@ vi.mock("virtua", () => {
   const Virtualizer = React.forwardRef(
     (
       { children }: { children: React.ReactNode },
-      ref: React.ForwardedRef<{ scrollToIndex: typeof mocked.virtualizerHandle.scrollToIndex }>,
+      ref: React.ForwardedRef<{
+        scrollToIndex: typeof mocked.virtualizerHandle.scrollToIndex;
+      }>,
     ) => {
       if (typeof ref === "function") {
         ref(mocked.virtualizerHandle);

@@ -2,8 +2,8 @@ import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getPeriodicNoteDate, listPeriodicNotes } from "src/core/note-source";
 import type { Week } from "src/ui/components/calendar/types";
-import { getGranularityRange } from "src/ui/config/granularity-config";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { getGranularityRange } from "src/ui/config/granularity-config";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
 import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -123,7 +123,8 @@ export function useMiniCalendar() {
   };
 
   const handleSelectYear = () => {
-    const isSelectedYear = granularity === "year" && date.isSame(viewDate, "year");
+    const isSelectedYear =
+      granularity === "year" && date.isSame(viewDate, "year");
 
     // 同じ年を再クリックした時は、SidebarScalesと同じ操作感でHomeへ戻す。
     if (isSelectedYear) {
@@ -165,7 +166,11 @@ export function useMiniCalendar() {
   }, [shell, activeTopic, dbActiveDates]);
 
   const weeks = useMemo(() => buildWeeksInMonth(viewDate), [viewDate]);
-  const { rangeStart, rangeEnd } = getGranularityRange(date, granularity, dateFilter as string);
+  const { rangeStart, rangeEnd } = getGranularityRange(
+    date,
+    granularity,
+    dateFilter as string,
+  );
 
   return {
     date,

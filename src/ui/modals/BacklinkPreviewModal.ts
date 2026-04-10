@@ -38,7 +38,7 @@ export function openBacklinkPreviewModal(
   return modal;
 }
 
-export class BacklinkPreviewModal extends MFDIBaseModal<void> {
+class BacklinkPreviewModal extends MFDIBaseModal<void> {
   constructor(
     app: App,
     private readonly options: BacklinkPreviewModalOptions,

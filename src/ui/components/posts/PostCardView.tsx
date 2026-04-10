@@ -5,7 +5,7 @@ import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { useAppStore } from "src/ui/store/appStore";
 import { isPastDateReadOnly } from "src/ui/store/slices/settingsSlice";
 import type { DateFilter, Granularity, Post } from "src/ui/types";
-import { PINNED_METADATA_KEY, getPostTags } from "src/ui/utils/post-metadata";
+import { getPostTags } from "src/ui/utils/post-metadata";
 
 import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
 import { createMeta } from "src/core/meta";
@@ -143,9 +143,7 @@ export const PostCardView = React.memo(
               </HStack>
             ) : undefined
           }
-          footerRightAddon={
-            footerRightAddon
-          }
+          footerRightAddon={footerRightAddon}
         >
           <VStack align="stretch" gap={3}>
             {/* Message Body */}

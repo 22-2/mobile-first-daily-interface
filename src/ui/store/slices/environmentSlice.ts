@@ -1,5 +1,5 @@
-import type { EnvironmentSlice, MFDIStore } from "src/ui/store/slices/types";
 import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
+import type { EnvironmentSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
 
 export const createEnvironmentSlice: StateCreator<

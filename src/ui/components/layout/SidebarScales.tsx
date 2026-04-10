@@ -3,21 +3,16 @@ import { resolvePeriodicNote } from "src/core/note-source";
 import { parseThinoEntries } from "src/core/thino";
 import { NavButton } from "src/ui/components/common/NavButton";
 import {
-  GRANULARITY_CONFIG,
-  type Granularity,
-} from "src/ui/config/granularity-config";
-import {
   SidebarItemCount,
   SidebarSectionHeader,
   SidebarTextButton,
 } from "src/ui/components/layout/SidebarPrimitives";
-import {
-  HStack,
-  Spinner,
-  Text,
-  VStack,
-} from "src/ui/components/primitives";
+import { HStack, Spinner, Text, VStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
+import {
+  GRANULARITY_CONFIG,
+  type Granularity,
+} from "src/ui/config/granularity-config";
 import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
@@ -31,9 +26,15 @@ function buildScaleKey(date: moment.Moment, granularity: Granularity): string {
   return `${granularity}-${date.clone().startOf(granularity).format(GRANULARITY_CONFIG[granularity].inputFormat)}`;
 }
 
-function formatScaleLabel(date: moment.Moment, granularity: Granularity): string {
+function formatScaleLabel(
+  date: moment.Moment,
+  granularity: Granularity,
+): string {
   if (granularity === "quarter") {
-    return date.clone().startOf("quarter").format(GRANULARITY_CONFIG.quarter.inputFormat);
+    return date
+      .clone()
+      .startOf("quarter")
+      .format(GRANULARITY_CONFIG.quarter.inputFormat);
   }
 
   if (granularity === "month") {
@@ -169,17 +170,26 @@ export const SidebarScales: React.FC<{
       >
         {/* 意図: ヘッダ文言を常に中央に保ちつつ、読込状態は右端の補助表示として分離する。 */}
         <HStack className="gap-1 items-center group">
-          <NavButton className="group-hover:visible invisible" direction="left" onClick={() => handleMoveViewMonth(-1)} />
+          <NavButton
+            className="group-hover:visible invisible"
+            direction="left"
+            onClick={() => handleMoveViewMonth(-1)}
+          />
           <Text
             as="span"
             className={cn(
-              !isViewingCurrentMonth && "cursor-pointer text-[var(--text-accent)]",
+              !isViewingCurrentMonth &&
+                "cursor-pointer text-[var(--text-accent)]",
             )}
             onClick={isViewingCurrentMonth ? undefined : handleResetViewMonth}
           >
             年月日別
           </Text>
-          <NavButton className="group-hover:visible invisible" direction="right" onClick={() => handleMoveViewMonth(1)} />
+          <NavButton
+            className="group-hover:visible invisible"
+            direction="right"
+            onClick={() => handleMoveViewMonth(1)}
+          />
         </HStack>
       </SidebarSectionHeader>
 
@@ -210,7 +220,9 @@ export const SidebarScales: React.FC<{
               }}
             >
               <HStack className="gap-0 justify-between w-full">
-                <Text as="span">{formatScaleLabel(baseDate, scaleGranularity)}</Text>
+                <Text as="span">
+                  {formatScaleLabel(baseDate, scaleGranularity)}
+                </Text>
                 {renderCountBadge(counts)}
               </HStack>
             </SidebarTextButton>
@@ -221,8 +233,7 @@ export const SidebarScales: React.FC<{
           const isSelected =
             granularity === "week" && date.isSame(w, "isoWeek");
           const counts = countsMap[buildScaleKey(w, "week")];
-          const hasActivity =
-            counts && (counts.posts > 0 || counts.tasks > 0);
+          const hasActivity = counts && (counts.posts > 0 || counts.tasks > 0);
 
           return (
             <SidebarTextButton

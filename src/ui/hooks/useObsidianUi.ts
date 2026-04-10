@@ -1,15 +1,15 @@
 import { useCallback, useMemo } from "react";
 import { useAppContext } from "src/ui/context/AppContext";
 import {
+  openBacklinkPreviewModal,
+  type BacklinkPreviewModalOptions,
+} from "src/ui/modals/BacklinkPreviewModal";
+import {
   DeleteConfirmModal,
   showDeleteConfirmModal,
 } from "src/ui/modals/DeleteConfirmModal";
 import { DraftListModal } from "src/ui/modals/DraftListModal";
 import { showInputModal } from "src/ui/modals/InputModal";
-import {
-  openBacklinkPreviewModal,
-  type BacklinkPreviewModalOptions,
-} from "src/ui/modals/BacklinkPreviewModal";
 import type { MFDIEditorModalOptions } from "src/ui/modals/MFDIEditorModal";
 import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";

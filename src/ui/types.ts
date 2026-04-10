@@ -4,7 +4,6 @@ import type {
   DATE_FILTER_OPTIONS,
   TIME_FILTER_OPTIONS,
 } from "src/ui/config/filter-config";
-import type { Granularity } from "src/ui/config/granularity-config";
 
 export type { Granularity } from "src/ui/config/granularity-config";
 

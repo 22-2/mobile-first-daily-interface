@@ -51,7 +51,7 @@ function sortPostsPinnedFirst(posts: Post[]): Post[] {
   });
 }
 
-export function filterPostsForView({
+function filterPostsForView({
   posts,
   activeTag = null,
   timeFilter,

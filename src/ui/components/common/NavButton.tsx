@@ -10,7 +10,10 @@ export const NavButton: FC<{
 }> = ({ direction, onClick, className }) => {
   return (
     <HStack
-      className={cn(`mfdi-nav-button mfdi-nav-button-${direction} cursor-pointer ${direction === "left" ? "flex-row" : "flex-row-reverse"} gap-0`, className)}
+      className={cn(
+        `mfdi-nav-button mfdi-nav-button-${direction} cursor-pointer ${direction === "left" ? "flex-row" : "flex-row-reverse"} gap-0`,
+        className,
+      )}
       onClick={onClick}
     >
       <ObsidianIcon name={`chevron-${direction}`} boxSize="1.5em" />

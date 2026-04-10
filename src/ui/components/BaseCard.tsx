@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Flex, HStack, Tag } from "src/ui/components/primitives";
-import {
-  DISPLAY_DATE_TIME_FORMAT,
-  DISPLAY_TIME_FORMAT,
-} from "src/ui/config/date-formats";
+import { DISPLAY_DATE_TIME_FORMAT } from "src/ui/config/date-formats";
 import { useAppStore } from "src/ui/store/appStore";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
@@ -68,7 +65,6 @@ export const CardContent: React.FC<BaseCardProps> = ({
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
-
       {/* 時刻は本文の起点として見つけやすい位置に固定する。 */}
       <HStack className="header px-[var(--size-4-1)] pb-[var(--size-2-2)] text-[var(--text-muted)] text-[80%] items-start justify-start">
         <Tag className="text-xs px-0 py-0.5 rounded-full bg-[var(--tag-bg)] text-[var(--tag-fg)]">
