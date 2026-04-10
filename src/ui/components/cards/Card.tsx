@@ -1,16 +1,17 @@
 import type React from "react";
 import { Box } from "src/ui/components/primitives";
 
-export const Card = (props: React.ComponentPropsWithoutRef<"div">) => {
-  const { children, onContextMenu, onDoubleClick, className, ...rest } = props;
+type CardProps = React.ComponentPropsWithoutRef<"div"> & {
+  /** true のとき hover:bg-* を無効化する。postcss safe-important-v4 が全 .セレクタに !important を付与するため、外部 CSS で background を上書きしたい場合に使う */
+  disableHoverBg?: boolean;
+};
 
-  // ハイライト中は mfdi-card--highlighted の background が優先されるべきなので
-  // postcss の safe-important-v4 により hover:bg-* にも !important が付くことを回避する
-  const isHighlighted = className?.includes("mfdi-card--highlighted") ?? false;
+export const Card = (props: CardProps) => {
+  const { children, onContextMenu, onDoubleClick, className, disableHoverBg, ...rest } = props;
 
   return (
     <Box
-      className={`mfdi-card relative rounded-sm [border-bottom-right-radius:6px] text-[var(--text-normal)] my-[var(--size-4-1)] transition-all duration-150 shadow-[var(--shadow-xs)] ${isHighlighted ? "" : "hover:bg-[var(--background-secondary)]"} ${className ?? ""}`}
+      className={`mfdi-card relative rounded-sm [border-bottom-right-radius:6px] text-[var(--text-normal)] my-[var(--size-4-1)] transition-all duration-150 shadow-[var(--shadow-xs)] ${disableHoverBg ? "" : "hover:bg-[var(--background-secondary)]"} ${className ?? ""}`}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
       {...rest}

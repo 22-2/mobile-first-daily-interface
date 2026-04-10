@@ -119,6 +119,7 @@ export const PostCardView = React.memo(
         className={[className, isHighlighted ? "mfdi-card--highlighted" : ""]
           .filter(Boolean)
           .join(" ")}
+        disableHoverBg={isHighlighted}
         style={style}
       >
         <CardContent
