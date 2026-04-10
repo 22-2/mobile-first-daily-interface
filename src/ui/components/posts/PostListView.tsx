@@ -7,6 +7,7 @@ import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE, STORAGE_KEYS } from "src/ui/config/consntants";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { usePostBacklinkCounts } from "src/ui/hooks/usePostBacklinkCounts";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
@@ -92,6 +93,7 @@ export const PostListView: React.FC = memo(() => {
     ...settings,
     includeThreadReplies: true,
   });
+  const backlinkCounts = usePostBacklinkCounts(filteredPosts);
 
   const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
@@ -588,6 +590,7 @@ export const PostListView: React.FC = memo(() => {
             ) : (
               <PostCardView
                 post={item.post}
+                backlinkCount={backlinkCounts.get(item.post.id) ?? 0}
                 granularity={granularity}
                 dateFilter={dateFilter}
                 onEdit={startEdit}

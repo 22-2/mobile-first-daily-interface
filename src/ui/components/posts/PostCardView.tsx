@@ -23,6 +23,7 @@ import { isThreadRoot } from "src/ui/utils/thread-utils";
 export const PostCardView = React.memo(
   ({
     post,
+    backlinkCount = 0,
     granularity,
     dateFilter,
     onContextMenu,
@@ -33,6 +34,7 @@ export const PostCardView = React.memo(
     style,
   }: {
     post: Post;
+    backlinkCount?: number;
     granularity: Granularity;
     dateFilter?: DateFilter;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
@@ -59,6 +61,49 @@ export const PostCardView = React.memo(
       ? "スレッド表示を閉じる"
       : "スレッドを表示";
     const tags = getPostTags(post.metadata);
+    const backlinkLabel = `被リンク ${backlinkCount}件`;
+    const footerRightAddon =
+      backlinkCount > 0 || isThreadRoot(post) ? (
+        <HStack className="items-center gap-[var(--size-2-2)]">
+          {backlinkCount > 0 && (
+            <HStack
+              aria-label={backlinkLabel}
+              className="items-center gap-1 text-[85%]"
+              ref={(ref: HTMLDivElement | null) => {
+                // 意図: footer の数字だけでは意味が伝わりにくいので、
+                // アイコンに触れた時点で参照数だと分かるようにする。
+                ref && setTooltip(ref, backlinkLabel);
+              }}
+            >
+              <ObsidianIcon
+                aria-hidden="true"
+                className="cursor-default px-0 py-0 hover:text-[var(--text-muted)]"
+                name="link"
+                size="0.95em"
+              />
+              <Box as="span" className="text-[75%] leading-none">
+                {backlinkCount}
+              </Box>
+            </HStack>
+          )}
+
+          {isThreadRoot(post) && (
+            <ObsidianIcon
+              ref={(ref) => {
+                ref && setTooltip(ref, threadToggleLabel);
+              }}
+              name="spool"
+              aria-label={threadToggleLabel}
+              onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                e.stopPropagation();
+                onToggleThreadFocus?.(post);
+              }}
+              size="1.1em"
+              // color={isThreadFocused ? "var(--text-normal)" : undefined}
+            />
+          )}
+        </HStack>
+      ) : undefined;
 
     return (
       <Card className={className} style={style}>
@@ -85,21 +130,7 @@ export const PostCardView = React.memo(
             ) : undefined
           }
           footerRightAddon={
-            isThreadRoot(post) ? (
-              <ObsidianIcon
-                ref={(ref) => {
-                  ref && setTooltip(ref, threadToggleLabel);
-                }}
-                name="spool"
-                aria-label={threadToggleLabel}
-                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-                  e.stopPropagation();
-                  onToggleThreadFocus?.(post);
-                }}
-                size="1.1em"
-                // color={isThreadFocused ? "var(--text-normal)" : undefined}
-              />
-            ) : undefined
+            footerRightAddon
           }
         >
           <VStack align="stretch" gap={3}>
