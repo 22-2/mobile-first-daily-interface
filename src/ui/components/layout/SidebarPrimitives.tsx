@@ -10,7 +10,7 @@ export const SidebarSectionHeader: React.FC<{
     <HStack
       className={cn(
         "sidebar-section-header",
-        "justify-between px-2 py-[var(--size-4-1)] mb-1 mt-[var(--size-4-2)]",
+        "justify-between px-2",
         className,
       )}
     >

@@ -156,23 +156,26 @@ export const SidebarScales: React.FC<{
 
   return (
     <VStack className="mfdi-sidebar-scales items-stretch gap-0 pt-2 mt-2">
-      <SidebarSectionHeader>
-        <HStack className="gap-1 items-center">
-          <NavButton direction="left" onClick={() => handleMoveViewMonth(-1)} />
-          <SidebarSectionHeader>
-            <Text
-              as="span"
-              className="cursor-pointer hover:text-[var(--text-accent)]"
-              onClick={handleResetViewMonth}
-            >
-              年月日別
-            </Text>
-          </SidebarSectionHeader>
-          <NavButton direction="right" onClick={() => handleMoveViewMonth(1)} />
+      <SidebarSectionHeader
+        className="relative justify-center"
+        rightAddon={
+          loading ? (
+            <Spinner className="absolute right-2 size-3 text-[var(--text-faint)] animate-spin [animation-duration:0.8s]" />
+          ) : null
+        }
+      >
+        {/* 意図: ヘッダ文言を常に中央に保ちつつ、読込状態は右端の補助表示として分離する。 */}
+        <HStack className="gap-1 items-center group">
+          <NavButton className="group-hover:visible invisible" direction="left" onClick={() => handleMoveViewMonth(-1)} />
+          <Text
+            as="span"
+            className="cursor-pointer hover:text-[var(--text-accent)]"
+            onClick={handleResetViewMonth}
+          >
+            年月日別
+          </Text>
+          <NavButton className="group-hover:visible invisible" direction="right" onClick={() => handleMoveViewMonth(1)} />
         </HStack>
-        {loading && (
-          <Spinner className="size-3 text-[var(--text-faint)] animate-spin [animation-duration:0.8s]" />
-        )}
       </SidebarSectionHeader>
 
       <VStack className="mfdi-scale-list-unified items-stretch gap-0">
