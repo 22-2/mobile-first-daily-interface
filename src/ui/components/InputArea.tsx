@@ -261,16 +261,39 @@ const InputAreaFooter: FC = memo(() => {
 
   return (
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
-      {expanded && (
-        <style>
-          {`
+      <style>
+        {expanded
+          ? `
+            /* タイトルバー非表示 */
             .titlebar,
             .workspace-tab-header-container {
               display: none;
             }
+
+            .main-content {
+              margin: 0 var(--size-4-2);
+            }
+
+            /* 上部バーを畳む。 */
+            [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-header {
+              display: none;
+            }
+
+            /* コンテンツのパディングをリセット */
+            [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-content {
+              padding: 0!important;
+            }
+
+            .mfdi-input-area {
+              margin-right: 0!important;
+            }
+          `
+          : `
+            .mfdi-input-area {
+              margin-right: var(--size-4-3);
+            }
           `}
-        </style>
-      )}
+      </style>
       {editingPost && (
         <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル
@@ -330,7 +353,9 @@ export const InputArea: FC = memo(() => {
 
   return (
     <Flex
-      className={cn(`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`, isExpanded ? "" : "mr-[var(--size-4-3)]")}
+      className={cn(
+        `mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`,
+      )}
     >
       <InputAreaControl
         isReadOnly={isReadOnly}
