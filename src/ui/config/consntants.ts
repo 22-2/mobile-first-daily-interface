@@ -28,6 +28,7 @@ export const STORAGE_KEYS = {
   EDITING_POST_METADATA: "editingPostMetadata",
   THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
   COLLAPSED_POST_GROUP_KEYS: "collapsedPostGroupKeys",
+  EXPANDED: "expanded",
 } as const;
 
 export const MOVE_STEP = {

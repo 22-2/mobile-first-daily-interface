@@ -114,6 +114,8 @@ function resolveInitialSettingsState(
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
       null,
+    expanded:
+      storage?.get<boolean>(STORAGE_KEYS.EXPANDED, false) ?? false,
   };
 }
 
@@ -140,6 +142,7 @@ export const createSettingsSlice: StateCreator<
 
   setIsExpanded: (expanded) => {
     set({ expanded: typeof expanded === "function" ? expanded(get().expanded) : expanded });
+    persistValue(get(), STORAGE_KEYS.EXPANDED, get().expanded);
   },
 
   setActiveTopic: (activeTopic) => {
