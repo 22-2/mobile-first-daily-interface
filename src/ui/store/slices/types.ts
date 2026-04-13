@@ -49,6 +49,8 @@ export interface SettingsSlice {
   threadOnly: boolean;
   searchQuery: string;
   threadFocusRootId: string | null;
+  expanded: boolean;
+  setIsExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void;
   setActiveTopic: (topicId: string) => void;
   setActiveTag: (tag: string | null) => void;
   setGranularity: (g: Granularity) => void;

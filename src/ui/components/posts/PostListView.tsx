@@ -69,6 +69,7 @@ export const PostListView: React.FC = memo(() => {
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
       viewNoteMode: s.viewNoteMode,
+      expanded: s.expanded,
     })),
   );
 
@@ -796,20 +797,22 @@ export const PostListView: React.FC = memo(() => {
           <ListFooter key="footer" hasMore={!!hasMore} loadMore={loadMore} />
         )}
       </Virtualizer>
-      <FloatingButton
-        className={cn(
-          "up-button fixed",
-          settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8",
-        )}
-        onClick={() => shell.trigger("mfdi:scroll-to-top")}
-        visible={showScrollTop}
-      >
-        <ObsidianIcon
-          className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]"
-          name="chevron-up"
-          boxSize="1.2em"
-        />
-      </FloatingButton>
+      {!settings.expanded && (
+          <FloatingButton
+            className={cn(
+              "up-button fixed",
+              settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8",
+            )}
+            onClick={() => shell.trigger("mfdi:scroll-to-top")}
+            visible={showScrollTop}
+          >
+            <ObsidianIcon
+              className="text-[var(--text-on-accent)] hover:text-[var(--text-on-accent)]"
+              name="chevron-up"
+              boxSize="1.2em"
+            />
+          </FloatingButton>
+      )}
     </Box>
   );
 });

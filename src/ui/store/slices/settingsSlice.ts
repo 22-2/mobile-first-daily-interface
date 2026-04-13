@@ -136,6 +136,11 @@ export const createSettingsSlice: StateCreator<
   threadOnly: false,
   searchQuery: "",
   threadFocusRootId: null,
+  expanded: false,
+
+  setIsExpanded: (expanded) => {
+    set({ expanded: typeof expanded === "function" ? expanded(get().expanded) : expanded });
+  },
 
   setActiveTopic: (activeTopic) => {
     set({ activeTopic, threadFocusRootId: null });

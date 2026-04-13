@@ -295,7 +295,6 @@ const InputAreaFooter: FC = memo(() => {
 
 export const InputArea: FC = memo(() => {
   const component = useObsidianComponent() as MFDIView;
-  const [isExpanded, setIsExpanded] = useState(false);
   const { shell } = useAppContext();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
@@ -304,9 +303,11 @@ export const InputArea: FC = memo(() => {
       inputRef: s.inputRef,
     })),
   );
-  const { isReadOnly } = useSettingsStore(
+  const { isReadOnly, isExpanded, setIsExpanded } = useSettingsStore(
     useShallow((s) => ({
       isReadOnly: s.isReadOnly(),
+      isExpanded: s.expanded,
+      setIsExpanded: s.setIsExpanded,
     })),
   );
   const { handleSubmit } = usePostActions();
