@@ -47,6 +47,7 @@
     "obsidian-e2e-toolkit": "github:22-2/obsidian-e2e-toolkit#1.0.2",
     "obsidian-typings": "^5.18.0",
     "playwright": "^1.59.1",
+    "postcss": "^8.5.9",
     "prettier": "^3.8.1",
     "shadcn": "^4.1.2",
     "tailwindcss": "^4.2.2",
