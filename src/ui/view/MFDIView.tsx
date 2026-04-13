@@ -280,7 +280,7 @@ export class MFDIView extends ItemView {
   // -----------------------------------------------------------------------
 
   private addFixedNoteMenuItems(menu: Menu): void {
-    if (this.state.noteMode !== "fixed") return;
+    if (this.state.displayMode === "timeline") return;
 
     menu.addItem((item) =>
       item
