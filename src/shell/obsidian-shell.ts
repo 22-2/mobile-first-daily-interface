@@ -90,12 +90,8 @@ export class ObsidianAppShell {
     return this.unsafeApp.vault.getRoot();
   }
 
-  async readFile(path: string): Promise<string> {
-    return this.unsafeApp.vault.adapter.read(path);
-  }
-
   async loadFile(path: string): Promise<string> {
-    return this.readFile(path);
+    return this.unsafeApp.vault.adapter.read(path);
   }
 
   async writeFile(path: string, content: string): Promise<void> {
