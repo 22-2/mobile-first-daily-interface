@@ -476,7 +476,7 @@ describe("timeline note resolution", () => {
     );
   });
 
-  it("handleClickTime は同じ MFDI タブを focused/day/all へ切り替えて対象投稿をハイライトする", async () => {
+  it("handleHighlightPost は同じ MFDI タブを focused/day/all へ切り替えて対象投稿をハイライトする", async () => {
     const targetPost = {
       id: `${yesterdayNote.path}:0`,
       threadRootId: null,
@@ -532,7 +532,7 @@ describe("timeline note resolution", () => {
     const { result } = renderHook(() => usePostActions());
 
     await act(async () => {
-      await result.current.handleClickTime(targetPost);
+      await result.current.handleHighlightPost(targetPost);
     });
 
     const nextState = settingsStore.getState();

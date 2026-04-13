@@ -94,7 +94,8 @@ export const PostListView: React.FC = memo(() => {
   );
 
   const {
-    handleClickTime,
+    handleHighlightPost,
+    handleHighlightSource,
     deletePost,
     permanentlyDeletePost,
     movePostToTomorrow,
@@ -258,7 +259,16 @@ export const PostListView: React.FC = memo(() => {
           .setTitle("投稿にジャンプ")
           .setIcon("clock")
           .onClick(() => {
-            handleClickTime(post);
+            handleHighlightPost(post);
+          }),
+      );
+
+      menu.addItem((item) =>
+        item
+          .setTitle("投稿のソースにジャンプ")
+          .setIcon("code-xml")
+          .onClick(() => {
+            handleHighlightSource(post);
           }),
       );
 
@@ -322,7 +332,7 @@ export const PostListView: React.FC = memo(() => {
       archivePost,
       createThread,
       deletePost,
-      handleClickTime,
+      handleHighlightPost,
       isReadOnly,
       movePostToTomorrow,
       setPostTags,
@@ -352,11 +362,11 @@ export const PostListView: React.FC = memo(() => {
         targetPost: post,
         sourcePosts,
         onSelectPost: (sourcePost) => {
-          handleClickTime(sourcePost);
+          handleHighlightPost(sourcePost);
         },
       });
     },
-    [backlinkPosts, openBacklinkPreview, handleClickTime],
+    [backlinkPosts, openBacklinkPreview, handleHighlightPost],
   );
 
   const displayedPostsWithDividers = useMemo(() => {

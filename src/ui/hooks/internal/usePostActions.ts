@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { MarkdownView, Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { resolveNoteSource } from "src/core/note-source";
 import { resolveTimestamp, toText } from "src/core/post-utils";
@@ -809,8 +809,42 @@ export const usePostActions = () => {
     ],
   );
 
+  const handleHighlightSource = useCallback(
+    (post: Post) => {
+      (async () => {
+        const latestPost = await findLatestPost(post);
+        if (!latestPost) {
+          await notifyNotFoundAndRefresh(post.path);
+          return;
+        }
+
+        const noteFile = shell.getAbstractFileByPath(latestPost.path);
+        if (!(noteFile instanceof TFile)) return;
+
+        const leaf = shell.getLeaf(true);
+        await shell.revealLeaf(leaf);
+        await leaf.openFile(noteFile, { active: true });
+
+        const editor = shell.getWorkspace().activeEditor as MarkdownView;
+        const startPos = editor.editor!.offsetToPos(latestPost.bodyStartOffset);
+        const endPos = editor.editor!.offsetToPos(
+          latestPost.bodyStartOffset + latestPost.message.length,
+        );
+        queueMicrotask(() => {
+          editor.editMode!.highlightSearchMatches([
+            {
+              from: { line: startPos.line, ch: startPos.ch },
+              to: { line: endPos.line, ch: endPos.ch },
+            },
+          ]);
+        });
+      })();
+    },
+    [shell, findLatestPost, notifyNotFoundAndRefresh],
+  );
+
   /** 投稿を同じ MFDI タブの focused モードで開き、一覧上でハイライトする */
-  const handleClickTime = useCallback(
+  const handleHighlightPost = useCallback(
     async (post: Post) => {
       const latestPost = await findLatestPost(post);
       if (!latestPost) {
@@ -851,7 +885,8 @@ export const usePostActions = () => {
     setPostTags,
     setPostPinned,
     movePostToTomorrow,
-    handleClickTime,
+    handleHighlightPost,
+    handleHighlightSource,
     copyBlockIdLink,
   };
 };
