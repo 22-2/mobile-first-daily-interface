@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DexieDBService } from "./DexieDBService";
+import { DexieDBService } from "src/db/impl/DexieDBService";
 
 describe("DexieDBService", () => {
   let service: DexieDBService;

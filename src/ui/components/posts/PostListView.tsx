@@ -22,7 +22,7 @@ import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
-import { cn } from "../primitives/utils";
+import { cn } from "src/ui/components/primitives/utils";
 
 type TimelineItem =
   | { type: "post"; post: Post; key: string }

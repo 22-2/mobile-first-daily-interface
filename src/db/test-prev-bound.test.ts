@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MFDIDatabase } from "./mfdi-db";
+import { MFDIDatabase } from "src/db/mfdi-db";
 
 describe("IndexedDB prev bound test", () => {
   let db: MFDIDatabase;

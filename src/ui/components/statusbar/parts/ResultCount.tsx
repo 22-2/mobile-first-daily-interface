@@ -8,8 +8,8 @@ import {
   formatFixedNoteLabel,
   formatLabel,
   getVisibleRootCount,
-} from "./helper";
-import { useDbTotalCount, useSettings, useTotalCount } from "./hooks";
+} from "src/ui/components/statusbar/parts/helper";
+import { useDbTotalCount, useSettings, useTotalCount } from "src/ui/components/statusbar/parts/hooks";
 
 export const ResultCount: FC = () => {
   const settings = useSettings();

@@ -11,7 +11,7 @@ import {
   useFilterMenu,
   useGranularityMenu,
   useSettings,
-} from "./hooks";
+} from "src/ui/components/statusbar/parts/hooks";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
