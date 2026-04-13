@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@22-2/obsidian-magical-editor':
-        specifier: 1.0.3
-        version: 1.0.3(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))
+        specifier: 1.0.4
+        version: 1.0.4(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -115,8 +115,8 @@ importers:
         specifier: ^2.30.1
         version: 2.30.1
       obsidian-e2e-toolkit:
-        specifier: github:22-2/obsidian-e2e-toolkit#1.0.0
-        version: https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/609fbb1eeee8ad9c2b486b08d6e46396ac634da2(@playwright/test@1.59.1)(playwright@1.59.1)
+        specifier: github:22-2/obsidian-e2e-toolkit#1.0.2
+        version: https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/54aad72c3443f8ac51bffeade4b433bda63d5fc9(@playwright/test@1.59.1)(electron@41.0.3)(playwright@1.59.1)
       obsidian-typings:
         specifier: ^5.18.0
         version: 5.18.0(@pixi/core@7.2.4)(@pixi/display@7.2.4(@pixi/core@7.2.4))(@pixi/utils@7.2.4)(typescript@6.0.2)
@@ -156,8 +156,8 @@ packages:
   '@22-2/esbuild-plugin-obsidian-copy@0.1.2':
     resolution: {integrity: sha512-EVPXGkm8DEvvjh09rVmh+/VD7KM+/GTOg6Mxt5uZiXzNY6HpJO72XfSkYvOIQDhuYwwqbVueFWC6GZWY6yS9xg==, tarball: https://npm.pkg.github.com/download/@22-2/esbuild-plugin-obsidian-copy/0.1.2/441004f4cb120a7d86046b8baadef683e4685d0d}
 
-  '@22-2/obsidian-magical-editor@1.0.3':
-    resolution: {integrity: sha512-T+apjKojTooekOx8PNTtQFHnOBT/QEUeV+lE32xlaRAGxuLmesrNZ1hL2JbqeVjjmEaSe2dxtq1qK0y7uT26XQ==, tarball: https://npm.pkg.github.com/download/@22-2/obsidian-magical-editor/1.0.3/7516b996b1ad18629767f9eab7004589acf932bb}
+  '@22-2/obsidian-magical-editor@1.0.4':
+    resolution: {integrity: sha512-VLRJnBdHB1kq/yJcUnwKlmNZsxtJKvNQzTDf2HlcOW8Z+UuxpK7OTRDUsFnCb1zxqRL7WHnm1+PnlX8pMJTcuQ==, tarball: https://npm.pkg.github.com/download/@22-2/obsidian-magical-editor/1.0.4/66da1cb29de6c96b7fbeac5c32b0ff9a909bd88c}
     peerDependencies:
       obsidian: '>=1.12.0'
 
@@ -3528,12 +3528,13 @@ packages:
     resolution: {integrity: sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA==}
     engines: {node: '>= 0.4'}
 
-  obsidian-e2e-toolkit@https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/609fbb1eeee8ad9c2b486b08d6e46396ac634da2:
-    resolution: {tarball: https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/609fbb1eeee8ad9c2b486b08d6e46396ac634da2}
-    version: 1.0.0
+  obsidian-e2e-toolkit@https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/54aad72c3443f8ac51bffeade4b433bda63d5fc9:
+    resolution: {tarball: https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/54aad72c3443f8ac51bffeade4b433bda63d5fc9}
+    version: 1.0.2
     engines: {node: '>=23.0.0'}
     peerDependencies:
       '@playwright/test': ^1.56.0
+      electron: 41.0.3
       playwright: ^1.56.0
 
   obsidian-typings@5.18.0:
@@ -4798,7 +4799,7 @@ snapshots:
 
   '@22-2/esbuild-plugin-obsidian-copy@0.1.2': {}
 
-  '@22-2/obsidian-magical-editor@1.0.3(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))':
+  '@22-2/obsidian-magical-editor@1.0.4(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))':
     dependencies:
       obsidian: 1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
 
@@ -8422,7 +8423,7 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
 
-  obsidian-e2e-toolkit@https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/609fbb1eeee8ad9c2b486b08d6e46396ac634da2(@playwright/test@1.59.1)(playwright@1.59.1):
+  obsidian-e2e-toolkit@https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/54aad72c3443f8ac51bffeade4b433bda63d5fc9(@playwright/test@1.59.1)(electron@41.0.3)(playwright@1.59.1):
     dependencies:
       '@electron/asar': 4.2.0
       '@playwright/test': 1.59.1
