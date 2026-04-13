@@ -174,7 +174,7 @@ describe("useFakeEditor", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("初期化待ちの間に更新された initialValue を ready 後に editor へ再適用する", async () => {
+  it("初期化待ちの間に更新された initialValue でも wrapper 側で ready 後 setContent しない", async () => {
     const onChange = vi.fn();
     const view = render(<HookHarness initialValue="" onChange={onChange} />);
 
@@ -195,11 +195,10 @@ describe("useFakeEditor", () => {
       await Promise.resolve();
     });
 
-    expect(instance.setContentCalls).toEqual(["restored draft"]);
-    expect(instance.getContentSnapshot()).toBe("restored draft");
+    expect(instance.setContentCalls).toEqual([]);
   });
 
-  it("snapshot が一致していても ready 後に最新 initialValue を再適用する", async () => {
+  it("snapshot が一致している場合も wrapper 側で ready 後 setContent を重ねない", async () => {
     const onChange = vi.fn();
 
     render(<HookHarness initialValue="already-restored" onChange={onChange} />);
@@ -217,7 +216,6 @@ describe("useFakeEditor", () => {
       await Promise.resolve();
     });
 
-    expect(instance.setContentCalls).toEqual(["already-restored"]);
-    expect(instance.getContentSnapshot()).toBe("already-restored");
+    expect(instance.setContentCalls).toEqual([]);
   });
 });

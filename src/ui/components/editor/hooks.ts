@@ -152,12 +152,8 @@ export function useFakeEditor(
         return;
       }
 
-      const latestInitialValue = optionsRef.current.initialValue ?? "";
-      // 非同期初期化中は internal snapshot だけ先に進み、DOM が空のまま残ることがある。
-      // ready 後に最新値を必ず再投入して、見た目と snapshot を同じソースへ揃える。
-      isSyncingRef.current = true;
-      editor.setContent(latestInitialValue);
-      isSyncingRef.current = false;
+      // BaseEditor.ready は、初期化中に setContent が走った場合の再同期まで含めて完了する。
+      // ここで再投入を重ねると初回表示で不要なレイアウト揺れが発生するため行わない。
       isEditorReady = true;
 
       const editorContainer = editor.view?.containerEl;
