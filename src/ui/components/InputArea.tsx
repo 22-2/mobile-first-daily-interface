@@ -218,10 +218,11 @@ const InputAreaControl: FC<{
 const InputAreaFooter: FC = memo(() => {
   const { posts } = useUnifiedPosts();
 
-  const { asTask, isReadOnly } = useSettingsStore(
+  const { asTask, isReadOnly, expanded } = useSettingsStore(
     useShallow((s) => ({
       asTask: s.asTask,
       isReadOnly: s.isReadOnly(),
+      expanded: s.expanded,
     })),
   );
 
@@ -260,6 +261,16 @@ const InputAreaFooter: FC = memo(() => {
 
   return (
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
+      {expanded && (
+        <style>
+          {`
+            .titlebar,
+            .workspace-tab-header-container {
+              display: none;
+            }
+          `}
+        </style>
+      )}
       {editingPost && (
         <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル
@@ -319,7 +330,7 @@ export const InputArea: FC = memo(() => {
 
   return (
     <Flex
-      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] mr-[var(--size-4-3)] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`}
+      className={cn(`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`, isExpanded ? "" : "mr-[var(--size-4-3)]")}
     >
       <InputAreaControl
         isReadOnly={isReadOnly}
