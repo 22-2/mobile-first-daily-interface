@@ -176,6 +176,7 @@ export class MFDISettingTab extends PluginSettingTab {
               "editorExpansionMode",
               value as Settings["editorExpansionMode"],
             );
+            this.plugin.rerenderView();
           }),
       );
   }
