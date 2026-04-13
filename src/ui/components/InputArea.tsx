@@ -1,9 +1,10 @@
 import type { ChangeEvent, FC } from "react";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { NavButton } from "src/ui/components/common/NavButton";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { Box, Button, Flex, HStack, Input } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import {
   DISPLAY_MODE,
   PLACEHOLDER_TEXT,
@@ -46,8 +47,11 @@ const DisplayModeIndicator: FC<{
   );
 });
 
-const InputAreaControl: FC = memo(() => {
-  const component = useObsidianComponent() as MFDIView;
+const InputAreaControl: FC<{
+  isReadOnly: boolean;
+  isExpanded: boolean;
+  onExpandToMaxHeight: () => void;
+}> = memo(({ isReadOnly, isExpanded, onExpandToMaxHeight }) => {
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
@@ -61,7 +65,6 @@ const InputAreaControl: FC = memo(() => {
     date,
     granularity,
     isToday,
-    isReadOnly,
     handleClickMovePrevious,
     handleClickMoveNext,
     handleClickToday,
@@ -78,7 +81,6 @@ const InputAreaControl: FC = memo(() => {
       date: s.date,
       granularity: s.granularity,
       isToday: s.isToday(),
-      isReadOnly: s.isReadOnly(),
       handleClickMovePrevious: s.handleClickMovePrevious,
       handleClickMoveNext: s.handleClickMoveNext,
       handleClickToday: s.handleClickToday,
@@ -149,22 +151,29 @@ const InputAreaControl: FC = memo(() => {
 
   return (
     <Flex
-      className={`mfdi-input-area-control items-center px-[1em] my-[var(--size-4-4)] h-[28px]`}
+      className={`mfdi-input-area-control items-center px-[1em] my-[var(--size-4-4)] h-[28px] group`}
     >
       {capabilities.supportsDateNavigation && (
         <ObsidianIcon
           name="home"
           size="1.1em"
-          className={
+          className={cn(
             isViewDefault
               ? "hover:bg-[var(--background-modifier-hover)]"
-              : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
-          }
+              : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]",
+            // 意図: expand 中は上部バーを畳み、ホバー時だけ一時的に表示する。
+            isExpanded && "hidden group-hover:flex",
+          )}
           onClick={handleClickHome}
         />
       )}
       <Box className="flex-1" />
-      <HStack className="mfdi-control-center justify-center flex-none">
+      <HStack
+        className={cn(
+          "mfdi-control-center justify-center flex-none",
+          isExpanded && "hidden group-hover:flex",
+        )}
+      >
         {!capabilities.supportsDateNavigation ? null : isStatusIndicatorVisible ? (
           <DisplayModeIndicator
             displayMode={displayMode}
@@ -192,13 +201,13 @@ const InputAreaControl: FC = memo(() => {
           name="maximize"
           size="1.1em"
           className={
-            isReadOnly || !("handlers" in component)
+            isReadOnly
               ? "cursor-default opacity-30"
               : "hover:bg-[var(--background-modifier-hover)]"
           }
           onClick={() => {
-            if (isReadOnly || !("handlers" in component)) return;
-            component.handlers.onOpenModalEditor?.();
+            if (isReadOnly) return;
+            onExpandToMaxHeight();
           }}
         />
       </Box>
@@ -286,6 +295,7 @@ const InputAreaFooter: FC = memo(() => {
 
 export const InputArea: FC = memo(() => {
   const component = useObsidianComponent() as MFDIView;
+  const [isExpanded, setIsExpanded] = useState(false);
   const { shell } = useAppContext();
   const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
     useShallow((s) => ({
@@ -301,11 +311,20 @@ export const InputArea: FC = memo(() => {
   );
   const { handleSubmit } = usePostActions();
 
+  const handleExpandToMaxHeight = useCallback(() => {
+    // 意図: クラス付与のみで expand/collapse を切り替え、スタイル責務を CSS に寄せる。
+    setIsExpanded((prev) => !prev);
+  }, []);
+
   return (
     <Flex
-      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} flex flex-col rounded-t-[22px] mr-[var(--size-4-3)] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`}
+      className={`mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] mr-[var(--size-4-3)] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`}
     >
-      <InputAreaControl />
+      <InputAreaControl
+        isReadOnly={isReadOnly}
+        isExpanded={isExpanded}
+        onExpandToMaxHeight={handleExpandToMaxHeight}
+      />
 
       <ObsidianLiveEditor
         ref={inputRef}

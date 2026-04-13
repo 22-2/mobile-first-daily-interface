@@ -8,9 +8,14 @@ function hasExpectedScrollerStyle(): boolean {
   }
 
   const scroller = document.querySelector<HTMLElement>(TARGET_SELECTOR);
-  return scroller
-    ? window.getComputedStyle(scroller).maxHeight === "500px"
-    : false;
+  if (!scroller) {
+    return false;
+  }
+
+  const { maxHeight } = window.getComputedStyle(scroller);
+  // 意図: max-height の具体値は設定変更で変わるため、固定値一致ではなく
+  // 「none/未設定ではない」ことを CSS 適用完了のシグナルとして扱う。
+  return maxHeight !== "" && maxHeight !== "none" && maxHeight !== "0px";
 }
 
 export function useCSSLoaded() {
