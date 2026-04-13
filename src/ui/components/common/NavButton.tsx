@@ -1,4 +1,4 @@
-import type { FC } from "node_modules/@types/react";
+import type { FC } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { HStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";

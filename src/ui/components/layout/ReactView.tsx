@@ -10,7 +10,7 @@ import {
 import type { Settings } from "src/settings";
 import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
-import { InputArea } from "src/ui/components/InputArea";
+import { InputArea } from "src/ui/components/inputarea/InputArea";
 import { SidebarScales } from "src/ui/components/layout/SidebarScales";
 import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";

@@ -11,12 +11,12 @@ import type { HTMLMeta, ImageMeta, TwitterMeta } from "src/core/meta";
 import { createMeta } from "src/core/meta";
 import { pickUrls } from "src/core/strings";
 import { isPresent } from "src/core/types";
-import { CardContent } from "src/ui/components/BaseCard";
+import { CardContent } from "src/ui/components/cards/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
-import { ObsidianMarkdown } from "src/ui/components/ObsidianMarkdown";
+import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isThreadRoot } from "src/ui/utils/thread-utils";
 

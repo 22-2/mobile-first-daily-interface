@@ -4,7 +4,7 @@ import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { ensureExtension } from "src/core/path";
 import type { Settings } from "src/settings";
-import { EditableTitleBar } from "src/ui/components/EditableTitleBar";
+import { EditableTitleBar } from "src/ui/components/common/EditableTitleBar";
 import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import "src/ui/styles/global.css";

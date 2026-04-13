@@ -1,4 +1,4 @@
-import type React from "node_modules/@types/react";
+import type React from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { cn } from "src/ui/components/primitives/utils";
 
