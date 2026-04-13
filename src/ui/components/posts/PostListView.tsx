@@ -272,6 +272,8 @@ export const PostListView: React.FC = memo(() => {
           }),
       );
 
+      menu.addSeparator();
+
       menu.addItem((item) =>
         item
           .setTitle("編集")
