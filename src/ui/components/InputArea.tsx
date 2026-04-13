@@ -26,6 +26,42 @@ import type { MFDIView } from "src/ui/view/MFDIView";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
+const FULL_EXPANSION_STYLE = `
+  /* タイトルバー非表示 */
+  .titlebar,
+  .workspace-tab-header-container {
+    display: none;
+  }
+
+  .main-content {
+    margin: 0 var(--size-4-2);
+  }
+
+  /* 上部バーを畳む。 */
+  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-header {
+    display: none;
+  }
+
+  /* コンテンツのパディングをリセット */
+  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-content {
+    padding: 0!important;
+  }
+
+  .mfdi-input-area {
+    margin-right: 0!important;
+  }
+
+  [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
+    height: calc(100dvh - 123px) !important;
+  }
+`;
+
+const DEFAULT_EXPANSION_STYLE = `
+  [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
+    height: calc(100dvh - 220px) !important;
+  }
+`;
+
 const DisplayModeIndicator: FC<{
   displayMode: "focus" | "timeline";
   threadFocusRootId: string | null;
@@ -218,6 +254,8 @@ const InputAreaControl: FC<{
 const InputAreaFooter: FC = memo(() => {
   const { posts } = useUnifiedPosts();
 
+  const { settings } = useAppContext();
+
   const { asTask, isReadOnly, expanded } = useSettingsStore(
     useShallow((s) => ({
       asTask: s.asTask,
@@ -247,53 +285,25 @@ const InputAreaFooter: FC = memo(() => {
     })),
   );
 
-  const handleCreateDraft = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      if (!inputSnapshot.trim()) return;
-      addDraft(inputSnapshot);
-      clearInput();
-    },
-    [addDraft, inputSnapshot, clearInput],
-  );
+  // const handleCreateDraft = useCallback(
+  //   (e: React.MouseEvent) => {
+  //     e.preventDefault();
+  //     if (!inputSnapshot.trim()) return;
+  //     addDraft(inputSnapshot);
+  //     clearInput();
+  //   },
+  //   [addDraft, inputSnapshot, clearInput],
+  // );
 
   const { handleSubmit } = usePostActions();
 
   return (
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
-      <style>
-        {expanded
-          ? `
-            /* タイトルバー非表示 */
-            .titlebar,
-            .workspace-tab-header-container {
-              display: none;
-            }
-
-            .main-content {
-              margin: 0 var(--size-4-2);
-            }
-
-            /* 上部バーを畳む。 */
-            [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-header {
-              display: none;
-            }
-
-            /* コンテンツのパディングをリセット */
-            [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-content {
-              padding: 0!important;
-            }
-
-            .mfdi-input-area {
-              margin-right: 0!important;
-            }
-          `
-          : `
-            .mfdi-input-area {
-              margin-right: var(--size-4-3);
-            }
-          `}
-      </style>
+      {expanded && (
+        <style>
+          {settings.editorExpansionMode === "full" ? FULL_EXPANSION_STYLE : DEFAULT_EXPANSION_STYLE}
+        </style>
+      )}
       {editingPost && (
         <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル

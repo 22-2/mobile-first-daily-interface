@@ -16,6 +16,7 @@ export interface Settings {
   activeTopic: string;
   fixedNoteFiles: { path: string }[];
   fullScanIntervalHours?: number;
+  editorExpansionMode: "full" | "default";
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -29,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   activeTopic: "",
   fixedNoteFiles: [],
   fullScanIntervalHours: 24,
+  editorExpansionMode: "default",
 };
 
 export const postFormatMap = {
@@ -155,6 +157,24 @@ export class MFDISettingTab extends PluginSettingTab {
             await this.updateSetting(
               "updateDateStrategy",
               value as Settings["updateDateStrategy"],
+            );
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("エディタの展開モード")
+      .setDesc(
+        "エディタの展開モードを選択します。",
+      )
+      .addDropdown((tc) =>
+        tc
+          .addOption("full", "フル展開")
+          .addOption("default", "デフォルトの展開")
+          .setValue(this.plugin.settings.editorExpansionMode)
+          .onChange(async (value) => {
+            await this.updateSetting(
+              "editorExpansionMode",
+              value as Settings["editorExpansionMode"],
             );
           }),
       );
