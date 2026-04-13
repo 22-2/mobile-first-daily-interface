@@ -44,7 +44,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
           "flex items-center p-4 border-b border-[var(--background-modifier-border)] relative",
         )}
       >
-        <button
+        <Box
           onClick={onClose}
           className={cn(
             "flex items-center gap-1 text-[var(--text-accent)] font-bold hover:opacity-80 transition-opacity bg-transparent border-none cursor-pointer p-0",
@@ -54,7 +54,7 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
           <Text className={cn("text-[var(--text-accent)] font-bold")}>
             戻る
           </Text>
-        </button>
+        </Box>
         <Box
           className={cn(
             "absolute left-1/2 -translate-x-1/2 pointer-events-none",
