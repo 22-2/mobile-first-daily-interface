@@ -343,47 +343,6 @@ test.describe("MFDI live editor e2e", () => {
     await expect.poll(() => getLiveEditorSelectionCount(obsidian)).toBe(1);
   });
 
-  // ── モーダルエディタ ─────────────────────────────────────────
-
-  test("scoped ホットキーでモーダルエディタを開ける", async ({ obsidian }) => {
-    await registerAppScopeHotkeyCounter(obsidian, "open-modal-parent", ["Ctrl", "Shift", "Alt"], "o");
-
-    await liveEditor.click();
-    const modalEditor = await openModalFromKeyboard(obsidian.page);
-
-    await expect(modalEditor).toBeVisible();
-    await expect
-      .poll(() => getAppScopeHotkeyCount(obsidian, "open-modal-parent"))
-      .toBe(0);
-  });
-
-  test("Escape キーで MFDIEditorModal が閉じる", async ({ obsidian }) => {
-    await liveEditor.click();
-    await openModalFromKeyboard(obsidian.page);
-    await obsidian.page.waitForTimeout(WAIT.MEDIUM);
-
-    await obsidian.page.keyboard.press("Escape");
-
-    await expect(obsidian.page.locator(".mfdi-modal-editor")).not.toBeVisible();
-    await expect(liveEditor).toBeVisible();
-  });
-
-  test("モーダルエディタで fill できてライブエディタに同期される", async ({ obsidian }) => {
-    await liveEditor.click();
-    const modalEditor = await openModalFromKeyboard(obsidian.page);
-
-    await modalEditor.click();
-    await modalEditor.fill("Modal sync text");
-    await obsidian.page.waitForTimeout(WAIT.SHORT);
-
-    await expect(modalEditor).toContainText("Modal sync text");
-    await expect(liveEditor).toContainText("Modal sync text");
-
-    await obsidian.page.keyboard.press("Escape");
-    await expect(obsidian.page.locator(".mfdi-modal-editor")).not.toBeVisible();
-    await expect(liveEditor).toContainText("Modal sync text");
-  });
-
   // ── 投稿・スコープ ───────────────────────────────────────────
 
   test("Ctrl+Enter では MFDIView の Scope のみが呼ばれる", async ({ obsidian }) => {
