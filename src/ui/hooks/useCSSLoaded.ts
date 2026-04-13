@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 
-const TARGET_SELECTOR = '[data-type="mfdi-view"] .cm-scroller';
+const TARGET_SELECTOR = '[data-type="mfdi-view"]';
 
 function hasExpectedScrollerStyle(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
 
-  const scroller = document.querySelector<HTMLElement>(TARGET_SELECTOR);
-  if (!scroller) {
+  const viewRoot = document.querySelector<HTMLElement>(TARGET_SELECTOR);
+  if (!viewRoot) {
     return false;
   }
 
-  const { maxHeight } = window.getComputedStyle(scroller);
-  // 意図: max-height の具体値は設定変更で変わるため、固定値一致ではなく
-  // 「none/未設定ではない」ことを CSS 適用完了のシグナルとして扱う。
-  return maxHeight !== "" && maxHeight !== "none" && maxHeight !== "0px";
+  const cssLoadedMarker = window
+    .getComputedStyle(viewRoot)
+    .getPropertyValue("--mfdi-css-loaded")
+    .trim();
+
+  return cssLoadedMarker === "1";
 }
 
 export function useCSSLoaded() {

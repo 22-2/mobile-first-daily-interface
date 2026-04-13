@@ -77,6 +77,7 @@ If your plugin does not need CSS, delete this file.
 */
 
 [data-type="mfdi-view"] {
+  --mfdi-css-loaded: 1;
   --mfdi-icon-color: var(--text-muted);
   --mfdi-icon-color-hover: var(--text-normal);
 }
@@ -232,17 +233,9 @@ If your plugin does not need CSS, delete this file.
   --code-background: var(--bg3) !important;
 }
 
-[data-type="mfdi-view"] .cm-scroller {
-  max-height: 80vh;
-}
-
 [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
   /* 画面が狭い時も入力エリア全体が収まるように抑える。 */
   height: min(80vh, calc(100dvh - 220px));
-}
-
-[data-type="mfdi-view"] .mfdi-input-area.mod-expanded {
-
 }
 
 .mfdi-draft-list-modal {
