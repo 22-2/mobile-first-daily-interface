@@ -33,7 +33,7 @@ vi.mock("src/ui/store/settingsStore", () => ({
   ): T => selector({ viewNoteMode: "periodic" }),
 }));
 
-vi.mock("src/ui/components/ObsidianMarkdown", () => ({
+vi.mock("src/ui/components/common/ObsidianMarkdown", () => ({
   ObsidianMarkdown: ({ content }: { content: string }) =>
     React.createElement("div", null, content),
 }));
