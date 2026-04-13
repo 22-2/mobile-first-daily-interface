@@ -427,7 +427,8 @@ test.describe("MFDI live editor e2e", () => {
 
     // 編集モードに入る
     await obsidian.page.locator(".list .base-card").first().dblclick();
-    expect(obsidian.page.locator(".list .base-card").first()).toHaveClass("mfdi-card--highlighted");
+    // ハイライト状態は `.base-card` の親要素に付与されるため、親側のクラスで検証する。
+    await expect(obsidian.page.locator(".list .mfdi-card--highlighted .base-card").first()).toBeVisible();
     await expectLiveEditorContent(obsidian, message);
 
     // 編集して更新
@@ -451,7 +452,8 @@ test.describe("MFDI live editor e2e", () => {
 
     // 編集モードに入る
     await obsidian.page.locator(".list .base-card").first().dblclick();
-    expect(obsidian.page.locator(".list .base-card").first()).toHaveClass("mfdi-card--highlighted");
+    // ハイライト状態は `.base-card` の親要素に付与されるため、親側のクラスで検証する。
+    await expect(obsidian.page.locator(".list .mfdi-card--highlighted .base-card").first()).toBeVisible();
     await expectLiveEditorContent(obsidian, message);
 
     // タブを閉じて再度開く
