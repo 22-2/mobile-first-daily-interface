@@ -282,6 +282,7 @@ const ReactViewContent = () => {
       displayMode: s.displayMode,
       threadFocusRootId: s.threadFocusRootId,
       searchQuery: s.searchQuery,
+      expanded: s.expanded,
     })),
   );
 
@@ -395,8 +396,10 @@ const ReactViewContent = () => {
       {/* Main Content */}
       <Flex
         className={cn(
-          "flex-col h-full relative flex-grow ml-[var(--size-4-2)] overflow-hidden",
-          !effectivelyOpen && "mr-[var(--size-4-2)]",
+          "flex-col h-full relative flex-grow overflow-hidden",
+          {
+            "mx-[var(--size-4-2)]": !settings.expanded,
+          }
         )}
       >
         <InputArea />

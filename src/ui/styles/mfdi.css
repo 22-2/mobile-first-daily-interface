@@ -235,7 +235,7 @@ If your plugin does not need CSS, delete this file.
 
 [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
   /* 画面が狭い時も入力エリア全体が収まるように抑える。 */
-  height: calc(100dvh - 130px) !important;
+  height: calc(100dvh - 123px) !important;
 }
 
 .mfdi-draft-list-modal {
