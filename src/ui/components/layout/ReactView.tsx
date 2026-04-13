@@ -457,6 +457,7 @@ function useViewSync(view: MFDIView | null) {
     isReadOnly,
     sidebarOpen,
     searchQuery,
+    expanded,
     setGranularity,
     setTimeFilter,
     setDateFilter,
@@ -466,6 +467,7 @@ function useViewSync(view: MFDIView | null) {
     setDisplayMode,
     setSidebarOpen,
     setSearchQuery,
+    setIsExpanded,
   } = useSettingsStore(
     useShallow((state) => ({
       granularity: state.granularity,
@@ -478,6 +480,7 @@ function useViewSync(view: MFDIView | null) {
       isReadOnly: state.isReadOnly(),
       sidebarOpen: state.sidebarOpen,
       searchQuery: state.searchQuery,
+      expanded: state.expanded,
       setGranularity: state.setGranularity,
       setTimeFilter: state.setTimeFilter,
       setDateFilter: state.setDateFilter,
@@ -487,6 +490,7 @@ function useViewSync(view: MFDIView | null) {
       setDisplayMode: state.setDisplayMode,
       setSidebarOpen: state.setSidebarOpen,
       setSearchQuery: state.setSearchQuery,
+      setIsExpanded: state.setIsExpanded,
     })),
   );
 
@@ -671,25 +675,17 @@ function useViewSync(view: MFDIView | null) {
   useEffect(() => {
     if (!view) return;
     if (isReadOnly) {
-      view.handlers.onOpenModalEditor = undefined;
+      view.handlers.onEditorExpand = undefined;
       return;
     }
 
-    view.handlers.onOpenModalEditor = () => {
-      openModalEditor({
-        initialContent: getInputValue() || inputRefVal.current,
-        onChange: (content) => {
-          replaceInput(content);
-        },
-        onClose: (content) => {
-          replaceInput(content);
-        },
-      });
+    view.handlers.onEditorExpand = () => {
+      setIsExpanded(!expanded);
     };
     return () => {
-      view.handlers.onOpenModalEditor = undefined;
+      view.handlers.onEditorExpand = undefined;
     };
-  }, [view, openModalEditor, getInputValue, replaceInput, isReadOnly]);
+  }, [view, openModalEditor, getInputValue, replaceInput, isReadOnly, expanded, setIsExpanded]);
 
   useEffect(() => {
     if (!view) return;

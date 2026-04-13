@@ -145,7 +145,7 @@ export class MFDIView extends ItemView {
     });
 
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
-      this.handlers.onOpenModalEditor?.();
+      this.handlers.onEditorExpand?.();
       return true;
     });
 
