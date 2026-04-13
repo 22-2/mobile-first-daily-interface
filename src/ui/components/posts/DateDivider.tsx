@@ -9,6 +9,7 @@ interface DateDividerProps {
   label?: string;
   leadingIconName?: string;
   collapsed?: boolean;
+  showCollapseIcon?: boolean;
   onClick?: () => void;
   onContextMenu?: MouseEventHandler<HTMLDivElement>;
 }
@@ -18,6 +19,7 @@ export const DateDivider: FC<DateDividerProps> = ({
   label,
   leadingIconName,
   collapsed = false,
+  showCollapseIcon = false,
   onClick,
   onContextMenu,
 }) => {
@@ -53,7 +55,7 @@ export const DateDivider: FC<DateDividerProps> = ({
             : "text-[var(--text-muted)]"
         }`}
       >
-        {clickable && (
+        {clickable && showCollapseIcon && (
           <ObsidianIcon
             className="cursor-pointer"
             name={collapsed ? "chevron-right" : "chevron-down"}

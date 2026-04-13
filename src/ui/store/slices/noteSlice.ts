@@ -91,14 +91,17 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   handleClickOpenDailyNote: async (shell, settings) => {
+    const { getEffectiveDate } = get();
+    await get().openDailyNoteForDate(shell, settings, getEffectiveDate());
+  },
+
+  openDailyNoteForDate: async (shell, settings, targetDate) => {
     const {
       granularity,
       activeTopic,
-      getEffectiveDate,
       viewNoteMode,
       fixedNotePath,
     } = get();
-    const targetDate = getEffectiveDate();
     const noteSource = resolveNoteSource({
       shell,
       date: targetDate,

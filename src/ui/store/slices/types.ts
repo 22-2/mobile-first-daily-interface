@@ -97,6 +97,11 @@ export interface NoteSlice {
     shell: ObsidianAppShell,
     settings: Settings,
   ) => Promise<void>;
+  openDailyNoteForDate: (
+    shell: ObsidianAppShell,
+    settings: Settings,
+    targetDate: MomentLike,
+  ) => Promise<void>;
   handleChangeTopic: (topicId: string) => void;
 }
 

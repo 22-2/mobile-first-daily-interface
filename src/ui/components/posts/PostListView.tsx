@@ -13,6 +13,7 @@ import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostBacklinks } from "src/ui/hooks/usePostBacklinkCounts";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useEditorStore } from "src/ui/store/editorStore";
+import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MomentLike, Post } from "src/ui/types";
 import { getRawTagMetadata, isPinned } from "src/ui/utils/post-metadata";
@@ -49,7 +50,7 @@ function isSamePostReference(left: Post, right: Post): boolean {
 }
 
 export const PostListView: React.FC = memo(() => {
-  const { shell, storage } = useAppContext();
+  const { shell, storage, settings: pluginSettings } = useAppContext();
   const { showTextInput, confirmDeleteAction, openBacklinkPreview } =
     useObsidianUi();
   const settings = useSettingsStore(
@@ -105,6 +106,12 @@ export const PostListView: React.FC = memo(() => {
     setPostPinned,
     copyBlockIdLink,
   } = usePostActions();
+
+  const { openDailyNoteForDate } = useNoteStore(
+    useShallow((s) => ({
+      openDailyNoteForDate: s.openDailyNoteForDate,
+    })),
+  );
 
   const timelineView = isTimelineView(settings.displayMode);
 
@@ -519,12 +526,93 @@ export const PostListView: React.FC = memo(() => {
     });
   }, [canCollapseDividers, storage, visibleDividerGroupKeys]);
 
+  const handleClickDateDivider = useCallback(
+    (date: MomentLike) => {
+      if (!capabilities.supportsDateNavigation) {
+        return;
+      }
+      // 意図: dividerを現在日の起点として使い、投稿リストから即座に日付フォーカスへ遷移できるようにする。
+      setDate(date.clone());
+      setDisplayMode(DISPLAY_MODE.FOCUS);
+    },
+    [capabilities.supportsDateNavigation, setDate, setDisplayMode],
+  );
+
+  const openDailyNoteSourceForDate = useCallback(
+    async (date: MomentLike) => {
+      if (!capabilities.supportsDateNavigation) {
+        return;
+      }
+      // 意図: 右クリックから開く日付ノートとUI表示中の日付を一致させ、操作後の文脈ズレを防ぐ。
+      setDate(date.clone());
+      setDisplayMode(DISPLAY_MODE.FOCUS);
+      await openDailyNoteForDate(shell, pluginSettings, date.clone());
+    },
+    [
+      capabilities.supportsDateNavigation,
+      setDate,
+      setDisplayMode,
+      openDailyNoteForDate,
+      shell,
+      pluginSettings,
+    ],
+  );
+
   const showDividerContextMenu = useCallback(
-    (event: React.MouseEvent) => {
+    (
+      event: React.MouseEvent,
+      params?: {
+        date?: MomentLike;
+        groupKey?: string;
+        collapsed?: boolean;
+      },
+    ) => {
       event.preventDefault();
       event.stopPropagation();
 
       const menu = new Menu();
+
+      if (params?.date) {
+        const targetDate = params.date;
+        menu.addItem((item) =>
+          item
+            .setTitle("この日にフォーカス")
+            .setIcon("calendar-range")
+            .setDisabled(!capabilities.supportsDateNavigation)
+            .onClick(() => {
+              handleClickDateDivider(targetDate);
+            }),
+        );
+
+        menu.addItem((item) =>
+          item
+            .setTitle("この日のソースを開く")
+            .setIcon("code-xml")
+            .setDisabled(!capabilities.supportsDateNavigation)
+            .onClick(() => {
+              void openDailyNoteSourceForDate(targetDate);
+            }),
+        );
+
+        if (params.groupKey) {
+          const targetGroupKey = params.groupKey;
+          menu.addItem((item) =>
+            item
+              .setTitle(
+                params.collapsed
+                  ? "このdividerを展開する"
+                  : "このdividerを折りたたむ",
+              )
+              .setIcon(params.collapsed ? "rows" : "chevron-down")
+              .setDisabled(!canCollapseDividers)
+              .onClick(() => {
+                toggleCollapsedGroup(targetGroupKey);
+              }),
+          );
+        }
+
+        menu.addSeparator();
+      }
 
       menu.addItem((item) =>
         item
@@ -554,11 +642,15 @@ export const PostListView: React.FC = memo(() => {
     },
     [
       canCollapseDividers,
+      capabilities.supportsDateNavigation,
       areAllVisibleDividersCollapsed,
       areAllVisibleDividersExpanded,
       collapseVisibleDividers,
       expandVisibleDividers,
       hasVisibleDividers,
+      handleClickDateDivider,
+      openDailyNoteSourceForDate,
+      toggleCollapsedGroup,
     ],
   );
 
@@ -644,25 +736,27 @@ export const PostListView: React.FC = memo(() => {
             {item.type === "divider" ? (
               <DateDivider
                 date={item.date}
-                collapsed={item.collapsed}
-                onClick={
-                  canCollapseDividers
-                    ? () => toggleCollapsedGroup(item.groupKey)
-                    : undefined
+                onClick={() => handleClickDateDivider(item.date)}
+                onContextMenu={(event) =>
+                  showDividerContextMenu(event, {
+                    date: item.date,
+                    groupKey: item.groupKey,
+                    collapsed: item.collapsed,
+                  })
                 }
-                onContextMenu={showDividerContextMenu}
               />
             ) : item.type === "pinned-divider" ? (
               <DateDivider
                 label="ピン留め"
                 leadingIconName="pin"
                 collapsed={item.collapsed}
+                showCollapseIcon={canCollapseDividers}
                 onClick={
                   canCollapseDividers
                     ? () => toggleCollapsedGroup(item.groupKey)
                     : undefined
                 }
-                onContextMenu={showDividerContextMenu}
+                onContextMenu={(event) => showDividerContextMenu(event)}
               />
             ) : (
               (() => {

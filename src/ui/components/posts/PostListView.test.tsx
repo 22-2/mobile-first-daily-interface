@@ -81,7 +81,19 @@ vi.mock("src/ui/context/AppContext", () => ({
       get: vi.fn(() => []),
       set: vi.fn(),
     },
+    settings: {
+      insertAfter: "## Thino",
+    },
   }),
+}));
+
+vi.mock("src/ui/store/noteStore", () => ({
+  useNoteStore: <T,>(
+    selector: (state: { openDailyNoteForDate: () => Promise<void> }) => T,
+  ): T =>
+    selector({
+      openDailyNoteForDate: vi.fn().mockResolvedValue(undefined),
+    }),
 }));
 
 vi.mock("src/ui/hooks/useObsidianUi", () => ({
