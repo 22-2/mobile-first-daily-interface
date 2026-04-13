@@ -3,7 +3,7 @@
   padding: 0 !important;
 }
 
-[data-type="mfdi-view"] .task-list-container .markdown-rendered {
+[data-type="mfdi-view"] :is(.task-list-container, .list) .markdown-rendered {
   user-select: text !important;
 }
 
