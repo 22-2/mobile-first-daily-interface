@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { ObsidianLiveEditor, ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
+import { ObsidianLiveEditor, type ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import React from "react";
 
@@ -61,7 +61,7 @@ describe("ObsidianLiveEditor", () => {
 
   it("exposes imperative API via ref", () => {
     const ref = React.createRef<ObsidianLiveEditorRef>();
-    
+
     render(
       <ObsidianLiveEditor
         ref={ref}
@@ -73,7 +73,7 @@ describe("ObsidianLiveEditor", () => {
     );
 
     expect(ref.current).toBeDefined();
-    
+
     // Testing focus
     ref.current?.focus();
     expect(editorState.api?.focus).toHaveBeenCalled();
