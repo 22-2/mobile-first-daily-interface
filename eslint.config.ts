@@ -18,4 +18,9 @@ export default defineConfig([
       "@typescript-eslint/consistent-type-imports": "error",
     },
   },
+  {
+    settings: {
+      react: { version: "19" },
+    },
+  },
 ]);
