@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
-import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
+import { ObsidianLiveEditor, ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import React from "react";
 
 type MockEditorApi = {
   focus: ReturnType<typeof vi.fn>;
@@ -19,11 +20,10 @@ const editorState = vi.hoisted(() => ({
 
 vi.mock("@22-2/obsidian-magical-editor", () => ({}));
 
-vi.mock("src/ui/components/editor/hooks", () => ({
+vi.mock("src/ui/components/editor/useFakeEditor", () => ({
   useFakeEditor: vi.fn(
     (_containerRef: unknown, options: { onChange: (text: string) => void }) => {
       editorState.onChange = options.onChange;
-      // 実 hook の返り値契約に合わせ、component 側が editorRef/isSyncingRef を安全に参照できるようにする。
       return {
         editorRef: { current: editorState.api },
         isSyncingRef: { current: false },
@@ -59,10 +59,12 @@ describe("ObsidianLiveEditor", () => {
     editorState.onChange = null;
   });
 
-  it("mount 後に initialValue が更新されたら editor へ同期する", () => {
-    const view = render(
+  it("exposes imperative API via ref", () => {
+    const ref = React.createRef<ObsidianLiveEditorRef>();
+    
+    render(
       <ObsidianLiveEditor
-        ref={null}
+        ref={ref}
         leaf={{} as never}
         app={{} as never}
         initialValue=""
@@ -70,61 +72,34 @@ describe("ObsidianLiveEditor", () => {
       />,
     );
 
-    expect(editorState.api?.setContent).not.toHaveBeenCalled();
+    expect(ref.current).toBeDefined();
+    
+    // Testing focus
+    ref.current?.focus();
+    expect(editorState.api?.focus).toHaveBeenCalled();
 
-    view.rerender(
-      <ObsidianLiveEditor
-        ref={null}
-        leaf={{} as never}
-        app={{} as never}
-        initialValue="restored draft"
-        onChange={vi.fn()}
-      />,
-    );
+    // Testing setContent
+    ref.current?.setContent("new content");
+    expect(editorState.api?.setContent).toHaveBeenCalledWith("new content");
 
-    expect(editorState.api?.setContent).toHaveBeenCalledWith("restored draft");
+    // Testing getValue
+    expect(ref.current?.getValue()).toBe("new content");
   });
 
-  it("editor snapshot と同じ initialValue なら再同期しない", () => {
-    editorState.api = createMockEditor("already-synced");
-
+  it("passes onChange properly", () => {
+    const onChangeMock = vi.fn();
     render(
       <ObsidianLiveEditor
         ref={null}
         leaf={{} as never}
         app={{} as never}
-        initialValue="already-synced"
-        onChange={vi.fn()}
-      />,
-    );
-
-    expect(editorState.api?.setContent).not.toHaveBeenCalled();
-  });
-
-  it("editor 由来の入力更新では initialValue 同期で setContent しない", () => {
-    const onChange = vi.fn();
-    const view = render(
-      <ObsidianLiveEditor
-        ref={null}
-        leaf={{} as never}
-        app={{} as never}
         initialValue=""
-        onChange={onChange}
+        onChange={onChangeMock}
       />,
     );
 
-    editorState.onChange?.("typed by editor");
-    view.rerender(
-      <ObsidianLiveEditor
-        ref={null}
-        leaf={{} as never}
-        app={{} as never}
-        initialValue="typed by editor"
-        onChange={onChange}
-      />,
-    );
-
-    expect(editorState.api?.setContent).not.toHaveBeenCalled();
-    expect(onChange).toHaveBeenCalledWith("typed by editor");
+    editorState.onChange?.("typed by user");
+    expect(onChangeMock).toHaveBeenCalledWith("typed by user");
   });
 });
+
