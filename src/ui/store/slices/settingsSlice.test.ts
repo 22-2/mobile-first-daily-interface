@@ -26,6 +26,8 @@ describe("settingsSlice", () => {
         activeTopic: "",
         fixedNoteFiles: [],
         clickToActivateScroll: false,
+        editorExpansionMode: "default",
+        fullScanIntervalHours: 24,
       },
       granularity: "day",
       date: today.clone(),

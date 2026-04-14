@@ -161,6 +161,8 @@ describe("timeline note resolution", () => {
         activeTopic: "",
         fixedNoteFiles: [],
         clickToActivateScroll: false,
+        editorExpansionMode: "default",
+        fullScanIntervalHours: 24,
       },
       activeTopic: "",
       granularity: "day",
