@@ -13,6 +13,7 @@ import { pickUrls } from "src/core/strings";
 import { isPresent } from "src/core/types";
 import { CardContent } from "src/ui/components/cards/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
+import { ReadMoreContent } from "src/ui/components/cards/ReadMoreContent";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
@@ -146,26 +147,28 @@ export const PostCardView = React.memo(
           }
           footerRightAddon={footerRightAddon}
         >
-          <VStack align="stretch" gap={3}>
-            {/* Message Body */}
-            <Box className="text-[93%] px-1 break-words">
-              <ObsidianMarkdown content={post.message} sourcePath={post.path} />
-            </Box>
-
-            {settings?.enabledCardView && (
-              <Box className="px-1">
-                {htmlMetas.map((meta) => (
-                  <HTMLCard key={meta.originUrl} meta={meta} />
-                ))}
-                {imageMetas.map((meta) => (
-                  <ImageCard key={meta.originUrl} meta={meta} />
-                ))}
-                {twitterMetas.map((meta) => (
-                  <TwitterCard key={meta.url} meta={meta} />
-                ))}
+          <ReadMoreContent text={post.message}>
+            <VStack align="stretch" gap={3}>
+              {/* Message Body */}
+              <Box className="text-[93%] px-1 break-words">
+                <ObsidianMarkdown content={post.message} sourcePath={post.path} />
               </Box>
-            )}
-          </VStack>
+
+              {settings?.enabledCardView && (
+                <Box className="px-1">
+                  {htmlMetas.map((meta) => (
+                    <HTMLCard key={meta.originUrl} meta={meta} />
+                  ))}
+                  {imageMetas.map((meta) => (
+                    <ImageCard key={meta.originUrl} meta={meta} />
+                  ))}
+                  {twitterMetas.map((meta) => (
+                    <TwitterCard key={meta.url} meta={meta} />
+                  ))}
+                </Box>
+              )}
+            </VStack>
+          </ReadMoreContent>
         </CardContent>
       </Card>
     );

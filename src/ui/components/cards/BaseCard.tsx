@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Flex, HStack, Tag } from "src/ui/components/primitives";
+import React from "react";
+import { Flex, HStack, Tag } from "src/ui/components/primitives";
 import { DISPLAY_DATE_TIME_FORMAT } from "src/ui/config/date-formats";
-import { useAppStore } from "src/ui/store/appStore";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
 interface BaseCardProps {
@@ -29,39 +28,9 @@ export const CardContent: React.FC<BaseCardProps> = ({
 }) => {
   const dimClass = isDimmed ? "opacity-60 filter grayscale" : "";
 
-  // Feature toggle from plugin settings: whether click-to-activate behavior is enabled.
-  const clickToActivate = useAppStore(
-    (s: any) => s.pluginSettings?.clickToActivateScroll ?? false,
-  );
-
-  const [activated, setActivated] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!clickToActivate) return;
-    const handler = (e: MouseEvent) => {
-      if (!rootRef.current) return;
-      const target = e.target as Node | null;
-      if (!target) return;
-      if (!rootRef.current.contains(target)) {
-        setActivated(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [clickToActivate]);
-
   return (
     <Flex
-      ref={rootRef}
-      className={`base-card flex flex-col max-h-[30vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass} ${
-        clickToActivate && !activated ? "cursor-pointer" : ""
-      }`}
-      onClick={(e) => {
-        if (clickToActivate) {
-          setActivated(true);
-        }
-      }}
+      className={`base-card flex flex-col max-h-[70vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass}`}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
@@ -73,13 +42,7 @@ export const CardContent: React.FC<BaseCardProps> = ({
         </Tag>
       </HStack>
 
-      <Box
-        className={`flex-1 mfdi-scroll-area ${
-          clickToActivate ? (activated ? "activated" : "not-activated") : ""
-        }`}
-      >
-        {children}
-      </Box>
+      {children}
 
       {(footerAddon || footerRightAddon) && (
         <HStack className="footer px-[var(--size-4-1)] pt-[var(--size-2-2)] text-[var(--text-muted)] text-[80%] items-center justify-end gap-[var(--size-2-3)] flex-wrap">

@@ -90,22 +90,33 @@ If your plugin does not need CSS, delete this file.
   background-color: transparent;
   border-radius: var(--size-2-5);
 }
-.mfdi-scroll-area.activated::-webkit-scrollbar-thumb {
+.mfdi-scroll-area.expanded::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
 }
 .mfdi-scroll-area {
-  /* By default, do not allow internal scrolling. When activated, `.activated` enables scrolling. */
   overflow-y: hidden;
   scrollbar-width: none; /* Firefox */
 }
-.mfdi-scroll-area.activated {
+/* 展開後はスクロール可能にする。max-h は親カードが保持する。 */
+.mfdi-scroll-area.expanded {
   overflow-y: auto;
 }
-.mfdi-scroll-area:not(.activated) {
-  overflow-y: hidden;
-}
-.mfdi-scroll-area.activated:hover {
+/* .mfdi-scroll-area.expanded:hover {
   scrollbar-width: thin;
+} */
+
+/* 「続きを読む」ボタン */
+.mfdi-read-more {
+  display: block;
+  width: 100%;
+  padding: var(--size-2-2) var(--size-4-1);
+  text-align: center;
+  font-size: 80%;
+  color: var(--text-accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 .item-enter {
