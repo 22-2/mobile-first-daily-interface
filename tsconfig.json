@@ -1,21 +1,28 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "paths": {"*": ["./*"]},
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "module": "esnext",
-    "target": "esnext",
-    "allowJs": true,
-    "noImplicitAny": true,
-    "moduleResolution": "bundler",
-    "importHelpers": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "strictPropertyInitialization": false,
-    "lib": ["DOM", "ESNext"],
-    "jsx": "react-jsx",
-    "types": ["obsidian-typings"]
-  },
-  "include": ["**/*.ts", "**/*.tsx"]
+    "compilerOptions": {
+        // Project structure
+        "paths": {"*": ["./*"]},
+
+        // Module system
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "bundler",
+        "allowSyntheticDefaultImports": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+
+        // Type checking
+        "strict": true,
+
+        // 妥協
+        "erasableSyntaxOnly": false,
+        "strictPropertyInitialization": false,
+
+        // Type definitions
+        "types": ["obsidian-typings"],
+        "lib": ["DOM", "ESNext"],
+        "jsx": "react-jsx"
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules"]
 }
