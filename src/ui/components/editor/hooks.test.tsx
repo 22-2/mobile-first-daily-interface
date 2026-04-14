@@ -1,6 +1,6 @@
 import { act, cleanup, render } from "@testing-library/react";
 import { useRef } from "react";
-import { useFakeEditor } from "src/ui/components/editor/hooks";
+import { useFakeEditor } from "src/ui/components/editor/useFakeEditor";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 type MockFakeEditorOptions = {

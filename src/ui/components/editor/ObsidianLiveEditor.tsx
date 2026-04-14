@@ -7,7 +7,7 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { useFakeEditor } from "src/ui/components/editor/hooks";
+import { useFakeEditor } from "src/ui/components/editor/useFakeEditor";
 import { Box } from "src/ui/components/primitives/Box";
 import { cn } from "src/ui/components/primitives/utils";
 

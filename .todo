@@ -6,6 +6,7 @@
 - [x] ページのカードビューを無効化するオプションを追加してくださいっす
 - [x] 粒度追加
 - [ ] deleted:: E:\AppData\obsidian\vaults\suizen\etc\journals\2026-02-19.md
+- [ ] deletedビュー
 - [x] scope
 - [x] mfdiビューからマークダウンビューに移る時、フォーカスが利かない
 - [x] 今日/今週などを右クリックしたとき、メニューを開く
@@ -22,7 +23,9 @@
 - [x] tests: エスケープキーでEMFDIEditorModalが閉じる、scopedホットキーで開く
 - [x] tests: ctrl+enterで、MFDIViewのScopeのホットキーのみが呼び出される（Obsidian側でctrl+enterにホットキーを登録していても）
 - [x] tests: ライブエディタで、エスケープキーでマルチカーソルが解除される
-- [ ] 検索
+- [x] 検索
 - [x] タグ
 - [ ] コア切り離し
-- [ ] リンク先に飛ぶ機能
+- [x] リンク先に飛ぶ機能
+- [ ] ライブエディタで、カーソルがたまに先頭(line: 0, ch: 00)に飛ぶ
+- [ ] 理想的なreactのコンポーネントとは
