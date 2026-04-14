@@ -87,7 +87,6 @@ If your plugin does not need CSS, delete this file.
   width: var(--size-4-1);
 }
 .mfdi-scroll-area::-webkit-scrollbar-thumb {
-  background-color: transparent;
   border-radius: var(--size-2-5);
 }
 .mfdi-scroll-area.expanded::-webkit-scrollbar-thumb {
@@ -97,13 +96,6 @@ If your plugin does not need CSS, delete this file.
   overflow-y: hidden;
   scrollbar-width: none; /* Firefox */
 }
-/* 展開後はスクロール可能にする。max-h は親カードが保持する。 */
-.mfdi-scroll-area.expanded {
-  overflow-y: auto;
-}
-/* .mfdi-scroll-area.expanded:hover {
-  scrollbar-width: thin;
-} */
 
 /* 「続きを読む」ボタン */
 .mfdi-read-more {
