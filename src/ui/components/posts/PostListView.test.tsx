@@ -32,7 +32,6 @@ const mocked = vi.hoisted(() => {
       highlightRequestId: 0,
       startEdit: vi.fn(),
       setEditingPost: vi.fn(),
-      scrollContainerRef: { current: null },
     },
     virtualizerHandle: {
       scrollToIndex: vi.fn(),
@@ -68,6 +67,14 @@ vi.mock("obsidian", () => ({
     showAtMouseEvent() {}
   },
   Notice: vi.fn(),
+}));
+
+vi.mock("src/ui/context/EditorRefsContext", () => ({
+  useEditorRefs: () => ({
+    inputRef: { current: null },
+    scrollContainerRef: { current: null },
+  }),
+  EditorRefsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock("src/ui/context/AppContext", () => ({

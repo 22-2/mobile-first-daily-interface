@@ -11,7 +11,13 @@ import { noteStore } from "src/ui/store/noteStore";
 import { postsStore } from "src/ui/store/postsStore";
 import { settingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
+import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("src/ui/context/EditorRefsContext", () => ({
+  useEditorRefs: vi.fn(),
+  EditorRefsProvider: ({ children }: { children: any }) => children,
+}));
 
 vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
   useUnifiedPosts: vi.fn(() => ({
@@ -73,7 +79,6 @@ describe("timeline note resolution", () => {
   const mockOpenFile = vi.fn();
   const mockRefreshPosts = vi.fn();
   const mockCreateNoteWithInsertAfter = vi.fn();
-  const mockSetContent = vi.fn();
   const mockScrollTo = vi.fn();
 
   beforeEach(() => {
@@ -172,19 +177,12 @@ describe("timeline note resolution", () => {
     editorStore.setState({
       inputSnapshot: "timeline post",
       editingPostOffset: null,
-      inputRef: {
-        current: {
-          getValue: () => "timeline post",
-          setContent: mockSetContent,
-          focus: vi.fn(),
-          getContentSnapshot: () => "timeline post",
-          subscribeContent: vi.fn(),
-        },
-      },
+    });
+
+    vi.mocked(useEditorRefs).mockReturnValue({
+      inputRef: { current: null },
       scrollContainerRef: {
-        current: {
-          scrollTo: mockScrollTo,
-        } as unknown as HTMLDivElement,
+        current: { scrollTo: mockScrollTo } as unknown as HTMLDivElement,
       },
     });
 
@@ -220,7 +218,7 @@ describe("timeline note resolution", () => {
       "## Thino",
     );
     expect(mockRefreshPosts).toHaveBeenCalledWith(todayNote.path);
-    expect(mockSetContent).toHaveBeenCalledWith("");
+    expect(editorStore.getState().inputSnapshot).toBe("");
   });
 
   it("フェンスコードブロック投稿は thino 互換の改行位置で保存する", async () => {
@@ -232,15 +230,6 @@ describe("timeline note resolution", () => {
 
     editorStore.setState({
       inputSnapshot: "```\nconsole.log('hello')\n```",
-      inputRef: {
-        current: {
-          getValue: () => "```\nconsole.log('hello')\n```",
-          setContent: mockSetContent,
-          getContentSnapshot: () => "```\nconsole.log('hello')\n```",
-          subscribeContent: () => () => {},
-          focus: vi.fn(),
-        },
-      },
     });
 
     const { result } = renderHook(() => usePostActions());
@@ -265,15 +254,6 @@ describe("timeline note resolution", () => {
   it("inputRef が空文字を返しても snapshot の値で canSubmit できる", () => {
     editorStore.setState({
       inputSnapshot: "from-snapshot",
-      inputRef: {
-        current: {
-          getValue: () => "",
-          setContent: mockSetContent,
-          focus: vi.fn(),
-          getContentSnapshot: () => "",
-          subscribeContent: () => () => {},
-        },
-      },
     });
 
     expect(editorStore.getState().getInputValue()).toBe("from-snapshot");
@@ -289,15 +269,6 @@ describe("timeline note resolution", () => {
 
     editorStore.setState({
       inputSnapshot: "snapshot-post",
-      inputRef: {
-        current: {
-          getValue: () => "",
-          setContent: mockSetContent,
-          focus: vi.fn(),
-          getContentSnapshot: () => "",
-          subscribeContent: () => () => {},
-        },
-      },
     });
 
     const { result } = renderHook(() => usePostActions());

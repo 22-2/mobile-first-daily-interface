@@ -23,6 +23,10 @@ import {
   ComponentContextProvider,
   useObsidianComponent,
 } from "src/ui/context/ComponentContext";
+import {
+  EditorRefsProvider,
+  useEditorRefs,
+} from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useCSSLoaded } from "src/ui/hooks/useCSSLoaded";
 import { useDbSync } from "src/ui/hooks/useDbSync";
@@ -76,9 +80,11 @@ export const ReactView = ({
     <AppContextProvider app={app} settings={settings}>
       <ComponentContextProvider component={view}>
         <AppStoreProvider store={storeRef.current}>
-          <MFDIAppRoot>
-            <ReactViewContent />
-          </MFDIAppRoot>
+          <EditorRefsProvider>
+            <MFDIAppRoot>
+              <ReactViewContent />
+            </MFDIAppRoot>
+          </EditorRefsProvider>
         </AppStoreProvider>
       </ComponentContextProvider>
     </AppContextProvider>
@@ -146,12 +152,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })),
   );
 
-  const { inputRef, scrollContainerRef } = useEditorStore(
-    useShallow((state) => ({
-      inputRef: state.inputRef,
-      scrollContainerRef: state.scrollContainerRef,
-    })),
-  );
+  const { inputRef, scrollContainerRef } = useEditorRefs();
 
   useNoteSync();
   useDbSync();
@@ -295,11 +296,7 @@ const ReactViewContent = () => {
     })),
   );
 
-  const { scrollContainerRef } = useEditorStore(
-    useShallow((s) => ({
-      scrollContainerRef: s.scrollContainerRef,
-    })),
-  );
+  const { scrollContainerRef } = useEditorRefs();
 
   const filteredPosts = useFilteredPosts({
     posts,
@@ -445,6 +442,7 @@ function useViewSync(view: MFDIView | null) {
   const { shell, settings } = useAppContext();
   const { openDraftList, openModalEditor } = useObsidianUi();
   const store = useCurrentAppStore();
+  const { inputRef } = useEditorRefs();
 
   const {
     granularity,
@@ -740,7 +738,7 @@ function useViewSync(view: MFDIView | null) {
             getInputStorageKey(appState.viewNoteMode, appState.fixedNotePath),
             "",
           ) ?? "",
-        editorSnapshot: appState.inputRef.current?.getContentSnapshot() ?? null,
+        editorSnapshot: inputRef.current?.getContentSnapshot() ?? null,
       };
     };
 

@@ -22,6 +22,14 @@ vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(),
 }));
 
+vi.mock("src/ui/context/EditorRefsContext", () => ({
+  useEditorRefs: () => ({
+    inputRef: { current: null },
+    scrollContainerRef: { current: null },
+  }),
+  EditorRefsProvider: ({ children }: { children: any }) => children,
+}));
+
 vi.mock("./refreshPosts", () => ({
   createRefreshPosts: vi.fn(() => vi.fn()),
 }));

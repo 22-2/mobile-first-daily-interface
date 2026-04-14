@@ -7,6 +7,7 @@ import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { DISPLAY_MODE, STORAGE_KEYS } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
+import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
@@ -82,7 +83,6 @@ export const PostListView: React.FC = memo(() => {
     highlightRequestId,
     startEdit,
     setEditingPost,
-    scrollContainerRef,
   } = useEditorStore(
     useShallow((s) => ({
       editingPostOffset: s.editingPostOffset,
@@ -91,9 +91,10 @@ export const PostListView: React.FC = memo(() => {
       highlightRequestId: s.highlightRequestId,
       startEdit: s.startEdit,
       setEditingPost: s.setEditingPost,
-      scrollContainerRef: s.scrollContainerRef,
     })),
   );
+
+  const { scrollContainerRef } = useEditorRefs();
 
   const {
     handleHighlightPost,

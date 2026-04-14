@@ -65,24 +65,23 @@ function resolveInitialSettingsState(
   settings: Settings,
   storage: MFDIStore["storage"],
 ) {
-  const savedOffset =
-    storage?.get<number | null>(STORAGE_KEYS.EDITING_POST_OFFSET, null) ?? null;
-  const granularity =
-    savedOffset !== null
-      ? (storage?.get<Granularity>(
-          STORAGE_KEYS.EDITING_POST_GRANULARITY,
-          GRANULARITY_CONFIG.day.unit,
-        ) ?? GRANULARITY_CONFIG.day.unit)
-      : (storage?.get<Granularity>(
-          STORAGE_KEYS.GRANULARITY,
-          GRANULARITY_CONFIG.day.unit,
-        ) ?? GRANULARITY_CONFIG.day.unit);
+  // 編集中投稿が復元できる場合はその粒度・日付を優先する
+  const editingPost = storage?.get<{
+    offset: number;
+    granularity: string;
+    noteDateStr: string;
+  } | null>(STORAGE_KEYS.EDITING_POST, null) ?? null;
 
-  const savedDate =
-    savedOffset !== null
-      ? (storage?.get<string | null>(STORAGE_KEYS.EDITING_POST_DATE, null) ??
-        null)
-      : (storage?.get<string | null>(STORAGE_KEYS.DATE, null) ?? null);
+  const granularity = editingPost !== null
+    ? (editingPost.granularity as Granularity)
+    : (storage?.get<Granularity>(
+        STORAGE_KEYS.GRANULARITY,
+        GRANULARITY_CONFIG.day.unit,
+      ) ?? GRANULARITY_CONFIG.day.unit);
+
+  const savedDate = editingPost !== null
+    ? editingPost.noteDateStr
+    : (storage?.get<string | null>(STORAGE_KEYS.DATE, null) ?? null);
 
   const date = savedDate ? window.moment(savedDate) : window.moment();
   const validDate = date.isValid() ? date : window.moment();

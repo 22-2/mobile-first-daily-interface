@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { Flex } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
@@ -9,6 +9,7 @@ import {
 } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
+import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -20,13 +21,24 @@ import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
 export const InputArea: FC = memo(() => {
   const component = useObsidianComponent() as MFDIView;
   const { shell } = useAppContext();
-  const { inputSnapshot, syncInputSession, inputRef } = useEditorStore(
-    useShallow((s) => ({
-      inputSnapshot: s.inputSnapshot,
-      syncInputSession: s.syncInputSession,
-      inputRef: s.inputRef,
-    })),
-  );
+  const { inputRef } = useEditorRefs();
+  const { inputSnapshot, inputSnapshotVersion, syncInputSession, editingPost } =
+    useEditorStore(
+      useShallow((s) => ({
+        inputSnapshot: s.inputSnapshot,
+        inputSnapshotVersion: s.inputSnapshotVersion,
+        syncInputSession: s.syncInputSession,
+        editingPost: s.editingPost,
+      })),
+    );
+
+  // startEdit 後にエディタへフォーカスを移す
+  const editingPostId = editingPost?.id ?? null;
+  useEffect(() => {
+    if (editingPostId !== null) {
+      setTimeout(() => inputRef.current?.focus());
+    }
+  }, [editingPostId]);
   const { isReadOnly, isExpanded, setIsExpanded } = useSettingsStore(
     useShallow((s) => ({
       isReadOnly: s.isReadOnly(),
@@ -58,6 +70,7 @@ export const InputArea: FC = memo(() => {
         leaf={component.leaf}
         app={shell.getRawApp()}
         initialValue={inputSnapshot}
+        externalVersion={inputSnapshotVersion}
         onChange={syncInputSession}
         onSubmit={handleSubmit}
         className="min-h-[var(--size-4-18)] mx-[var(--size-4-4)]"

@@ -2,7 +2,6 @@ import { type FakeEditor } from "@22-2/obsidian-magical-editor";
 import type { App, WorkspaceLeaf } from "obsidian";
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -24,6 +23,7 @@ interface ObsidianLiveEditorProps {
   leaf: WorkspaceLeaf;
   app: App;
   initialValue: string;
+  externalVersion?: number;
   onChange: (text: string) => void;
   onSubmit?: () => void;
   placeholder?: string;
@@ -43,6 +43,7 @@ export const ObsidianLiveEditor = forwardRef<
       leaf,
       app,
       initialValue,
+      externalVersion,
       onChange,
       onSubmit,
       placeholder,
@@ -54,15 +55,9 @@ export const ObsidianLiveEditor = forwardRef<
     ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const lastEditorChangeRef = useRef(initialValue);
-
-    const handleEditorChange = useCallback(
-      (text: string) => {
-        lastEditorChangeRef.current = text;
-        onChange(text);
-      },
-      [onChange],
-    );
+    const lastExternalVersionRef = useRef(externalVersion ?? 0);
+    const initialValueRef = useRef(initialValue);
+    initialValueRef.current = initialValue;
 
     const { editorRef, isSyncingRef } = useFakeEditor(containerRef, {
       app,
@@ -71,7 +66,7 @@ export const ObsidianLiveEditor = forwardRef<
       placeholder,
       isReadOnly,
       readonlyPlaceholder,
-      onChange: handleEditorChange,
+      onChange,
       onSubmit,
     });
 
@@ -100,23 +95,21 @@ export const ObsidianLiveEditor = forwardRef<
       editorRef.current?.setPlaceholder(placeholder ?? "", readonlyPlaceholder);
     }, [placeholder, readonlyPlaceholder]);
 
+    // プログラムによる外部からのコンテンツ上書き (replaceInput 等) 限定で同期させる
+    // ユーザー由来の通常入力では外部バージョンは変わらないため、途中でカーソルが飛ぶ事故を防ぐ
     useEffect(() => {
-      const editor = editorRef.current;
-      if (!editor) return;
-
-      if (initialValue === lastEditorChangeRef.current) {
-        return;
+      if (
+        externalVersion !== undefined &&
+        externalVersion !== lastExternalVersionRef.current
+      ) {
+        lastExternalVersionRef.current = externalVersion;
+        if (editorRef.current) {
+          isSyncingRef.current = true;
+          editorRef.current.setContent(initialValueRef.current);
+          isSyncingRef.current = false;
+        }
       }
-
-      if (editor.getContentSnapshot() !== initialValue) {
-        // 意図: hydrate 後の初期値や外部 replaceInput は mount 後に届くことがある。
-        // editor 由来の更新は除外し、外部同期だけを反映してカーソル巻き戻りを防ぐ。
-        isSyncingRef.current = true;
-        editor.setContent(initialValue);
-        isSyncingRef.current = false;
-        lastEditorChangeRef.current = initialValue;
-      }
-    }, [initialValue]);
+    }, [externalVersion]);
 
     return (
       <Box className={cn(className)} {...boxProps}>

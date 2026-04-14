@@ -1,5 +1,4 @@
 import type { MFDIStorage } from "src/core/storage";
-import type { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { createAppStore } from "src/ui/store/appStore";
 import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
@@ -12,12 +11,6 @@ type MockStorageHandle = {
   set: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
   remove: ReturnType<typeof vi.fn>;
-};
-
-type MockEditorHandle = {
-  inputRef: { current: ObsidianLiveEditorRef | null };
-  setContent: ReturnType<typeof vi.fn>;
-  focus: ReturnType<typeof vi.fn>;
 };
 
 function createMockStorage(
@@ -45,28 +38,6 @@ function createMockStorage(
     set,
     get,
     remove,
-  };
-}
-
-function createMockEditor(initialSnapshot = ""): MockEditorHandle {
-  let contentSnapshot = initialSnapshot;
-  const setContent = vi.fn((text: string) => {
-    contentSnapshot = text;
-  });
-  const focus = vi.fn();
-
-  return {
-    inputRef: {
-      current: {
-        focus,
-        getValue: () => contentSnapshot,
-        getContentSnapshot: () => contentSnapshot,
-        subscribeContent: () => () => {},
-        setContent,
-      },
-    },
-    setContent,
-    focus,
   };
 }
 
@@ -102,29 +73,19 @@ describe("editorSlice", () => {
   it("hydrateEditorState は保存済み入力を snapshot と editor に復元する", () => {
     const store = createAppStore();
     const persistedInput = "restored draft";
-    const { storage, set: setStorage } = createMockStorage({
+    const { storage } = createMockStorage({
       [STORAGE_KEYS.INPUT_PERIODIC]: persistedInput,
     });
-    const { inputRef, setContent } = createMockEditor("");
 
-    store.setState({
-      storage,
-      inputRef,
-    });
+    store.setState({ storage });
+
+    const versionBefore = store.getState().inputSnapshotVersion;
 
     store.getState().hydrateEditorState();
 
     expect(store.getState().inputSnapshot).toBe(persistedInput);
     expect(store.getState().getInputValue()).toBe(persistedInput);
-    expect(setContent).not.toHaveBeenCalled();
-
-    vi.runAllTimers();
-
-    expect(setContent).toHaveBeenCalledWith(persistedInput);
-    expect(setStorage).toHaveBeenCalledWith(
-      STORAGE_KEYS.INPUT_PERIODIC,
-      persistedInput,
-    );
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
   });
 
   it("hydrateEditorState は編集中投稿の復元情報も再構築する", () => {
@@ -132,12 +93,15 @@ describe("editorSlice", () => {
     const post = buildPostFixture("editing draft");
     const { storage } = createMockStorage({
       [STORAGE_KEYS.INPUT_PERIODIC]: post.message,
-      [STORAGE_KEYS.EDITING_POST_OFFSET]: post.startOffset,
-      [STORAGE_KEYS.EDITING_POST_ID]: post.id,
-      [STORAGE_KEYS.EDITING_POST_PATH]: post.path,
-      [STORAGE_KEYS.EDITING_POST_TIMESTAMP]: post.timestamp.toISOString(),
-      [STORAGE_KEYS.EDITING_POST_METADATA]: JSON.stringify(post.metadata),
-      [STORAGE_KEYS.EDITING_POST_DATE]: post.noteDate.toISOString(),
+      [STORAGE_KEYS.EDITING_POST]: {
+        id: post.id,
+        path: post.path,
+        timestampStr: post.timestamp.toISOString(),
+        metadataStr: JSON.stringify(post.metadata),
+        noteDateStr: post.noteDate.toISOString(),
+        offset: post.startOffset,
+        granularity: "day",
+      },
     });
 
     store.setState({ storage });
@@ -166,14 +130,14 @@ describe("editorSlice", () => {
       [STORAGE_KEYS.INPUT_PERIODIC]: "periodic draft",
       [getInputStorageKey("fixed", fixedPathA)]: "fixed draft",
     });
-    const { inputRef, setContent } = createMockEditor("");
 
     store.setState({
       storage,
-      inputRef,
       viewNoteMode: "periodic",
       inputSnapshot: "periodic in-memory",
     });
+
+    const versionBefore = store.getState().inputSnapshotVersion;
 
     store
       .getState()
@@ -181,7 +145,7 @@ describe("editorSlice", () => {
 
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().inputSnapshot).toBe("fixed draft");
-    expect(setContent).toHaveBeenLastCalledWith("fixed draft");
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
     expect(setStorage).toHaveBeenCalledWith(
       getInputStorageKey("periodic", null),
       "periodic in-memory",
@@ -200,15 +164,15 @@ describe("editorSlice", () => {
       [getInputStorageKey("fixed", fixedPathA)]: "draft-a",
       [getInputStorageKey("fixed", fixedPathB)]: "draft-b",
     });
-    const { inputRef, setContent } = createMockEditor("");
 
     store.setState({
       storage,
-      inputRef,
       viewNoteMode: "fixed",
       fixedNotePath: fixedPathA,
       inputSnapshot: "draft-a-modified",
     });
+
+    const versionBefore = store.getState().inputSnapshotVersion;
 
     store
       .getState()
@@ -217,7 +181,7 @@ describe("editorSlice", () => {
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().fixedNotePath).toBe(fixedPathB);
     expect(store.getState().inputSnapshot).toBe("draft-b");
-    expect(setContent).toHaveBeenLastCalledWith("draft-b");
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
     expect(setStorage).toHaveBeenCalledWith(
       getInputStorageKey("fixed", fixedPathA),
       "draft-a-modified",

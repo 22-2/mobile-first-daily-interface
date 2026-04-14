@@ -1,10 +1,8 @@
 import type { TFile } from "obsidian";
-import type { RefObject } from "react";
 import type { MFDIStorage } from "src/core/storage";
 import type { Task } from "src/core/task-text";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import type { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiveEditor";
 import type {
   DateFilter,
   DisplayMode,
@@ -109,22 +107,18 @@ export interface NoteSlice {
 
 export interface EditorSlice {
   inputSnapshot: string;
+  inputSnapshotVersion: number;
   editingPost: Post | null;
   editingPostOffset: number | null;
   highlightedPost: Post | null;
   highlightRequestId: number;
-  inputRef: RefObject<ObsidianLiveEditorRef | null>;
-  scrollContainerRef: RefObject<HTMLDivElement | null>;
   syncInputSession: (v: string) => void;
   replaceInput: (v: string) => void;
   clearInput: () => void;
   getInputValue: () => string;
-  setEditingPostOffset: (offset: number | null) => void;
   setEditingPost: (post: Post | null) => void;
   setHighlightedPost: (post: Post | null) => void;
   clearHighlightedPost: () => void;
-  setInputRef: (ref: RefObject<ObsidianLiveEditorRef | null>) => void;
-  setScrollContainerRef: (ref: RefObject<HTMLDivElement | null>) => void;
   startEdit: (post: Post) => void;
   cancelEdit: () => void;
   getEditingPost: (posts: Post[]) => Post | null;
