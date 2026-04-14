@@ -797,13 +797,13 @@ export const PostListView: React.FC = memo(() => {
         {timelineView && !threadView && (
           <ListFooter key="footer" hasMore={!!hasMore} loadMore={loadMore} />
         )}
-        <Box key="bottom-spacer" className="h-[4rem]" />
+        <Box key="bottom-spacer" className="h-[24rem]" />
       </Virtualizer>
       {!settings.expanded && (
           <FloatingButton
             className={cn(
               "up-button fixed",
-              settings.sidebarOpen ? "right-[calc(8px+300px)]" : "right-8",
+              settings.sidebarOpen && capabilities.supportsSidebar ? "right-[calc(8px+300px)]" : "right-8",
             )}
             onClick={() => shell.trigger("mfdi:scroll-to-top")}
             visible={showScrollTop}
