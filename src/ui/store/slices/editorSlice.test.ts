@@ -85,7 +85,9 @@ describe("editorSlice", () => {
 
     expect(store.getState().inputSnapshot).toBe(persistedInput);
     expect(store.getState().getInputValue()).toBe(persistedInput);
-    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(
+      versionBefore,
+    );
   });
 
   it("hydrateEditorState は編集中投稿の復元情報も再構築する", () => {
@@ -145,7 +147,9 @@ describe("editorSlice", () => {
 
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().inputSnapshot).toBe("fixed draft");
-    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(
+      versionBefore,
+    );
     expect(setStorage).toHaveBeenCalledWith(
       getInputStorageKey("periodic", null),
       "periodic in-memory",
@@ -181,7 +185,9 @@ describe("editorSlice", () => {
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().fixedNotePath).toBe(fixedPathB);
     expect(store.getState().inputSnapshot).toBe("draft-b");
-    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(versionBefore);
+    expect(store.getState().inputSnapshotVersion).toBeGreaterThan(
+      versionBefore,
+    );
     expect(setStorage).toHaveBeenCalledWith(
       getInputStorageKey("fixed", fixedPathA),
       "draft-a-modified",

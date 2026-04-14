@@ -1,7 +1,6 @@
-import { type FC, memo } from "react";
-import { getCenterIndicatorLabel } from "src/ui/utils/view-state";
+import { memo, type FC } from "react";
 import { Box } from "src/ui/components/primitives";
-
+import { getCenterIndicatorLabel } from "src/ui/utils/view-state";
 
 export const DisplayModeIndicator: FC<{
   displayMode: "focus" | "timeline";

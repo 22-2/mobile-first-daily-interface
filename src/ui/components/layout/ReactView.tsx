@@ -683,7 +683,15 @@ function useViewSync(view: MFDIView | null) {
     return () => {
       view.handlers.onEditorExpand = undefined;
     };
-  }, [view, openModalEditor, getInputValue, replaceInput, isReadOnly, expanded, setIsExpanded]);
+  }, [
+    view,
+    openModalEditor,
+    getInputValue,
+    replaceInput,
+    isReadOnly,
+    expanded,
+    setIsExpanded,
+  ]);
 
   useEffect(() => {
     if (!view) return;

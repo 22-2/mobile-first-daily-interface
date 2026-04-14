@@ -22,6 +22,7 @@ export function EditorRefsProvider({ children }: { children: ReactNode }) {
 
 export function useEditorRefs(): EditorRefsContextValue {
   const ctx = useContext(EditorRefsContext);
-  if (!ctx) throw new Error("useEditorRefs must be used within EditorRefsProvider");
+  if (!ctx)
+    throw new Error("useEditorRefs must be used within EditorRefsProvider");
   return ctx;
 }

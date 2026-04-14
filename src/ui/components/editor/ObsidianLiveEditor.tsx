@@ -1,11 +1,6 @@
 import { type FakeEditor } from "@22-2/obsidian-magical-editor";
 import type { App, WorkspaceLeaf } from "obsidian";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { useFakeEditor } from "src/ui/components/editor/useFakeEditor";
 import { Box } from "src/ui/components/primitives/Box";
 import { cn } from "src/ui/components/primitives/utils";

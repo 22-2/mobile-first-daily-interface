@@ -3,7 +3,10 @@ import { DayCell } from "src/ui/components/calendar/DayCell";
 import type { WeekRowProps } from "src/ui/components/calendar/types";
 import { Box } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
-import { GRANULARITY_CONFIG, type Granularity } from "src/ui/config/granularity-config";
+import {
+  GRANULARITY_CONFIG,
+  type Granularity,
+} from "src/ui/config/granularity-config";
 
 export const WeekRow: React.FC<WeekRowProps> = ({
   week,

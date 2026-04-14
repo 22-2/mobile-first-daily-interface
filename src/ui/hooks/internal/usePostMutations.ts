@@ -1,4 +1,5 @@
-import { MarkdownView, Notice, TFile } from "obsidian";
+import type { MarkdownView} from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { toText } from "src/core/post-utils";
 import { serializeMfdiTags, TAG_METADATA_KEY } from "src/core/tags";

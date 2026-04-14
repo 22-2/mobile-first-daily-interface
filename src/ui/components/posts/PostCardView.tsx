@@ -13,9 +13,9 @@ import { pickUrls } from "src/core/strings";
 import { isPresent } from "src/core/types";
 import { CardContent } from "src/ui/components/cards/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
-import { ReadMoreContent } from "src/ui/components/cards/ReadMoreContent";
 import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
+import { ReadMoreContent } from "src/ui/components/cards/ReadMoreContent";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -151,7 +151,10 @@ export const PostCardView = React.memo(
             <VStack align="stretch" gap={3}>
               {/* Message Body */}
               <Box className="text-[93%] px-1 break-words">
-                <ObsidianMarkdown content={post.message} sourcePath={post.path} />
+                <ObsidianMarkdown
+                  content={post.message}
+                  sourcePath={post.path}
+                />
               </Box>
 
               {settings?.enabledCardView && (

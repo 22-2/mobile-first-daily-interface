@@ -1,16 +1,16 @@
-import { type FC, memo, useMemo, useCallback, type ChangeEvent } from "react";
 import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
+import { memo, useCallback, useMemo, type ChangeEvent, type FC } from "react";
+import { NavButton } from "src/ui/components/common/NavButton";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { DisplayModeIndicator } from "src/ui/components/inputarea/DisplayModeIndicator";
+import { Box, Flex, HStack, Input } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 import { DISPLAY_MODE } from "src/ui/config/consntants";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isDefaultViewState } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
-import { DisplayModeIndicator } from "src/ui/components/inputarea/DisplayModeIndicator";
-import { NavButton } from "src/ui/components/common/NavButton";
-import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
-import { Flex, Box, HStack, Input } from "src/ui/components/primitives";
-import { cn } from "src/ui/components/primitives/utils";
 
 export const InputAreaControl: FC<{
   isReadOnly: boolean;
@@ -20,14 +20,27 @@ export const InputAreaControl: FC<{
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
-    }))
+    })),
   );
   const capabilities = useMemo(
     () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
-    [viewNoteMode]
+    [viewNoteMode],
   );
   const {
-    date, granularity, isToday, handleClickMovePrevious, handleClickMoveNext, handleClickToday, handleClickHome, handleChangeCalendarDateAction, displayMode, activeTag, setDisplayMode, setActiveTag, setThreadFocusRootId, getMoveStep,
+    date,
+    granularity,
+    isToday,
+    handleClickMovePrevious,
+    handleClickMoveNext,
+    handleClickToday,
+    handleClickHome,
+    handleChangeCalendarDateAction,
+    displayMode,
+    activeTag,
+    setDisplayMode,
+    setActiveTag,
+    setThreadFocusRootId,
+    getMoveStep,
   } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
@@ -44,17 +57,18 @@ export const InputAreaControl: FC<{
       setActiveTag: s.setActiveTag,
       setThreadFocusRootId: s.setThreadFocusRootId,
       getMoveStep: s.getMoveStep,
-    }))
+    })),
   );
 
-  const { dateFilter, timeFilter, asTask, threadFocusRootId } = useSettingsStore(
-    useShallow((s) => ({
-      dateFilter: s.dateFilter,
-      timeFilter: s.timeFilter,
-      asTask: s.asTask,
-      threadFocusRootId: s.threadFocusRootId,
-    }))
-  );
+  const { dateFilter, timeFilter, asTask, threadFocusRootId } =
+    useSettingsStore(
+      useShallow((s) => ({
+        dateFilter: s.dateFilter,
+        timeFilter: s.timeFilter,
+        asTask: s.asTask,
+        threadFocusRootId: s.threadFocusRootId,
+      })),
+    );
 
   const isViewDefault = isDefaultViewState({
     displayMode,
@@ -66,7 +80,8 @@ export const InputAreaControl: FC<{
     threadFocusRootId,
   });
 
-  const isStatusIndicatorVisible = activeTag != null ||
+  const isStatusIndicatorVisible =
+    activeTag != null ||
     threadFocusRootId != null ||
     displayMode !== DISPLAY_MODE.FOCUS;
 
@@ -94,7 +109,7 @@ export const InputAreaControl: FC<{
     (event: ChangeEvent<HTMLInputElement>) => {
       handleChangeCalendarDateAction(event.target.value);
     },
-    [handleChangeCalendarDateAction]
+    [handleChangeCalendarDateAction],
   );
 
   // const step = getMoveStep();
@@ -111,15 +126,16 @@ export const InputAreaControl: FC<{
               ? "hover:bg-[var(--background-modifier-hover)]"
               : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]",
             // 意図: expand 中は上部バーを畳み、ホバー時だけ一時的に表示する。
-            isExpanded && "hidden group-hover:flex"
+            isExpanded && "hidden group-hover:flex",
           )}
-          onClick={handleClickHome} />
+          onClick={handleClickHome}
+        />
       )}
       <Box className="flex-1" />
       <HStack
         className={cn(
           "mfdi-control-center justify-center flex-none",
-          isExpanded && "hidden group-hover:flex"
+          isExpanded && "hidden group-hover:flex",
         )}
       >
         {!capabilities.supportsDateNavigation ? null : isStatusIndicatorVisible ? (
@@ -127,7 +143,8 @@ export const InputAreaControl: FC<{
             displayMode={displayMode}
             threadFocusRootId={threadFocusRootId}
             activeTag={activeTag}
-            onClick={handleIndicatorClick} />
+            onClick={handleIndicatorClick}
+          />
         ) : (
           <>
             <NavButton direction="left" onClick={handleClickMovePrevious} />
@@ -136,7 +153,8 @@ export const InputAreaControl: FC<{
                 className={`mfdi-date-input h-[28px] text-[90%] pl-[var(--size-4-6)] ${GRANULARITY_CONFIG[granularity].inputWidthClass}`}
                 type={GRANULARITY_CONFIG[granularity].inputType}
                 value={date.format(GRANULARITY_CONFIG[granularity].inputFormat)}
-                onChange={handleChangeCalendarDate} />
+                onChange={handleChangeCalendarDate}
+              />
             </HStack>
             <NavButton direction="right" onClick={handleClickMoveNext} />
           </>
@@ -146,13 +164,16 @@ export const InputAreaControl: FC<{
         <ObsidianIcon
           name="maximize"
           size="1.1em"
-          className={isReadOnly
-            ? "cursor-default opacity-30"
-            : "hover:bg-[var(--background-modifier-hover)]"}
+          className={
+            isReadOnly
+              ? "cursor-default opacity-30"
+              : "hover:bg-[var(--background-modifier-hover)]"
+          }
           onClick={() => {
             if (isReadOnly) return;
             onExpandToMaxHeight();
-          }} />
+          }}
+        />
       </Box>
     </Flex>
   );

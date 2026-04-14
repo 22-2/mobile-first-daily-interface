@@ -1,10 +1,6 @@
 import type { FC } from "react";
 import { useMemo } from "react";
 import { Box } from "src/ui/components/primitives";
-import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
-import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
-import type { Granularity } from "src/ui/types";
-import { isTimelineView } from "src/ui/utils/view-mode";
 import {
   useCapabilities,
   useCurrentTime,
@@ -12,6 +8,10 @@ import {
   useGranularityMenu,
   useSettings,
 } from "src/ui/components/statusbar/parts/hooks";
+import { UnderlinedClickable } from "src/ui/components/statusbar/parts/UnderlinedClickable";
+import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
+import type { Granularity } from "src/ui/types";
+import { isTimelineView } from "src/ui/utils/view-mode";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MFDIDatabase, type MemoRecord } from "src/db/mfdi-db";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("MFDIDatabase", () => {
   let db: MFDIDatabase;

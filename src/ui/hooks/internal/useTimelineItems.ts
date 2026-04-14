@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import type { DateFilter, DisplayMode, Granularity, MomentLike, Post } from "src/ui/types";
+import type {
+  DateFilter,
+  DisplayMode,
+  Granularity,
+  MomentLike,
+  Post,
+} from "src/ui/types";
 import { isPinned } from "src/ui/utils/post-metadata";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import type { MFDINoteMode } from "src/ui/view/state";
@@ -50,7 +56,9 @@ export function useTimelineItems({
     let currentDateGroupCollapsed = false;
 
     const pinnedPosts = filteredPosts.filter((post) => isPinned(post.metadata));
-    const unpinnedPosts = filteredPosts.filter((post) => !isPinned(post.metadata));
+    const unpinnedPosts = filteredPosts.filter(
+      (post) => !isPinned(post.metadata),
+    );
     const hasPinnedSection = pinnedPosts.length > 0;
     const pinnedGroupKey = "pinned";
     const isPinnedCollapsed =

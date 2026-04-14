@@ -163,9 +163,7 @@ export class MFDISettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("エディタの展開モード")
-      .setDesc(
-        "エディタの展開モードを選択します。",
-      )
+      .setDesc("エディタの展開モードを選択します。")
       .addDropdown((tc) =>
         tc
           .addOption("full", "フル展開")

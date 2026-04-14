@@ -21,8 +21,8 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MomentLike, Post } from "src/ui/types";
-import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
 
@@ -134,18 +134,23 @@ export const PostListView: React.FC = memo(() => {
   const canCollapseDividers =
     timelineView && !threadView && searchQuery.trim().length === 0;
 
-  const { collapsedGroupSet, toggleCollapsedGroup, collapseGroups, expandGroups } =
-    useCollapsedGroups({ storage, canCollapseDividers });
-
-  const { displayedPostsWithDividers, visibleDividerGroupKeys } = useTimelineItems({
-    filteredPosts,
+  const {
     collapsedGroupSet,
-    canCollapseDividers,
-    displayMode,
-    granularity,
-    dateFilter,
-    viewNoteMode: settings.viewNoteMode,
-  });
+    toggleCollapsedGroup,
+    collapseGroups,
+    expandGroups,
+  } = useCollapsedGroups({ storage, canCollapseDividers });
+
+  const { displayedPostsWithDividers, visibleDividerGroupKeys } =
+    useTimelineItems({
+      filteredPosts,
+      collapsedGroupSet,
+      canCollapseDividers,
+      displayMode,
+      granularity,
+      dateFilter,
+      viewNoteMode: settings.viewNoteMode,
+    });
 
   const hasVisibleDividers = visibleDividerGroupKeys.length > 0;
   const areAllVisibleDividersCollapsed =

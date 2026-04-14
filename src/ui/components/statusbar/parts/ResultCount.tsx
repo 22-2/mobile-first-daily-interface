@@ -1,15 +1,19 @@
 import type { FC } from "react";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
-import { usePostsStore } from "src/ui/store/postsStore";
-import { isTimelineView } from "src/ui/utils/view-mode";
-import { getFixedNoteTitle } from "src/ui/view/state";
-import { useShallow } from "zustand/shallow";
 import {
   formatFixedNoteLabel,
   formatLabel,
   getVisibleRootCount,
 } from "src/ui/components/statusbar/parts/helper";
-import { useDbTotalCount, useSettings, useTotalCount } from "src/ui/components/statusbar/parts/hooks";
+import {
+  useDbTotalCount,
+  useSettings,
+  useTotalCount,
+} from "src/ui/components/statusbar/parts/hooks";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePostsStore } from "src/ui/store/postsStore";
+import { isTimelineView } from "src/ui/utils/view-mode";
+import { getFixedNoteTitle } from "src/ui/view/state";
+import { useShallow } from "zustand/shallow";
 
 export const ResultCount: FC = () => {
   const settings = useSettings();

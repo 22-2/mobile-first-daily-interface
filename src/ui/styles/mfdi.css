@@ -413,11 +413,11 @@ If your plugin does not need CSS, delete this file.
     in srgb,
     var(--interactive-accent) 8%,
     var(--background-primary)
-  )!important;
+  ) !important;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--interactive-accent) 40%, transparent),
     0 0 0 4px color-mix(in srgb, var(--interactive-accent) 14%, transparent),
-    var(--shadow-xs)!important;
+    var(--shadow-xs) !important;
 }
 
 .mfdi-input-area {

@@ -66,22 +66,25 @@ function resolveInitialSettingsState(
   storage: MFDIStore["storage"],
 ) {
   // 編集中投稿が復元できる場合はその粒度・日付を優先する
-  const editingPost = storage?.get<{
-    offset: number;
-    granularity: string;
-    noteDateStr: string;
-  } | null>(STORAGE_KEYS.EDITING_POST, null) ?? null;
+  const editingPost =
+    storage?.get<{
+      offset: number;
+      granularity: string;
+      noteDateStr: string;
+    } | null>(STORAGE_KEYS.EDITING_POST, null) ?? null;
 
-  const granularity = editingPost !== null
-    ? (editingPost.granularity as Granularity)
-    : (storage?.get<Granularity>(
-        STORAGE_KEYS.GRANULARITY,
-        GRANULARITY_CONFIG.day.unit,
-      ) ?? GRANULARITY_CONFIG.day.unit);
+  const granularity =
+    editingPost !== null
+      ? (editingPost.granularity as Granularity)
+      : (storage?.get<Granularity>(
+          STORAGE_KEYS.GRANULARITY,
+          GRANULARITY_CONFIG.day.unit,
+        ) ?? GRANULARITY_CONFIG.day.unit);
 
-  const savedDate = editingPost !== null
-    ? editingPost.noteDateStr
-    : (storage?.get<string | null>(STORAGE_KEYS.DATE, null) ?? null);
+  const savedDate =
+    editingPost !== null
+      ? editingPost.noteDateStr
+      : (storage?.get<string | null>(STORAGE_KEYS.DATE, null) ?? null);
 
   const date = savedDate ? window.moment(savedDate) : window.moment();
   const validDate = date.isValid() ? date : window.moment();
@@ -113,8 +116,7 @@ function resolveInitialSettingsState(
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
       null,
-    expanded:
-      storage?.get<boolean>(STORAGE_KEYS.EXPANDED, false) ?? false,
+    expanded: storage?.get<boolean>(STORAGE_KEYS.EXPANDED, false) ?? false,
   };
 }
 
@@ -140,7 +142,10 @@ export const createSettingsSlice: StateCreator<
   expanded: false,
 
   setIsExpanded: (expanded) => {
-    set({ expanded: typeof expanded === "function" ? expanded(get().expanded) : expanded });
+    set({
+      expanded:
+        typeof expanded === "function" ? expanded(get().expanded) : expanded,
+    });
     persistValue(get(), STORAGE_KEYS.EXPANDED, get().expanded);
   },
 

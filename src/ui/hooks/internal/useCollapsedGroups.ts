@@ -76,5 +76,10 @@ export function useCollapsedGroups({
     [canCollapseDividers, persistAndUpdate],
   );
 
-  return { collapsedGroupSet, toggleCollapsedGroup, collapseGroups, expandGroups };
+  return {
+    collapsedGroupSet,
+    toggleCollapsedGroup,
+    collapseGroups,
+    expandGroups,
+  };
 }

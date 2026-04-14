@@ -1,4 +1,3 @@
-
 export const FULL_EXPANSION_STYLE = `
   /* タイトルバー非表示 */
   .titlebar,

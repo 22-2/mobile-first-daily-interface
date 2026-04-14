@@ -1,30 +1,34 @@
-import { type FC, memo } from "react";
 import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
+import { memo, type FC } from "react";
+import {
+  DEFAULT_EXPANSION_STYLE,
+  FULL_EXPANSION_STYLE,
+} from "src/ui/components/inputarea/constants";
+import { Button, HStack } from "src/ui/components/primitives";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import { FULL_EXPANSION_STYLE, DEFAULT_EXPANSION_STYLE } from "src/ui/components/inputarea/constants";
-import { HStack, Button } from "src/ui/components/primitives";
 
 export const InputAreaFooter: FC = memo(() => {
   const { posts } = useUnifiedPosts();
 
-  const { asTask, isReadOnly, expanded, editorExpansionMode } = useSettingsStore(
-    useShallow((s) => ({
-      asTask: s.asTask,
-      isReadOnly: s.isReadOnly(),
-      expanded: s.expanded,
-      editorExpansionMode: s.pluginSettings?.editorExpansionMode ?? "default",
-    }))
-  );
+  const { asTask, isReadOnly, expanded, editorExpansionMode } =
+    useSettingsStore(
+      useShallow((s) => ({
+        asTask: s.asTask,
+        isReadOnly: s.isReadOnly(),
+        expanded: s.expanded,
+        editorExpansionMode: s.pluginSettings?.editorExpansionMode ?? "default",
+      })),
+    );
 
   const { canSubmit, cancelEdit } = useEditorStore(
     useShallow((s) => ({
       canSubmit: s.canSubmit(posts),
       cancelEdit: s.cancelEdit,
-    }))
+    })),
   );
 
   const { editingPost, inputSnapshot, clearInput } = useEditorStore(
@@ -32,13 +36,13 @@ export const InputAreaFooter: FC = memo(() => {
       editingPost: s.editingPost,
       inputSnapshot: s.inputSnapshot,
       clearInput: s.clearInput,
-    }))
+    })),
   );
 
   const { addDraft } = useAppStore(
     useShallow((s) => ({
       addDraft: s.addDraft,
-    }))
+    })),
   );
 
   // const handleCreateDraft = useCallback(
@@ -56,7 +60,9 @@ export const InputAreaFooter: FC = memo(() => {
     <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
       {expanded && (
         <style>
-          {editorExpansionMode === "full" ? FULL_EXPANSION_STYLE : DEFAULT_EXPANSION_STYLE}
+          {editorExpansionMode === "full"
+            ? FULL_EXPANSION_STYLE
+            : DEFAULT_EXPANSION_STYLE}
         </style>
       )}
       {editingPost && (

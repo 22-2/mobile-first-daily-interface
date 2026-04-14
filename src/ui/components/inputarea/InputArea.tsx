@@ -1,6 +1,8 @@
 import type { FC } from "react";
 import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
+import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
+import { InputAreaFooter } from "src/ui/components/inputarea/InputAreaFooter";
 import { Flex } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import {
@@ -15,8 +17,6 @@ import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import { useShallow } from "zustand/shallow";
-import { InputAreaFooter } from "src/ui/components/inputarea/InputAreaFooter";
-import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
 
 export const InputArea: FC = memo(() => {
   const component = useObsidianComponent() as MFDIView;

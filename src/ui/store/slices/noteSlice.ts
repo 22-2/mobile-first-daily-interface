@@ -96,12 +96,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   openDailyNoteForDate: async (shell, settings, targetDate) => {
-    const {
-      granularity,
-      activeTopic,
-      viewNoteMode,
-      fixedNotePath,
-    } = get();
+    const { granularity, activeTopic, viewNoteMode, fixedNotePath } = get();
     const noteSource = resolveNoteSource({
       shell,
       date: targetDate,
