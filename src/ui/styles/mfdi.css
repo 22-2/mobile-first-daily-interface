@@ -420,3 +420,7 @@ If your plugin does not need CSS, delete this file.
 .mfdi-input-area {
   margin-right: var(--size-4-3);
 }
+
+[data-type="mfdi-view"] .mfdi-input-area:not(.mod-expanded) .cm-scroller {
+  max-height: 50vh;
+}
