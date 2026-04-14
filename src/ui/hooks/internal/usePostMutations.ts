@@ -1,4 +1,4 @@
-import type { MarkdownView} from "obsidian";
+import type { MarkdownView } from "obsidian";
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { toText } from "src/core/post-utils";
