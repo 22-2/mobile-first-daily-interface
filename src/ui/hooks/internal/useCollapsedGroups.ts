@@ -19,7 +19,10 @@ export function useCollapsedGroups({
   canCollapseDividers,
 }: UseCollapsedGroupsInput): UseCollapsedGroupsOutput {
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<string[]>(() =>
-    storage.get<string[]>(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, []),
+    // 意図: 日付dividerはセッション中のみ保持するため、初期化時にpinned以外のキーを除外する。
+    storage
+      .get<string[]>(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, [])
+      .filter((k) => k === "pinned"),
   );
 
   const collapsedGroupSet = useMemo(
@@ -28,11 +31,15 @@ export function useCollapsedGroups({
   );
 
   // 意図: 更新と永続化を一箇所に集約し、状態の書き漏れを防ぐ。
+  // pinned dividerの開閉状態のみ永続化し、日付dividerはセッション中のみ保持する。
   const persistAndUpdate = useCallback(
     (updater: (prev: Set<string>) => Set<string>) => {
       setCollapsedGroupKeys((prev) => {
         const next = [...updater(new Set(prev))];
-        storage.set(STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS, next);
+        storage.set(
+          STORAGE_KEYS.COLLAPSED_POST_GROUP_KEYS,
+          next.filter((k) => k === "pinned"),
+        );
         return next;
       });
     },
