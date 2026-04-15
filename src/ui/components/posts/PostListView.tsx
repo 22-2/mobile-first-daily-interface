@@ -321,7 +321,9 @@ export const PostListView: React.FC = memo(() => {
               <Box key={item.key} style={{ paddingBottom: "1px" }}>
                 <DateDivider
                   date={item.date}
-                  onClick={() => handleClickDateDivider(item.date)}
+                  onClick={() => toggleCollapsedGroup(item.groupKey)}
+                  collapsed={item.collapsed}
+                  showCollapseIcon={canCollapseDividers}
                   onContextMenu={(event) =>
                     showDividerContextMenu(event, {
                       date: item.date,
