@@ -215,6 +215,8 @@ export const PostListView: React.FC = memo(() => {
     [backlinkPosts, openBacklinkPreview, handleHighlightPost],
   );
 
+  const { openEditorInNewWindow } = useObsidianUi();
+
   const { showPostContextMenu } = usePostContextMenu({
     isReadOnly,
     capabilities,
@@ -228,6 +230,7 @@ export const PostListView: React.FC = memo(() => {
     setDate,
     setDisplayMode,
     startEdit,
+    openEditorInNewWindow,
     showTextInput,
     confirmDeleteAction,
     setPostTags,

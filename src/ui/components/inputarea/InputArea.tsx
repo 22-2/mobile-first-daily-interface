@@ -1,5 +1,6 @@
+import type { WorkspaceLeaf } from "obsidian";
 import type { FC } from "react";
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
 import { InputAreaFooter } from "src/ui/components/inputarea/InputAreaFooter";
@@ -16,11 +17,12 @@ import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import type { MFDIView } from "src/ui/view/MFDIView";
 import { useShallow } from "zustand/shallow";
 
 export const InputArea: FC = memo(() => {
-  const component = useObsidianComponent() as MFDIView;
+  // 意図: MFDIView と MFDIEditorView どちらから呼ばれても動くよう、
+  // leaf だけを要求する最小限の構造型にキャストする。
+  const component = useObsidianComponent() as unknown as { leaf: WorkspaceLeaf };
   const { shell } = useAppContext();
   const { inputRef } = useEditorRefs();
   const { inputSnapshot, inputSnapshotVersion, syncInputSession, editingPost } =

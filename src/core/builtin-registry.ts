@@ -1,5 +1,5 @@
 import { around } from "monkey-around";
-import type { App, Command, EventRef } from "obsidian";
+import type { App, Command, EventRef, ItemView } from "obsidian";
 import { TFile, WorkspaceLeaf } from "obsidian";
 import { MFDIStorage } from "src/core/storage";
 import type { FixedNoteViewExtension } from "src/extensions/fixed-note-view-extension";
@@ -8,6 +8,8 @@ import type { TagIndexExtension } from "src/extensions/tag-index-extension";
 import { createTagIndexExtension } from "src/extensions/tag-index-extension";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
+import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import type { MFDIViewState } from "src/ui/view/state";
 
@@ -24,7 +26,7 @@ export interface BuiltinMainContext {
   registerEvent: (eventRef: EventRef) => void;
   registerView: (
     type: string,
-    viewCreator: (leaf: WorkspaceLeaf) => MFDIView,
+    viewCreator: (leaf: WorkspaceLeaf) => ItemView,
   ) => void;
   addRibbonIcon: (
     icon: string,
@@ -33,6 +35,7 @@ export interface BuiltinMainContext {
   ) => HTMLElement;
   addCommand: (command: Command) => Command;
   createMFDIView: (leaf: WorkspaceLeaf) => MFDIView;
+  createMFDIEditorView: (leaf: WorkspaceLeaf) => MFDIEditorView;
   createAndOpenFixedNote: () => Promise<void>;
   attachMFDIView: (
     state: Partial<MFDIViewState>,
@@ -42,6 +45,9 @@ export interface BuiltinMainContext {
 
 function registerView(context: BuiltinMainContext): void {
   context.registerView(VIEW_TYPE_MFDI, (leaf) => context.createMFDIView(leaf));
+  context.registerView(VIEW_TYPE_MFDI_EDITOR, (leaf) =>
+    context.createMFDIEditorView(leaf),
+  );
 }
 
 function registerRibbon(context: BuiltinMainContext): void {

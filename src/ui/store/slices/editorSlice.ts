@@ -22,7 +22,9 @@ export type PersistedEditingPost = {
   granularity: string;
 };
 
-const reconstructEditingPost = (
+// 意図: popout エディタビューが別 JS コンテキストで startEdit に渡す Post を
+// 再構築できるよう、シリアライズ済みデータから Post を復元する関数を公開する。
+export const reconstructEditingPost = (
   persisted: PersistedEditingPost,
   message: string,
 ) => ({

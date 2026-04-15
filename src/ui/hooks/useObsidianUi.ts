@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { WorkspaceLeaf } from "obsidian";
 import { useAppContext } from "src/ui/context/AppContext";
 import {
   openBacklinkPreviewModal,
@@ -13,6 +14,10 @@ import { showInputModal } from "src/ui/modals/InputModal";
 import type { MFDIEditorModalOptions } from "src/ui/modals/MFDIEditorModal";
 import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";
+import type { PersistedEditingPost } from "src/ui/store/slices/editorSlice";
+import type { Post } from "src/ui/types";
+import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
+import type { MFDIEditorViewState } from "src/ui/view/MFDIEditorView";
 
 type DeleteConfirmArgs = Parameters<typeof showDeleteConfirmModal>[1];
 type InputModalArgs = Parameters<typeof showInputModal>[1];
@@ -61,6 +66,36 @@ export function useObsidianUi() {
     [shell],
   );
 
+  const openEditorInNewWindow = useCallback(
+    (post: Post) => {
+      const app = shell.getRawApp();
+      // 意図: openPopoutLeaf は Obsidian デスクトップ専用 API のため型定義にない場合がある。
+      // unknown 経由でキャストして、存在しない環境（モバイル等）では何もしない。
+      const openPopout = (
+        app.workspace as unknown as {
+          openPopoutLeaf?: () => WorkspaceLeaf;
+        }
+      ).openPopoutLeaf;
+      if (!openPopout) return;
+
+      const leaf = openPopout.call(app.workspace);
+
+      const postInfo: PersistedEditingPost = {
+        id: post.id,
+        path: post.path,
+        timestampStr: post.timestamp.toISOString(),
+        metadataStr: JSON.stringify(post.metadata),
+        noteDateStr: post.noteDate.toISOString(),
+        offset: post.startOffset,
+        granularity: store.getState().granularity,
+      };
+
+      const state: MFDIEditorViewState = { postInfo, message: post.message };
+      void leaf.setViewState({ type: VIEW_TYPE_MFDI_EDITOR, active: true, state });
+    },
+    [shell, store],
+  );
+
   return useMemo(
     () => ({
       openDraftList,
@@ -69,6 +104,7 @@ export function useObsidianUi() {
       confirmDeleteAction,
       openModalEditor,
       openBacklinkPreview,
+      openEditorInNewWindow,
     }),
     [
       openDraftList,
@@ -77,6 +113,7 @@ export function useObsidianUi() {
       confirmDeleteAction,
       openModalEditor,
       openBacklinkPreview,
+      openEditorInNewWindow,
     ],
   );
 }

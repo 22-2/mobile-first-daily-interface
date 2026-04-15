@@ -24,6 +24,7 @@ type UsePostContextMenuInput = {
   setDate: (date: MomentLike) => void;
   setDisplayMode: (mode: DisplayMode) => void;
   startEdit: (post: Post) => void;
+  openEditorInNewWindow: (post: Post) => void;
   showTextInput: (args: {
     title: string;
     placeholder?: string;
@@ -48,6 +49,7 @@ export function usePostContextMenu({
   setDate,
   setDisplayMode,
   startEdit,
+  openEditorInNewWindow,
   showTextInput,
   confirmDeleteAction,
   setPostTags,
@@ -135,6 +137,16 @@ export function usePostContextMenu({
             .setDisabled(isReadOnly)
             .onClick(() => {
               copyBlockIdLink(post);
+            }),
+        );
+
+        sub.addItem((si) =>
+          si
+            .setTitle("新しいウィンドウで編集")
+            .setIcon("picture-in-picture-2")
+            .setDisabled(isReadOnly)
+            .onClick(() => {
+              openEditorInNewWindow(post);
             }),
         );
       });
@@ -235,6 +247,7 @@ export function usePostContextMenu({
       setDate,
       setDisplayMode,
       startEdit,
+      openEditorInNewWindow,
       capabilities.supportsDateNavigation,
       capabilities.supportsMovePostBetweenDays,
       capabilities.supportsTags,

@@ -12,6 +12,7 @@ import { DEFAULT_SETTINGS, MFDISettingTab } from "src/settings";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { showInputModal } from "src/ui/modals/InputModal";
 import { TopicManagerModal } from "src/ui/modals/TopicManagerModal";
+import { MFDIEditorView } from "src/ui/view/MFDIEditorView";
 import { MFDIView, VIEW_TYPE_MFDI } from "src/ui/view/MFDIView";
 import type { MFDIViewState } from "src/ui/view/state";
 import {
@@ -100,6 +101,7 @@ export default class MFDIPlugin extends Plugin {
         this.setupViewCallbacks(this.view);
         return this.view;
       },
+      createMFDIEditorView: (leaf) => new MFDIEditorView(leaf, this.settings),
       createAndOpenFixedNote: () => this.createAndOpenFixedNote(),
       attachMFDIView: (state, preferredLeaf) =>
         this.attachMFDIView(state, preferredLeaf),
