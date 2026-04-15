@@ -73,6 +73,7 @@ export const InputAreaFooter: FC = memo(() => {
             item
               .setTitle("下書きに追加")
               .setIcon("document")
+              .setDisabled(!inputSnapshot.trim())
               .onClick(() => {
                 if (!inputSnapshot.trim()) return;
                 addDraft(inputSnapshot);
@@ -83,6 +84,7 @@ export const InputAreaFooter: FC = memo(() => {
             item
               .setTitle("クリア")
               .setIcon("delete")
+              .setDisabled(!inputSnapshot)
               .onClick(() => {
                 clearInput();
               });
