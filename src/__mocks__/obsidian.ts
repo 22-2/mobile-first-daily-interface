@@ -49,4 +49,21 @@ export class Menu {
 export class Notice {
   constructor(message: string) {}
 }
+// 意図: @22-2/obsidian-magical-editor が Modal / ItemView をインポートするためスタブが必要。
+export class Modal {
+  constructor(public app: unknown) {}
+  open() {}
+  close() {}
+  onOpen() {}
+  onClose() {}
+}
+export class WorkspaceLeaf {}
+export class ItemView {
+  leaf: WorkspaceLeaf;
+  constructor(leaf: WorkspaceLeaf) {
+    this.leaf = leaf;
+  }
+  getViewType() { return ""; }
+  getDisplayText() { return ""; }
+}
 export const setIcon = () => {};

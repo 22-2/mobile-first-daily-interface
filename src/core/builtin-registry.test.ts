@@ -5,18 +5,19 @@ import { describe, expect, it, vi } from "vitest";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
-vi.mock("obsidian", () => {
-  class MockTFile {
-    path = "";
-    basename = "";
-    extension = "";
-  }
-
-  class MockWorkspaceLeaf {}
-
+// 意図: server.deps.inline で @22-2/obsidian-magical-editor が Vite 経由で処理されると
+// obsidian モックの全エクスポートが解決される必要がある。importOriginal でグローバルモックを
+// スプレッドし、このテスト固有の差し替えだけ上書きする。
+vi.mock("obsidian", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("obsidian")>();
   return {
-    TFile: MockTFile,
-    WorkspaceLeaf: MockWorkspaceLeaf,
+    ...actual,
+    TFile: class MockTFile {
+      path = "";
+      basename = "";
+      extension = "";
+    },
+    WorkspaceLeaf: class MockWorkspaceLeaf {},
   };
 });
 
@@ -87,6 +88,7 @@ describe("builtin registry", () => {
     const addRibbonIcon = vi.fn();
     const addCommand = vi.fn((command) => command);
     const createMFDIView = vi.fn((leaf) => ({ leaf }));
+    const createMFDIEditorView = vi.fn((leaf) => ({ leaf }));
     const createAndOpenFixedNote = vi.fn(async () => {});
     const attachMFDIView = vi.fn(async () => ({ id: "leaf" }));
     const saveSettings = vi.fn(async () => {});
@@ -135,19 +137,30 @@ describe("builtin registry", () => {
       addRibbonIcon,
       addCommand,
       createMFDIView,
+      createMFDIEditorView,
       createAndOpenFixedNote,
       attachMFDIView,
     } as unknown as BuiltinMainContext;
 
     activateBuiltins(context, "app-1");
 
-    expect(registerView).toHaveBeenCalledTimes(1);
+    // VIEW_TYPE_MFDI と VIEW_TYPE_MFDI_EDITOR の2つが登録される
+    expect(registerView).toHaveBeenCalledTimes(2);
     const [viewType, viewCreator] = registerView.mock.calls[0] as [
       string,
       (leaf: unknown) => unknown,
     ];
     expect(viewType).toBe(VIEW_TYPE_MFDI);
     expect(viewCreator({ id: "leaf-1" })).toEqual({ leaf: { id: "leaf-1" } });
+
+    const [editorViewType, editorViewCreator] = registerView.mock.calls[1] as [
+      string,
+      (leaf: unknown) => unknown,
+    ];
+    expect(editorViewType).toBe("mfdi-editor-view");
+    expect(editorViewCreator({ id: "leaf-2" })).toEqual({
+      leaf: { id: "leaf-2" },
+    });
 
     expect(addRibbonIcon).toHaveBeenCalledWith(
       "pencil",
