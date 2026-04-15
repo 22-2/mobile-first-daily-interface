@@ -93,8 +93,8 @@ If your plugin does not need CSS, delete this file.
   background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
 }
 .mfdi-scroll-area {
-  overflow-y: hidden;
-  scrollbar-width: none; /* Firefox */
+  overflow-y: scroll;
+  scrollbar-width: thin;
 }
 
 /* 「続きを読む」ボタン */
