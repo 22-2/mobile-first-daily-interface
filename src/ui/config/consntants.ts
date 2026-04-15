@@ -24,6 +24,8 @@ export const STORAGE_KEYS = {
   THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
   COLLAPSED_POST_GROUP_KEYS: "collapsedPostGroupKeys",
   INPUT_AREA_SIZE: "inputAreaSize",
+  // ポップアウトエディタのキャンセル時に確認モーダルをスキップするかどうか
+  SKIP_POPOUT_DISCARD_CONFIRM: "skipPopoutDiscardConfirm",
 } as const;
 
 export const INPUT_AREA_SIZE = {

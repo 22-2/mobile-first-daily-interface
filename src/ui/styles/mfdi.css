@@ -230,6 +230,19 @@ If your plugin does not need CSS, delete this file.
     color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
+.mfdi-modal__checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+}
+
+.mfdi-modal__checkbox-row label {
+  cursor: pointer;
+}
+
 .mfdi-modal__actions {
   display: flex;
   justify-content: flex-end;
