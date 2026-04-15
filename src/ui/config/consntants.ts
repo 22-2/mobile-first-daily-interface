@@ -23,7 +23,13 @@ export const STORAGE_KEYS = {
   EDITING_POST: "editingPost",
   THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
   COLLAPSED_POST_GROUP_KEYS: "collapsedPostGroupKeys",
-  EXPANDED: "expanded",
+  INPUT_AREA_SIZE: "inputAreaSize",
+} as const;
+
+export const INPUT_AREA_SIZE = {
+  DEFAULT: "default",
+  MAXIMIZED: "maximized",
+  MINIMIZED: "minimized",
 } as const;
 
 export const MOVE_STEP = {

@@ -5,7 +5,8 @@ import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DisplayModeIndicator } from "src/ui/components/inputarea/DisplayModeIndicator";
 import { Box, Flex, HStack, Input } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DISPLAY_MODE, INPUT_AREA_SIZE } from "src/ui/config/consntants";
+import type { InputAreaSize } from "src/ui/types";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
@@ -14,9 +15,12 @@ import { getMFDIViewCapabilities } from "src/ui/view/state";
 
 export const InputAreaControl: FC<{
   isReadOnly: boolean;
-  isExpanded: boolean;
-  onExpandToMaxHeight: () => void;
-}> = memo(({ isReadOnly, isExpanded, onExpandToMaxHeight }) => {
+  inputAreaSize: InputAreaSize;
+  onMaximizeToMaxHeight: () => void;
+  onMinimize: () => void;
+}> = memo(({ isReadOnly, inputAreaSize, onMaximizeToMaxHeight, onMinimize }) => {
+  const isExpanded = inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED;
+  const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
   const { viewNoteMode } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
@@ -29,10 +33,8 @@ export const InputAreaControl: FC<{
   const {
     date,
     granularity,
-    isToday,
     handleClickMovePrevious,
     handleClickMoveNext,
-    handleClickToday,
     handleClickHome,
     handleChangeCalendarDateAction,
     displayMode,
@@ -40,15 +42,12 @@ export const InputAreaControl: FC<{
     setDisplayMode,
     setActiveTag,
     setThreadFocusRootId,
-    getMoveStep,
   } = useSettingsStore(
     useShallow((s) => ({
       date: s.date,
       granularity: s.granularity,
-      isToday: s.isToday(),
       handleClickMovePrevious: s.handleClickMovePrevious,
       handleClickMoveNext: s.handleClickMoveNext,
-      handleClickToday: s.handleClickToday,
       handleClickHome: s.handleClickHome,
       handleChangeCalendarDateAction: s.handleChangeCalendarDate,
       displayMode: s.displayMode,
@@ -56,7 +55,6 @@ export const InputAreaControl: FC<{
       setDisplayMode: s.setDisplayMode,
       setActiveTag: s.setActiveTag,
       setThreadFocusRootId: s.setThreadFocusRootId,
-      getMoveStep: s.getMoveStep,
     })),
   );
 
@@ -162,16 +160,28 @@ export const InputAreaControl: FC<{
       </HStack>
       <Box className="flex-1 flex justify-end gap-[0.5em]">
         <ObsidianIcon
+          name="minimize"
+          size="1.1em"
+          className={cn(
+            isMinimized
+              ? "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
+              : "hover:bg-[var(--background-modifier-hover)]",
+          )}
+          onClick={onMinimize}
+        />
+        <ObsidianIcon
           name="maximize"
           size="1.1em"
-          className={
+          className={cn(
             isReadOnly
               ? "cursor-default opacity-30"
-              : "hover:bg-[var(--background-modifier-hover)]"
-          }
+              : isExpanded
+                ? "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
+                : "hover:bg-[var(--background-modifier-hover)]",
+          )}
           onClick={() => {
             if (isReadOnly) return;
-            onExpandToMaxHeight();
+            onMaximizeToMaxHeight();
           }}
         />
       </Box>

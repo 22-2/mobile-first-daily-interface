@@ -10,20 +10,22 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
+import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 
 export const InputAreaFooter: FC = memo(() => {
   const { posts } = useUnifiedPosts();
 
-  const { asTask, isReadOnly, expanded, editorExpansionMode } =
+  const { asTask, isReadOnly, inputAreaSize, editorExpansionMode } =
     useSettingsStore(
       useShallow((s) => ({
         asTask: s.asTask,
         isReadOnly: s.isReadOnly(),
-        expanded: s.expanded,
+        inputAreaSize: s.inputAreaSize,
         editorExpansionMode: s.pluginSettings?.editorExpansionMode ?? "default",
       })),
     );
+  const isMaximized = inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED;
 
   const { canSubmit, cancelEdit } = useEditorStore(
     useShallow((s) => ({
@@ -49,8 +51,8 @@ export const InputAreaFooter: FC = memo(() => {
   const { handleSubmit } = usePostActions();
 
   return (
-    <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
-      {expanded && (
+    <HStack className="mfdi-input-area-footer justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
+      {isMaximized && (
         <style>
           {editorExpansionMode === "full"
             ? FULL_EXPANSION_STYLE

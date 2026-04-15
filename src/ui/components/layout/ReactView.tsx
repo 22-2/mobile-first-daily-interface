@@ -16,6 +16,7 @@ import { TagList } from "src/ui/components/layout/TagList";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { Box, Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
+import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
@@ -283,7 +284,7 @@ const ReactViewContent = () => {
       displayMode: s.displayMode,
       threadFocusRootId: s.threadFocusRootId,
       searchQuery: s.searchQuery,
-      expanded: s.expanded,
+      inputAreaSize: s.inputAreaSize,
     })),
   );
 
@@ -455,7 +456,7 @@ function useViewSync(view: MFDIView | null) {
     isReadOnly,
     sidebarOpen,
     searchQuery,
-    expanded,
+    inputAreaSize,
     setGranularity,
     setTimeFilter,
     setDateFilter,
@@ -465,7 +466,7 @@ function useViewSync(view: MFDIView | null) {
     setDisplayMode,
     setSidebarOpen,
     setSearchQuery,
-    setIsExpanded,
+    setInputAreaSize,
   } = useSettingsStore(
     useShallow((state) => ({
       granularity: state.granularity,
@@ -478,7 +479,7 @@ function useViewSync(view: MFDIView | null) {
       isReadOnly: state.isReadOnly(),
       sidebarOpen: state.sidebarOpen,
       searchQuery: state.searchQuery,
-      expanded: state.expanded,
+      inputAreaSize: state.inputAreaSize,
       setGranularity: state.setGranularity,
       setTimeFilter: state.setTimeFilter,
       setDateFilter: state.setDateFilter,
@@ -488,7 +489,7 @@ function useViewSync(view: MFDIView | null) {
       setDisplayMode: state.setDisplayMode,
       setSidebarOpen: state.setSidebarOpen,
       setSearchQuery: state.setSearchQuery,
-      setIsExpanded: state.setIsExpanded,
+      setInputAreaSize: state.setInputAreaSize,
     })),
   );
 
@@ -678,7 +679,11 @@ function useViewSync(view: MFDIView | null) {
     }
 
     view.handlers.onEditorExpand = () => {
-      setIsExpanded(!expanded);
+      setInputAreaSize(
+        inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED
+          ? INPUT_AREA_SIZE.DEFAULT
+          : INPUT_AREA_SIZE.MAXIMIZED,
+      );
     };
     return () => {
       view.handlers.onEditorExpand = undefined;
@@ -689,8 +694,8 @@ function useViewSync(view: MFDIView | null) {
     getInputValue,
     replaceInput,
     isReadOnly,
-    expanded,
-    setIsExpanded,
+    inputAreaSize,
+    setInputAreaSize,
   ]);
 
   useEffect(() => {

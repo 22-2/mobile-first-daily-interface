@@ -10,12 +10,12 @@ export const FULL_EXPANSION_STYLE = `
   }
 
   /* 上部バーを畳む。 */
-  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-header {
+  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-maxmized) .view-header {
     display: none;
   }
 
   /* コンテンツのパディングをリセット */
-  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-expanded) .view-content {
+  [data-type="mfdi-view"]:has(.mfdi-input-area.mod-maxmized) .view-content {
     padding: 0!important;
   }
 
@@ -23,13 +23,13 @@ export const FULL_EXPANSION_STYLE = `
     margin-right: 0!important;
   }
 
-  [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
+  [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
     height: calc(100dvh - 123px) !important;
   }
 `;
 
 export const DEFAULT_EXPANSION_STYLE = `
-  [data-type="mfdi-view"] .mfdi-input-area.mod-expanded .cm-scroller {
+  [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
     height: calc(100dvh - 220px) !important;
   }
 `;

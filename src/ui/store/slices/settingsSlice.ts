@@ -1,6 +1,7 @@
 import type { Settings } from "src/settings";
 import {
   DISPLAY_MODE,
+  INPUT_AREA_SIZE,
   MOVE_STEP,
   STORAGE_KEYS,
 } from "src/ui/config/consntants";
@@ -11,6 +12,7 @@ import type {
   DateFilter,
   DisplayMode,
   Granularity,
+  InputAreaSize,
   MomentLike,
   TimeFilter,
 } from "src/ui/types";
@@ -116,7 +118,11 @@ function resolveInitialSettingsState(
     threadFocusRootId:
       storage?.get<string | null>(STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null) ??
       null,
-    expanded: storage?.get<boolean>(STORAGE_KEYS.EXPANDED, false) ?? false,
+    inputAreaSize:
+      storage?.get<InputAreaSize>(
+        STORAGE_KEYS.INPUT_AREA_SIZE,
+        INPUT_AREA_SIZE.DEFAULT,
+      ) ?? INPUT_AREA_SIZE.DEFAULT,
   };
 }
 
@@ -139,14 +145,11 @@ export const createSettingsSlice: StateCreator<
   threadOnly: false,
   searchQuery: "",
   threadFocusRootId: null,
-  expanded: false,
+  inputAreaSize: INPUT_AREA_SIZE.DEFAULT,
 
-  setIsExpanded: (expanded) => {
-    set({
-      expanded:
-        typeof expanded === "function" ? expanded(get().expanded) : expanded,
-    });
-    persistValue(get(), STORAGE_KEYS.EXPANDED, get().expanded);
+  setInputAreaSize: (size) => {
+    set({ inputAreaSize: size });
+    persistValue(get(), STORAGE_KEYS.INPUT_AREA_SIZE, size);
   },
 
   setActiveTopic: (activeTopic) => {

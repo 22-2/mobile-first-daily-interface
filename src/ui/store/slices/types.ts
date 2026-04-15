@@ -8,6 +8,7 @@ import type {
   DisplayMode,
   Draft,
   Granularity,
+  InputAreaSize,
   MomentLike,
   Post,
   TimeFilter,
@@ -47,8 +48,8 @@ export interface SettingsSlice {
   threadOnly: boolean;
   searchQuery: string;
   threadFocusRootId: string | null;
-  expanded: boolean;
-  setIsExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void;
+  inputAreaSize: InputAreaSize;
+  setInputAreaSize: (size: InputAreaSize) => void;
   setActiveTopic: (topicId: string) => void;
   setActiveTag: (tag: string | null) => void;
   setGranularity: (g: Granularity) => void;

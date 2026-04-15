@@ -5,7 +5,7 @@ import { PostCardView } from "src/ui/components/posts/PostCardView";
 import { Box } from "src/ui/components/primitives/Box";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { cn } from "src/ui/components/primitives/utils";
-import { DISPLAY_MODE } from "src/ui/config/consntants";
+import { DISPLAY_MODE, INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { useCollapsedGroups } from "src/ui/hooks/internal/useCollapsedGroups";
@@ -55,11 +55,11 @@ export const PostListView: React.FC = memo(() => {
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
       viewNoteMode: s.viewNoteMode,
-      expanded: s.expanded,
+      inputAreaSize: s.inputAreaSize,
     })),
   );
 
-  const { posts: allPosts, loadMore, hasMore, isLoading } = useUnifiedPosts();
+  const { posts: allPosts, loadMore, hasMore } = useUnifiedPosts();
 
   const {
     editingPostOffset,
@@ -392,7 +392,7 @@ export const PostListView: React.FC = memo(() => {
         )}
         <Box key="bottom-spacer" className="h-[24rem]" />
       </Virtualizer>
-      {!settings.expanded && (
+      {settings.inputAreaSize !== INPUT_AREA_SIZE.MAXIMIZED && (
         <FloatingButton
           className={cn(
             "up-button fixed",

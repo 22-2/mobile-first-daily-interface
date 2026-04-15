@@ -1,11 +1,12 @@
 import type { FC } from "react";
-import { memo, useCallback, useEffect } from "react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
 import { InputAreaFooter } from "src/ui/components/inputarea/InputAreaFooter";
 import { Flex } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import {
+  INPUT_AREA_SIZE,
   PLACEHOLDER_TEXT,
   READONLY_PLACEHOLDER_TEXT,
 } from "src/ui/config/consntants";
@@ -34,51 +35,79 @@ export const InputArea: FC = memo(() => {
 
   // startEdit 後にエディタへフォーカスを移す
   const editingPostId = editingPost?.id ?? null;
+
+  const { isReadOnly, inputAreaSize, setInputAreaSize } = useSettingsStore(
+    useShallow((s) => ({
+      isReadOnly: s.isReadOnly(),
+      inputAreaSize: s.inputAreaSize,
+      setInputAreaSize: s.setInputAreaSize,
+    })),
+  );
+  const { handleSubmit } = usePostActions();
+  const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
+
+  const handleExpandToMaxHeight = useCallback(() => {
+    // 意図: クラス付与のみで expand/collapse を切り替え、スタイル責務を CSS に寄せる。
+    setInputAreaSize(
+      inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED
+        ? INPUT_AREA_SIZE.DEFAULT
+        : INPUT_AREA_SIZE.MAXIMIZED,
+    );
+  }, [inputAreaSize, setInputAreaSize]);
+
+  const handleMinimize = useCallback(() => {
+    // 意図: minimize で入力欄を折り畳み、ポストリストの表示領域を広げる。
+    setInputAreaSize(
+      inputAreaSize === INPUT_AREA_SIZE.MINIMIZED
+        ? INPUT_AREA_SIZE.DEFAULT
+        : INPUT_AREA_SIZE.MINIMIZED,
+    );
+  }, [inputAreaSize, setInputAreaSize]);
+
   useEffect(() => {
     if (editingPostId !== null) {
       setTimeout(() => inputRef.current?.focus());
     }
   }, [editingPostId]);
-  const { isReadOnly, isExpanded, setIsExpanded } = useSettingsStore(
-    useShallow((s) => ({
-      isReadOnly: s.isReadOnly(),
-      isExpanded: s.expanded,
-      setIsExpanded: s.setIsExpanded,
-    })),
-  );
-  const { handleSubmit } = usePostActions();
-
-  const handleExpandToMaxHeight = useCallback(() => {
-    // 意図: クラス付与のみで expand/collapse を切り替え、スタイル責務を CSS に寄せる。
-    setIsExpanded((prev) => !prev);
-  }, []);
 
   return (
     <Flex
       className={cn(
-        `mfdi-input-area ${isReadOnly ? "mod-read-only" : ""} ${isExpanded ? "mod-expanded" : ""} flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]`,
+        // 常時適用する基本クラス
+        "mfdi-input-area flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]",
+        {
+          // 条件付きクラス
+          "mod-read-only": isReadOnly,
+          "mod-maxmized": inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED,
+          "mod-minimized": inputAreaSize === INPUT_AREA_SIZE.MINIMIZED,
+        },
       )}
     >
       <InputAreaControl
         isReadOnly={isReadOnly}
-        isExpanded={isExpanded}
-        onExpandToMaxHeight={handleExpandToMaxHeight}
+        inputAreaSize={inputAreaSize}
+        onMaximizeToMaxHeight={handleExpandToMaxHeight}
+        onMinimize={handleMinimize}
       />
 
-      <ObsidianLiveEditor
-        ref={inputRef}
-        leaf={component.leaf}
-        app={shell.getRawApp()}
-        initialValue={inputSnapshot}
-        externalVersion={inputSnapshotVersion}
-        onChange={syncInputSession}
-        onSubmit={handleSubmit}
-        className="min-h-[var(--size-4-18)] mx-[var(--size-4-4)]"
-        placeholder={PLACEHOLDER_TEXT}
-        isReadOnly={isReadOnly}
-        readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
-      />
-      <InputAreaFooter />
+      {isMinimized ? null : (
+        <>
+          <ObsidianLiveEditor
+            ref={inputRef}
+            leaf={component.leaf}
+            app={shell.getRawApp()}
+            initialValue={inputSnapshot}
+            externalVersion={inputSnapshotVersion}
+            onChange={syncInputSession}
+            onSubmit={handleSubmit}
+            className="min-h-[var(--size-4-18)] mx-[var(--size-4-4)]"
+            placeholder={PLACEHOLDER_TEXT}
+            isReadOnly={isReadOnly}
+            readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
+          />
+          <InputAreaFooter />
+        </>
+      )}
     </Flex>
   );
 });
