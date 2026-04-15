@@ -1,9 +1,0 @@
-{
-  "id": "paper-cut",
-  "name": "Paper Cut",
-  "version": "0.1.0",
-  "minAppVersion": "1.2.8",
-  "description": "Ulysses/Scrivener-like writing tool built on MFDI assets",
-  "author": "22-2",
-  "isDesktopOnly": false
-}

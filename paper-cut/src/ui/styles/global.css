@@ -1,4 +1,0 @@
-@import "tailwindcss";
-/* @tailwindcss/vite は paper-cut/ 外のファイルをスキャンしないため、
-   MFDI 共有コンポーネント（PostCard 等）のクラスを明示的に収集する */
-@source "../../../../src";
