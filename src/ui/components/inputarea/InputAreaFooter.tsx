@@ -5,7 +5,7 @@ import {
   DEFAULT_EXPANSION_STYLE,
   FULL_EXPANSION_STYLE,
 } from "src/ui/components/inputarea/constants";
-import { Box, Button, HStack } from "src/ui/components/primitives";
+import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
@@ -50,8 +50,47 @@ export const InputAreaFooter: FC = memo(() => {
 
   const { handleSubmit } = usePostActions();
 
+  const submitLabel = isReadOnly
+    ? "閲覧モード"
+    : editingPost
+      ? "更新"
+      : asTask
+        ? "タスク追加"
+        : "投稿";
+
   return (
-    <HStack className="mfdi-input-area-footer justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em] gap-[0.5em]">
+    <InputAreaFooterBase
+      className="mfdi-input-area-footer"
+      canSubmit={canSubmit}
+      submitLabel={submitLabel}
+      onSubmit={handleSubmit}
+      onCancel={editingPost ? cancelEdit : undefined}
+      characterCount={inputSnapshot.length}
+      onSubmitContextMenu={(e) => {
+        const menu = new Menu();
+        menu.addItem((item) => {
+          item
+            .setTitle("下書きに追加")
+            .setIcon("square-pen")
+            .setDisabled(!inputSnapshot.trim())
+            .onClick(() => {
+              if (!inputSnapshot.trim()) return;
+              addDraft(inputSnapshot);
+              clearInput();
+            });
+        });
+        menu.addItem((item) => {
+          item
+            .setTitle("クリア")
+            .setIcon("delete")
+            .setDisabled(!inputSnapshot)
+            .onClick(() => {
+              clearInput();
+            });
+        });
+        menu.showAtMouseEvent(e.nativeEvent);
+      }}
+    >
       {isMaximized && (
         <style>
           {editorExpansionMode === "full"
@@ -59,56 +98,6 @@ export const InputAreaFooter: FC = memo(() => {
             : DEFAULT_EXPANSION_STYLE}
         </style>
       )}
-
-      {inputSnapshot.length > 0 && (
-        <Box className="text-xs text-[var(--text-muted)]">
-          {inputSnapshot.length} chars
-        </Box>
-      )}
-
-      {editingPost && (
-        <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
-          キャンセル
-        </Button>
-      )}
-      <Button
-        disabled={!canSubmit}
-        className="h-[2.4em]"
-        variant="accent"
-        onClick={handleSubmit}
-        onContextMenu={(e) => {
-          const menu = new Menu();
-          menu.addItem((item) => {
-            item
-              .setTitle("下書きに追加")
-              .setIcon("square-pen")
-              .setDisabled(!inputSnapshot.trim())
-              .onClick(() => {
-                if (!inputSnapshot.trim()) return;
-                addDraft(inputSnapshot);
-                clearInput();
-              });
-          });
-          menu.addItem((item) => {
-            item
-              .setTitle("クリア")
-              .setIcon("delete")
-              .setDisabled(!inputSnapshot)
-              .onClick(() => {
-                clearInput();
-              });
-          });
-          menu.showAtMouseEvent(e.nativeEvent);
-        }}
-      >
-        {isReadOnly
-          ? "閲覧モード"
-          : editingPost
-            ? "更新"
-            : asTask
-              ? "タスク追加"
-              : "投稿"}
-      </Button>
-    </HStack>
+    </InputAreaFooterBase>
   );
 });

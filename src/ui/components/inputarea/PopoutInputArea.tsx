@@ -1,7 +1,8 @@
 import type { FC } from "react";
 import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
-import { Button, Flex, HStack } from "src/ui/components/primitives";
+import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
+import { Flex } from "src/ui/components/primitives";
 import { PLACEHOLDER_TEXT, STORAGE_KEYS } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
@@ -110,19 +111,13 @@ export const PopoutInputArea: FC = memo(() => {
         placeholder={PLACEHOLDER_TEXT}
         isReadOnly={false}
       />
-      <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em] gap-[0.5em]">
-        <Button className="h-[2.4em]" variant="ghost" onClick={handleCancel}>
-          キャンセル
-        </Button>
-        <Button
-          disabled={!canSubmit}
-          className="h-[2.4em]"
-          variant="accent"
-          onClick={handleSubmitAndClose}
-        >
-          {editingPost ? "更新" : "投稿"}
-        </Button>
-      </HStack>
+      <InputAreaFooterBase
+        canSubmit={canSubmit}
+        submitLabel={editingPost ? "更新" : "投稿"}
+        onSubmit={handleSubmitAndClose}
+        onCancel={handleCancel}
+        characterCount={inputSnapshot.length}
+      />
     </Flex>
   );
 });
