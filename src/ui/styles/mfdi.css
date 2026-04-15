@@ -82,6 +82,28 @@ If your plugin does not need CSS, delete this file.
   --mfdi-icon-color-hover: var(--text-normal);
 }
 
+/* エディタ専用ポップアウトビュー: コンテンツ全域をエディタで埋める */
+[data-type="mfdi-editor-view"] .view-content {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-type="mfdi-editor-view"] .mfdi-popout-editor {
+  flex: 1;
+  min-height: 0;
+}
+
+/* cm-editor が flex-1 の親に追従して高さを埋めるよう設定 */
+[data-type="mfdi-editor-view"] .mfdi-popout-editor__editor .cm-editor {
+  height: 100%;
+}
+
+[data-type="mfdi-editor-view"] .mfdi-popout-editor__editor .cm-scroller {
+  height: 100% !important;
+  overflow-y: auto;
+}
+
 /* Scroll area used by BaseCard and similar components */
 .mfdi-scroll-area::-webkit-scrollbar {
   width: var(--size-4-1);

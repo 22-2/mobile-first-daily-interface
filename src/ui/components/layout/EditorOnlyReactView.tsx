@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import { useLayoutEffect, useRef } from "react";
 import type { Settings } from "src/settings";
-import { InputArea } from "src/ui/components/inputarea/InputArea";
+import { PopoutInputArea } from "src/ui/components/inputarea/PopoutInputArea";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { ComponentContextProvider } from "src/ui/context/ComponentContext";
 import { EditorRefsProvider } from "src/ui/context/EditorRefsContext";
@@ -41,7 +41,7 @@ export const EditorOnlyReactView = ({
         <AppStoreProvider store={storeRef.current}>
           <EditorRefsProvider>
             <EditorOnlyAppRoot initialState={initialState}>
-              <InputArea />
+              <PopoutInputArea />
             </EditorOnlyAppRoot>
           </EditorRefsProvider>
         </AppStoreProvider>

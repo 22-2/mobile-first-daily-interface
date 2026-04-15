@@ -1,0 +1,106 @@
+import type { FC } from "react";
+import { memo, useCallback, useEffect } from "react";
+import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
+import { Button, Flex, HStack } from "src/ui/components/primitives";
+import { PLACEHOLDER_TEXT } from "src/ui/config/consntants";
+import { useAppContext } from "src/ui/context/AppContext";
+import { useObsidianComponent } from "src/ui/context/ComponentContext";
+import { useEditorRefs } from "src/ui/context/EditorRefsContext";
+import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useAppStore } from "src/ui/store/appStore";
+import { useEditorStore } from "src/ui/store/editorStore";
+import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
+import { useShallow } from "zustand/shallow";
+
+/**
+ * ポップアウトウィンドウ専用の入力エリア。
+ * InputAreaControl（縮小・拡大・ナビゲーション）を持たず、エディタを全画面表示する。
+ * キャンセル時は入力内容を下書きに保存してウィンドウを閉じる。
+ * 投稿/更新後もウィンドウを閉じる。
+ */
+export const PopoutInputArea: FC = memo(() => {
+  // 意図: leaf.detach() でウィンドウを閉じるため、ItemView としてキャストして leaf を参照する。
+  const view = useObsidianComponent() as unknown as MFDIEditorView;
+  const { shell } = useAppContext();
+  const { inputRef } = useEditorRefs();
+
+  const { inputSnapshot, inputSnapshotVersion, syncInputSession, editingPost } =
+    useEditorStore(
+      useShallow((s) => ({
+        inputSnapshot: s.inputSnapshot,
+        inputSnapshotVersion: s.inputSnapshotVersion,
+        syncInputSession: s.syncInputSession,
+        editingPost: s.editingPost,
+      })),
+    );
+
+  const { clearInput } = useEditorStore(
+    useShallow((s) => ({ clearInput: s.clearInput })),
+  );
+
+  const { addDraft } = useAppStore(
+    useShallow((s) => ({ addDraft: s.addDraft })),
+  );
+
+  const { posts } = useUnifiedPosts();
+  const canSubmit = useEditorStore((s) => s.canSubmit(posts));
+
+  const { handleSubmit } = usePostActions();
+
+  const closeView = useCallback(() => {
+    view.leaf.detach();
+  }, [view]);
+
+  const handleCancel = useCallback(() => {
+    // 意図: キャンセル時に入力内容があれば下書きに保存してから閉じる。
+    // ウィンドウを閉じるとストアが破棄されるため、保存は detach より前に行う。
+    if (inputSnapshot.trim()) {
+      addDraft(inputSnapshot);
+    }
+    clearInput();
+    closeView();
+  }, [inputSnapshot, addDraft, clearInput, closeView]);
+
+  const handleSubmitAndClose = useCallback(async () => {
+    await handleSubmit();
+    // 意図: submit の成否を問わず閉じると下書きが失われる恐れがある。
+    // handleSubmit は成功時に clearInput するため、その後に閉じる。
+    closeView();
+  }, [handleSubmit, closeView]);
+
+  // 意図: popout が開いた直後にエディタへフォーカスを移し、すぐに入力できるようにする。
+  useEffect(() => {
+    window.setTimeout(() => inputRef.current?.focus());
+  }, [inputRef]);
+
+  return (
+    <Flex className="mfdi-popout-editor h-full w-full flex-col overflow-hidden bg-[var(--background-primary)]">
+      <ObsidianLiveEditor
+        ref={inputRef}
+        leaf={view.leaf}
+        app={shell.getRawApp()}
+        initialValue={inputSnapshot}
+        externalVersion={inputSnapshotVersion}
+        onChange={syncInputSession}
+        onSubmit={handleSubmitAndClose}
+        className="mfdi-popout-editor__editor flex-1 min-h-0 mx-[var(--size-4-4)]"
+        placeholder={PLACEHOLDER_TEXT}
+        isReadOnly={false}
+      />
+      <HStack className="justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em] gap-[0.5em]">
+        <Button className="h-[2.4em]" variant="ghost" onClick={handleCancel}>
+          キャンセル
+        </Button>
+        <Button
+          disabled={!canSubmit}
+          className="h-[2.4em]"
+          variant="accent"
+          onClick={handleSubmitAndClose}
+        >
+          {editingPost ? "更新" : "投稿"}
+        </Button>
+      </HStack>
+    </Flex>
+  );
+});
