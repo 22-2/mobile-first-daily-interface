@@ -25,9 +25,9 @@ export default defineConfig(async ({ mode }) => {
       // reactCompilerPreset(),
       onMyPc && obsidianViteCopyPlugin({
         pluginsDir: [
-          "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
+          // "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
           "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
-          "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
+          // "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
         ],
         targetDirName: "mobile-first-daily-interface",
         force: true,
@@ -50,6 +50,7 @@ export default defineConfig(async ({ mode }) => {
         fileName: () => "main.js",
         formats: ["cjs"],
       },
+      outDir: "./",
       minify: isProd,
       sourcemap: isProd ? false : "inline",
       // watchモード時はRollupのwatch設定を渡す
