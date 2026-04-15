@@ -132,9 +132,11 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     startEdit: (post) => {
-      const { date, granularity, setAsTask, setInputAreaSize, replaceInput, storage } = get();
+      const { date, granularity, setAsTask, replaceInput, storage } = get();
       // 意図: 編集開始時に minimized だと入力欄が見えないので default に戻す。
-      setInputAreaSize(INPUT_AREA_SIZE.DEFAULT);
+      // set() を直接使い storage へは書き込まない。
+      // ユーザーが設定した inputAreaSize の永続値を上書きしないようにするため。
+      set({ inputAreaSize: INPUT_AREA_SIZE.DEFAULT });
 
       setAsTask(false);
       set({ editingPost: post, editingPostOffset: post.startOffset });

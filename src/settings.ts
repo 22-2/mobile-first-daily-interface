@@ -4,6 +4,8 @@ import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import type MFDIPlugin from "src/main";
 
+export type OpenInNewWindowMode = "disabled" | "minimized_only" | "always";
+
 export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
@@ -17,6 +19,8 @@ export interface Settings {
   fixedNoteFiles: { path: string }[];
   fullScanIntervalHours?: number;
   editorExpansionMode: "full" | "default";
+  // 投稿の編集をポップアウトウィンドウで開くタイミング
+  openInNewWindowMode: OpenInNewWindowMode;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -31,6 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
   fixedNoteFiles: [],
   fullScanIntervalHours: 24,
   editorExpansionMode: "default",
+  openInNewWindowMode: "disabled",
 };
 
 export const postFormatMap = {
@@ -175,6 +180,25 @@ export class MFDISettingTab extends PluginSettingTab {
               value as Settings["editorExpansionMode"],
             );
             this.plugin.rerenderView();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("新しいウィンドウで編集")
+      .setDesc(
+        "投稿の編集をポップアウトウィンドウで開くタイミングを設定します。「最小化時のみ」は入力エリアが最小化されているときに自動でポップアウトします。",
+      )
+      .addDropdown((tc) =>
+        tc
+          .addOption("disabled", "無効")
+          .addOption("minimized_only", "最小化時のみ")
+          .addOption("always", "常に")
+          .setValue(this.plugin.settings.openInNewWindowMode ?? "disabled")
+          .onChange(async (value) => {
+            await this.updateSetting(
+              "openInNewWindowMode",
+              value as Settings["openInNewWindowMode"],
+            );
           }),
       );
   }

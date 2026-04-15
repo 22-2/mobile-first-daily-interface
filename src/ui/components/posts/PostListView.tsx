@@ -217,6 +217,28 @@ export const PostListView: React.FC = memo(() => {
 
   const { openEditorInNewWindow } = useObsidianUi();
 
+  const { inputAreaSize } = useSettingsStore(
+    useShallow((s) => ({ inputAreaSize: s.inputAreaSize })),
+  );
+
+  // 意図: openInNewWindowMode の設定に応じて編集をポップアウトへ転送する。
+  // startEdit を直接渡すと設定変更が反映されないため、ここでラップする。
+  const handleStartEdit = useCallback(
+    (post: Post) => {
+      const mode = pluginSettings?.openInNewWindowMode ?? "disabled";
+      const shouldPopout =
+        mode === "always" ||
+        (mode === "minimized_only" && inputAreaSize === INPUT_AREA_SIZE.MINIMIZED);
+
+      if (shouldPopout) {
+        openEditorInNewWindow(post);
+        return;
+      }
+      startEdit(post);
+    },
+    [pluginSettings, inputAreaSize, openEditorInNewWindow, startEdit],
+  );
+
   const { showPostContextMenu } = usePostContextMenu({
     isReadOnly,
     capabilities,
@@ -229,7 +251,7 @@ export const PostListView: React.FC = memo(() => {
     handleHighlightSource,
     setDate,
     setDisplayMode,
-    startEdit,
+    startEdit: handleStartEdit,
     openEditorInNewWindow,
     showTextInput,
     confirmDeleteAction,
@@ -376,7 +398,7 @@ export const PostListView: React.FC = memo(() => {
                 granularity={granularity}
                 dateFilter={dateFilter}
                 isHighlighted={isEditing || isJumpHighlighted}
-                onEdit={startEdit}
+                onEdit={handleStartEdit}
                 onOpenBacklinks={openBacklinkPreviewForPost}
                 onContextMenu={showPostContextMenu}
                 isThreadFocused={item.post.id === threadFocusRootId}
