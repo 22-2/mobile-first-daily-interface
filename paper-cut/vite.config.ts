@@ -36,11 +36,11 @@ export default defineConfig(async ({ mode }) => {
         src: path.resolve(__dirname, "../src"),
         // paper-cut 内部モジュールを paper-cut/src/* で参照できるようにする
         "paper-cut/src": path.resolve(__dirname, "./src"),
-        react: "preact/compat",
-        "react-dom": "preact/compat",
-        "react-dom/client": "preact/compat/client",
-        "react-dom/test-utils": "preact/test-utils",
-        "react/jsx-runtime": "preact/jsx-runtime",
+        // react: "preact/compat",
+        // "react-dom": "preact/compat",
+        // "react-dom/client": "preact/compat/client",
+        // "react-dom/test-utils": "preact/test-utils",
+        // "react/jsx-runtime": "preact/jsx-runtime",
       },
     },
     build: {
