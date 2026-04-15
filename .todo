@@ -39,6 +39,7 @@
 - [x] 下書き周りの処理調整
 - [x] chore: inputAreaSizeをpersistするように
 - [x] enhance: 新しいウィンドウで編集オプション
-
-
+- [ ] ポップアウトビューで投稿もできるように
+- [-] ポップアウトするPostOnlyView（別にEditorOnlyでええか🥺）
+- [ ] InputAreaを更に小さくできるかもしれない（SNSみたいに、右下に投稿フローティングボタンを追加する、みたいな）
 > 下書き概念はsandboxノートでも使えるかも🤔
