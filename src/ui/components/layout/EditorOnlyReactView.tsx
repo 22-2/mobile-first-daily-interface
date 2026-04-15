@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import type { App, ItemView } from "obsidian";
 import { useLayoutEffect, useRef } from "react";
 import type { Settings } from "src/settings";
 import { PopoutInputArea } from "src/ui/components/inputarea/PopoutInputArea";
@@ -15,8 +15,10 @@ import {
 import {
   reconstructEditingPost,
 } from "src/ui/store/slices/editorSlice";
-import type { MFDIEditorView, MFDIEditorViewState } from "src/ui/view/MFDIEditorView";
+import type { MFDIEditorViewState } from "src/ui/view/MFDIEditorView";
 
+// 意図: Paper Cut など他プラグインのエディタビューからも再利用できるよう、
+// view の型を MFDIEditorView から ItemView に緩める。
 export const EditorOnlyReactView = ({
   app,
   settings,
@@ -25,7 +27,7 @@ export const EditorOnlyReactView = ({
 }: {
   app: App;
   settings: Settings;
-  view: MFDIEditorView;
+  view: ItemView;
   initialState: MFDIEditorViewState | null;
 }) => {
   // 意図: popout ウィンドウは別 JS コンテキストのため、メインビューの store を共有できない。

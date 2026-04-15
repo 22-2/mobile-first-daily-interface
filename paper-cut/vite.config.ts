@@ -30,6 +30,8 @@ export default defineConfig(async ({ mode }) => {
       alias: {
         // MFDI の共有ソースを src/* で参照できるようにする（cwd は paper-cut/）
         src: path.resolve(__dirname, "../src"),
+        // paper-cut 内部モジュールを paper-cut/src/* で参照できるようにする
+        "paper-cut/src": path.resolve(__dirname, "./src"),
         react: "preact/compat",
         "react-dom": "preact/compat",
         "react-dom/client": "preact/compat/client",

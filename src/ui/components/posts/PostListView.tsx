@@ -408,6 +408,8 @@ export const PostListView: React.FC = memo(() => {
                     post.noteDate,
                   );
                 }}
+                enabledCardView={pluginSettings?.enabledCardView}
+                allowEditingPastNotes={pluginSettings?.allowEditingPastNotes}
               />
             </Box>
           );
