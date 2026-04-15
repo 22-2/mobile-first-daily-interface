@@ -8,17 +8,9 @@ import { createStore } from "zustand/vanilla";
 
 // ---- JSON 保存形式 ----------------------------------------------------------
 //
-// ファイル全体が以下の形式になる。他のマークダウンコンテンツがある場合は
-// 最初に見つかった ```json ブロックを読み書きする。
-//
 // ```json
 // [
-//   {
-//     "id": "abc123",
-//     "message": "ポストの本文",
-//     "timestamp": "2025-01-01T12:00:00.000Z",
-//     "metadata": {}
-//   }
+//   { "id": "abc123", "message": "...", "timestamp": "2025-01-01T12:00:00.000Z", "metadata": {} }
 // ]
 // ```
 
@@ -30,7 +22,6 @@ interface JsonPostEntry {
   metadata: Record<string, string>;
 }
 
-// ファイル内の最初の ```json ブロックを抽出する
 const JSON_BLOCK_RE = /```json\r?\n([\s\S]*?)\r?\n```/;
 
 function parseEntries(content: string): JsonPostEntry[] {
@@ -50,8 +41,6 @@ function serializeBlock(entries: JsonPostEntry[]): string {
   return "```json\n" + JSON.stringify(entries, null, 2) + "\n```";
 }
 
-// ファイル内の ```json ブロックを新しい内容で置き換える。
-// ブロックが存在しない場合はファイル末尾に追記する。
 function replaceBlock(fileContent: string, entries: JsonPostEntry[]): string {
   const newBlock = serializeBlock(entries);
   if (JSON_BLOCK_RE.test(fileContent)) {
@@ -61,18 +50,14 @@ function replaceBlock(fileContent: string, entries: JsonPostEntry[]): string {
   return base.length > 0 ? base + "\n\n" + newBlock : newBlock;
 }
 
-// JsonPostEntry → Post への変換。
-// Paper Cut の固定ノートは daily note ではないため noteDate は常に「今日」。
 function toPost(entry: JsonPostEntry, path: string): Post {
   return {
-    // JSON 形式ではエントリ自身の id を直接使う（Thino の path:offset 方式は不要）
     id: entry.id,
     threadRootId: resolveThreadRootId(entry.metadata),
     timestamp: window.moment(entry.timestamp),
     noteDate: window.moment(),
     message: entry.message,
     metadata: entry.metadata,
-    // JSON 形式ではバイトオフセットは不要なため 0 で埋める
     offset: 0,
     startOffset: 0,
     endOffset: 0,
@@ -97,16 +82,27 @@ export interface PaperCutState {
   shell: ObsidianAppShell | null;
   filePath: string | null;
   posts: Post[];
+  /** ViewContent で非表示にしているポスト ID の集合（インメモリのみ、ファイルに保存しない） */
+  hiddenPostIds: ReadonlySet<string>;
   sidebarOpen: boolean;
   editingPost: Post | null;
 
   initialize: (shell: ObsidianAppShell, filePath: string) => Promise<void>;
   loadPosts: () => Promise<void>;
   addPost: (message: string) => Promise<void>;
-  reorderPosts: (fromIndex: number, toIndex: number) => Promise<void>;
+  /**
+   * 複数ポストを ID ベースで並び替える。
+   * fromIndex/toIndex ではなく ID を受け取ることで、複数選択 DnD に対応する。
+   */
+  reorderPosts: (
+    movedIds: string[],
+    targetId: string,
+    dropPosition: "before" | "after" | "on",
+  ) => Promise<void>;
   updatePost: (post: Post, newMessage: string) => Promise<void>;
   deletePost: (post: Post) => Promise<void>;
 
+  togglePostVisibility: (postId: string) => void;
   setSidebarOpen: (open: boolean) => void;
   setEditingPost: (post: Post | null) => void;
   setFilePath: (filePath: string) => void;
@@ -119,6 +115,7 @@ export function createPaperCutStore() {
     shell: null,
     filePath: null,
     posts: [],
+    hiddenPostIds: new Set<string>(),
     sidebarOpen: false,
     editingPost: null,
 
@@ -150,26 +147,36 @@ export function createPaperCutStore() {
       setTimeout(() => void get().loadPosts(), 0);
     },
 
-    async reorderPosts(fromIndex, toIndex) {
-      if (fromIndex === toIndex) return;
-
+    async reorderPosts(movedIds, targetId, dropPosition) {
       const { shell, filePath, posts } = get();
       if (!shell || !filePath) return;
+
+      const movedSet = new Set(movedIds);
+      // ターゲット自身がドラッグ対象に含まれる場合は無視する
+      if (movedSet.has(targetId)) return;
 
       const content = await shell.loadFile(filePath);
       const entries = parseEntries(content);
 
-      // ファイルと状態がずれている場合は再読み込みして終了する
       if (entries.length !== posts.length) {
         await get().loadPosts();
         return;
       }
 
-      const reordered = [...entries];
-      const [moved] = reordered.splice(fromIndex, 1);
-      reordered.splice(toIndex, 0, moved);
+      // ドラッグ対象を元の順序のまま収集し、残りから除外する
+      const movedEntries = entries.filter((e) => movedSet.has(e.id));
+      const remaining = entries.filter((e) => !movedSet.has(e.id));
 
-      await shell.writeFile(filePath, replaceBlock(content, reordered));
+      const targetIdx = remaining.findIndex((e) => e.id === targetId);
+      if (targetIdx === -1) {
+        await get().loadPosts();
+        return;
+      }
+
+      const insertAt = dropPosition === "after" ? targetIdx + 1 : targetIdx;
+      remaining.splice(insertAt, 0, ...movedEntries);
+
+      await shell.writeFile(filePath, replaceBlock(content, remaining));
       setTimeout(() => void get().loadPosts(), 0);
     },
 
@@ -200,13 +207,23 @@ export function createPaperCutStore() {
 
       const filtered = entries.filter((e) => e.id !== post.id);
       if (filtered.length === entries.length) {
-        // 見つからなかった場合は再読み込みのみ
         await get().loadPosts();
         return;
       }
 
       await shell.writeFile(filePath, replaceBlock(content, filtered));
       setTimeout(() => void get().loadPosts(), 0);
+    },
+
+    togglePostVisibility(postId) {
+      const { hiddenPostIds } = get();
+      const next = new Set(hiddenPostIds);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      set({ hiddenPostIds: next });
     },
 
     setSidebarOpen(open) {

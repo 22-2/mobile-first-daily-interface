@@ -1,2 +1,9 @@
 完全に別プロジェクトにする
 ファイルは参照するのではなく、コピーする
+
+setupFixedNoteRegistry
+setupFixedNoteViewLifecycle
+の移植
+suffixも重要
+[NAME].pc.md
+のファイルは、aroundでパッチしたファイルを開くように変更

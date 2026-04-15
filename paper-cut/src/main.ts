@@ -12,6 +12,7 @@ import {
 import { ensureFixedNote } from "src/core/fixed-note";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { showInputModal } from "src/ui/modals/InputModal";
+import { around } from "monkey-around"
 
 export default class PaperCutPlugin extends Plugin {
   settings: PaperCutSettings = { ...DEFAULT_PAPER_CUT_SETTINGS };

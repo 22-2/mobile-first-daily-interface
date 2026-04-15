@@ -5,16 +5,15 @@ import { HStack, Tag } from "src/ui/components/primitives";
 import { getPostTags } from "src/ui/utils/post-metadata";
 import type { Post } from "src/ui/types";
 
-// CardContent を使わず Card 直下に独自レイアウトを組む。
-// 理由: CardContent は timestamp ヘッダーを常に描画するため、
-//       日付非表示にするには CardContent を使えない。
 export const CardView = React.memo(
   ({
     post,
+    isSelected = false,
     onEdit,
     onContextMenu,
   }: {
     post: Post;
+    isSelected?: boolean;
     onEdit?: (post: Post) => void;
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
   }) => {
@@ -22,12 +21,12 @@ export const CardView = React.memo(
 
     return (
       <Card
-        className="min-h-[80px]"
+        // 選択中はアクセントカラーのボーダーを表示する
+        className={`min-h-[80px] ${isSelected ? "border-[var(--interactive-accent)]" : ""}`}
         onDoubleClick={() => onEdit?.(post)}
         onContextMenu={(e) => onContextMenu?.(post, e)}
       >
         <div className="flex flex-col h-full max-h-[70vh] px-[var(--size-4-2)] py-[var(--size-4-2)]">
-          {/* 本文 or プレースホルダー */}
           <div className="flex-1 text-[93%] px-1 break-words">
             {post.message.trim() ? (
               <ObsidianMarkdown content={post.message} sourcePath={post.path} />
@@ -39,7 +38,6 @@ export const CardView = React.memo(
             )}
           </div>
 
-          {/* タグフッター（タグがある場合のみ） */}
           {tags.length > 0 && (
             <HStack className="flex-wrap justify-end gap-[var(--size-2-3)] pt-[var(--size-2-2)] text-[80%] text-[var(--text-muted)]">
               {tags.map((tag) => (
