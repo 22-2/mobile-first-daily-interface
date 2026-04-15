@@ -148,6 +148,12 @@ export const createSettingsSlice: StateCreator<
   inputAreaSize: INPUT_AREA_SIZE.DEFAULT,
 
   setInputAreaSize: (size) => {
+    // 入力内容がある状態で最小化するのを防止
+    if (size === INPUT_AREA_SIZE.MINIMIZED && get().getInputValue().trim().length > 0) {
+      new Notice("編集中は最小化できません");
+      return;
+    };
+
     set({ inputAreaSize: size });
     persistValue(get(), STORAGE_KEYS.INPUT_AREA_SIZE, size);
   },
