@@ -26,7 +26,7 @@ const buildTopicMenu = (
           .onClick(() => onTopicChange(topic.id)),
       );
     });
-  menu.showAtMouseEvent(e as unknown as MouseEvent);
+  menu.showAtMouseEvent(e.nativeEvent);
 };
 
 export const TopicDisplay: FC = () => {

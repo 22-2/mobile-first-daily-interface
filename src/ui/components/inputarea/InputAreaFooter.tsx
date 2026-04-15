@@ -1,4 +1,5 @@
-import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
+import { useShallow } from "zustand/shallow";
+import { Menu } from "obsidian";
 import { memo, type FC } from "react";
 import {
   DEFAULT_EXPANSION_STYLE,
@@ -45,15 +46,6 @@ export const InputAreaFooter: FC = memo(() => {
     })),
   );
 
-  // const handleCreateDraft = useCallback(
-  //   (e: React.MouseEvent) => {
-  //     e.preventDefault();
-  //     if (!inputSnapshot.trim()) return;
-  //     addDraft(inputSnapshot);
-  //     clearInput();
-  //   },
-  //   [addDraft, inputSnapshot, clearInput],
-  // );
   const { handleSubmit } = usePostActions();
 
   return (
@@ -70,21 +62,33 @@ export const InputAreaFooter: FC = memo(() => {
           キャンセル
         </Button>
       )}
-      {/* {!isReadOnly && !editingPost && (
-              <Button
-                className="h-[2.4em]"
-                variant="ghost"
-                disabled={!inputSnapshot.trim()}
-                onClick={handleCreateDraft}
-              >
-                下書きに追加
-              </Button>
-            )} */}
       <Button
         disabled={!canSubmit}
         className="h-[2.4em]"
         variant="accent"
         onClick={handleSubmit}
+        onContextMenu={(e) => {
+          const menu = new Menu();
+          menu.showAtMouseEvent(e.nativeEvent);
+          menu.addItem((item) => {
+            item
+              .setTitle("下書きに追加")
+              .setIcon("document")
+              .onClick(() => {
+                if (!inputSnapshot.trim()) return;
+                addDraft(inputSnapshot);
+                clearInput();
+              });
+          });
+          menu.addItem((item) => {
+            item
+              .setTitle("クリア")
+              .setIcon("cross")
+              .onClick(() => {
+                clearInput();
+              });
+          });
+        }}
       >
         {isReadOnly
           ? "閲覧モード"

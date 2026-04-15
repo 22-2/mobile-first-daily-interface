@@ -233,7 +233,7 @@ export class MFDIView extends ItemView {
           .onClick(() => applySearchKindFilter({ threadOnly: true })),
       );
 
-      menu.showAtMouseEvent(e as unknown as MouseEvent);
+      menu.showAtMouseEvent(e.nativeEvent);
     });
 
     if (this.state.noteMode === "fixed") {

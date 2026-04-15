@@ -48,7 +48,7 @@ export const TaskListView: React.FC = memo(() => {
             confirmDeleteAction(() => deleteTask(task));
           }),
       );
-      menu.showAtMouseEvent(e as unknown as MouseEvent);
+      menu.showAtMouseEvent(e.nativeEvent);
     },
     [confirmDeleteAction, deleteTask, isReadOnly, openTaskInEditor],
   );

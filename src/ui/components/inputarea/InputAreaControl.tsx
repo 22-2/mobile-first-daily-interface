@@ -1,4 +1,4 @@
-import { useShallow } from "node_modules/zustand/esm/shallow.mjs";
+import { useShallow } from "zustand/shallow";
 import { memo, useCallback, useMemo, type ChangeEvent, type FC } from "react";
 import { NavButton } from "src/ui/components/common/NavButton";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";

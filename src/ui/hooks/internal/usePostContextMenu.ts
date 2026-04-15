@@ -219,7 +219,7 @@ export function usePostContextMenu({
           }),
       );
 
-      menu.showAtMouseEvent(e as unknown as MouseEvent);
+      menu.showAtMouseEvent(e.nativeEvent);
     },
     [
       archivePost,

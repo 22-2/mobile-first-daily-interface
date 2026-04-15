@@ -47,7 +47,7 @@ export const useGranularityMenu = () => {
     e.preventDefault();
     const menu = new Menu();
     addGranularityMenuItems(menu, granularity, (g) => setGranularity(g));
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
+    menu.showAtMouseEvent(e.nativeEvent);
   };
 };
 
@@ -74,7 +74,7 @@ export const useFilterMenu = () => {
       onChangeTimeFilter: (f) => setTimeFilter?.(f),
       onChangeDateFilter: (f) => setDateFilter?.(f),
     });
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
+    menu.showAtMouseEvent(e.nativeEvent);
   };
 };
 

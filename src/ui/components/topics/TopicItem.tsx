@@ -71,7 +71,7 @@ export const TopicItem = ({
       );
     }
 
-    menu.showAtMouseEvent(e as unknown as MouseEvent);
+    menu.showAtMouseEvent(e.nativeEvent);
   };
 
   return (
