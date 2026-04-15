@@ -69,7 +69,6 @@ export const InputAreaFooter: FC = memo(() => {
         onClick={handleSubmit}
         onContextMenu={(e) => {
           const menu = new Menu();
-          menu.showAtMouseEvent(e.nativeEvent);
           menu.addItem((item) => {
             item
               .setTitle("下書きに追加")
@@ -83,11 +82,12 @@ export const InputAreaFooter: FC = memo(() => {
           menu.addItem((item) => {
             item
               .setTitle("クリア")
-              .setIcon("cross")
+              .setIcon("delete")
               .onClick(() => {
                 clearInput();
               });
           });
+          menu.showAtMouseEvent(e.nativeEvent);
         }}
       >
         {isReadOnly
