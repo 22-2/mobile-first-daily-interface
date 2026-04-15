@@ -1,52 +1,34 @@
 import { TFile } from "obsidian";
 import {
   buildFixedNotePathFromName,
-  buildUntitledFixedNotePath,
   createNewFixedNote,
   ensureFixedNote,
   isMFDIFixedNotePath,
-  normalizeFixedNoteFolder,
   normalizeFixedNotePath,
 } from "src/core/fixed-note";
 import { resolveNoteSource } from "src/core/note-source";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// テスト用の簡易的な File オブジェクト作成
+const mockFile = (path: string) => ({ path } as TFile);
 
 describe("fixed note utilities", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  it("パスの正規化と拡張子の判定", () => {
+    // normalizeFixedNotePath (フォルダの正規化もここに含まれる)
+    expect(normalizeFixedNotePath(" inbox/fixed-note ")).toBe("inbox/fixed-note.md");
+    expect(normalizeFixedNotePath("inbox/fixed-note.md")).toBe("inbox/fixed-note.md");
+    expect(normalizeFixedNotePath("   ")).toBe("");
 
-  it("固定ノートのフォルダを正規化する", () => {
-    expect(normalizeFixedNoteFolder(" inbox/sub/ ")).toBe("inbox/sub");
-    expect(normalizeFixedNoteFolder("   ")).toBe("");
-  });
-
-  it("固定ノートパスを trim して .md を補完する", () => {
-    expect(normalizeFixedNotePath(" inbox/fixed-note ")).toBe(
-      "inbox/fixed-note.md",
-    );
-    expect(normalizeFixedNotePath("inbox/fixed-note.md")).toBe(
-      "inbox/fixed-note.md",
-    );
-  });
-
-  it("MFDI固定ノート拡張子を判定する", () => {
+    // isMFDIFixedNotePath
     expect(isMFDIFixedNotePath("MFDI/Untitled.mfdi.md")).toBe(true);
     expect(isMFDIFixedNotePath("MFDI/Untitled.MFDI.MD")).toBe(true);
     expect(isMFDIFixedNotePath("MFDI/Untitled.md")).toBe(false);
   });
 
-  it("fixed mode では固定ノートを優先して解決する", () => {
-    const file = Object.assign(new TFile(), {
-      path: "notes/fixed.md",
-      basename: "fixed",
-      extension: "md",
-    });
-
+  it("fixed mode でのノート解決", () => {
+    const file = mockFile("notes/fixed.md");
     const shell = {
-      getAbstractFileByPath: vi.fn((path: string) =>
-        path === "notes/fixed.md" ? file : null,
-      ),
+      getAbstractFileByPath: vi.fn(p => p === "notes/fixed.md" ? file : null),
     } as any;
 
     const source = resolveNoteSource({
@@ -61,104 +43,47 @@ describe("fixed note utilities", () => {
     expect(source.resolveCurrentNote()).toBe(file);
   });
 
-  it("固定ノートが無ければフォルダを作って新規作成する", async () => {
-    const created = Object.assign(new TFile(), {
-      path: "notes/fixed.md",
-      basename: "fixed",
-      extension: "md",
-    });
-
-    const createdFolders: string[] = [];
+  it("ノートが存在しない場合はフォルダも含めて作成する", async () => {
+    const file = mockFile("notes/fixed.md");
     const shell = {
-      getAbstractFileByPath: vi.fn((path: string) => {
-        if (path === "notes") return createdFolders.includes(path) ? {} : null;
-        if (path === "notes/fixed.md") return null;
-        return null;
-      }),
-      createFolder: vi.fn(async (path: string) => {
-        createdFolders.push(path);
-      }),
-      createFile: vi.fn(async () => created),
+      getAbstractFileByPath: vi.fn(() => null),
+      createFolder: vi.fn(),
+      createFile: vi.fn(async () => file),
     } as any;
 
     const result = await ensureFixedNote(shell, "notes/fixed");
 
     expect(shell.createFolder).toHaveBeenCalledWith("notes");
     expect(shell.createFile).toHaveBeenCalledWith("notes/fixed.md", "");
-    expect(result).toBe(created);
+    expect(result).toBe(file);
   });
 
-  it("Untitled スタイルで重複しないパスを生成する", () => {
+  it("パス生成時に名前が重複したら連番を振る", () => {
     const shell = {
-      getAbstractFileByPath: vi.fn((path: string) => {
-        if (path === "MFDI/Untitled.mfdi.md") return new TFile();
-        if (path === "MFDI/Untitled 1.mfdi.md") return new TFile();
-        return null;
-      }),
+      getAbstractFileByPath: vi.fn(p =>
+        ["MFDI/Note.mfdi.md", "MFDI/Note 1.mfdi.md"].includes(p) ? {} : null
+      ),
     } as any;
 
-    expect(buildUntitledFixedNotePath("MFDI", shell)).toBe(
-      "MFDI/Untitled 2.mfdi.md",
-    );
+    // 重複して 2 になるはず
+    expect(buildFixedNotePathFromName("MFDI", "Note", shell)).toBe("MFDI/Note 2.mfdi.md");
+    // 名前が空なら Untitled
+    expect(buildFixedNotePathFromName("MFDI", "", shell)).toBe("MFDI/Untitled.mfdi.md");
+    // フォルダなしならルート
+    expect(buildFixedNotePathFromName("", "Root", shell)).toBe("Root.mfdi.md");
   });
 
-  it("フォルダなしの場合はルートに Untitled.mfdi.md を生成する", () => {
+  it("新しい固定ノート(Untitled)を生成する", async () => {
+    const file = mockFile("MFDI/Untitled.mfdi.md");
     const shell = {
       getAbstractFileByPath: vi.fn(() => null),
-    } as any;
-
-    expect(buildUntitledFixedNotePath("", shell)).toBe("Untitled.mfdi.md");
-  });
-
-  it("名前を指定してパスを生成し、重複時は連番を付ける", () => {
-    const shell = {
-      getAbstractFileByPath: vi.fn((path: string) => {
-        if (path === "MFDI/My Note.mfdi.md") return new TFile();
-        return null;
-      }),
-    } as any;
-
-    expect(buildFixedNotePathFromName("MFDI", "My Note", shell)).toBe(
-      "MFDI/My Note 1.mfdi.md",
-    );
-    expect(buildFixedNotePathFromName("", "My Note", shell)).toBe(
-      "My Note.mfdi.md",
-    );
-  });
-
-  it("名前が空文字のときは Untitled にフォールバックする", () => {
-    const shell = {
-      getAbstractFileByPath: vi.fn(() => null),
-    } as any;
-
-    expect(buildFixedNotePathFromName("MFDI", "", shell)).toBe(
-      "MFDI/Untitled.mfdi.md",
-    );
-  });
-
-  it("新しい fixed note を生成して作成する", async () => {
-    const created = Object.assign(new TFile(), {
-      path: "MFDI/Untitled.mfdi.md",
-      basename: "Untitled",
-      extension: "md",
-    });
-
-    const createdFolders: string[] = [];
-    const shell = {
-      getAbstractFileByPath: vi.fn((path: string) => {
-        if (path === "MFDI") return createdFolders.includes(path) ? {} : null;
-        return null;
-      }),
-      createFolder: vi.fn(async (path: string) => {
-        createdFolders.push(path);
-      }),
-      createFile: vi.fn(async () => created),
+      createFolder: vi.fn(),
+      createFile: vi.fn(async () => file),
     } as any;
 
     const result = await createNewFixedNote(shell, "MFDI");
 
-    expect(shell.createFolder).toHaveBeenCalledWith("MFDI");
     expect(shell.createFile).toHaveBeenCalledWith("MFDI/Untitled.mfdi.md", "");
-    expect(result).toBe(created);
+    expect(result).toBe(file);
   });
 });

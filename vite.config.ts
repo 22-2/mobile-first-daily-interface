@@ -57,7 +57,6 @@ export default defineConfig(async ({ mode }) => {
       watch: isWatch ? { include: "src/**" } : undefined,
       cssCodeSplit: false,
       emptyOutDir: false,
-      outDir: "",
       rollupOptions: {
         input: {
           main: resolve(__dirname, "src/main.ts"),
