@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { PluginSettingTab, Setting } from "obsidian";
+import { PluginSettingTab, Setting, debounce } from "obsidian";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import type MFDIPlugin from "src/main";
@@ -45,6 +45,9 @@ export type PostFormatOption = keyof typeof postFormatMap;
 
 export class MFDISettingTab extends PluginSettingTab {
   plugin: MFDIPlugin;
+  debouncedRerender = debounce(() => {
+    this.plugin.rerenderView();
+  }, 500);
 
   constructor(app: App, plugin: MFDIPlugin) {
     super(app, plugin);
@@ -54,9 +57,23 @@ export class MFDISettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h3", { text: "🌍 全体" });
-    this.addGeneralSettings(containerEl);
+
+    new Setting(containerEl).setHeading().setName("✏️ エディタ");
+    this.addEditorSettings(containerEl);
+
+    new Setting(containerEl).setHeading().setName("🖼️ 表示");
+    this.addDisplaySettings(containerEl);
+
+    new Setting(containerEl).setHeading().setName("📝 投稿");
+    this.addPostSettings(containerEl);
+
+    new Setting(containerEl).setHeading().setName("🔍 スキャン");
+    this.addScanSettings(containerEl);
   }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
 
   private async updateSetting<K extends keyof Settings>(
     key: K,
@@ -71,7 +88,6 @@ export class MFDISettingTab extends PluginSettingTab {
     name: string,
     desc: string,
     key: keyof Settings,
-    rerenderOnChange = false,
   ): void {
     new Setting(containerEl)
       .setName(name)
@@ -81,12 +97,16 @@ export class MFDISettingTab extends PluginSettingTab {
           .setValue(Boolean(this.plugin.settings[key]))
           .onChange(async (value) => {
             await this.updateSetting(key as any, value as any);
-            if (rerenderOnChange) this.plugin.rerenderView();
+            this.debouncedRerender();
           }),
       );
   }
 
-  private addGeneralSettings(containerEl: HTMLElement): void {
+  // ---------------------------------------------------------------------------
+  // Sections
+  // ---------------------------------------------------------------------------
+
+  private addScanSettings(containerEl: HTMLElement): void {
     new Setting(containerEl)
       .setName("全体フルスキャンの間隔")
       .setDesc(
@@ -106,66 +126,12 @@ export class MFDISettingTab extends PluginSettingTab {
               "fullScanIntervalHours",
               parseInt(value, 10),
             );
+            this.debouncedRerender();
           }),
       );
+  }
 
-    new Setting(containerEl)
-      .setName("挿入位置 (文字列の後ろ)")
-      .setDesc(
-        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。",
-      )
-      .addText((tc) =>
-        tc
-          .setPlaceholder("## MFDI")
-          .setValue(this.plugin.settings.insertAfter)
-          .onChange(async (value) => {
-            await this.updateSetting("insertAfter", value);
-          }),
-      );
-
-    this.addToggleSetting(
-      containerEl,
-      "リンクのカード表示",
-      "有効にすると投稿内のリンクをリッチなカード形式で表示します。",
-      "enabledCardView",
-      true,
-    );
-
-    this.addToggleSetting(
-      containerEl,
-      "過去ノートの編集を許可",
-      "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
-      "allowEditingPastNotes",
-      true,
-    );
-
-    this.addToggleSetting(
-      containerEl,
-      "投稿のクリックでスクロールを有効化",
-      "有効にすると投稿をクリック（アクティベート）したときだけ内部がスクロール可能になります。",
-      "clickToActivateScroll",
-      false,
-    );
-
-    new Setting(containerEl)
-      .setName("更新時の日時更新ストラテジ")
-      .setDesc(
-        "編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）",
-      )
-      .addDropdown((tc) =>
-        tc
-          .addOption("never", "常に更新しない（デフォルト）")
-          .addOption("always", "常に更新する")
-          .addOption("same_day", "その日の間だけ更新する")
-          .setValue(this.plugin.settings.updateDateStrategy)
-          .onChange(async (value) => {
-            await this.updateSetting(
-              "updateDateStrategy",
-              value as Settings["updateDateStrategy"],
-            );
-          }),
-      );
-
+  private addEditorSettings(containerEl: HTMLElement): void {
     new Setting(containerEl)
       .setName("エディタの展開モード")
       .setDesc("エディタの展開モードを選択します。")
@@ -179,7 +145,7 @@ export class MFDISettingTab extends PluginSettingTab {
               "editorExpansionMode",
               value as Settings["editorExpansionMode"],
             );
-            this.plugin.rerenderView();
+            this.debouncedRerender();
           }),
       );
 
@@ -199,6 +165,67 @@ export class MFDISettingTab extends PluginSettingTab {
               "openInNewWindowMode",
               value as Settings["openInNewWindowMode"],
             );
+            this.debouncedRerender();
+          }),
+      );
+
+    this.addToggleSetting(
+      containerEl,
+      "投稿のクリックでスクロールを有効化",
+      "有効にすると投稿をクリック（アクティベート）したときだけ内部がスクロール可能になります。",
+      "clickToActivateScroll",
+    );
+  }
+
+  private addDisplaySettings(containerEl: HTMLElement): void {
+    this.addToggleSetting(
+      containerEl,
+      "リンクのカード表示",
+      "有効にすると投稿内のリンクをリッチなカード形式で表示します。",
+      "enabledCardView",
+    );
+  }
+
+  private addPostSettings(containerEl: HTMLElement): void {
+    new Setting(containerEl)
+      .setName("挿入位置 (文字列の後ろ)")
+      .setDesc(
+        "指定した文字列がファイル内にある場合、その直後に投稿内容を挿入します。空の場合はファイルの末尾に挿入します。",
+      )
+      .addText((tc) =>
+        tc
+          .setPlaceholder("## MFDI")
+          .setValue(this.plugin.settings.insertAfter)
+          .onChange(async (value) => {
+            await this.updateSetting("insertAfter", value);
+            this.debouncedRerender();
+          }),
+      );
+
+    this.addToggleSetting(
+      containerEl,
+      "過去ノートの編集を許可",
+      "有効にすると、過去日のノートも編集でき、過去投稿の dim 表示も無効になります。",
+      "allowEditingPastNotes",
+    );
+
+    new Setting(containerEl)
+      .setName("更新時の日時更新ストラテジ")
+      .setDesc(
+        "編集で更新したときに日時を更新する条件を選択します。（「その日の間だけ」は日付が変わった時点で更新されなくなります）",
+      )
+      .addDropdown((tc) =>
+        tc
+          .addOption("never", "常に更新しない（デフォルト）")
+          .addOption("always", "常に更新する")
+          .addOption("same_day", "その日の間だけ更新する")
+          .setValue(this.plugin.settings.updateDateStrategy)
+          .onChange(async (value) => {
+            await this.updateSetting(
+              "updateDateStrategy",
+              value as Settings["updateDateStrategy"],
+            );
+            this.debouncedRerender();
           }),
       );
   }
