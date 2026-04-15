@@ -30,7 +30,7 @@ export const CardContent: React.FC<BaseCardProps> = ({
 
   return (
     <Flex
-      className={`base-card flex flex-col min-h-[10vh] max-h-[70vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass}`}
+      className={`base-card flex flex-col h-full max-h-[70vh] px-[var(--size-4-2)] py-[var(--size-4-2)] ${dimClass}`}
       onContextMenu={onContextMenu}
       onDoubleClick={onDoubleClick}
     >
