@@ -12,17 +12,67 @@ import {
 } from "paper-cut/src/ui/view/PaperCutEditorView";
 import type { PersistedEditingPost } from "src/ui/store/slices/editorSlice";
 import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
-import { showInputModal } from "src/ui/modals/InputModal";
 import { Box, Flex } from "src/ui/components/primitives";
 import type { Post } from "src/ui/types";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import type { WorkspaceLeaf } from "obsidian";
 
-// Paper Cut のメインレイアウト。
-// 左（メイン）: DnD 対応カードリスト  右: サイドバーアウトライン
+// ---- ユーティリティ --------------------------------------------------------
+
+/**
+ * React Aria の dropPosition と前後の index から、
+ * splice ベースの移動先 index を計算する純粋関数。
+ */
+function resolveDropIndex(
+  fromIndex: number,
+  targetIndex: number,
+  dropPosition: "before" | "after" | "on",
+  totalLength: number,
+): number {
+  const raw =
+    dropPosition === "after"
+      ? fromIndex < targetIndex
+        ? targetIndex
+        : targetIndex + 1
+      : // "before" | "on"
+        fromIndex > targetIndex
+        ? targetIndex
+        : targetIndex - 1;
+
+  return Math.max(0, Math.min(totalLength - 1, raw));
+}
+
+/**
+ * Obsidian デスクトップ専用の openPopoutLeaf を安全に呼び出す。
+ * モバイル等で存在しない場合は null を返す。
+ */
+function tryOpenPopoutLeaf(
+  workspace: import("obsidian").Workspace,
+): WorkspaceLeaf | null {
+  const open = (
+    workspace as unknown as { openPopoutLeaf?: () => WorkspaceLeaf }
+  ).openPopoutLeaf;
+  return open ? open.call(workspace) : null;
+}
+
+// ---- サブコンポーネント -----------------------------------------------------
+
+const EmptyState = () => (
+  <Box className="text-[var(--text-muted)] text-sm p-4">
+    ポストがありません。右下の＋ボタンから追加してください。
+  </Box>
+);
+
+// ---- メインコンポーネント ---------------------------------------------------
+
+/**
+ * Paper Cut のメインレイアウト。
+ * 左（メイン）: DnD 対応カードリスト  右: サイドバーアウトライン
+ */
 export const PaperCutViewContent = ({
   containerEl,
 }: {
-  // サイドバートグルカスタムイベントを受け取るために Obsidian の containerEl を渡す
+  /** サイドバートグルカスタムイベントを受け取るために Obsidian の containerEl を渡す */
   containerEl?: HTMLElement;
 }) => {
   const store = useCurrentPaperCutStore();
@@ -33,37 +83,34 @@ export const PaperCutViewContent = ({
   // Obsidian の addAction から発火する toggle-sidebar イベントを購読する
   useEffect(() => {
     if (!containerEl) return;
-    const handler = () => store.getState().setSidebarOpen(!store.getState().sidebarOpen);
+    const handler = () =>
+      store.getState().setSidebarOpen(!store.getState().sidebarOpen);
     containerEl.addEventListener("paper-cut:toggle-sidebar", handler);
-    return () => containerEl.removeEventListener("paper-cut:toggle-sidebar", handler);
+    return () =>
+      containerEl.removeEventListener("paper-cut:toggle-sidebar", handler);
   }, [containerEl, store]);
 
   // React Aria の DnD フック
   const { dragAndDropHooks } = useDragAndDrop({
     getItems: (keys) =>
       [...keys].map((key) => ({
-        "text/plain":
-          posts.find((p) => p.id === String(key))?.message ?? "",
+        "text/plain": posts.find((p) => p.id === String(key))?.message ?? "",
       })),
     onReorder(e) {
       const movedKey = [...e.keys][0] as Key | undefined;
       if (movedKey == null) return;
+
       const fromIndex = posts.findIndex((p) => p.id === String(movedKey));
-      const targetIndex = posts.findIndex(
-        (p) => p.id === String(e.target.key),
-      );
+      const targetIndex = posts.findIndex((p) => p.id === String(e.target.key));
       if (fromIndex === -1 || targetIndex === -1) return;
 
-      // dropPosition を splice ベースの toIndex に変換する
-      let finalPos: number;
-      if (e.target.dropPosition === "after") {
-        finalPos = fromIndex < targetIndex ? targetIndex : targetIndex + 1;
-      } else {
-        // "before" or "on"
-        finalPos = fromIndex > targetIndex ? targetIndex : targetIndex - 1;
-      }
-      finalPos = Math.max(0, Math.min(posts.length - 1, finalPos));
-      void store.getState().reorderPosts(fromIndex, finalPos);
+      const toIndex = resolveDropIndex(
+        fromIndex,
+        targetIndex,
+        e.target.dropPosition,
+        posts.length,
+      );
+      void store.getState().reorderPosts(fromIndex, toIndex);
     },
   });
 
@@ -73,17 +120,9 @@ export const PaperCutViewContent = ({
       const shell = store.getState().shell;
       if (!shell) return;
 
-      const app = shell.getRawApp();
-      // 意図: openPopoutLeaf は Obsidian デスクトップ専用 API のため型定義にない。
-      //        存在しない環境（モバイル等）では何もしない。
-      const openPopout = (
-        app.workspace as unknown as {
-          openPopoutLeaf?: () => import("obsidian").WorkspaceLeaf;
-        }
-      ).openPopoutLeaf;
-      if (!openPopout) return;
+      const leaf = tryOpenPopoutLeaf(shell.getRawApp().workspace);
+      if (!leaf) return;
 
-      const leaf = openPopout.call(app.workspace);
       const postInfo: PersistedEditingPost = {
         id: post.id,
         path: post.path,
@@ -93,10 +132,8 @@ export const PaperCutViewContent = ({
         offset: post.startOffset,
         granularity: "day",
       };
-      const state: PaperCutEditorViewState = {
-        postInfo,
-        message: post.message,
-      };
+      const state: PaperCutEditorViewState = { postInfo, message: post.message };
+
       void leaf.setViewState({
         type: VIEW_TYPE_PAPER_CUT_EDITOR,
         active: true,
@@ -108,14 +145,16 @@ export const PaperCutViewContent = ({
 
   // サイドバーのアイテムクリック → メインリストの該当カードへスクロール
   const handleSidebarSelect = useCallback((post: Post) => {
-    const el = scrollRef.current?.querySelector(`[data-post-id="${post.id}"]`);
-    el?.scrollIntoView({ behavior: "instant", block: "start" });
+    scrollRef.current
+      ?.querySelector(`[data-post-id="${post.id}"]`)
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
   }, []);
 
   // FloatingButton でポスト追加
-  const handleAddPost = useCallback(async () => {
-    await store.getState().addPost("");
-  }, [store]);
+  const handleAddPost = useCallback(
+    () => store.getState().addPost(""),
+    [store],
+  );
 
   return (
     <Flex className="h-full w-full overflow-hidden relative">
@@ -125,17 +164,15 @@ export const PaperCutViewContent = ({
         ref={scrollRef as React.RefObject<HTMLDivElement>}
       >
         {posts.length === 0 ? (
-          <Box className="text-[var(--text-muted)] text-sm p-4">
-            ポストがありません。右下の＋ボタンから追加してください。
-          </Box>
+          <EmptyState />
         ) : (
           <ListBox
+            aria-label="ポスト一覧"
             className="flex flex-col gap-[2px] flex-grow overflow-y-auto overflow-x-hidden px-2 py-2 outline-none"
             dragAndDropHooks={dragAndDropHooks}
             items={posts}
-            // 意図: Paper Cut ではカード選択機能は不要（MVP では省略）
+            // Paper Cut ではカード選択機能は不要（MVP では省略）
             selectionMode="none"
-            aria-label="ポスト一覧"
           >
             {(post) => (
               <ListBoxItem
@@ -146,10 +183,7 @@ export const PaperCutViewContent = ({
               >
                 {/* data-post-id でサイドバーからのスクロールターゲットにする */}
                 <div data-post-id={post.id}>
-                  <PaperCutCardView
-                    post={post}
-                    onEdit={handleEdit}
-                  />
+                  <PaperCutCardView post={post} onEdit={handleEdit} />
                 </div>
               </ListBoxItem>
             )}
