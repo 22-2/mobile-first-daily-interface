@@ -53,7 +53,7 @@ export class PaperCutView extends ItemView {
     this.shell = new ObsidianAppShell(this.app);
 
     // サイドバートグルアクション
-    this.addAction("layout-sidebar-right", "サイドバーを切り替え", () => {
+    this.addAction("columns-2", "サイドバーを切り替え", () => {
       // PaperCutStoreへのアクセスは React 側で行うため、
       // カスタムイベントを dispatch してサイドバーの開閉を通知する
       this.containerEl.dispatchEvent(
@@ -88,6 +88,7 @@ export class PaperCutView extends ItemView {
         shell={this.shell}
         filePath={this.state.filePath}
         containerEl={this.containerEl}
+        view={this}
       />,
     );
   }

@@ -2,8 +2,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
-import { defineConfig, loadEnv, type UserConfig } from "vite";
-import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
+import { defineConfig, loadEnv, type Plugin, type UserConfig } from "vite";
+import { obsidianViteCopyPlugin } from "../vite.plugins";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
@@ -20,7 +20,7 @@ export default defineConfig(async ({ mode }) => {
       // PostCSS + @source 指定に頼らず確実に全クラスを収集できる
       tailwindcss(),
       react(),
-      onMyPc && obsidianCopyPlugin({
+      onMyPc && obsidianViteCopyPlugin({
         pluginsDir: [
           "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
           "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",

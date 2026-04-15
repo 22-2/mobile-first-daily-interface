@@ -84,6 +84,9 @@ export function createPaperCutStore() {
     },
 
     async addPost(message) {
+      // 空白のみのメッセージは Thino エントリとして解析されないため弾く
+      if (!message.trim()) return;
+
       const { shell, filePath } = get();
       if (!shell || !filePath) return;
 
@@ -95,7 +98,13 @@ export function createPaperCutStore() {
       // 末尾の改行を確認して1行以内の空行に正規化してから追記する
       const base = content.endsWith("\n") ? content : content + "\n";
       await shell.writeFile(filePath, base + entryText);
-      await get().loadPosts();
+
+      // 意図: loadPosts() を React クリックハンドラの呼び出しスタック内で await すると、
+      //        preact が Obsidian の read-only な DOM プロパティ（previousSibling 等）に
+      //        書き込もうとして TypeError が発生する。
+      //        vault.on('modify') ウォッチャーが非同期でリロードするため、
+      //        ここでは次の event loop ティックへ逃がすだけでよい。
+      setTimeout(() => void get().loadPosts(), 0);
     },
 
     async reorderPosts(fromIndex, toIndex) {
@@ -128,7 +137,7 @@ export function createPaperCutStore() {
 
       const newContent = preamble + reordered.join("");
       await shell.writeFile(filePath, newContent);
-      await get().loadPosts();
+      setTimeout(() => void get().loadPosts(), 0);
     },
 
     async updatePost(post, newMessage) {
@@ -158,7 +167,7 @@ export function createPaperCutStore() {
         latest.metadata,
       );
       await shell.replaceRange(filePath, latest.startOffset, latest.endOffset, newText);
-      await get().loadPosts();
+      setTimeout(() => void get().loadPosts(), 0);
     },
 
     async deletePost(post) {
@@ -177,7 +186,7 @@ export function createPaperCutStore() {
       }
 
       await shell.replaceRange(filePath, target.startOffset, target.endOffset, "");
-      await get().loadPosts();
+      setTimeout(() => void get().loadPosts(), 0);
     },
 
     setSidebarOpen(open) {

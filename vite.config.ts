@@ -4,7 +4,7 @@ import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 import analyzer from "vite-bundle-analyzer";
 import inspect from "vite-plugin-inspect";
-import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
+import { obsidianViteCopyPlugin } from "./vite.plugins";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
@@ -23,12 +23,13 @@ export default defineConfig(async ({ mode }) => {
       isAnalyze && analyzer(),
       react(),
       // reactCompilerPreset(),
-      onMyPc && obsidianCopyPlugin({
+      onMyPc && obsidianViteCopyPlugin({
         pluginsDir: [
           "C:/Users/17890/AppData/Roaming/obsidian/Obsidian Sandbox/.obsidian/plugins",
           "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
           "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
         ],
+        targetDirName: "mobile-first-daily-interface",
         force: true,
       }),
     ],

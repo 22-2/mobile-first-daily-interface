@@ -16,6 +16,7 @@ export const PaperCutCardView = React.memo(
     onContextMenu?: (post: Post, e: React.MouseEvent) => void;
   }) => (
     <PostCard
+      className="min-h-[100px]"
       message={post.message}
       sourcePath={post.path}
       timestamp={post.timestamp}

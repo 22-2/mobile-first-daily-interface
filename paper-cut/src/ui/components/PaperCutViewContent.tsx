@@ -15,6 +15,7 @@ import { FloatingButton } from "src/ui/components/primitives/FloatingButton";
 import { showInputModal } from "src/ui/modals/InputModal";
 import { Box, Flex } from "src/ui/components/primitives";
 import type { Post } from "src/ui/types";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 
 // Paper Cut のメインレイアウト。
 // 左（メイン）: DnD 対応カードリスト  右: サイドバーアウトライン
@@ -108,21 +109,12 @@ export const PaperCutViewContent = ({
   // サイドバーのアイテムクリック → メインリストの該当カードへスクロール
   const handleSidebarSelect = useCallback((post: Post) => {
     const el = scrollRef.current?.querySelector(`[data-post-id="${post.id}"]`);
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    el?.scrollIntoView({ behavior: "instant", block: "start" });
   }, []);
 
   // FloatingButton でポスト追加
   const handleAddPost = useCallback(async () => {
-    const shell = store.getState().shell;
-    if (!shell) return;
-
-    const message = await showInputModal(shell.getRawApp(), {
-      title: "新しいポストを追加",
-      placeholder: "テキストを入力...",
-    });
-    if (!message) return;
-
-    await store.getState().addPost(message);
+    await store.getState().addPost("");
   }, [store]);
 
   return (
@@ -165,7 +157,9 @@ export const PaperCutViewContent = ({
         )}
 
         {/* ポスト追加ボタン */}
-        <FloatingButton visible onClick={() => void handleAddPost()} />
+        <FloatingButton visible onClick={() => void handleAddPost()}>
+          <ObsidianIcon name="plus" className="text-[var(--text-on-accent)]" />
+        </FloatingButton>
       </Flex>
 
       {/* 右サイドバー（アウトライン） */}

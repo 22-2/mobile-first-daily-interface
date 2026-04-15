@@ -1,6 +1,8 @@
 import type { App, TAbstractFile } from "obsidian";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { AppContextProvider } from "src/ui/context/AppContext";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { DEFAULT_SETTINGS } from "src/settings";
 import { PaperCutViewContent } from "paper-cut/src/ui/components/PaperCutViewContent";
 import {
   createPaperCutStore,
@@ -10,17 +12,21 @@ import {
   PaperCutStoreProvider,
   useCurrentPaperCutStore,
 } from "paper-cut/src/ui/store/PaperCutStoreContext";
+import { ComponentContextProvider } from "src/ui/context/ComponentContext";
+import type { PaperCutView } from "paper-cut/src/ui/view/PaperCutView";
 
 export const PaperCutReactView = ({
   app,
   shell,
   filePath,
   containerEl,
+  view,
 }: {
   app: App;
   shell: ObsidianAppShell;
   filePath: string | null;
   containerEl?: HTMLElement;
+  view: PaperCutView,
 }) => {
   // ビューごとに独立したストアを生成する（MFDI の ReactView と同パターン）
   const storeRef = useRef<PaperCutStore | null>(null);
@@ -29,11 +35,15 @@ export const PaperCutReactView = ({
   }
 
   return (
-    <PaperCutStoreProvider store={storeRef.current}>
-      <PaperCutAppRoot shell={shell} filePath={filePath} containerEl={containerEl}>
-        <PaperCutViewContent containerEl={containerEl} />
-      </PaperCutAppRoot>
-    </PaperCutStoreProvider>
+    <ComponentContextProvider component={view}>
+    <AppContextProvider app={app} settings={DEFAULT_SETTINGS}>
+      <PaperCutStoreProvider store={storeRef.current}>
+        <PaperCutAppRoot shell={shell} filePath={filePath} containerEl={containerEl}>
+          <PaperCutViewContent containerEl={containerEl} />
+        </PaperCutAppRoot>
+      </PaperCutStoreProvider>
+    </AppContextProvider>
+    </ComponentContextProvider>
   );
 };
 
