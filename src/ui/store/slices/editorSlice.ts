@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from "src/ui/config/consntants";
+import { INPUT_AREA_SIZE, STORAGE_KEYS } from "src/ui/config/consntants";
 import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
@@ -130,7 +130,9 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     startEdit: (post) => {
-      const { date, granularity, setAsTask, replaceInput, storage } = get();
+      const { date, granularity, setAsTask, setInputAreaSize, replaceInput, storage } = get();
+      // 意図: 編集開始時に minimized だと入力欄が見えないので default に戻す。
+      setInputAreaSize(INPUT_AREA_SIZE.DEFAULT);
 
       setAsTask(false);
       set({ editingPost: post, editingPostOffset: post.startOffset });
