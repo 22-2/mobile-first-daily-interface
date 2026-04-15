@@ -5,7 +5,7 @@ import {
   DEFAULT_EXPANSION_STYLE,
   FULL_EXPANSION_STYLE,
 } from "src/ui/components/inputarea/constants";
-import { Button, HStack } from "src/ui/components/primitives";
+import { Box, Button, HStack } from "src/ui/components/primitives";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
@@ -59,6 +59,13 @@ export const InputAreaFooter: FC = memo(() => {
             : DEFAULT_EXPANSION_STYLE}
         </style>
       )}
+
+      {inputSnapshot.length > 0 && (
+        <Box className="text-xs text-[var(--text-muted)]">
+          {inputSnapshot.length} chars
+        </Box>
+      )}
+
       {editingPost && (
         <Button className="h-[2.4em]" variant="ghost" onClick={cancelEdit}>
           キャンセル
