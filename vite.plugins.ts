@@ -28,7 +28,8 @@ export function obsidianViteCopyPlugin(options: {
     },
 
     async closeBundle() {
-      const outDir = config.build.outDir;
+      const outDir = path.resolve(config.root, config.build.outDir);
+      const rootDir = config.root;
       const targetDirs = Array.isArray(pluginsDir) ? pluginsDir : [pluginsDir];
 
       for (const baseDir of targetDirs) {
@@ -43,14 +44,26 @@ export function obsidianViteCopyPlugin(options: {
 
           // 2. 各ファイルのコピー
           for (const fileName of files) {
-            const sourceFile = path.resolve(outDir, fileName);
+            const outDirFile = path.resolve(outDir, fileName);
+            const rootDirFile = path.resolve(rootDir, fileName);
             const destinationFile = path.join(targetPath, fileName);
 
-            if (existsSync(sourceFile)) {
+            let sourceFile: string | null = null;
+
+            // まず outDir を探し、無ければ rootDir を探す
+            if (existsSync(outDirFile)) {
+              sourceFile = outDirFile;
+            } else if (existsSync(rootDirFile)) {
+              sourceFile = rootDirFile;
+            }
+
+            if (sourceFile) {
               await fs.copyFile(sourceFile, destinationFile);
-              console.log(`\x1b[36m[obsidian-copy] Copied: ${fileName} to ${targetPath}\x1b[0m`);
+              const origin = sourceFile === outDirFile ? "outDir" : "root";
+              console.log(`\x1b[36m[obsidian-copy] Copied: ${fileName} (from ${origin}) to ${targetPath}\x1b[0m`);
             } else {
-              console.warn(`[obsidian-copy] Warning: Source file not found: ${fileName}`);
+              // manifest.json など、必須ファイルが見つからない場合のみ警告を出すようにしてもいいっすね
+              console.warn(`[obsidian-copy] Warning: Source file not found in outDir or root: ${fileName}`);
             }
           }
 

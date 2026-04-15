@@ -50,7 +50,6 @@ export default defineConfig(async ({ mode }) => {
         fileName: () => "main.js",
         formats: ["cjs"],
       },
-      outDir: "./",
       minify: isProd,
       sourcemap: isProd ? false : "inline",
       // watchモード時はRollupのwatch設定を渡す
