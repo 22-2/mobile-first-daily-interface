@@ -72,7 +72,7 @@ export const InputAreaFooter: FC = memo(() => {
           menu.addItem((item) => {
             item
               .setTitle("下書きに追加")
-              .setIcon("document")
+              .setIcon("square-pen")
               .setDisabled(!inputSnapshot.trim())
               .onClick(() => {
                 if (!inputSnapshot.trim()) return;
