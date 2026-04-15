@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import { Box } from "src/ui/components/primitives";
 
+interface ReadMoreContext {
+  isOverflowing: boolean;
+  expanded: boolean;
+}
+
 interface ReadMoreContentProps {
   // 行数超過の判定・切り詰めに使うテキスト。呼び出し元が持っている生テキストを渡す。
   text: string;
   // 「続きを読む」を表示する行数の閾値。
   threshold?: number;
-  // 表示するテキストを受け取りコンテンツを返すレンダー関数。
-  children: (displayText: string) => React.ReactNode;
+  // 表示するテキストを受け取りコンテキストを返すレンダー関数。
+  children: (displayText: string, context: ReadMoreContext) => React.ReactNode;
 }
 
 export const ReadMoreContent: React.FC<ReadMoreContentProps> = ({
@@ -27,7 +32,10 @@ export const ReadMoreContent: React.FC<ReadMoreContentProps> = ({
 
   return (
     <>
-      {children(displayText)}
+      {children(displayText, {
+        isOverflowing,
+        expanded,
+      })}
 
       {/* 行数超過時の「続きを読む」ボタン。展開後は非表示。 */}
       {isOverflowing && !expanded && (
