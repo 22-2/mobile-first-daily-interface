@@ -4,7 +4,7 @@ import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
 import analyzer from "vite-bundle-analyzer";
 import inspect from "vite-plugin-inspect";
-import { obsidianCopyPlugin } from "./vite.plugins";
+import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;

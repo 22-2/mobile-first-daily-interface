@@ -4,7 +4,8 @@ import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { PaperCutReactView } from "paper-cut/src/ui/components/layout/PaperCutReactView";
-import "src/ui/styles/global.css";
+// paper-cut 専用 CSS — @source で paper-cut/src/ と MFDI src/ を両方スキャンする
+import "paper-cut/src/ui/styles/global.css";
 
 export const VIEW_TYPE_PAPER_CUT = "paper-cut-view";
 

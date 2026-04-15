@@ -1,9 +1,9 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { builtinModules } from "module";
 import path from "path";
 import { defineConfig, loadEnv, type UserConfig } from "vite";
-// ルートの vite.plugins.ts を共有利用する
-import { obsidianCopyPlugin } from "../vite.plugins";
+import { obsidianCopyPlugin } from "@22-2/esbuild-plugin-obsidian-copy";
 
 export default defineConfig(async ({ mode }) => {
   const { resolve } = path;
@@ -16,6 +16,9 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     plugins: [
+      // @tailwindcss/vite は Vite の module graph を直接スキャンするため、
+      // PostCSS + @source 指定に頼らず確実に全クラスを収集できる
+      tailwindcss(),
       react(),
       onMyPc && obsidianCopyPlugin({
         pluginsDir: [
@@ -23,6 +26,7 @@ export default defineConfig(async ({ mode }) => {
           "E:/AppData/obsidian/vaults/suizen/.obsidian/plugins",
           "G:/マイドライブ/documents/obsidian/vaults/sagyosen/.obsidian/plugins",
         ],
+        targetDirName: "paper-cut",
         force: true,
       }),
     ],
