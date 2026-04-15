@@ -2,9 +2,9 @@ import { type WorkspaceLeaf, Plugin } from "obsidian";
 import type { PaperCutSettings } from "paper-cut/src/settings";
 import { DEFAULT_PAPER_CUT_SETTINGS } from "paper-cut/src/settings";
 import {
-  PaperCutEditorView,
+  EditorView,
   VIEW_TYPE_PAPER_CUT_EDITOR,
-} from "paper-cut/src/ui/view/PaperCutEditorView";
+} from "paper-cut/src/ui/view/EditorView";
 import {
   PaperCutView,
   VIEW_TYPE_PAPER_CUT,
@@ -30,7 +30,7 @@ export default class PaperCutPlugin extends Plugin {
       );
       this.registerView(
         VIEW_TYPE_PAPER_CUT_EDITOR,
-        (leaf) => new PaperCutEditorView(leaf),
+        (leaf) => new EditorView(leaf),
       );
 
       // リボンアイコン

@@ -1,9 +1,8 @@
-import type { App, TAbstractFile } from "obsidian";
+import type { TAbstractFile } from "obsidian";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { AppContextProvider } from "src/ui/context/AppContext";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { DEFAULT_SETTINGS } from "src/settings";
-import { PaperCutViewContent } from "paper-cut/src/ui/components/PaperCutViewContent";
+import { PaperCutContextProviders } from "paper-cut/src/ui/context/PaperCutContextProviders";
+import { ViewContent } from "paper-cut/src/ui/components/ViewContent";
 import {
   createPaperCutStore,
   type PaperCutStore,
@@ -12,21 +11,19 @@ import {
   PaperCutStoreProvider,
   useCurrentPaperCutStore,
 } from "paper-cut/src/ui/store/PaperCutStoreContext";
-import { ComponentContextProvider } from "src/ui/context/ComponentContext";
 import type { PaperCutView } from "paper-cut/src/ui/view/PaperCutView";
 
-export const PaperCutReactView = ({
-  app,
+export const ReactView = ({
   shell,
   filePath,
   containerEl,
   view,
 }: {
-  app: App;
+  // app は不要。AppContextProvider を使わないため PaperCutView.shell をそのまま渡す。
   shell: ObsidianAppShell;
   filePath: string | null;
   containerEl?: HTMLElement;
-  view: PaperCutView,
+  view: PaperCutView;
 }) => {
   // ビューごとに独立したストアを生成する（MFDI の ReactView と同パターン）
   const storeRef = useRef<PaperCutStore | null>(null);
@@ -35,20 +32,18 @@ export const PaperCutReactView = ({
   }
 
   return (
-    <ComponentContextProvider component={view}>
-    <AppContextProvider app={app} settings={DEFAULT_SETTINGS}>
+    <PaperCutContextProviders shell={shell} view={view}>
       <PaperCutStoreProvider store={storeRef.current}>
         <PaperCutAppRoot shell={shell} filePath={filePath} containerEl={containerEl}>
-          <PaperCutViewContent containerEl={containerEl} />
+          <ViewContent containerEl={containerEl} />
         </PaperCutAppRoot>
       </PaperCutStoreProvider>
-    </AppContextProvider>
-    </ComponentContextProvider>
+    </PaperCutContextProviders>
   );
 };
 
 // 意図: ストアの初期化とファイル監視を、ストアが確実にコンテキストに存在する状態で行うため、
-//        PaperCutReactView の子コンポーネントとして定義する。
+//        ReactView の子コンポーネントとして定義する。
 const PaperCutAppRoot = ({
   shell,
   filePath,

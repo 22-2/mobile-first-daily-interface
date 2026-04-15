@@ -9,14 +9,14 @@ import "src/ui/styles/global.css";
 export const VIEW_TYPE_PAPER_CUT_EDITOR = "paper-cut-editor-view";
 
 // MFDIEditorViewState と同一の形式を使い回す
-export type PaperCutEditorViewState = MFDIEditorViewState;
+export type EditorViewState = MFDIEditorViewState;
 
 // Paper Cut のポップアウトエディタ ItemView。
 // EditorOnlyReactView（MFDI 資産）をそのまま再利用する。
 // settings は Paper Cut 固有のものを持たないため、MFDI の DEFAULT_SETTINGS を利用する。
-export class PaperCutEditorView extends ItemView {
+export class EditorView extends ItemView {
   private root: Root | null = null;
-  private state: PaperCutEditorViewState | null = null;
+  private state: EditorViewState | null = null;
   // popout ウィンドウでは navigation ヘッダが不要
   public navigation: boolean = false;
 
@@ -43,13 +43,13 @@ export class PaperCutEditorView extends ItemView {
     this.root = null;
   }
 
-  async setState(state: PaperCutEditorViewState): Promise<void> {
+  async setState(state: EditorViewState): Promise<void> {
     this.state = state;
     this.setupView();
   }
 
-  getState(): PaperCutEditorViewState {
-    return this.state ?? ({} as PaperCutEditorViewState);
+  getState(): EditorViewState {
+    return this.state ?? ({} as EditorViewState);
   }
 
   private setupView(): void {

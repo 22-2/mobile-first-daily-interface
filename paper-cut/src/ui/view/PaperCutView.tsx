@@ -3,7 +3,7 @@ import { ItemView } from "obsidian";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { ObsidianAppShell } from "src/shell/obsidian-shell";
-import { PaperCutReactView } from "paper-cut/src/ui/components/layout/PaperCutReactView";
+import { ReactView } from "paper-cut/src/ui/components/layout/ReactView";
 // paper-cut 専用 CSS — @source で paper-cut/src/ と MFDI src/ を両方スキャンする
 import "paper-cut/src/ui/styles/global.css";
 
@@ -83,8 +83,7 @@ export class PaperCutView extends ItemView {
       this.root = createRoot(this.containerEl.children[1]);
     }
     this.root.render(
-      <PaperCutReactView
-        app={this.app}
+      <ReactView
         shell={this.shell}
         filePath={this.state.filePath}
         containerEl={this.containerEl}

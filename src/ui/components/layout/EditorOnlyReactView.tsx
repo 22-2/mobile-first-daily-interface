@@ -12,9 +12,7 @@ import {
   useCurrentAppStore,
   type AppStoreApi,
 } from "src/ui/store/appStore";
-import {
-  reconstructEditingPost,
-} from "src/ui/store/slices/editorSlice";
+import { reconstructEditingPost } from "src/ui/store/slices/editorSlice";
 import type { MFDIEditorViewState } from "src/ui/view/MFDIEditorView";
 
 // 意図: Paper Cut など他プラグインのエディタビューからも再利用できるよう、
