@@ -51,7 +51,7 @@ export const InputAreaFooter: FC = memo(() => {
   const { handleSubmit } = usePostActions();
 
   return (
-    <HStack className="mfdi-input-area-footer justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em]">
+    <HStack className="mfdi-input-area-footer justify-end items-center py-[0.5em] pb-[1em] mr-[1.2em] gap-[0.5em]">
       {isMaximized && (
         <style>
           {editorExpansionMode === "full"
