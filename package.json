@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
+    "dev:pc": "cd paper-cut && vite build --watch",
+    "build:pc": "cd paper-cut && vite build",
     "build:analyze": "vite build -- --analyze",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "test": "vitest run",

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      // paper-cut 側のソースは相対パスのまま
+      // MFDI 共有ソースを src/* で参照できるようにする
+      "src/*": ["../src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../src/**/*.ts", "../src/**/*.tsx"],
+  "exclude": ["node_modules"]
+}
