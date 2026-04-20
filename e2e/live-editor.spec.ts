@@ -10,7 +10,9 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PLUGIN_PATH = path.join(__dirname, "./dist");
+// CI/build places plugin output at repository root `dist/`.
+// Use parent path so e2e tests find the built plugin in CI.
+const PLUGIN_PATH = path.join(__dirname, "../dist");
 const HOST_FILE_PATH = "mfdi-e2e-host.md";
 
 test.use({

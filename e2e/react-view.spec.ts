@@ -7,7 +7,7 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PLUGIN_PATH = path.join(__dirname, "./dist");
+const PLUGIN_PATH = path.join(__dirname, "../dist");
 const HOST_FILE_PATH = "mfdi-e2e-react-host.md";
 
 test.use({
