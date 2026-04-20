@@ -3,7 +3,7 @@ import React from "react";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import moment from "moment";
-import { useFocusPosts } from "./useFocusPosts";
+import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
 
 interface MockSettingsState {
   activeTopic: string;
