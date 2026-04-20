@@ -6,8 +6,11 @@ import { createStorageKey, getStorageKeyPrefix } from "src/core/storage";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { MFDIView } from "src/ui/view/MFDIView";
+import { fileURLToPath } from "url"
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const PLUGIN_PATH = path.resolve(".");
+const PLUGIN_PATH = path.join(__dirname, "./dist");
 const HOST_FILE_PATH = "mfdi-e2e-host.md";
 
 test.use({

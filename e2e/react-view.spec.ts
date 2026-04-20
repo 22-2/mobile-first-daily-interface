@@ -3,8 +3,11 @@ import path from "node:path";
 import type { ObsidianAPI } from "obsidian-e2e-toolkit";
 import { expect, test } from "obsidian-e2e-toolkit";
 import type { MFDIView } from "src/ui/view/MFDIView";
+import { fileURLToPath } from "url"
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const PLUGIN_PATH = path.resolve(".");
+const PLUGIN_PATH = path.join(__dirname, "./dist");
 const HOST_FILE_PATH = "mfdi-e2e-react-host.md";
 
 test.use({
