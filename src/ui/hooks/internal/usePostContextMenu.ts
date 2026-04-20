@@ -153,14 +153,16 @@ export function usePostContextMenu({
 
       menu.addSeparator();
 
-      menu.addItem((item) =>
-        item
-          .setTitle("投稿にジャンプ")
-          .setIcon("clock")
-          .onClick(() => {
-            handleHighlightPost(post);
-          }),
-      );
+      if (capabilities.supportsDateNavigation) {
+        menu.addItem((item) =>
+          item
+            .setTitle("投稿にジャンプ")
+            .setIcon("clock")
+            .onClick(() => {
+              handleHighlightPost(post);
+            }),
+        );
+      }
 
       menu.addItem((item) =>
         item
