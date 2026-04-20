@@ -21,7 +21,7 @@ describe("MFDI view state", () => {
   it("fixed note view state を focus ベースで構築する", () => {
     expect(createFixedNoteViewState("Inbox.md")).toMatchObject({
       noteMode: "fixed",
-      fixedNotePath: "Inbox.md",
+      file: "Inbox.md",
       displayMode: "focus",
       dateFilter: "all",
       timeFilter: "all",
@@ -31,18 +31,18 @@ describe("MFDI view state", () => {
   it("note mode ごとの既定 dateFilter を一元管理する", () => {
     expect(createDefaultMFDIViewState()).toMatchObject({
       noteMode: "periodic",
-      fixedNotePath: null,
+      file: null,
       dateFilter: "today",
     });
 
     expect(
       createDefaultMFDIViewState({
         noteMode: "fixed",
-        fixedNotePath: "Inbox.md",
+        file: "Inbox.md",
       }),
     ).toMatchObject({
       noteMode: "fixed",
-      fixedNotePath: "Inbox.md",
+      file: "Inbox.md",
       dateFilter: "all",
     });
   });

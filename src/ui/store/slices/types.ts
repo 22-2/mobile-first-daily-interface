@@ -20,13 +20,13 @@ export interface EnvironmentSlice {
   storage: MFDIStorage | null;
   pluginSettings: Settings | null;
   viewNoteMode: MFDINoteMode;
-  fixedNotePath: string | null;
+  file: string | null;
   setAppDependencies: (shell: ObsidianAppShell) => void;
   setStorage: (storage: MFDIStorage) => void;
   setPluginSettings: (settings: Settings) => void;
   setViewContext: (params: {
     noteMode: MFDINoteMode;
-    fixedNotePath: string | null;
+    file: string | null;
   }) => void;
   initializeAppStore: (params: {
     shell: ObsidianAppShell;

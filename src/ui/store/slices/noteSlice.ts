@@ -21,7 +21,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       getEffectiveDate,
       currentDailyNote,
       viewNoteMode,
-      fixedNotePath,
+      file: file,
     } = get();
     const noteSource = resolveNoteSource({
       shell,
@@ -29,7 +29,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       granularity,
       activeTopic,
       noteMode: viewNoteMode,
-      fixedNotePath,
+      file: file,
     });
     const note = noteSource.resolveCurrentNote();
     if (note?.path !== currentDailyNote?.path) {
@@ -59,7 +59,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       activeTopic,
       getEffectiveDate,
       viewNoteMode,
-      fixedNotePath,
+      file: file,
     } = get();
     const date = targetDate ?? getEffectiveDate();
     const noteSource = resolveNoteSource({
@@ -68,7 +68,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       granularity,
       activeTopic,
       noteMode: viewNoteMode,
-      fixedNotePath,
+      file: file,
     });
     const note =
       noteSource.resolveCurrentNote() ?? (await noteSource.ensureCurrentNote());
@@ -96,14 +96,14 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
   },
 
   openDailyNoteForDate: async (shell, settings, targetDate) => {
-    const { granularity, activeTopic, viewNoteMode, fixedNotePath } = get();
+    const { granularity, activeTopic, viewNoteMode, file: file } = get();
     const noteSource = resolveNoteSource({
       shell,
       date: targetDate,
       granularity,
       activeTopic,
       noteMode: viewNoteMode,
-      fixedNotePath,
+      file: file,
     });
     let note = noteSource.resolveCurrentNote();
 

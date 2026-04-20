@@ -66,8 +66,8 @@ export default class MFDIPlugin extends Plugin {
 
     const fixedNote = await createFixedNoteFromInput(this.shell, folder, name);
 
-    this.settings.fixedNoteFiles = [
-      ...this.settings.fixedNoteFiles,
+    this.settings.files = [
+      ...this.settings.files,
       { path: fixedNote.path },
     ];
     await this.saveSettings();

@@ -12,11 +12,11 @@ describe("fixed note view extension", () => {
     const result = extension.convertMarkdownViewState({
       type: "markdown",
       state: { file: "MFDI/Inbox.mfdi.md" },
-    }) as any;
+    });
 
     expect(result.type).toBe("mfdi-view");
     expect(result.state.noteMode).toBe("fixed");
-    expect(result.state.fixedNotePath).toBe("MFDI/Inbox.mfdi.md");
+    expect(result.state.file).toBe("MFDI/Inbox.mfdi.md");
   });
 
   it("keeps forced markdown opens untouched", () => {
@@ -36,13 +36,13 @@ describe("fixed note view extension", () => {
     const leaf = {
       view: {
         getState: () =>
-          ({ noteMode: "fixed", fixedNotePath: "MFDI/Inbox.mfdi.md" }) as any,
+          ({ noteMode: "fixed", file: "MFDI/Inbox.mfdi.md" }) as any,
       },
     } as WorkspaceLeaf;
 
     const result = findExistingMFDILeaf([leaf], {
       noteMode: "fixed",
-      fixedNotePath: "MFDI/Inbox.mfdi.md",
+      file: "MFDI/Inbox.mfdi.md",
     });
 
     expect(result).toBe(leaf);
@@ -56,7 +56,7 @@ describe("fixed note view extension", () => {
         view: {
           file: { path: "MFDI/Inbox.mfdi.md" },
           getState: () =>
-            ({ noteMode: "periodic", fixedNotePath: null }) as any,
+            ({ noteMode: "periodic", file: null }) as any,
         },
       } as any,
     ];
@@ -66,7 +66,7 @@ describe("fixed note view extension", () => {
     expect(attachMFDIView).toHaveBeenCalledWith(
       expect.objectContaining({
         noteMode: "fixed",
-        fixedNotePath: "MFDI/Inbox.mfdi.md",
+        file: "MFDI/Inbox.mfdi.md",
       }),
       leaves[0],
     );

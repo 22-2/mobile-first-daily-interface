@@ -96,10 +96,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { settings, storage, shell } = useAppContext();
   const component = useObsidianComponent() as MFDIView;
   const store = useCurrentAppStore();
-  const { viewNoteMode, fixedNotePath } = useAppStore(
+  const { viewNoteMode, file } = useAppStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
-      fixedNotePath: s.fixedNotePath,
+      file: s.file,
     })),
   );
 
@@ -164,14 +164,14 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const viewState = component.getState();
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
-      fixedNotePath: viewState.fixedNotePath,
+      file: viewState.file,
     });
 
     // fixedビューでは periodic 側の永続状態を引き継がない
     if (viewState.noteMode === "fixed") {
       const fixedDefaults = createDefaultMFDIViewState({
         noteMode: "fixed",
-        fixedNotePath: viewState.fixedNotePath,
+        file: viewState.file,
       });
 
       store.setState({
@@ -186,7 +186,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         threadFocusRootId: null,
       });
     }
-  }, [store, component, viewNoteMode, fixedNotePath]);
+  }, [store, component, viewNoteMode, file]);
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);
@@ -197,7 +197,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     granularity,
     activeTopic,
     viewNoteMode,
-    fixedNotePath,
+    file,
   ]);
 
   // updatePostsFromDB is no longer needed here as SWR handles it
@@ -748,7 +748,7 @@ function useViewSync(view: MFDIView | null) {
         editingPostMessage: appState.editingPost?.message ?? null,
         persistedInput:
           appState.storage?.get<string>(
-            getInputStorageKey(appState.viewNoteMode, appState.fixedNotePath),
+            getInputStorageKey(appState.viewNoteMode, appState.file),
             "",
           ) ?? "",
         editorSnapshot: inputRef.current?.getContentSnapshot() ?? null,

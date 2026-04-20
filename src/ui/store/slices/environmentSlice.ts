@@ -12,7 +12,7 @@ export const createEnvironmentSlice: StateCreator<
   storage: null,
   pluginSettings: null,
   viewNoteMode: "periodic",
-  fixedNotePath: null,
+  file: null,
 
   setAppDependencies: (shell) => {
     set({ shell });
@@ -26,18 +26,18 @@ export const createEnvironmentSlice: StateCreator<
     set({ pluginSettings });
   },
 
-  setViewContext: ({ noteMode, fixedNotePath }) => {
+  setViewContext: ({ noteMode, file: file }) => {
     const {
       storage,
       viewNoteMode,
-      fixedNotePath: currentFixedNotePath,
+      file: currentFixedNotePath,
       getInputValue,
       replaceInput,
     } = get();
 
     const hasInputContextChanged =
       viewNoteMode !== noteMode ||
-      (noteMode === "fixed" && currentFixedNotePath !== fixedNotePath);
+      (noteMode === "fixed" && currentFixedNotePath !== file);
 
     if (storage && hasInputContextChanged) {
       // 意図: periodic/fixed で編集中テキストを汚染しないよう、切替直前に現在ビューの入力を退避する。
@@ -47,12 +47,12 @@ export const createEnvironmentSlice: StateCreator<
       );
     }
 
-    set({ viewNoteMode: noteMode, fixedNotePath });
+    set({ viewNoteMode: noteMode, file: file });
 
     if (storage && hasInputContextChanged) {
       // 意図: 切替先ビュー専用の入力だけを復元し、前ビューの未送信入力が混ざるのを防ぐ。
       const restoredInput = storage.get<string>(
-        getInputStorageKey(noteMode, fixedNotePath),
+        getInputStorageKey(noteMode, file),
         "",
       );
       replaceInput(restoredInput);
@@ -65,7 +65,7 @@ export const createEnvironmentSlice: StateCreator<
       pluginSettings: settings,
       storage,
       viewNoteMode: "periodic",
-      fixedNotePath: null,
+      file: null,
     });
     get().hydrateSettingsState();
     get().hydrateEditorState();

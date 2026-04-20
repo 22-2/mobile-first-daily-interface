@@ -24,7 +24,7 @@ interface NoteSourceContext {
   granularity: Granularity;
   activeTopic: string;
   noteMode: MFDINoteMode;
-  fixedNotePath: string | null;
+  file: string | null;
 }
 
 interface NoteSource {
@@ -175,15 +175,15 @@ function createFixedNoteSource(context: NoteSourceContext): NoteSource {
   return {
     mode: "fixed",
     resolveCurrentNote: () =>
-      resolveFixedNote(context.shell, context.fixedNotePath),
+      resolveFixedNote(context.shell, context.file),
     ensureCurrentNote: async () => {
-      if (!context.fixedNotePath) return null;
-      return ensureFixedNote(context.shell, context.fixedNotePath);
+      if (!context.file) return null;
+      return ensureFixedNote(context.shell, context.file);
     },
     matchesPath: (filePath, currentNote) => {
       const targetPath =
         currentNote?.path ??
-        normalizeFixedNotePath(context.fixedNotePath ?? "");
+        normalizeFixedNotePath(context.file ?? "");
       return !!targetPath && filePath === targetPath;
     },
   };

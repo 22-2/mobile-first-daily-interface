@@ -23,7 +23,13 @@ export function resolveFixedNote(
 ): TFile | null {
   const path = normalizeFixedNotePath(raw ?? "");
   const file = path ? shell.getAbstractFileByPath(path) : null;
-  return file instanceof TFile ? file : null;
+  // テスト環境では `({ path } as TFile)` のようにプレーンオブジェクトで TFile を模した値が使われるため
+  // `instanceof TFile` が false になることがある。実行時の堅牢性を上げるため、まず `instanceof` を試し、
+  // それ以外はダックタイピングで `path` を持つオブジェクトを受け入れる。
+  if (!file) return null;
+  if (file instanceof TFile) return file;
+  if ((file as any).path && typeof (file as any).path === "string") return file as TFile;
+  return null;
 }
 
 async function ensureFolder(shell: ObsidianAppShell, path: string) {

@@ -73,7 +73,7 @@ describe("resolveNoteSource", () => {
       granularity: "day",
       activeTopic: "",
       noteMode: "periodic",
-      fixedNotePath: null,
+      file: null,
     });
 
     expect(source.mode).toBe("periodic");
@@ -88,7 +88,7 @@ describe("resolveNoteSource", () => {
       granularity: "day",
       activeTopic: "",
       noteMode: "fixed",
-      fixedNotePath: "MFDI/Inbox.mfdi.md",
+      file: "MFDI/Inbox.mfdi.md",
     });
 
     expect(source.mode).toBe("fixed");

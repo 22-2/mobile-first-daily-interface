@@ -94,7 +94,7 @@ describe("builtin registry", () => {
     const saveSettings = vi.fn(async () => {});
 
     const settings = {
-      fixedNoteFiles: [{ path: "old.md" }, { path: "keep.md" }],
+      files: [{ path: "old.md" }, { path: "keep.md" }],
       fullScanIntervalHours: 24,
     } as unknown as ReturnType<BuiltinMainContext["getSettings"]>;
 
@@ -240,7 +240,7 @@ describe("builtin registry", () => {
       file.path,
     );
 
-    expect(settings.fixedNoteFiles).toEqual([{ path: "keep.md" }]);
+    expect(settings.files).toEqual([{ path: "keep.md" }]);
     expect(saveSettings).toHaveBeenCalledTimes(2);
   });
 });

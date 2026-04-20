@@ -49,8 +49,8 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
 
   const persistInput = (input: string, mode: PersistMode) => {
-    const { viewNoteMode, fixedNotePath } = get();
-    const inputStorageKey = getInputStorageKey(viewNoteMode, fixedNotePath);
+    const { viewNoteMode, file: file } = get();
+    const inputStorageKey = getInputStorageKey(viewNoteMode, file);
 
     if (inputPersistTimer !== null) {
       clearTimeout(inputPersistTimer);
@@ -193,11 +193,11 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const { storage, viewNoteMode, fixedNotePath } = get();
+      const { storage, viewNoteMode, file: file } = get();
       if (!storage) return;
 
       const persistedInput = storage.get<string>(
-        getInputStorageKey(viewNoteMode, fixedNotePath),
+        getInputStorageKey(viewNoteMode, file),
         "",
       );
 

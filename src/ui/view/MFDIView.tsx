@@ -48,7 +48,7 @@ export class MFDIView extends ItemView {
 
   getDisplayText(): string {
     if (this.state.noteMode === "fixed") {
-      return `MFDI: ${getFixedNoteTitle(this.state.fixedNotePath)}`;
+      return `MFDI: ${getFixedNoteTitle(this.state.file)}`;
     }
     return "Mobile First Daily Interface";
   }
@@ -78,7 +78,7 @@ export class MFDIView extends ItemView {
           .setWarning(true)
           .onClick(async () => {
             const file = this.app.metadataCache.getFirstLinkpathDest(
-              this.state.fixedNotePath!,
+              this.state.file!,
               "",
             );
             if (file instanceof TFile) {
@@ -104,10 +104,10 @@ export class MFDIView extends ItemView {
       ...patch,
       // patch に含まれない場合は既存値を維持（スプレッドで上書きされるが明示）
       noteMode: patch.noteMode ?? this.state.noteMode,
-      fixedNotePath:
-        patch.fixedNotePath !== undefined
-          ? (patch.fixedNotePath as string | null)
-          : this.state.fixedNotePath,
+      file:
+        patch.file !== undefined
+          ? (patch.file as string | null)
+          : this.state.file,
     };
   }
 
@@ -254,12 +254,12 @@ export class MFDIView extends ItemView {
   private setupEditableTitleBar(): void {
     this.editableTitleBar = new EditableTitleBar(this, {
       scope: new Scope(this.app.scope),
-      getTitle: () => getFixedNoteTitle(this.state.fixedNotePath),
+      getTitle: () => getFixedNoteTitle(this.state.file),
       onSubmitTitle: async (newTitle: string) => {
-        if (!this.state.fixedNotePath || !newTitle.trim()) return;
+        if (!this.state.file || !newTitle.trim()) return;
 
         const file = this.app.vault.getAbstractFileByPath(
-          this.state.fixedNotePath,
+          this.state.file,
         ) as TFile | null;
 
         if (!file) return;
@@ -268,7 +268,7 @@ export class MFDIView extends ItemView {
           file,
           ensureExtension(newTitle, ".mfdi.md"),
         );
-        this.state.fixedNotePath = file.path;
+        this.state.file = file.path;
         this.setupView();
       },
     });

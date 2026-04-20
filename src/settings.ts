@@ -16,7 +16,7 @@ export interface Settings {
   updateDateStrategy: "never" | "always" | "same_day";
   topics: Topic[];
   activeTopic: string;
-  fixedNoteFiles: { path: string }[];
+  files: { path: string }[];
   fullScanIntervalHours?: number;
   editorExpansionMode: "full" | "default";
   // 投稿の編集をポップアウトウィンドウで開くタイミング
@@ -32,7 +32,7 @@ export const DEFAULT_SETTINGS: Settings = {
   updateDateStrategy: "never",
   topics: [DEFAULT_TOPIC],
   activeTopic: "",
-  fixedNoteFiles: [],
+  files: [],
   fullScanIntervalHours: 24,
   editorExpansionMode: "default",
   openInNewWindowMode: "disabled",

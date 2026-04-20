@@ -24,7 +24,7 @@ export const ResultCount: FC = () => {
     timeFilter,
     displayMode,
     viewNoteMode,
-    fixedNotePath,
+    file: file,
     activeTopic,
   } = settings;
 
@@ -37,7 +37,7 @@ export const ResultCount: FC = () => {
   const currentCount = asTask ? tasks.length : getVisibleRootCount(posts);
 
   if (viewNoteMode === "fixed") {
-    const noteTitle = getFixedNoteTitle(fixedNotePath);
+    const noteTitle = getFixedNoteTitle(file);
     return <>{formatFixedNoteLabel(currentCount, noteTitle, asTask)}</>;
   }
 

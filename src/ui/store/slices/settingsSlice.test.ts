@@ -24,10 +24,11 @@ describe("settingsSlice", () => {
         updateDateStrategy: "never",
         topics: [],
         activeTopic: "",
-        fixedNoteFiles: [],
+        files: [],
         clickToActivateScroll: false,
         editorExpansionMode: "default",
         fullScanIntervalHours: 24,
+        openInNewWindowMode: "always",
       },
       granularity: "day",
       date: today.clone(),
@@ -81,7 +82,7 @@ describe("settingsSlice", () => {
     settingsStore.setState({
       date: yesterday.clone(),
       viewNoteMode: "fixed",
-      fixedNotePath: "MFDI/fixed.md",
+      file: "MFDI/fixed.md",
     });
 
     expect(settingsStore.getState().isReadOnly()).toBe(false);

@@ -86,7 +86,7 @@ export function useSettings() {
       date: s.date,
       dateFilter: s.dateFilter,
       displayMode: s.displayMode,
-      fixedNotePath: s.fixedNotePath,
+      file: s.file,
       granularity: s.granularity,
       threadFocusRootId: s.threadFocusRootId,
       timeFilter: s.timeFilter,

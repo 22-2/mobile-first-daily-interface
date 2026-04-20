@@ -143,7 +143,7 @@ describe("editorSlice", () => {
 
     store
       .getState()
-      .setViewContext({ noteMode: "fixed", fixedNotePath: fixedPathA });
+      .setViewContext({ noteMode: "fixed", file: fixedPathA });
 
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().inputSnapshot).toBe("fixed draft");
@@ -172,7 +172,7 @@ describe("editorSlice", () => {
     store.setState({
       storage,
       viewNoteMode: "fixed",
-      fixedNotePath: fixedPathA,
+      file: fixedPathA,
       inputSnapshot: "draft-a-modified",
     });
 
@@ -180,10 +180,10 @@ describe("editorSlice", () => {
 
     store
       .getState()
-      .setViewContext({ noteMode: "fixed", fixedNotePath: fixedPathB });
+      .setViewContext({ noteMode: "fixed", file: fixedPathB });
 
     expect(store.getState().viewNoteMode).toBe("fixed");
-    expect(store.getState().fixedNotePath).toBe(fixedPathB);
+    expect(store.getState().file).toBe(fixedPathB);
     expect(store.getState().inputSnapshot).toBe("draft-b");
     expect(store.getState().inputSnapshotVersion).toBeGreaterThan(
       versionBefore,

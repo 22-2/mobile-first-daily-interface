@@ -37,7 +37,7 @@ describe("fixed note utilities", () => {
       granularity: "day",
       activeTopic: "",
       noteMode: "fixed",
-      fixedNotePath: "notes/fixed.md",
+      file: "notes/fixed.md",
     });
 
     expect(source.resolveCurrentNote()).toBe(file);

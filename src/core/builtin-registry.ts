@@ -178,12 +178,12 @@ function setupFixedNoteRegistry(context: BuiltinMainContext): void {
       if (!(file instanceof TFile)) return;
 
       const settings = context.getSettings();
-      const idx = settings.fixedNoteFiles.findIndex(
+      const idx = settings.files.findIndex(
         (entry) => entry.path === oldPath,
       );
       if (idx === -1) return;
 
-      settings.fixedNoteFiles = settings.fixedNoteFiles.map((entry, index) =>
+      settings.files = settings.files.map((entry, index) =>
         index === idx ? { ...entry, path: file.path } : entry,
       );
       void context.saveSettings();
@@ -195,12 +195,12 @@ function setupFixedNoteRegistry(context: BuiltinMainContext): void {
       if (!(file instanceof TFile)) return;
 
       const settings = context.getSettings();
-      const filtered = settings.fixedNoteFiles.filter(
+      const filtered = settings.files.filter(
         (entry) => entry.path !== file.path,
       );
-      if (filtered.length === settings.fixedNoteFiles.length) return;
+      if (filtered.length === settings.files.length) return;
 
-      settings.fixedNoteFiles = filtered;
+      settings.files = filtered;
       void context.saveSettings();
     }),
   );

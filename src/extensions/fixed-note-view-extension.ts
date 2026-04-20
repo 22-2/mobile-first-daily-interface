@@ -13,6 +13,11 @@ type LeafWithState = WorkspaceLeaf & {
   view: { getState: () => MFDIViewState; file?: { path?: string } };
 };
 
+type MFDIViewStateWrapper = {
+  type: string;
+  state: MFDIViewState;
+}
+
 const MFDI_VIEW_TYPE = "mfdi-view";
 
 function isViewStatefulLeaf(leaf: WorkspaceLeaf): leaf is LeafWithState {
@@ -21,7 +26,7 @@ function isViewStatefulLeaf(leaf: WorkspaceLeaf): leaf is LeafWithState {
 }
 
 export interface FixedNoteViewExtension {
-  convertMarkdownViewState: (viewState: unknown) => unknown;
+  convertMarkdownViewState: (viewState: unknown) => MFDIViewStateWrapper;
   replaceOpenFixedMarkdownLeaves: (params: {
     leaves: WorkspaceLeaf[];
     attachMFDIView: (
@@ -39,7 +44,7 @@ export function findExistingMFDILeaf(
 ): WorkspaceLeaf | undefined {
   const isFixedMode = state.noteMode === "fixed";
   const fixedPath = normalizeFixedNotePath(
-    typeof state.fixedNotePath === "string" ? state.fixedNotePath : "",
+    typeof state.file === "string" ? state.file : "",
   );
 
   return leaves.find((leaf) => {
@@ -47,7 +52,7 @@ export function findExistingMFDILeaf(
     const currentState = leaf.view.getState() as MFDIViewState;
     return isFixedMode
       ? currentState.noteMode === "fixed" &&
-          normalizeFixedNotePath(currentState.fixedNotePath ?? "") === fixedPath
+          normalizeFixedNotePath(currentState.file ?? "") === fixedPath
       : currentState.noteMode !== "fixed";
   });
 }
@@ -69,14 +74,14 @@ function shouldConvertViewState(viewState: unknown): boolean {
 export function createFixedNoteViewExtension(): FixedNoteViewExtension {
   return {
     convertMarkdownViewState: (viewState) => {
-      if (!shouldConvertViewState(viewState)) return viewState;
+      if (!shouldConvertViewState(viewState)) return viewState as MFDIViewStateWrapper;
       const candidate = viewState as {
         type?: string;
-        state?: Record<string, unknown>;
-      };
+        state?: MFDIViewState;
+      } as MFDIViewStateWrapper;
       const filePath =
         typeof candidate.state?.file === "string" ? candidate.state.file : "";
-      if (!isMFDIFixedNotePath(filePath)) return viewState;
+      if (!isMFDIFixedNotePath(filePath)) return viewState as MFDIViewStateWrapper;
 
       // TODO: ここでファイルの存在チェックを入れたい
       // app.vault.adapter.exists(filePath) で存在チェックできるはずだが、app をこの関数に渡す必要があるため、実装が少し面倒。
@@ -88,7 +93,7 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
           ...DEFAULT_MFDI_VIEW_STATE,
           ...createFixedNoteViewState(filePath),
         },
-      };
+      } as MFDIViewStateWrapper;
     },
 
     replaceOpenFixedMarkdownLeaves: async ({ leaves, attachMFDIView }) => {

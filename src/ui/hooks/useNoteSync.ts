@@ -25,10 +25,10 @@ export function useNoteSync() {
       })),
     );
 
-  const { viewNoteMode, fixedNotePath } = useSettingsStore(
+  const { viewNoteMode, file } = useSettingsStore(
     useShallow((s) => ({
       viewNoteMode: s.viewNoteMode,
-      fixedNotePath: s.fixedNotePath,
+      file: s.file,
     })),
   );
 
@@ -55,7 +55,7 @@ export function useNoteSync() {
       granularity,
       activeTopic,
       noteMode: viewNoteMode,
-      fixedNotePath,
+      file,
     });
 
     const refreshPosts = async () => {
@@ -108,7 +108,7 @@ export function useNoteSync() {
     displayMode,
     setDate,
     viewNoteMode,
-    fixedNotePath,
+    file,
     currentDailyNote,
     weekNotePaths,
     setTasks,

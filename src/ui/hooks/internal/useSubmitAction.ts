@@ -205,7 +205,7 @@ export const useSubmitAction = () => {
         granularity: settingsState.granularity,
         activeTopic: settingsState.activeTopic,
         noteMode: settingsState.viewNoteMode,
-        fixedNotePath: store.getState().fixedNotePath,
+        file: store.getState().file,
       });
 
       let note = noteState.currentDailyNote;

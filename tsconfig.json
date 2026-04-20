@@ -23,6 +23,6 @@
         "lib": ["DOM", "ESNext"],
         "jsx": "react-jsx"
     },
-    "include": ["**/*.ts"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]
 }

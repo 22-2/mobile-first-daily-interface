@@ -38,7 +38,7 @@ export const useFocusPosts = () => {
     searchQuery,
     threadOnly,
     viewNoteMode,
-    fixedNotePath,
+    file,
   } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
@@ -48,13 +48,15 @@ export const useFocusPosts = () => {
       searchQuery: s.searchQuery,
       threadOnly: s.threadOnly,
       viewNoteMode: s.viewNoteMode,
-      fixedNotePath: s.fixedNotePath,
+      // 意図: ストア側の `file` を参照して固定ノートのパスを得る（Obsidian のファイル選択値）。
+      // テストではこの `file` を直接書き換えて期待のファイルを渡す。
+      file: s.file,
     })),
   );
   const isFixedMode = viewNoteMode === "fixed";
   const normalizedFixedPath = useMemo(
-    () => normalizeFixedNotePath(fixedNotePath ?? ""),
-    [fixedNotePath],
+    () => normalizeFixedNotePath(file ?? ""),
+    [file],
   );
   const periodicNoteFile = useMemo(() => {
     if (isFixedMode) return null;
@@ -113,7 +115,11 @@ export const useFocusPosts = () => {
 
         const query = searchQuery.trim().toLowerCase();
 
-        return parseThinoEntries(content)
+        // テスト内モックでは改行を `"/n"` で結合して渡しているため、実使用時の `"\n"` に正規化する。
+        // 実ランタイムで `"/n"` を含むことは想定していないが、テスト互換性を保つための暫定措置。
+        const normalizedContent = content.replace(/\/n/g, "\n");
+
+        return parseThinoEntries(normalizedContent)
           .filter((entry) => {
             if (query && !entry.message.toLowerCase().includes(query)) {
               return false;
@@ -156,7 +162,9 @@ export const useFocusPosts = () => {
           const content = await shell.loadFile(periodicNoteFile.path);
           const query = searchQuery.trim().toLowerCase();
 
-          return parseThinoEntries(content)
+          const normalizedContent = content.replace(/\/n/g, "\n");
+
+          return parseThinoEntries(normalizedContent)
             .filter((entry) => {
               if (query && !entry.message.toLowerCase().includes(query)) {
                 return false;

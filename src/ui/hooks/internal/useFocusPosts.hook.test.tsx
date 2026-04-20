@@ -1,8 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import React from "react";
-import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import moment from "moment";
+import { useFocusPosts } from "./useFocusPosts";
 
 interface MockSettingsState {
   activeTopic: string;
@@ -12,7 +13,7 @@ interface MockSettingsState {
   searchQuery: string;
   threadOnly: boolean;
   viewNoteMode: "periodic" | "fixed";
-  fixedNotePath: string | null;
+  file: string | null;
 }
 
 const mocked = vi.hoisted(() => {
@@ -24,7 +25,7 @@ const mocked = vi.hoisted(() => {
     searchQuery: "",
     threadOnly: false,
     viewNoteMode: "periodic",
-    fixedNotePath: null,
+      file: null,
   };
 
   return {
@@ -131,16 +132,16 @@ describe("useFocusPosts hook integration", () => {
     mocked.settings.searchQuery = "";
     mocked.settings.threadOnly = false;
     mocked.settings.viewNoteMode = "periodic";
-    mocked.settings.fixedNotePath = null;
+    mocked.settings.file = null;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it("fixedモードではtopicIdを渡さず fixedNotePath で投稿を絞る", async () => {
+  it("fixedモードではtopicIdを渡さず file で投稿を絞る", async () => {
     mocked.settings.viewNoteMode = "fixed";
-    mocked.settings.fixedNotePath = "MFDI/Inbox.mfdi.md";
+    mocked.settings.file = "MFDI/Inbox.mfdi.md";
     mocked.settings.searchQuery = "";
     mocked.settings.threadOnly = false;
 
@@ -149,7 +150,7 @@ describe("useFocusPosts hook integration", () => {
         "## Thino",
         "- 12:00:00 from-fixed [mfdiId::root-1]",
         "- 12:01:00 from-other",
-      ].join("\n"),
+      ].join("/n"),
     );
 
     const { result } = renderHook(() => useFocusPosts(), {
@@ -207,7 +208,7 @@ describe("useFocusPosts hook integration", () => {
         "## Thino",
         "- 09:00:00 from-month-note [mfdiId::month-1]",
         "- 09:01:00 another month entry",
-      ].join("\n"),
+      ].join("/n"),
     );
 
     const { result } = renderHook(() => useFocusPosts(), {
@@ -235,7 +236,7 @@ describe("useFocusPosts hook integration", () => {
         "## Thino",
         "- 09:00:00 from-year-note [mfdiId::year-1]",
         "- 09:01:00 another year entry",
-      ].join("\n"),
+      ].join("/n"),
     );
 
     const { result } = renderHook(() => useFocusPosts(), {
@@ -263,7 +264,7 @@ describe("useFocusPosts hook integration", () => {
         "## Thino",
         "- 09:00:00 from-quarter-note [mfdiId::quarter-1]",
         "- 09:01:00 another quarter entry",
-      ].join("\n"),
+      ].join("/n"),
     );
 
     const { result } = renderHook(() => useFocusPosts(), {
@@ -280,11 +281,11 @@ describe("useFocusPosts hook integration", () => {
     expect(mocked.loadFile).toHaveBeenCalledWith("2026-Q2.md");
   });
 
-  it("fixed + activeTopic空でも fixedNotePath の投稿が表示される", async () => {
+  it("fixed + activeTopic空でも file の投稿が表示される", async () => {
     mocked.settings.viewNoteMode = "fixed";
     mocked.settings.activeTopic = "";
     mocked.settings.dateFilter = "all";
-    mocked.settings.fixedNotePath = "home/着ぐるみ購入についてあれこれ.mfdi.md";
+    mocked.settings.file = "home/着ぐるみ購入についてあれこれ.mfdi.md";
     mocked.settings.threadOnly = true;
     mocked.settings.searchQuery = "wanted";
 
@@ -294,7 +295,7 @@ describe("useFocusPosts hook integration", () => {
         "- 18:33:04 wanted [posted::2026-03-29T09:33:04.314Z] [mfdiId::root-1]",
         "- 18:34:00 wanted reply [posted::2026-03-29T09:34:00.000Z] [mfdiId::reply-1] [parentId::root-1]",
         "- 18:35:00 other [posted::2026-03-29T09:35:00.000Z]",
-      ].join("\n"),
+      ].join("/n"),
     );
 
     const { result } = renderHook(() => useFocusPosts(), {
