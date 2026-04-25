@@ -57,6 +57,7 @@ import type {
   TimeFilter,
 } from "src/ui/types";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import {
   createDefaultMFDIViewState,
@@ -260,6 +261,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ReactViewContent = () => {
+  const { shell } = useAppContext();
   const component = useObsidianComponent() as MFDIView;
   const isCSSLoaded = useCSSLoaded();
   const { viewNoteMode } = useAppStore(
@@ -361,6 +363,27 @@ const ReactViewContent = () => {
   const lastWidthRef = useRef(containerWidth);
 
   const [sideBarViewDate, setSideBarViewDate] = useState(() => window.moment());
+  const [isPopoutEditorOpen, setIsPopoutEditorOpen] = useState(false);
+
+  useEffect(() => {
+    const app = shell.getRawApp();
+    const refreshPopoutState = () => {
+      // 意図: popout エディタ表示中は入力導線を1つに固定し、二重編集を避けるためメイン入力欄を隠す。
+      setIsPopoutEditorOpen(
+        app.workspace.getLeavesOfType(VIEW_TYPE_MFDI_EDITOR).length > 0,
+      );
+    };
+
+    refreshPopoutState();
+
+    const layoutRef = app.workspace.on("layout-change", refreshPopoutState);
+    const leafRef = app.workspace.on("active-leaf-change", refreshPopoutState);
+
+    return () => {
+      app.workspace.offref(layoutRef);
+      app.workspace.offref(leafRef);
+    };
+  }, [shell]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -415,7 +438,7 @@ const ReactViewContent = () => {
           "max-content flex-col h-full relative flex-grow overflow-hidden",
         )}
       >
-        <InputArea />
+        {isPopoutEditorOpen ? null : <InputArea />}
         <StatusBar />
 
         <Flex

@@ -68,9 +68,15 @@ const EditorOnlyAppRoot: React.FC<{
   // deps に store だけを指定することで再レンダリング時の二重適用を防ぐ。
   useLayoutEffect(() => {
     if (!initialState) return;
-    const { postInfo, message } = initialState;
-    const post = reconstructEditingPost(postInfo, message);
-    store.getState().startEdit(post);
+    const { postInfo, message = "" } = initialState;
+    if (postInfo) {
+      const post = reconstructEditingPost(postInfo, message);
+      store.getState().startEdit(post);
+      return;
+    }
+
+    // 意図: 新規投稿ポップアウトでは postInfo がないため、渡された下書きだけを復元する。
+    store.getState().replaceInput(message);
   }, [store]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <>{children}</>;

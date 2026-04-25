@@ -13,8 +13,8 @@ export const VIEW_TYPE_MFDI_EDITOR = "mfdi-editor-view";
 // popout ウィンドウへ渡すシリアライズ済みの状態
 // Post の Moment フィールドは ISO 文字列に変換して Record 互換にする
 export interface MFDIEditorViewState extends Record<string, unknown> {
-  postInfo: PersistedEditingPost;
-  message: string;
+  postInfo?: PersistedEditingPost;
+  message?: string;
 }
 
 export class MFDIEditorView extends ItemView {

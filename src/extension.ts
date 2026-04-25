@@ -124,7 +124,6 @@ export const extension: Extension = ViewPlugin.fromClass(
       this.view.contentDOM.style.setProperty(
         CONTENT_PADDING_PROPERTY,
         nextPadding,
-        "important",
       );
 
       logger.debug("apply padding", { paddingBottom: nextPadding });

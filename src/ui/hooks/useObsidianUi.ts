@@ -26,6 +26,25 @@ export function useObsidianUi() {
   const { shell } = useAppContext();
   const store = useCurrentAppStore();
 
+  const openPopoutEditorView = useCallback(
+    (state: MFDIEditorViewState): boolean => {
+      const app = shell.getRawApp();
+      // 意図: openPopoutLeaf は Obsidian デスクトップ専用 API のため型定義にない場合がある。
+      // unknown 経由でキャストして、存在しない環境（モバイル等）では何もしない。
+      const openPopout = (
+        app.workspace as unknown as {
+          openPopoutLeaf?: () => WorkspaceLeaf;
+        }
+      ).openPopoutLeaf;
+      if (!openPopout) return false;
+
+      const leaf = openPopout.call(app.workspace);
+      void leaf.setViewState({ type: VIEW_TYPE_MFDI_EDITOR, active: true, state });
+      return true;
+    },
+    [shell],
+  );
+
   const openDraftList = useCallback(() => {
     new DraftListModal(shell.getRawApp(), store).open();
   }, [shell, store]);
@@ -68,18 +87,6 @@ export function useObsidianUi() {
 
   const openEditorInNewWindow = useCallback(
     (post: Post) => {
-      const app = shell.getRawApp();
-      // 意図: openPopoutLeaf は Obsidian デスクトップ専用 API のため型定義にない場合がある。
-      // unknown 経由でキャストして、存在しない環境（モバイル等）では何もしない。
-      const openPopout = (
-        app.workspace as unknown as {
-          openPopoutLeaf?: () => WorkspaceLeaf;
-        }
-      ).openPopoutLeaf;
-      if (!openPopout) return;
-
-      const leaf = openPopout.call(app.workspace);
-
       const postInfo: PersistedEditingPost = {
         id: post.id,
         path: post.path,
@@ -91,9 +98,30 @@ export function useObsidianUi() {
       };
 
       const state: MFDIEditorViewState = { postInfo, message: post.message };
-      void leaf.setViewState({ type: VIEW_TYPE_MFDI_EDITOR, active: true, state });
+      openPopoutEditorView(state);
     },
-    [shell, store],
+    [store, openPopoutEditorView],
+  );
+
+  const openInputInNewWindow = useCallback(
+    (message: string, editingPost: Post | null): boolean => {
+      if (editingPost) {
+        const postInfo: PersistedEditingPost = {
+          id: editingPost.id,
+          path: editingPost.path,
+          timestampStr: editingPost.timestamp.toISOString(),
+          metadataStr: JSON.stringify(editingPost.metadata),
+          noteDateStr: editingPost.noteDate.toISOString(),
+          offset: editingPost.startOffset,
+          granularity: store.getState().granularity,
+        };
+
+        return openPopoutEditorView({ postInfo, message });
+      }
+
+      return openPopoutEditorView({ message });
+    },
+    [store, openPopoutEditorView],
   );
 
   return useMemo(
@@ -105,6 +133,7 @@ export function useObsidianUi() {
       openModalEditor,
       openBacklinkPreview,
       openEditorInNewWindow,
+      openInputInNewWindow,
     }),
     [
       openDraftList,
@@ -114,6 +143,7 @@ export function useObsidianUi() {
       openModalEditor,
       openBacklinkPreview,
       openEditorInNewWindow,
+      openInputInNewWindow,
     ],
   );
 }

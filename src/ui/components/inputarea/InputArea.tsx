@@ -15,6 +15,7 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
 import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
+import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { useShallow } from "zustand/shallow";
@@ -46,6 +47,7 @@ export const InputArea: FC = memo(() => {
     })),
   );
   const { handleSubmit } = usePostActions();
+  const { openInputInNewWindow } = useObsidianUi();
   const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
 
   const handleExpandToMaxHeight = useCallback(() => {
@@ -58,13 +60,9 @@ export const InputArea: FC = memo(() => {
   }, [inputAreaSize, setInputAreaSize]);
 
   const handleMinimize = useCallback(() => {
-    // 意図: minimize で入力欄を折り畳み、ポストリストの表示領域を広げる。
-    setInputAreaSize(
-      inputAreaSize === INPUT_AREA_SIZE.MINIMIZED
-        ? INPUT_AREA_SIZE.DEFAULT
-        : INPUT_AREA_SIZE.MINIMIZED,
-    );
-  }, [inputAreaSize, setInputAreaSize]);
+    // 意図: minimize ボタンは既存の popout 配線へ寄せ、編集・新規どちらも別ウィンドウで継続できるようにする。
+    openInputInNewWindow(inputSnapshot, editingPost);
+  }, [openInputInNewWindow, inputSnapshot, editingPost]);
 
   useEffect(() => {
     if (editingPostId !== null) {
