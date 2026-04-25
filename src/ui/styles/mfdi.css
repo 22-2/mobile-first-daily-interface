@@ -1,85 +1,20 @@
-[data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
-  margin: var(--size-4-2) var(--size-4-4) !important;
-  padding: 0 !important;
-}
+/* ==============================================
+   CSS変数 / カスタムプロパティ
+   ============================================== */
 
-[data-type="mfdi-view"] :is(.task-list-container, .list) .markdown-rendered {
-  user-select: text !important;
-}
-
-:is([data-type="mfdi-view"], .magical-editor-modal-editor-area)
-  .cm-line.cm-active {
-  background-color: var(--active-line-bg);
-  box-shadow:
-    -25vw 0 var(--active-line-bg),
-    25vw 0 var(--active-line-bg);
-}
-
-[data-type="mfdi-view"] .mfdi-date-input,
-[data-type="mfdi-view"] input[type="month"],
-[data-type="mfdi-view"] input[type="week"] {
-  background: var(--background-modifier-form-field);
-  border: var(--input-border-width) solid var(--background-modifier-border);
-  color: var(--text-normal);
-  font-family: inherit;
-  padding: var(--input-padding);
-  font-size: var(--font-ui-small);
-  border-radius: var(--input-radius);
-  outline: none;
-  position: relative;
-  font-variant-numeric: tabular-nums;
-  padding-left: var(--size-4-6);
-}
-
-@media (hover: hover) {
-  [data-type="mfdi-view"] .mfdi-date-input:hover,
-  [data-type="mfdi-view"] input[type="month"]:hover,
-  [data-type="mfdi-view"] input[type="week"]:hover {
-    background-color: var(--background-modifier-form-field-hover);
-    border-color: var(--background-modifier-border-hover);
-    transition:
-      box-shadow var(--anim-duration-fast) ease-in-out,
-      border var(--anim-duration-fast) ease-in-out;
-  }
-}
-
-[data-type="mfdi-view"] .mfdi-date-input:focus,
-[data-type="mfdi-view"] input[type="month"]:focus,
-[data-type="mfdi-view"] input[type="week"]:focus {
-  border-color: var(--background-modifier-border-focus);
-}
-
-/* Picker indicators and textsegments styling to match Obsidian */
-[data-type="mfdi-view"] .mfdi-date-input::-webkit-calendar-picker-indicator,
-[data-type="mfdi-view"] input[type="month"]::-webkit-calendar-picker-indicator,
-[data-type="mfdi-view"] input[type="week"]::-webkit-calendar-picker-indicator {
-  position: absolute;
-  left: var(--size-4-1);
-  right: auto;
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-[data-type="mfdi-view"] .mfdi-date-input::-webkit-datetime-edit-text,
-[data-type="mfdi-view"] input[type="month"]::-webkit-datetime-edit-text,
-[data-type="mfdi-view"] input[type="week"]::-webkit-datetime-edit-text {
-  color: var(--input-date-separator);
-  padding-inline-end: 0;
-}
-
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
-
-[data-type="mfdi-view"] {
+:is([data-type="mfdi-view"], [data-type="mfdi-editor-view"]) {
   --mfdi-css-loaded: 1;
   --mfdi-icon-color: var(--text-muted);
   --mfdi-icon-color-hover: var(--text-normal);
+}
+
+/* ==============================================
+   view-content レイアウト
+   ============================================== */
+
+[data-type="mfdi-view"] .view-content {
+  padding-bottom: 0;
+  background-color: transparent !important;
 }
 
 /* エディタ専用ポップアウトビュー: コンテンツ全域をエディタで埋める */
@@ -89,18 +24,58 @@ If your plugin does not need CSS, delete this file.
   flex-direction: column;
 }
 
+/* ==============================================
+   エディタ: 共通
+   ============================================== */
+
+/* アクティブライン */
+:is([data-type="mfdi-view"], .magical-editor-modal-editor-area)
+  .cm-line.cm-active {
+  background-color: var(--active-line-bg);
+  box-shadow:
+    -25vw 0 var(--active-line-bg),
+    25vw 0 var(--active-line-bg);
+}
+
+/* セカンダリカーソル */
+[data-type="mfdi-view"] .cm-cursor.cm-cursor-secondary {
+  margin-left: initial !important;
+  width: 1px !important;
+}
+
+/* コードブロック背景 */
+[data-type="mfdi-view"] :is(.HyperMD-codeblock-bg, .markdown-rendered pre) {
+  --code-background: var(--bg3) !important;
+}
+
+/* ==============================================
+   エディタ: マークダウンビュー内
+   ============================================== */
+
+[data-type="mfdi-view"] [data-type="markdown"] .view-header {
+  display: none;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .cm-scroller {
+  margin: var(--size-4-2) var(--size-4-4) !important;
+  padding: 0 !important;
+}
+
+[data-type="mfdi-view"] [data-type="markdown"] .cm-content {
+  padding-bottom: 0 !important;
+}
+
+/* ==============================================
+   エディタ: ポップアウト (mfdi-editor-view 専用)
+   ============================================== */
+
 [data-type="mfdi-editor-view"] .mfdi-popout-editor {
   flex: 1;
   min-height: 0;
 }
 
-/* cm-editor が flex-1 の親に追従して高さを埋めるよう設定 */
 [data-type="mfdi-editor-view"] .mfdi-popout-editor__editor .cm-editor {
   height: 100%;
-}
-
-[data-type="mfdi-view"] .mod-maximized .cm-content {
-  padding-bottom: 0!important;
 }
 
 [data-type="mfdi-editor-view"] .mfdi-popout-editor__editor .cm-scroller {
@@ -108,22 +83,143 @@ If your plugin does not need CSS, delete this file.
   overflow-y: hidden;
 }
 
-/* Scroll area used by BaseCard and similar components */
-.mfdi-scroll-area::-webkit-scrollbar {
-  width: var(--size-4-1);
+/* ==============================================
+   エディタ: 入力エリア
+   ============================================== */
+
+.mfdi-input-area {
+  margin-right: var(--size-4-3);
 }
-.mfdi-scroll-area::-webkit-scrollbar-thumb {
-  border-radius: var(--size-2-5);
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
+  display: none !important;
 }
-.mfdi-scroll-area.expanded::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
+
+[data-type="mfdi-view"] .mfdi-input-area:not(.mod-maxmized) .cm-scroller {
+  max-height: 50vh;
 }
+
+/* 最大化時 */
+[data-type="mfdi-view"] :not(.mod-maximized) .cm-content {
+  padding-bottom: 0 !important;
+}
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
+  /* 画面が狭い時も入力エリア全体が収まるように抑える */
+  height: calc(100dvh - 123px) !important;
+}
+
+/* ==============================================
+   リーダブルライン幅の上書き
+   ============================================== */
+
+[data-type="mfdi-view"]
+  :is(
+    .markdown-preview-view.is-readable-line-width .markdown-preview-sizer > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-contentContainer.cm-contentContainer
+      > .cm-content
+      > div,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .embedded-backlinks,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .inline-title,
+    .markdown-source-view.mod-cm6.is-readable-line-width
+      .cm-sizer
+      > .metadata-container
+  ) {
+  max-width: initial !important;
+  width: initial !important;
+  margin-inline: initial !important;
+}
+
+/* ==============================================
+   タスク / リスト
+   ============================================== */
+
+[data-type="mfdi-view"] :is(.task-list-container, .list) .markdown-rendered {
+  user-select: text !important;
+}
+
+/* ==============================================
+   日付入力
+   ============================================== */
+
+[data-type="mfdi-view"]
+  :is(.mfdi-date-input, input[type="month"], input[type="week"]) {
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  padding: var(--input-padding);
+  padding-left: var(--size-4-6);
+  font-size: var(--font-ui-small);
+  border-radius: var(--input-radius);
+  outline: none;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  [data-type="mfdi-view"]
+    :is(.mfdi-date-input, input[type="month"], input[type="week"]):hover {
+    background-color: var(--background-modifier-form-field-hover);
+    border-color: var(--background-modifier-border-hover);
+    transition:
+      box-shadow var(--anim-duration-fast) ease-in-out,
+      border var(--anim-duration-fast) ease-in-out;
+  }
+}
+
+[data-type="mfdi-view"]
+  :is(.mfdi-date-input, input[type="month"], input[type="week"]):focus {
+  border-color: var(--background-modifier-border-focus);
+}
+
+[data-type="mfdi-view"]
+  :is(.mfdi-date-input, input[type="month"], input[type="week"])
+  ::-webkit-calendar-picker-indicator {
+  position: absolute;
+  left: var(--size-4-1);
+  right: auto;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+[data-type="mfdi-view"]
+  :is(.mfdi-date-input, input[type="month"], input[type="week"])
+  ::-webkit-datetime-edit-text {
+  color: var(--input-date-separator);
+  padding-inline-end: 0;
+}
+
+/* ==============================================
+   スクロールエリア
+   ============================================== */
+
 .mfdi-scroll-area {
   overflow-y: scroll;
   scrollbar-width: thin;
 }
 
-/* 「続きを読む」ボタン */
+.mfdi-scroll-area::-webkit-scrollbar {
+  width: var(--size-4-1);
+}
+
+.mfdi-scroll-area::-webkit-scrollbar-thumb {
+  border-radius: var(--size-2-5);
+}
+
+.mfdi-scroll-area.expanded::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg, rgba(0, 0, 0, 0.1));
+}
+
+/* ==============================================
+   「続きを読む」ボタン
+   ============================================== */
+
 .mfdi-read-more {
   display: block;
   width: 100%;
@@ -136,6 +232,10 @@ If your plugin does not need CSS, delete this file.
   border: none;
   border-top: 1px solid var(--background-modifier-border);
 }
+
+/* ==============================================
+   アイテムアニメーション
+   ============================================== */
 
 .item-enter {
   opacity: 0 !important;
@@ -162,39 +262,34 @@ If your plugin does not need CSS, delete this file.
     transform var(--mfdi-app-transition-ms) ease-in;
 }
 
-[data-type="mfdi-view"] .view-content {
-  padding-bottom: 0;
-  background-color: transparent !important;
+/* ==============================================
+   カードハイライト
+   ============================================== */
+
+:is([data-type="mfdi-view"], [data-type="mfdi-editor-view"])
+  .mfdi-card--highlighted,
+:is([data-type="mfdi-view"], [data-type="mfdi-editor-view"])
+  .mfdi-card--highlighted:hover,
+.mfdi-card--highlighted,
+.mfdi-card--highlighted:hover {
+  /* :hover セレクタも列挙し、hover:bg-* による上書きを防ぐ */
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 8%,
+    var(--background-primary)
+  ) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--interactive-accent) 40%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--interactive-accent) 14%, transparent),
+    var(--shadow-xs) !important;
 }
 
-[data-type="mfdi-view"] [data-type="markdown"] .view-header {
-  display: none;
-}
+/* ==============================================
+   モーダル: 共通
+   ============================================== */
 
-[data-type="mfdi-view"] [data-type="markdown"] .cm-content {
-  padding-bottom: 0 !important;
-}
-
-[data-type="mfdi-view"]
-  :is(
-    .markdown-preview-view.is-readable-line-width .markdown-preview-sizer > div,
-    .markdown-source-view.mod-cm6.is-readable-line-width
-      .cm-contentContainer.cm-contentContainer
-      > .cm-content
-      > div,
-    .markdown-source-view.mod-cm6.is-readable-line-width
-      .cm-sizer
-      > .embedded-backlinks,
-    .markdown-source-view.mod-cm6.is-readable-line-width
-      .cm-sizer
-      > .inline-title,
-    .markdown-source-view.mod-cm6.is-readable-line-width
-      .cm-sizer
-      > .metadata-container
-  ) {
-  max-width: initial !important;
-  width: initial !important;
-  margin-inline: initial !important;
+.mfdi-modal .modal-content {
+  padding-top: 0;
 }
 
 .mfdi-modal__body {
@@ -258,27 +353,9 @@ If your plugin does not need CSS, delete this file.
   min-width: 92px;
 }
 
-.mfdi-modal .modal-content {
-  padding-top: 0;
-}
-
-[data-type="mfdi-view"] .mfdi-input-area.mod-read-only .cm-editor {
-  display: none !important;
-}
-
-[data-type="mfdi-view"] .cm-cursor.cm-cursor-secondary {
-  margin-left: initial !important;
-  width: 1px !important;
-}
-
-[data-type="mfdi-view"] :is(.HyperMD-codeblock-bg, .markdown-rendered pre) {
-  --code-background: var(--bg3) !important;
-}
-
-[data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
-  /* 画面が狭い時も入力エリア全体が収まるように抑える。 */
-  height: calc(100dvh - 123px) !important;
-}
+/* ==============================================
+   モーダル: ドラフトリスト
+   ============================================== */
 
 .mfdi-draft-list-modal {
   width: 100% !important;
@@ -300,6 +377,10 @@ If your plugin does not need CSS, delete this file.
   display: none; /* We have our own Back button */
 }
 
+/* ==============================================
+   モーダル: エディタ / バックリンクプレビュー
+   ============================================== */
+
 .mfdi-modal-editor {
   width: 98vw !important;
 }
@@ -314,6 +395,10 @@ If your plugin does not need CSS, delete this file.
   max-height: min(78vh, 720px);
   overflow: hidden;
 }
+
+/* ==============================================
+   バックリンクプレビュー: コンポーネント
+   ============================================== */
 
 .mfdi-backlink-preview__summary {
   color: var(--text-muted);
@@ -361,8 +446,7 @@ If your plugin does not need CSS, delete this file.
     transform var(--anim-duration-fast) ease;
 }
 
-.mfdi-backlink-preview__item:hover,
-.mfdi-backlink-preview__item:focus-visible {
+.mfdi-backlink-preview__item:is(:hover, :focus-visible) {
   border-color: var(--interactive-accent);
   background: var(--background-secondary-alt);
 }
@@ -386,8 +470,7 @@ If your plugin does not need CSS, delete this file.
   );
 }
 
-.mfdi-backlink-preview__item--target:hover,
-.mfdi-backlink-preview__item--target:focus-visible {
+.mfdi-backlink-preview__item--target:is(:hover, :focus-visible) {
   transform: none;
 }
 
@@ -441,28 +524,4 @@ If your plugin does not need CSS, delete this file.
   color: var(--text-muted);
   padding: var(--size-4-3) 0;
   text-align: center;
-}
-
-[data-type="mfdi-view"] .mfdi-card--highlighted,
-[data-type="mfdi-view"] .mfdi-card--highlighted:hover,
-.mfdi-card--highlighted,
-.mfdi-card--highlighted:hover {
-  /* :hover セレクタも列挙し、hover:bg-* による上書きを防ぐ */
-  background: color-mix(
-    in srgb,
-    var(--interactive-accent) 8%,
-    var(--background-primary)
-  ) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--interactive-accent) 40%, transparent),
-    0 0 0 4px color-mix(in srgb, var(--interactive-accent) 14%, transparent),
-    var(--shadow-xs) !important;
-}
-
-.mfdi-input-area {
-  margin-right: var(--size-4-3);
-}
-
-[data-type="mfdi-view"] .mfdi-input-area:not(.mod-maxmized) .cm-scroller {
-  max-height: 50vh;
 }
