@@ -184,7 +184,7 @@ export class MFDIView extends ItemView {
     const searchActionEl = this.addAction("search", "検索", () => {
       if (this.activeSearchControlEl) {
         this.actionDelegates.onSearchInputClose?.();
-        this.activeSearchControlEl.detach();
+        this.activeSearchControlEl.isConnected && this.activeSearchControlEl.detach();
         this.activeSearchControlEl = null;
         return;
       }
@@ -198,7 +198,7 @@ export class MFDIView extends ItemView {
 
         search.inputEl.addEventListener("blur", () => {
           this.actionDelegates.onSearchInputClose?.();
-          searchSetting.controlEl.detach();
+          searchSetting.controlEl.isConnected && searchSetting.controlEl.detach();
           this.activeSearchControlEl = null;
         });
 
