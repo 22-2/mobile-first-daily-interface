@@ -10,6 +10,8 @@ type UpdateSessionInputOptions = {
   persistMode?: PersistMode;
 };
 
+export type DraftMetadata = Record<string, string>;
+
 // 編集中投稿のセッション情報を1オブジェクトにまとめて永続化する
 // settingsSlice が granularity / noteDateStr を参照するため両フィールドを含む
 export type PersistedEditingPost = {
@@ -41,6 +43,25 @@ export const reconstructEditingPost = (
   kind: "thino" as const,
   threadRootId: null, // 必要に応じて解決される
 });
+
+export function mergeDraftMetadataForSubmit(params: {
+  latestMetadata: DraftMetadata;
+  draftMetadataBase: DraftMetadata;
+  draftMetadata: DraftMetadata;
+}): DraftMetadata {
+  const { latestMetadata, draftMetadataBase, draftMetadata } = params;
+  const merged = { ...latestMetadata };
+
+  // 意図: composer 側で消されたキーは submit 時にも消えるよう、
+  // 初期状態から現在状態への差分を latestMetadata に適用する。
+  for (const key of Object.keys(draftMetadataBase)) {
+    if (!(key in draftMetadata)) {
+      delete merged[key];
+    }
+  }
+
+  return { ...merged, ...draftMetadata };
+}
 
 export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   set,
@@ -86,6 +107,8 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   return {
     inputSnapshot: "",
     inputSnapshotVersion: 0,
+    draftMetadata: {},
+    draftMetadataBase: {},
     editingPost: null,
     editingPostOffset: null,
     highlightedPost: null,
@@ -109,6 +132,15 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
         updateEditor: true,
         persistMode: "immediate",
       });
+      set({ draftMetadata: {}, draftMetadataBase: {} });
+    },
+
+    setDraftMetadata: (metadata) => {
+      set({ draftMetadata: metadata });
+    },
+
+    setDraftMetadataBase: (metadata) => {
+      set({ draftMetadataBase: metadata });
     },
 
     getInputValue: () => get().inputSnapshot,
@@ -140,6 +172,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
       setAsTask(false);
       set({ editingPost: post, editingPostOffset: post.startOffset });
+      set({ draftMetadata: { ...post.metadata }, draftMetadataBase: { ...post.metadata } });
 
       // 編集セッション情報を1キーにまとめて保存する
       const persisted: PersistedEditingPost = {
@@ -160,6 +193,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       const { storage, clearInput } = get();
 
       set({ editingPost: null, editingPostOffset: null });
+      set({ draftMetadata: {}, draftMetadataBase: {} });
       storage?.remove(STORAGE_KEYS.EDITING_POST);
       clearInput();
     },

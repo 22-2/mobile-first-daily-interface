@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
+import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
 import { Flex } from "src/ui/components/primitives";
 import { PLACEHOLDER_TEXT, STORAGE_KEYS } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -117,6 +118,7 @@ export const PopoutInputArea: FC = memo(() => {
         onSubmit={handleSubmitAndClose}
         onCancel={handleCancel}
         characterCount={inputSnapshot.length}
+        leadingActions={<InputAreaMetadataActions isReadOnly={false} />}
       />
     </Flex>
   );

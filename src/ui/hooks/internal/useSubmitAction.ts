@@ -12,6 +12,7 @@ import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import { mergeDraftMetadataForSubmit } from "src/ui/store/slices/editorSlice";
 import { useShallow } from "zustand/shallow";
 
 /** 新規投稿・編集確定のみを担う hook。InputArea / InputAreaFooter / ReactView が利用する。 */
@@ -43,6 +44,8 @@ export const useSubmitAction = () => {
       editingPost: s.editingPost,
       canSubmit: s.canSubmit,
       cancelEdit: s.cancelEdit,
+      draftMetadata: s.draftMetadata,
+      draftMetadataBase: s.draftMetadataBase,
     })),
   );
 
@@ -76,6 +79,11 @@ export const useSubmitAction = () => {
 
       const now = window.moment();
       let targetTs = latestPost.timestamp;
+      const metadata = mergeDraftMetadataForSubmit({
+        latestMetadata: latestPost.metadata,
+        draftMetadataBase: editorState.draftMetadataBase,
+        draftMetadata: editorState.draftMetadata,
+      });
       if (settings.updateDateStrategy === "always") {
         targetTs = now;
       } else if (
@@ -90,7 +98,7 @@ export const useSubmitAction = () => {
         false,
         settingsState.granularity,
         targetTs,
-        latestPost.metadata,
+        metadata,
       );
 
       await shell.replaceRange(
@@ -129,9 +137,14 @@ export const useSubmitAction = () => {
       const metadata: Record<string, string> = {
         [THREAD_METADATA_KEYS.PARENT_ID]: settingsState.threadFocusRootId!,
       };
+      const mergedMetadata = mergeDraftMetadataForSubmit({
+        latestMetadata: metadata,
+        draftMetadataBase: editorState.draftMetadataBase,
+        draftMetadata: editorState.draftMetadata,
+      });
       // 日をまたぐ返信には `posted` を付与（同日返信は通常通りタイムスタンプ）
       if (!now.isSame(rootPost.noteDate, "day")) {
-        metadata.posted = now.toISOString();
+        mergedMetadata.posted = now.toISOString();
       }
 
       const text = toText(
@@ -139,7 +152,7 @@ export const useSubmitAction = () => {
         false,
         settingsState.granularity,
         getSerializedTimestamp(now, rootPost.noteDate),
-        metadata,
+        mergedMetadata,
       );
       if (!text) {
         editorState.clearInput();
@@ -174,7 +187,11 @@ export const useSubmitAction = () => {
     async (currentInput: string) => {
       const now = window.moment();
       const targetDate = settingsState.getEffectiveDate();
-      const metadata: Record<string, string> = {};
+      const metadata: Record<string, string> = mergeDraftMetadataForSubmit({
+        latestMetadata: {},
+        draftMetadataBase: editorState.draftMetadataBase,
+        draftMetadata: editorState.draftMetadata,
+      });
 
       // 日をまたぐ投稿には `posted` を付与（同日投稿は通常通りタイムスタンプ）
       if (

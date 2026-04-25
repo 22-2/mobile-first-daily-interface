@@ -22,6 +22,12 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
       replaceInput: s.replaceInput,
     })),
   );
+  const { setDraftMetadata, setDraftMetadataBase } = useAppStore(
+    useShallow((s) => ({
+      setDraftMetadata: s.setDraftMetadata,
+      setDraftMetadataBase: s.setDraftMetadataBase,
+    })),
+  );
 
   const formatTime = (timestamp: number) => {
     const now = window.moment();
@@ -128,6 +134,9 @@ export const DraftListManager: React.FC<DraftListManagerProps> = ({
                           .setIcon("refresh-cw")
                           .onClick(() => {
                             replaceInput(draft.content);
+                            // 意図: 保存済みドラフトは本文のみを戻し、前回のピン/タグ状態は引き継がない。
+                            setDraftMetadata({});
+                            setDraftMetadataBase({});
                             onClose();
                           });
                       });

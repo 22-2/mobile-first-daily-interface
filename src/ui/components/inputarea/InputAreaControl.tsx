@@ -1,8 +1,8 @@
 import { useShallow } from "zustand/shallow";
 import { memo, useCallback, useMemo, type ChangeEvent, type FC } from "react";
 import { NavButton } from "src/ui/components/common/NavButton";
-import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { DisplayModeIndicator } from "src/ui/components/inputarea/DisplayModeIndicator";
+import { InputAreaIcon } from "src/ui/components/inputarea/InputAreaIcon";
 import { Box, Flex, HStack, Input } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import { DISPLAY_MODE, INPUT_AREA_SIZE } from "src/ui/config/consntants";
@@ -123,17 +123,17 @@ export const InputAreaControl: FC<{
       className={`mfdi-input-area-control items-center px-[1em] my-[var(--size-4-4)] h-[28px] group`}
     >
       {capabilities.supportsDateNavigation && (
-        <ObsidianIcon
+        <InputAreaIcon
           name="home"
-          size="1.1em"
+          ariaLabel="ホーム"
+          onActivate={handleClickHome}
           className={cn(
             isViewDefault
-              ? "hover:bg-[var(--background-modifier-hover)]"
-              : "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]",
+              ? ""
+              : "text-[var(--text-accent)] hover:text-[var(--text-normal)]",
             // 意図: expand 中は上部バーを畳み、ホバー時だけ一時的に表示する。
             isExpanded && "hidden group-hover:flex",
           )}
-          onClick={handleClickHome}
         />
       )}
       <Box className="flex-1" />
@@ -166,20 +166,21 @@ export const InputAreaControl: FC<{
         )}
       </HStack>
       <Box className="flex-1 flex justify-end gap-[0.5em]">
-        <ObsidianIcon
+        <InputAreaIcon
           name="maximize"
-          size="1.1em"
+          ariaLabel="入力欄を最大化"
+          onActivate={() => {
+            if (isReadOnly) return;
+            onMaximizeToMaxHeight();
+          }}
+          isDisabled={isReadOnly}
           className={cn(
             isReadOnly
               ? "cursor-default opacity-30"
               : isExpanded
-                ? "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
-                : "hover:bg-[var(--background-modifier-hover)]",
+                ? "text-[var(--text-accent)] hover:text-[var(--text-normal)]"
+                : "",
           )}
-          onClick={() => {
-            if (isReadOnly) return;
-            onMaximizeToMaxHeight();
-          }}
           onContextMenu={(e) => {
             const menu = new Menu();
             menu.addItem((item) => {

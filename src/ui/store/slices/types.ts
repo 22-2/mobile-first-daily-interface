@@ -111,6 +111,8 @@ export interface NoteSlice {
 export interface EditorSlice {
   inputSnapshot: string;
   inputSnapshotVersion: number;
+  draftMetadata: Record<string, string>;
+  draftMetadataBase: Record<string, string>;
   editingPost: Post | null;
   editingPostOffset: number | null;
   highlightedPost: Post | null;
@@ -118,6 +120,8 @@ export interface EditorSlice {
   syncInputSession: (v: string) => void;
   replaceInput: (v: string) => void;
   clearInput: () => void;
+  setDraftMetadata: (metadata: Record<string, string>) => void;
+  setDraftMetadataBase: (metadata: Record<string, string>) => void;
   getInputValue: () => string;
   setEditingPost: (post: Post | null) => void;
   setHighlightedPost: (post: Post | null) => void;

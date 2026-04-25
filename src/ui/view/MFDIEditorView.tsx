@@ -15,6 +15,8 @@ export const VIEW_TYPE_MFDI_EDITOR = "mfdi-editor-view";
 export interface MFDIEditorViewState extends Record<string, unknown> {
   postInfo?: PersistedEditingPost;
   message?: string;
+  draftMetadata?: Record<string, string>;
+  draftMetadataBase?: Record<string, string>;
 }
 
 export class MFDIEditorView extends ItemView {

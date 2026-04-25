@@ -6,6 +6,7 @@ import {
   FULL_EXPANSION_STYLE,
 } from "src/ui/components/inputarea/constants";
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
+import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useAppStore } from "src/ui/store/appStore";
@@ -66,6 +67,7 @@ export const InputAreaFooter: FC = memo(() => {
       onSubmit={handleSubmit}
       onCancel={editingPost ? cancelEdit : undefined}
       characterCount={inputSnapshot.length}
+      leadingActions={<InputAreaMetadataActions isReadOnly={isReadOnly} />}
       onSubmitContextMenu={(e) => {
         const menu = new Menu();
         menu.addItem((item) => {

@@ -87,6 +87,7 @@ export function useObsidianUi() {
 
   const openEditorInNewWindow = useCallback(
     (post: Post) => {
+      const draftMetadata = { ...post.metadata };
       const postInfo: PersistedEditingPost = {
         id: post.id,
         path: post.path,
@@ -97,14 +98,24 @@ export function useObsidianUi() {
         granularity: store.getState().granularity,
       };
 
-      const state: MFDIEditorViewState = { postInfo, message: post.message };
+      const state: MFDIEditorViewState = {
+        postInfo,
+        message: post.message,
+        draftMetadata,
+        draftMetadataBase: draftMetadata,
+      };
       openPopoutEditorView(state);
     },
     [store, openPopoutEditorView],
   );
 
   const openInputInNewWindow = useCallback(
-    (message: string, editingPost: Post | null): boolean => {
+    (
+      message: string,
+      editingPost: Post | null,
+      draftMetadata: Record<string, string>,
+      draftMetadataBase: Record<string, string>,
+    ): boolean => {
       if (editingPost) {
         const postInfo: PersistedEditingPost = {
           id: editingPost.id,
@@ -116,10 +127,19 @@ export function useObsidianUi() {
           granularity: store.getState().granularity,
         };
 
-        return openPopoutEditorView({ postInfo, message });
+        return openPopoutEditorView({
+          postInfo,
+          message,
+          draftMetadata,
+          draftMetadataBase,
+        });
       }
 
-      return openPopoutEditorView({ message });
+      return openPopoutEditorView({
+        message,
+        draftMetadata,
+        draftMetadataBase,
+      });
     },
     [store, openPopoutEditorView],
   );
