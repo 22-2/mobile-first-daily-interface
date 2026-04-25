@@ -253,7 +253,8 @@ export const createSettingsSlice: StateCreator<
 
   handleClickHome: () => {
     const now = window.moment();
-    set({ ...DEFAULT_VIEW_STATE, date: now });
+    // 意図: home は表示条件だけでなく検索条件も初期化し、一覧を完全に既定状態へ戻す。
+    set({ ...DEFAULT_VIEW_STATE, date: now, searchQuery: "" });
     const state = get();
     persistValue(
       state,

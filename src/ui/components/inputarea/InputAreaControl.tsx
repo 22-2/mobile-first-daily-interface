@@ -39,6 +39,7 @@ export const InputAreaControl: FC<{
     handleChangeCalendarDateAction,
     displayMode,
     activeTag,
+    searchQuery,
     setDisplayMode,
     setActiveTag,
     setThreadFocusRootId,
@@ -52,6 +53,7 @@ export const InputAreaControl: FC<{
       handleChangeCalendarDateAction: s.handleChangeCalendarDate,
       displayMode: s.displayMode,
       activeTag: s.activeTag,
+      searchQuery: s.searchQuery,
       setDisplayMode: s.setDisplayMode,
       setActiveTag: s.setActiveTag,
       setThreadFocusRootId: s.setThreadFocusRootId,
@@ -76,6 +78,7 @@ export const InputAreaControl: FC<{
     asTask,
     activeTag,
     threadFocusRootId,
+    searchQuery,
   });
 
   const isStatusIndicatorVisible =

@@ -11,6 +11,7 @@ type ResettableViewState = Pick<
   | "asTask"
   | "threadFocusRootId"
   | "activeTag"
+  | "searchQuery"
 >;
 
 type CenterIndicatorState = Pick<
@@ -26,7 +27,9 @@ export function isDefaultViewState(state: ResettableViewState): boolean {
     state.timeFilter === DEFAULT_VIEW_STATE.timeFilter &&
     state.asTask === DEFAULT_VIEW_STATE.asTask &&
     state.activeTag === DEFAULT_VIEW_STATE.activeTag &&
-    state.threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId
+    state.threadFocusRootId === DEFAULT_VIEW_STATE.threadFocusRootId &&
+    // 意図: 検索中は default 見た目に戻さず、home で検索解除する導線を明示する。
+    state.searchQuery === ""
   );
 }
 

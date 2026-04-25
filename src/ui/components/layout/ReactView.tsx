@@ -313,6 +313,16 @@ const ReactViewContent = () => {
 
   useEffect(() => {
     if (!("handlers" in component)) return;
+    component.handlers.onSearchInputOpen = () => {
+
+    };
+    return () => {
+      component.handlers.onSearchInputOpen = undefined;
+    };
+  }, [component]);
+
+  useEffect(() => {
+    if (!("handlers" in component)) return;
     component.handlers.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =

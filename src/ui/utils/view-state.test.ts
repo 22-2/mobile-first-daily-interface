@@ -16,6 +16,22 @@ describe("view-state utilities", () => {
         asTask: false,
         activeTag: "IT",
         threadFocusRootId: null,
+        searchQuery: "",
+      }),
+    ).toBe(false);
+  });
+
+  it("検索中はデフォルト扱いにしない", () => {
+    expect(
+      isDefaultViewState({
+        displayMode: DISPLAY_MODE.TIMELINE,
+        granularity: "day",
+        dateFilter: "today",
+        timeFilter: "all",
+        asTask: false,
+        activeTag: null,
+        threadFocusRootId: null,
+        searchQuery: "wanted",
       }),
     ).toBe(false);
   });

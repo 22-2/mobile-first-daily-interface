@@ -98,6 +98,24 @@ describe("settingsSlice", () => {
     expect(state.date.isSame(yesterday, "day")).toBe(true);
   });
 
+  it("home で検索条件も含めて既定状態に戻る", () => {
+    settingsStore.setState((state) => ({
+      ...state,
+      searchQuery: "wanted",
+      activeTag: "IT",
+      threadFocusRootId: "root-1",
+      displayMode: DISPLAY_MODE.FOCUS,
+    }));
+
+    settingsStore.getState().handleClickHome();
+
+    const state = settingsStore.getState();
+    expect(state.searchQuery).toBe("");
+    expect(state.activeTag).toBeNull();
+    expect(state.threadFocusRootId).toBeNull();
+    expect(state.displayMode).toBe(DISPLAY_MODE.TIMELINE);
+  });
+
   it("初期表示モードはタイムライン", () => {
     const initial = createSettingsSlice(
       () => {},
