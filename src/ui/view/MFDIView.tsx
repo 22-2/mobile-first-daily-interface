@@ -21,14 +21,16 @@ export const VIEW_TYPE_MFDI = "mfdi-view";
 
 export class MFDIView extends ItemView {
   private editableTitleBar: EditableTitleBar | null = null;
-  private root: Root;
+  private root: Root | null = null;
   private settings: Settings;
-  // 検索入力用のコントロール要素を保持しておく
+  private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
+
+  // 検索入力用コントロール
   private activeSearchControlEl: HTMLElement | null = null;
   private searchInputEl: HTMLInputElement | null = null;
   private isSearchToggleFromAction = false;
-  private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
-  public navigation: boolean = false;
+
+  public navigation = false;
   public readonly actionDelegates: MFDIActionDelegate = {};
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
@@ -37,7 +39,7 @@ export class MFDIView extends ItemView {
   }
 
   // -----------------------------------------------------------------------
-  // ItemView overrides
+  // ItemView Overrides
   // -----------------------------------------------------------------------
 
   getIcon(): string {
@@ -56,44 +58,30 @@ export class MFDIView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    this.setupHandlers();
+    this.setupShortcuts();
+    this.setupWorkspaceEvents();
+
     // fixedノートを開いたときなど、すぐに render せずに少し待つ。
-    // これをしないと、DateNavigation が表示されてしまうなど、状態の反映が不完全なまま描画されてしまう。
-    window.setTimeout(() => this.setupView());
+    // 状態の反映が不完全なまま描画されるのを防ぐため。
+    window.setTimeout(() => this.updateView());
   }
 
   async onClose(): Promise<void> {
     this.root?.unmount();
+    this.root = null;
   }
 
   onPaneMenu(menu: Menu, prev: string): void {
     this.addFixedNoteMenuItems(menu);
     this.addViewMenuItems(menu);
     this.addPeriodMenuItemsIfSupported(menu);
-    if (this.state.noteMode === "fixed") {
-      // delete fixed note menu
-      menu.addSeparator();
-      menu.addItem((item) => {
-        item
-          .setTitle("削除")
-          .setIcon("trash")
-          .setWarning(true)
-          .onClick(async () => {
-            const file = this.app.metadataCache.getFirstLinkpathDest(
-              this.state.file!,
-              "",
-            );
-            if (file instanceof TFile) {
-              this.app.fileManager.trashFile(file);
-            }
-          });
-      });
-    }
+    this.addDeleteFixedNoteMenuItem(menu);
+
     super.onPaneMenu(menu, prev);
   }
 
   // -----------------------------------------------------------------------
-  // State management
+  // State Management
   // -----------------------------------------------------------------------
 
   getState(): MFDIViewState {
@@ -104,12 +92,8 @@ export class MFDIView extends ItemView {
     this.state = {
       ...this.state,
       ...patch,
-      // patch に含まれない場合は既存値を維持（スプレッドで上書きされるが明示）
       noteMode: patch.noteMode ?? this.state.noteMode,
-      file:
-        patch.file !== undefined
-          ? (patch.file as string | null)
-          : this.state.file,
+      file: patch.file !== undefined ? patch.file : this.state.file,
     };
   }
 
@@ -117,11 +101,11 @@ export class MFDIView extends ItemView {
     this.setStatePartial(state);
 
     if (state.activeTopic !== undefined) {
-      this.state.activeTopic = state.activeTopic as string;
+      this.state.activeTopic = state.activeTopic;
       this.actionDelegates.onChangeTopic?.(this.state.activeTopic);
     }
 
-    this.setupView();
+    this.updateView();
   }
 
   // -----------------------------------------------------------------------
@@ -130,14 +114,29 @@ export class MFDIView extends ItemView {
 
   updateSettings(settings: Settings): void {
     this.settings = settings;
-    this.setupView();
+    this.updateView();
+  }
+
+  public openSearchInput(): void {
+    this.ensureSearchControl();
+    if (!this.activeSearchControlEl) return;
+
+    this.activeSearchControlEl.style.display = "block";
+    window.setTimeout(() => {
+      this.searchInputEl?.focus();
+    });
+  }
+
+  public closeSearchInput(): void {
+    if (!this.activeSearchControlEl) return;
+    this.activeSearchControlEl.style.display = "none";
   }
 
   // -----------------------------------------------------------------------
-  // Private: setup
+  // Setup & Events
   // -----------------------------------------------------------------------
 
-  private setupHandlers(): void {
+  private setupShortcuts(): void {
     // scope は render より先に初期化する必要がある（MagicalEditor で親スコープとして参照されるため）
     this.scope = new Scope(this.app.scope);
 
@@ -145,8 +144,10 @@ export class MFDIView extends ItemView {
       this.actionDelegates.onSubmit?.();
       return false;
     });
+
     this.scope.register(["Ctrl"], "f", () => {
       this.actionDelegates.onSearchInputOpen?.();
+      return false;
     });
 
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
@@ -159,7 +160,7 @@ export class MFDIView extends ItemView {
       return false;
     });
 
-    // 検索入力がフォーカスされているときに Escape キーで検索入力を閉じる
+    // 検索入力がフォーカスされているときに Escape キーで閉じる
     this.scope.register([], "Escape", () => {
       if (document.activeElement === this.searchInputEl) {
         this.actionDelegates.onSearchInputClose?.();
@@ -168,12 +169,40 @@ export class MFDIView extends ItemView {
       }
       return false;
     });
+  }
 
-    this.app.workspace.on("active-leaf-change", (leaf) => {
-      if (leaf?.id === this.leaf.id) {
-        this.actionDelegates.onFocusRequested?.();
-      }
-    });
+  private setupWorkspaceEvents(): void {
+    // registerEvent を使用して onClose 時のメモリリークを防止
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (leaf) => {
+        if (leaf?.id === this.leaf.id) {
+          this.actionDelegates.onFocusRequested?.();
+        }
+      }),
+    );
+  }
+
+  // -----------------------------------------------------------------------
+  // View Rendering & Actions
+  // -----------------------------------------------------------------------
+
+  private updateView(): void {
+    this.updateActions();
+    this.updateEditableTitleBar();
+    this.renderReactView();
+  }
+
+  private updateActions(): void {
+    this.cleanUpActions();
+    const capabilities = getMFDIViewCapabilities(this.state);
+
+    if (capabilities.supportsSidebar) {
+      this.addAction("columns-2", "サイドバーを切り替え", () => {
+        this.actionDelegates.onToggleSidebar?.();
+      }).setAttr("data-mfdi-actions", "true");
+    }
+
+    this.buildSearchAction();
   }
 
   private cleanUpActions(): void {
@@ -187,7 +216,7 @@ export class MFDIView extends ItemView {
 
     const searchSetting = new Setting(createDiv()).addSearch((search) => {
       this.searchInputEl = search.inputEl;
-      search.setValue(this.state.searchQuery);
+      search.setValue(this.state.searchQuery ?? "");
       search.onChange((value) => {
         this.state.searchQuery = value;
         this.actionDelegates.onSearchQueryChange?.(value);
@@ -201,132 +230,105 @@ export class MFDIView extends ItemView {
     });
 
     this.activeSearchControlEl = searchSetting.controlEl;
-    this.activeSearchControlEl.setCssStyles({
-      display: "none",
-    });
-    this.actionsEl.prepend(searchSetting.controlEl);
+    this.activeSearchControlEl.style.display = "none";
+    this.actionsEl.prepend(this.activeSearchControlEl);
   }
 
-  public openSearchInput(): void {
-    this.ensureSearchControl();
-    if (!this.activeSearchControlEl) return;
-
-    this.activeSearchControlEl.setCssStyles({
-      display: "block",
-    });
-    window.setTimeout(() => {
-      this.searchInputEl?.focus();
-    });
-  }
-
-  public closeSearchInput(): void {
-    if (!this.activeSearchControlEl) return;
-
-    this.activeSearchControlEl.setCssStyles({
-      display: "none",
-    });
-  }
-
-  private setupView(): void {
-    this.cleanUpActions();
-    const capabilities = getMFDIViewCapabilities(this.state);
-
-    if (capabilities.supportsSidebar) {
-      this.addAction("columns-2", "サイドバーを切り替え", () => {
-        this.actionDelegates.onToggleSidebar?.();
-      }).setAttr("data-mfdi-actions", "true");
-    }
-
-    // 検索UIをトグル表示。既に開いていれば閉じる。
+  private buildSearchAction(): void {
     const searchActionEl = this.addAction("search", "検索切り替え", () => {
-      if (this.activeSearchControlEl?.style.display !== "none") {
+      const isHidden =
+        this.activeSearchControlEl?.style.display === "none" ||
+        !this.activeSearchControlEl;
+
+      if (isHidden) {
+        this.actionDelegates.onSearchInputOpen?.();
+        this.openSearchInput();
+      } else {
         this.actionDelegates.onSearchInputClose?.();
         this.closeSearchInput();
-        this.isSearchToggleFromAction = false;
-        return;
       }
-      this.actionDelegates.onSearchInputOpen?.();
-      this.openSearchInput();
       this.isSearchToggleFromAction = false;
     });
+
     searchActionEl.addEventListener("mousedown", () => {
       if (this.activeSearchControlEl?.style.display !== "none") {
         this.isSearchToggleFromAction = true;
       }
     });
+
     searchActionEl.setAttr("data-mfdi-actions", "true");
-
-    searchActionEl.addEventListener("contextmenu", (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const menu = new Menu();
-      const applySearchKindFilter = (params: { threadOnly: boolean }) => {
-        // View側の状態を先に同期し、右クリックメニューのチェック状態と実データをずらさない。
-        this.state.threadOnly = params.threadOnly;
-        this.actionDelegates.onChangeThreadOnly?.(params.threadOnly);
-      };
-
-      menu.addItem((item) =>
-        item
-          .setTitle("すべて")
-          .setChecked(!this.state.threadOnly)
-          .onClick(() => applySearchKindFilter({ threadOnly: false })),
-      );
-
-      menu.addSeparator();
-
-      menu.addItem((item) =>
-        item
-          .setTitle("スレッドのみ")
-          .setChecked(this.state.threadOnly)
-          .onClick(() => applySearchKindFilter({ threadOnly: true })),
-      );
-
-      menu.showAtMouseEvent(e.nativeEvent);
-    });
-
-    if (this.state.noteMode === "fixed") {
-      this.setupEditableTitleBar();
-    }
-
-    const _render = () => {
-      if (!this.root) {
-        this.root = createRoot(this.containerEl.children[1]);
-      }
-      this.root.render(
-        <ReactView app={this.app} settings={this.settings} view={this} />,
-      );
-    };
-    _render();
+    searchActionEl.addEventListener(
+      "contextmenu",
+      this.onSearchContextMenu.bind(this),
+    );
   }
 
-  private setupEditableTitleBar(): void {
-    this.editableTitleBar = new EditableTitleBar(this, {
-      scope: new Scope(this.app.scope),
-      getTitle: () => getFixedNoteTitle(this.state.file),
-      onSubmitTitle: async (newTitle: string) => {
-        if (!this.state.file || !newTitle.trim()) return;
+  private onSearchContextMenu(e: MouseEvent): void {
+    e.preventDefault();
+    e.stopPropagation();
 
-        const file = this.app.vault.getAbstractFileByPath(
-          this.state.file,
-        ) as TFile | null;
+    const menu = new Menu();
+    const applySearchKindFilter = (threadOnly: boolean) => {
+      this.state.threadOnly = threadOnly;
+      this.actionDelegates.onChangeThreadOnly?.(threadOnly);
+    };
 
-        if (!file) return;
+    menu.addItem((item) =>
+      item
+        .setTitle("すべて")
+        .setChecked(!this.state.threadOnly)
+        .onClick(() => applySearchKindFilter(false)),
+    );
+    menu.addSeparator();
+    menu.addItem((item) =>
+      item
+        .setTitle("スレッドのみ")
+        .setChecked(this.state.threadOnly)
+        .onClick(() => applySearchKindFilter(true)),
+    );
 
-        await this.app.fileManager.renameFile(
-          file,
-          ensureExtension(newTitle, ".mfdi.md"),
-        );
-        this.state.file = file.path;
-        this.setupView();
-      },
-    });
+    menu.showAtMouseEvent(e);
+  }
+
+  private updateEditableTitleBar(): void {
+    if (this.state.noteMode !== "fixed") return;
+
+    if (!this.editableTitleBar) {
+      this.editableTitleBar = new EditableTitleBar(this, {
+        scope: new Scope(this.app.scope),
+        getTitle: () => getFixedNoteTitle(this.state.file),
+        onSubmitTitle: async (newTitle: string) => {
+          if (!this.state.file || !newTitle.trim()) return;
+
+          const file = this.app.vault.getAbstractFileByPath(this.state.file);
+          if (!(file instanceof TFile)) return;
+
+          await this.app.fileManager.renameFile(
+            file,
+            ensureExtension(newTitle, ".mfdi.md"),
+          );
+
+          this.state.file = file.path;
+          this.updateView();
+        },
+      });
+    }
+
     this.editableTitleBar.render();
   }
 
+  private renderReactView(): void {
+    if (!this.root) {
+      // Obsidian API: containerEl より contentEl を直接指定する方が安全
+      this.root = createRoot(this.contentEl);
+    }
+    this.root.render(
+      <ReactView app={this.app} settings={this.settings} view={this} />,
+    );
+  }
+
   // -----------------------------------------------------------------------
-  // Private: menu builders
+  // Menu Builders
   // -----------------------------------------------------------------------
 
   private addFixedNoteMenuItems(menu: Menu): void {
@@ -351,7 +353,6 @@ export class MFDIView extends ItemView {
     );
 
     menu.addSeparator();
-
     menu.addItem((item) =>
       item.setTitle("ビュー").setIcon("panels-top-left").setDisabled(true),
     );
@@ -395,6 +396,28 @@ export class MFDIView extends ItemView {
     addPeriodMenuItems(menu, this.state, {
       onChangeTimeFilter: (f) => this.actionDelegates.onChangeTimeFilter?.(f),
       onChangeDateFilter: (f) => this.actionDelegates.onChangeDateFilter?.(f),
+    });
+  }
+
+  private addDeleteFixedNoteMenuItem(menu: Menu): void {
+    if (this.state.noteMode !== "fixed") return;
+
+    menu.addSeparator();
+    menu.addItem((item) => {
+      item
+        .setTitle("削除")
+        .setIcon("trash")
+        .setWarning(true)
+        .onClick(async () => {
+          if (!this.state.file) return;
+          const file = this.app.metadataCache.getFirstLinkpathDest(
+            this.state.file,
+            "",
+          );
+          if (file instanceof TFile) {
+            await this.app.fileManager.trashFile(file);
+          }
+        });
     });
   }
 }
