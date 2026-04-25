@@ -58,7 +58,7 @@ export const InputAreaMetadataActions: FC<InputAreaMetadataActionsProps> = memo(
     }, [draftMetadata, isReadOnly, setDraftMetadata, showTextInput]);
 
     return (
-      <HStack className="gap-[0.25em] items-center">
+      <HStack className="gap-[0.25em] items-center invisible group-hover:visible">
         <InputAreaIcon
           name="pin"
           ariaLabel={isPinned(draftMetadata) ? "ピン留め解除" : "ピン留め"}

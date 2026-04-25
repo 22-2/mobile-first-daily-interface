@@ -61,7 +61,7 @@ export const InputAreaFooter: FC = memo(() => {
 
   return (
     <InputAreaFooterBase
-      className="mfdi-input-area-footer"
+      className="mfdi-input-area-footer group"
       canSubmit={canSubmit}
       submitLabel={submitLabel}
       onSubmit={handleSubmit}
