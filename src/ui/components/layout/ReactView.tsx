@@ -35,6 +35,7 @@ import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
 import type { AppStoreApi } from "src/ui/store/appStore";
 import {
   AppStoreProvider,
@@ -234,11 +235,11 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ]);
 
   // Sync state/handlers with Obsidian View
-  useViewSync("handlers" in component ? component : null);
+  useViewSync(component);
 
   // Handle focus requested from View
   useEffect(() => {
-    if (!("handlers" in component)) return;
+    if (!("actionDelegates" in component)) return;
     component.actionDelegates.onFocusRequested = () => {
       inputRef.current?.focus();
     };
@@ -285,10 +286,12 @@ const ReactViewContent = () => {
       threadFocusRootId: s.threadFocusRootId,
       searchQuery: s.searchQuery,
       searchInputOpen: s.searchInputOpen,
+      setSearchQuery: s.setSearchQuery,
       setSearchInputOpen: s.setSearchInputOpen,
       inputAreaSize: s.inputAreaSize,
     })),
   );
+  const setSearchQuery = settings.setSearchQuery;
   const setSearchInputOpen = settings.setSearchInputOpen;
 
   const { posts } = useUnifiedPosts();
@@ -315,21 +318,14 @@ const ReactViewContent = () => {
   });
 
   useEffect(() => {
-    if (!("handlers" in component)) return;
-    component.actionDelegates.onSearchInputOpen = () => {
-      setSearchInputOpen(true);
-    };
-    component.actionDelegates.onSearchInputClose = () => {
-      setSearchInputOpen(false);
-    };
-    return () => {
-      component.actionDelegates.onSearchInputOpen = undefined;
-      component.actionDelegates.onSearchInputClose = undefined;
-    };
+    return bindSearchDelegates(component, {
+      setSearchQuery,
+      setSearchInputOpen,
+    });
   }, [component, setSearchInputOpen]);
 
   useEffect(() => {
-    if (!("handlers" in component)) return;
+    if (!("actionDelegates" in component)) return;
     component.actionDelegates.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =
