@@ -239,7 +239,6 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Handle focus requested from View
   useEffect(() => {
-    if (!("actionDelegates" in component)) return;
     component.actionDelegates.onFocusRequested = () => {
       inputRef.current?.focus();
     };
@@ -322,10 +321,9 @@ const ReactViewContent = () => {
       setSearchQuery,
       setSearchInputOpen,
     });
-  }, [component, setSearchInputOpen]);
+  }, [component, setSearchInputOpen, setSearchQuery]);
 
   useEffect(() => {
-    if (!("actionDelegates" in component)) return;
     component.actionDelegates.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =
