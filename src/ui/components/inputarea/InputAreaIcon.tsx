@@ -10,6 +10,7 @@ type InputAreaIconProps = {
   onActivate?: () => void;
   onContextMenu?: MouseEventHandler<HTMLDivElement>;
   isDisabled?: boolean;
+  size?: "sm" | "md";
   className?: string;
 };
 
@@ -22,6 +23,7 @@ export const InputAreaIcon = memo(
     onContextMenu,
     isDisabled = false,
     className,
+    size = "sm",
   }: InputAreaIconProps) => {
     const handleKeyDown = useCallback(
       (event: KeyboardEvent<HTMLDivElement>) => {
@@ -37,7 +39,7 @@ export const InputAreaIcon = memo(
     return (
       <ObsidianIcon
         name={name}
-        size={"1.25em"}
+        size={size === "sm" ? "1.25em" : "1.7em"}
         role="button"
         tabIndex={isDisabled ? -1 : 0}
         aria-label={ariaLabel}
