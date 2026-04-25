@@ -5,7 +5,7 @@ import type {
   TimeFilter,
 } from "src/ui/types";
 
-export interface MFDIViewHandler {
+export interface MFDIActionDelegate {
   onOpenDailyNoteAction?: () => void;
   onChangeGranularity?: (g: Granularity) => void;
   onChangeAsTask?: (asTask: boolean) => void;

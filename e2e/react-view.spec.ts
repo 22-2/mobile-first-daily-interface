@@ -48,11 +48,11 @@ async function setLiveEditorContent(obsidian: ObsidianAPI, text: string) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    if (!(leaf.view as MFDIView).handlers.onSetLiveEditorContentForTesting) {
+    if (!(leaf.view as MFDIView).actionDelegates.onSetLiveEditorContentForTesting) {
       throw new Error("onSetLiveEditorContentForTesting is not ready");
     }
 
-    (leaf.view as MFDIView).handlers.onSetLiveEditorContentForTesting!(content);
+    (leaf.view as MFDIView).actionDelegates.onSetLiveEditorContentForTesting!(content);
   }, text);
 
   await expect.poll(() => getLiveEditorContent(obsidian)).toBe(text);
@@ -65,11 +65,11 @@ async function getLiveEditorContent(obsidian: ObsidianAPI) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    if (!(leaf.view as MFDIView).handlers.onGetLiveEditorContentForTesting) {
+    if (!(leaf.view as MFDIView).actionDelegates.onGetLiveEditorContentForTesting) {
       throw new Error("onGetLiveEditorContentForTesting is not ready");
     }
 
-    return (leaf.view as MFDIView).handlers.onGetLiveEditorContentForTesting!();
+    return (leaf.view as MFDIView).actionDelegates.onGetLiveEditorContentForTesting!();
   });
 }
 
@@ -121,9 +121,9 @@ async function getReactViewDebugSnapshot(obsidian: ObsidianAPI): Promise<ReactVi
       viewDate,
       viewActiveTopic: viewState?.activeTopic ?? null,
       settingsDateIso:
-        (leaf?.view as MFDIView | undefined)?.handlers.onGetDebugStateForTesting?.().settingsDateIso ?? null,
+        (leaf?.view as MFDIView | undefined)?.actionDelegates.onGetDebugStateForTesting?.().settingsDateIso ?? null,
       settingsDisplayMode:
-        (leaf?.view as MFDIView | undefined)?.handlers.onGetDebugStateForTesting?.().displayMode ?? null,
+        (leaf?.view as MFDIView | undefined)?.actionDelegates.onGetDebugStateForTesting?.().displayMode ?? null,
       nowDate: window.moment().format("YYYY-MM-DD HH:mm:ss"),
       dbMemoCount: null,
       dbPaths: [],
@@ -210,7 +210,7 @@ async function toggleDisplayModeForRefresh(obsidian: ObsidianAPI) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    const handlers = (leaf.view as MFDIView).handlers;
+    const handlers = (leaf.view as MFDIView).actionDelegates;
     handlers.onChangeDisplayMode?.("focus");
     handlers.onChangeDisplayMode?.("timeline");
   });

@@ -103,11 +103,11 @@ async function setLiveEditorContent(obsidian: ObsidianAPI, text: string) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    if (!(leaf.view as MFDIView).handlers.onSetLiveEditorContentForTesting) {
+    if (!(leaf.view as MFDIView).actionDelegates.onSetLiveEditorContentForTesting) {
       throw new Error("onSetLiveEditorContentForTesting is not ready");
     }
 
-    (leaf.view as MFDIView).handlers.onSetLiveEditorContentForTesting!(content);
+    (leaf.view as MFDIView).actionDelegates.onSetLiveEditorContentForTesting!(content);
   }, text);
 
   const liveEditor = obsidian.page.locator(".mfdi-input-area .cm-content");
@@ -128,11 +128,11 @@ async function getLiveEditorContent(obsidian: ObsidianAPI) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    if (!(leaf.view as MFDIView).handlers.onGetLiveEditorContentForTesting) {
+    if (!(leaf.view as MFDIView).actionDelegates.onGetLiveEditorContentForTesting) {
       throw new Error("onGetLiveEditorContentForTesting is not ready");
     }
 
-    return (leaf.view as MFDIView).handlers.onGetLiveEditorContentForTesting!();
+    return (leaf.view as MFDIView).actionDelegates.onGetLiveEditorContentForTesting!();
   });
 }
 
@@ -154,11 +154,11 @@ async function getLiveEditorDebugState(obsidian: ObsidianAPI) {
       throw new Error("mfdi-view leaf not found");
     }
 
-    if (!(leaf.view as MFDIView).handlers.onGetDebugStateForTesting) {
+    if (!(leaf.view as MFDIView).actionDelegates.onGetDebugStateForTesting) {
       throw new Error("onGetDebugStateForTesting is not ready");
     }
 
-    return (leaf.view as MFDIView).handlers.onGetDebugStateForTesting!();
+    return (leaf.view as MFDIView).actionDelegates.onGetDebugStateForTesting!();
   });
 }
 

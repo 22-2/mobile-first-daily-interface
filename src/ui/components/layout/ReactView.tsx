@@ -239,11 +239,11 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Handle focus requested from View
   useEffect(() => {
     if (!("handlers" in component)) return;
-    component.handlers.onFocusRequested = () => {
+    component.actionDelegates.onFocusRequested = () => {
       inputRef.current?.focus();
     };
     return () => {
-      component.handlers.onFocusRequested = undefined;
+      component.actionDelegates.onFocusRequested = undefined;
     };
   }, [component, inputRef]);
 
@@ -316,21 +316,21 @@ const ReactViewContent = () => {
 
   useEffect(() => {
     if (!("handlers" in component)) return;
-    component.handlers.onSearchInputOpen = () => {
+    component.actionDelegates.onSearchInputOpen = () => {
       setSearchInputOpen(true);
     };
-    component.handlers.onSearchInputClose = () => {
+    component.actionDelegates.onSearchInputClose = () => {
       setSearchInputOpen(false);
     };
     return () => {
-      component.handlers.onSearchInputOpen = undefined;
-      component.handlers.onSearchInputClose = undefined;
+      component.actionDelegates.onSearchInputOpen = undefined;
+      component.actionDelegates.onSearchInputClose = undefined;
     };
   }, [component, setSearchInputOpen]);
 
   useEffect(() => {
     if (!("handlers" in component)) return;
-    component.handlers.onCopyAllPosts = () => {
+    component.actionDelegates.onCopyAllPosts = () => {
       // スレッド表示中は返信も含めて全メッセージをコピー
       const postsTocopy: Post[] =
         settings.threadFocusRootId && settings.displayMode === "focus"
@@ -342,7 +342,7 @@ const ReactViewContent = () => {
       navigator.clipboard.writeText(text);
     };
     return () => {
-      component.handlers.onCopyAllPosts = undefined;
+      component.actionDelegates.onCopyAllPosts = undefined;
     };
   }, [
     component,
@@ -588,23 +588,23 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onSubmit = handleSubmit;
+    view.actionDelegates.onSubmit = handleSubmit;
     return () => {
-      view.handlers.onSubmit = undefined;
+      view.actionDelegates.onSubmit = undefined;
     };
   }, [view, handleSubmit]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onOpenDailyNoteAction = handleClickOpenDailyNote;
+    view.actionDelegates.onOpenDailyNoteAction = handleClickOpenDailyNote;
     return () => {
-      view.handlers.onOpenDailyNoteAction = undefined;
+      view.actionDelegates.onOpenDailyNoteAction = undefined;
     };
   }, [view, handleClickOpenDailyNote]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeGranularity = (nextGranularity: Granularity) => {
+    view.actionDelegates.onChangeGranularity = (nextGranularity: Granularity) => {
       setGranularity(nextGranularity);
       if (nextGranularity !== "day") {
         setTimeFilter("all");
@@ -614,7 +614,7 @@ function useViewSync(view: MFDIView | null) {
       setTasks([]);
     };
     return () => {
-      view.handlers.onChangeGranularity = undefined;
+      view.actionDelegates.onChangeGranularity = undefined;
     };
   }, [
     view,
@@ -627,80 +627,80 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeTopic = setActiveTopic;
+    view.actionDelegates.onChangeTopic = setActiveTopic;
     return () => {
-      view.handlers.onChangeTopic = undefined;
+      view.actionDelegates.onChangeTopic = undefined;
     };
   }, [view, setActiveTopic]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeAsTask = (nextAsTask: boolean) => {
+    view.actionDelegates.onChangeAsTask = (nextAsTask: boolean) => {
       setAsTask(nextAsTask);
     };
     return () => {
-      view.handlers.onChangeAsTask = undefined;
+      view.actionDelegates.onChangeAsTask = undefined;
     };
   }, [view, setAsTask]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeThreadOnly = (nextThreadOnly: boolean) => {
+    view.actionDelegates.onChangeThreadOnly = (nextThreadOnly: boolean) => {
       setThreadOnly(nextThreadOnly);
     };
     return () => {
-      view.handlers.onChangeThreadOnly = undefined;
+      view.actionDelegates.onChangeThreadOnly = undefined;
     };
   }, [view, setThreadOnly]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeTimeFilter = (nextTimeFilter: TimeFilter) => {
+    view.actionDelegates.onChangeTimeFilter = (nextTimeFilter: TimeFilter) => {
       setTimeFilter(nextTimeFilter);
     };
     return () => {
-      view.handlers.onChangeTimeFilter = undefined;
+      view.actionDelegates.onChangeTimeFilter = undefined;
     };
   }, [view, setTimeFilter]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeDateFilter = (nextDateFilter: DateFilter) => {
+    view.actionDelegates.onChangeDateFilter = (nextDateFilter: DateFilter) => {
       setDateFilter(nextDateFilter);
     };
     return () => {
-      view.handlers.onChangeDateFilter = undefined;
+      view.actionDelegates.onChangeDateFilter = undefined;
     };
   }, [view, setDateFilter]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
+    view.actionDelegates.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
       setDisplayMode(nextDisplayMode);
     };
     return () => {
-      view.handlers.onChangeDisplayMode = undefined;
+      view.actionDelegates.onChangeDisplayMode = undefined;
     };
   }, [view, setDisplayMode]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onSearchQueryChange = (query: string) => {
+    view.actionDelegates.onSearchQueryChange = (query: string) => {
       setSearchQuery(query);
     };
     return () => {
-      view.handlers.onSearchQueryChange = undefined;
+      view.actionDelegates.onSearchQueryChange = undefined;
     };
   }, [view, setSearchQuery]);
 
   useEffect(() => {
     if (!view) return;
     if (isReadOnly) {
-      view.handlers.onEditorExpand = undefined;
+      view.actionDelegates.onEditorExpand = undefined;
       return;
     }
 
-    view.handlers.onEditorExpand = () => {
+    view.actionDelegates.onEditorExpand = () => {
       setInputAreaSize(
         inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED
           ? INPUT_AREA_SIZE.DEFAULT
@@ -708,7 +708,7 @@ function useViewSync(view: MFDIView | null) {
       );
     };
     return () => {
-      view.handlers.onEditorExpand = undefined;
+      view.actionDelegates.onEditorExpand = undefined;
     };
   }, [
     view,
@@ -722,21 +722,21 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onToggleSidebar = () => {
+    view.actionDelegates.onToggleSidebar = () => {
       setSidebarOpenRef.current(!sidebarOpenRef.current);
     };
     return () => {
-      view.handlers.onToggleSidebar = undefined;
+      view.actionDelegates.onToggleSidebar = undefined;
     };
   }, [view]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onOpenDraftList = () => {
+    view.actionDelegates.onOpenDraftList = () => {
       openDraftList();
     };
     return () => {
-      view.handlers.onOpenDraftList = undefined;
+      view.actionDelegates.onOpenDraftList = undefined;
     };
   }, [view, openDraftList, store]);
 
@@ -744,22 +744,22 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     // テスト用: 外部から内容を設定するため replaceInput を使う
     // （syncInputSession はエディタ→ストア片方向専用）
-    view.handlers.onSetLiveEditorContentForTesting = (content: string) => {
+    view.actionDelegates.onSetLiveEditorContentForTesting = (content: string) => {
       replaceInput(content);
     };
-    view.handlers.onGetLiveEditorContentForTesting = () => {
+    view.actionDelegates.onGetLiveEditorContentForTesting = () => {
       return getInputValue();
     };
 
     return () => {
-      view.handlers.onSetLiveEditorContentForTesting = undefined;
-      view.handlers.onGetLiveEditorContentForTesting = undefined;
+      view.actionDelegates.onSetLiveEditorContentForTesting = undefined;
+      view.actionDelegates.onGetLiveEditorContentForTesting = undefined;
     };
   }, [view, replaceInput, getInputValue]);
 
   useEffect(() => {
     if (!view) return;
-    view.handlers.onGetDebugStateForTesting = () => {
+    view.actionDelegates.onGetDebugStateForTesting = () => {
       const state = settingsStore.getState();
       const appState = store.getState();
       return {
@@ -778,7 +778,7 @@ function useViewSync(view: MFDIView | null) {
     };
 
     return () => {
-      view.handlers.onGetDebugStateForTesting = undefined;
+      view.actionDelegates.onGetDebugStateForTesting = undefined;
     };
   }, [view, store]);
 }

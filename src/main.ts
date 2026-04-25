@@ -136,12 +136,12 @@ export default class MFDIPlugin extends Plugin {
    * MFDIView のコールバックを設定する
    */
   private setupViewCallbacks(view: MFDIView) {
-    view.handlers.onTopicSaveRequested = async (topicId: string) => {
+    view.actionDelegates.onTopicSaveRequested = async (topicId: string) => {
       this.settings.activeTopic = topicId;
       await this.saveSettings();
     };
 
-    view.handlers.onOpenTopicManager = () => {
+    view.actionDelegates.onOpenTopicManager = () => {
       const modal = new TopicManagerModal(
         this.app,
         this.settings.topics,
@@ -150,7 +150,7 @@ export default class MFDIPlugin extends Plugin {
           this.settings.topics = topics;
           this.settings.activeTopic = activeTopic;
           await this.saveSettings();
-          view.handlers.onChangeTopic?.(activeTopic);
+          view.actionDelegates.onChangeTopic?.(activeTopic);
         },
       );
       modal.open();

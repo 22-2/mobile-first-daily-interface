@@ -9,7 +9,7 @@ import { ReactView } from "src/ui/components/layout/ReactView";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import "src/ui/styles/global.css";
 import "src/ui/styles/mfdi.css";
-import type { MFDIViewHandler } from "src/ui/view/MFDIViewHandler";
+import type { MFDIActionDelegate } from "src/ui/view/MFDIViewHandler";
 import type { MFDIViewState } from "src/ui/view/state";
 import {
   DEFAULT_MFDI_VIEW_STATE,
@@ -27,7 +27,7 @@ export class MFDIView extends ItemView {
   private activeSearchControlEl: HTMLElement | null = null;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
-  public readonly handlers: MFDIViewHandler = {};
+  public readonly actionDelegates: MFDIActionDelegate = {};
 
   constructor(leaf: WorkspaceLeaf, settings: Settings) {
     super(leaf);
@@ -116,7 +116,7 @@ export class MFDIView extends ItemView {
 
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic as string;
-      this.handlers.onChangeTopic?.(this.state.activeTopic);
+      this.actionDelegates.onChangeTopic?.(this.state.activeTopic);
     }
 
     this.setupView();
@@ -140,15 +140,15 @@ export class MFDIView extends ItemView {
     this.scope = new Scope(this.app.scope);
 
     this.scope.register(["Ctrl"], "Enter", () => {
-      this.handlers.onSubmit?.();
+      this.actionDelegates.onSubmit?.();
       return false;
     });
     this.scope.register(["Ctrl"], "f", () => {
-      this.handlers.onSearchInputOpen?.();
+      this.actionDelegates.onSearchInputOpen?.();
     });
 
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
-      this.handlers.onEditorExpand?.();
+      this.actionDelegates.onEditorExpand?.();
       return true;
     });
 
@@ -159,7 +159,7 @@ export class MFDIView extends ItemView {
 
     this.app.workspace.on("active-leaf-change", (leaf) => {
       if (leaf?.id === this.leaf.id) {
-        this.handlers.onFocusRequested?.();
+        this.actionDelegates.onFocusRequested?.();
       }
     });
   }
@@ -176,14 +176,14 @@ export class MFDIView extends ItemView {
 
     if (capabilities.supportsSidebar) {
       this.addAction("columns-2", "サイドバーを切り替え", () => {
-        this.handlers.onToggleSidebar?.();
+        this.actionDelegates.onToggleSidebar?.();
       }).setAttr("data-mfdi-actions", "true");
     }
 
     // 検索UIをトグル表示。既に開いていれば閉じる。
     const searchActionEl = this.addAction("search", "検索", () => {
       if (this.activeSearchControlEl) {
-        this.handlers.onSearchInputClose?.();
+        this.actionDelegates.onSearchInputClose?.();
         this.activeSearchControlEl.detach();
         this.activeSearchControlEl = null;
         return;
@@ -193,11 +193,11 @@ export class MFDIView extends ItemView {
         search.setValue(this.state.searchQuery);
         search.onChange((value) => {
           this.state.searchQuery = value;
-          this.handlers.onSearchQueryChange?.(value);
+          this.actionDelegates.onSearchQueryChange?.(value);
         });
 
         search.inputEl.addEventListener("blur", () => {
-          this.handlers.onSearchInputClose?.();
+          this.actionDelegates.onSearchInputClose?.();
           searchSetting.controlEl.detach();
           this.activeSearchControlEl = null;
         });
@@ -207,7 +207,7 @@ export class MFDIView extends ItemView {
       });
 
       this.activeSearchControlEl = searchSetting.controlEl;
-      this.handlers.onSearchInputOpen?.();
+      this.actionDelegates.onSearchInputOpen?.();
       this.actionsEl.prepend(searchSetting.controlEl);
     });
     searchActionEl.setAttr("data-mfdi-actions", "true");
@@ -220,7 +220,7 @@ export class MFDIView extends ItemView {
       const applySearchKindFilter = (params: { threadOnly: boolean }) => {
         // View側の状態を先に同期し、右クリックメニューのチェック状態と実データをずらさない。
         this.state.threadOnly = params.threadOnly;
-        this.handlers.onChangeThreadOnly?.(params.threadOnly);
+        this.actionDelegates.onChangeThreadOnly?.(params.threadOnly);
       };
 
       menu.addItem((item) =>
@@ -292,7 +292,7 @@ export class MFDIView extends ItemView {
       item
         .setTitle("現在のノートを開く")
         .setIcon("external-link")
-        .onClick(() => this.handlers.onOpenDailyNoteAction?.()),
+        .onClick(() => this.actionDelegates.onOpenDailyNoteAction?.()),
     );
   }
 
@@ -303,7 +303,7 @@ export class MFDIView extends ItemView {
       item
         .setTitle("すべてのメッセージをコピー")
         .setIcon("copy")
-        .onClick(() => this.handlers.onCopyAllPosts?.()),
+        .onClick(() => this.actionDelegates.onCopyAllPosts?.()),
     );
 
     menu.addSeparator();
@@ -316,7 +316,7 @@ export class MFDIView extends ItemView {
       item
         .setTitle("下書きを管理")
         .setIcon("library")
-        .onClick(() => this.handlers.onOpenDraftList?.()),
+        .onClick(() => this.actionDelegates.onOpenDraftList?.()),
     );
 
     if (capabilities.supportsDisplayModeSwitch) {
@@ -326,7 +326,7 @@ export class MFDIView extends ItemView {
           .setTitle(isFocus ? "フォーカスモード" : "タイムラインモード")
           .setIcon(isFocus ? "toggle-left" : "toggle-right")
           .onClick(() =>
-            this.handlers.onChangeDisplayMode?.(isFocus ? "timeline" : "focus"),
+            this.actionDelegates.onChangeDisplayMode?.(isFocus ? "timeline" : "focus"),
           ),
       );
     }
@@ -335,7 +335,7 @@ export class MFDIView extends ItemView {
       item
         .setTitle(this.state.asTask ? "タスクモード" : "メッセージモード")
         .setIcon(this.state.asTask ? "toggle-left" : "toggle-right")
-        .onClick(() => this.handlers.onChangeAsTask?.(!this.state.asTask)),
+        .onClick(() => this.actionDelegates.onChangeAsTask?.(!this.state.asTask)),
     );
   }
 
@@ -345,8 +345,8 @@ export class MFDIView extends ItemView {
     if (this.state.displayMode !== "focus") return;
 
     addPeriodMenuItems(menu, this.state, {
-      onChangeTimeFilter: (f) => this.handlers.onChangeTimeFilter?.(f),
-      onChangeDateFilter: (f) => this.handlers.onChangeDateFilter?.(f),
+      onChangeTimeFilter: (f) => this.actionDelegates.onChangeTimeFilter?.(f),
+      onChangeDateFilter: (f) => this.actionDelegates.onChangeDateFilter?.(f),
     });
   }
 }
