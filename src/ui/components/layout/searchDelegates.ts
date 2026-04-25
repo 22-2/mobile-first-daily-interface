@@ -2,19 +2,19 @@ import type { MFDIView } from "src/ui/view/MFDIView";
 
 export function bindSearchDelegates(
   view: MFDIView,
-  handlers: {
+  actionDelegates: {
     setSearchQuery: (query: string) => void;
     setSearchInputOpen: (open: boolean) => void;
   },
 ): () => void {
   view.actionDelegates.onSearchQueryChange = (query: string) => {
-    handlers.setSearchQuery(query);
+    actionDelegates.setSearchQuery(query);
   };
   view.actionDelegates.onSearchInputOpen = () => {
-    handlers.setSearchInputOpen(true);
+    actionDelegates.setSearchInputOpen(true);
   };
   view.actionDelegates.onSearchInputClose = () => {
-    handlers.setSearchInputOpen(false);
+    actionDelegates.setSearchInputOpen(false);
   };
 
   return () => {
