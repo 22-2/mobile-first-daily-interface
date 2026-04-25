@@ -5,6 +5,8 @@ export function bindSearchDelegates(
   actionDelegates: {
     setSearchQuery: (query: string) => void;
     setSearchInputOpen: (open: boolean) => void;
+    openSearchInput: () => void;
+    closeSearchInput: () => void;
   },
 ): () => void {
   view.actionDelegates.onSearchQueryChange = (query: string) => {
@@ -12,9 +14,11 @@ export function bindSearchDelegates(
   };
   view.actionDelegates.onSearchInputOpen = () => {
     actionDelegates.setSearchInputOpen(true);
+    actionDelegates.openSearchInput();
   };
   view.actionDelegates.onSearchInputClose = () => {
     actionDelegates.setSearchInputOpen(false);
+    actionDelegates.closeSearchInput();
   };
 
   return () => {

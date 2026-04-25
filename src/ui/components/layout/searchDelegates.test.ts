@@ -2,12 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
 
 describe("bindSearchDelegates", () => {
-  let setSearchQuery: ReturnType<typeof vi.fn>;
-  let setSearchInputOpen: ReturnType<typeof vi.fn>;
+  type QuerySetter = ReturnType<typeof vi.fn> & ((query: string) => void);
+  type OpenSetter = ReturnType<typeof vi.fn> & ((open: boolean) => void);
+  type VoidSetter = ReturnType<typeof vi.fn> & (() => void);
+
+  let setSearchQuery: QuerySetter;
+  let setSearchInputOpen: OpenSetter;
+  let openSearchInput: VoidSetter;
+  let closeSearchInput: VoidSetter;
 
   beforeEach(() => {
-    setSearchQuery = vi.fn();
-    setSearchInputOpen = vi.fn();
+    setSearchQuery = vi.fn() as QuerySetter;
+    setSearchInputOpen = vi.fn() as OpenSetter;
+    openSearchInput = vi.fn() as VoidSetter;
+    closeSearchInput = vi.fn() as VoidSetter;
   });
 
   it("search input events and query changes are forwarded", () => {
@@ -18,6 +26,8 @@ describe("bindSearchDelegates", () => {
     const cleanup = bindSearchDelegates(view, {
       setSearchQuery,
       setSearchInputOpen,
+      openSearchInput,
+      closeSearchInput,
     });
 
     view.actionDelegates.onSearchQueryChange?.("wanted");
@@ -27,6 +37,8 @@ describe("bindSearchDelegates", () => {
     expect(setSearchQuery).toHaveBeenCalledWith("wanted");
     expect(setSearchInputOpen).toHaveBeenNthCalledWith(1, true);
     expect(setSearchInputOpen).toHaveBeenNthCalledWith(2, false);
+    expect(openSearchInput).toHaveBeenCalledTimes(1);
+    expect(closeSearchInput).toHaveBeenCalledTimes(1);
 
     cleanup();
     expect(view.actionDelegates.onSearchQueryChange).toBeUndefined();

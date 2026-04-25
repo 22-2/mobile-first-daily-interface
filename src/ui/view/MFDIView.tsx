@@ -25,6 +25,8 @@ export class MFDIView extends ItemView {
   private settings: Settings;
   // 検索入力用のコントロール要素を保持しておく
   private activeSearchControlEl: HTMLElement | null = null;
+  private searchInputEl: HTMLInputElement | null = null;
+  private isSearchToggleFromAction = false;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
   public navigation: boolean = false;
   public readonly actionDelegates: MFDIActionDelegate = {};
@@ -157,6 +159,16 @@ export class MFDIView extends ItemView {
       return false;
     });
 
+    // 検索入力がフォーカスされているときに Escape キーで検索入力を閉じる
+    this.scope.register([], "Escape", () => {
+      if (document.activeElement === this.searchInputEl) {
+        this.actionDelegates.onSearchInputClose?.();
+        this.closeSearchInput();
+        return true;
+      }
+      return false;
+    });
+
     this.app.workspace.on("active-leaf-change", (leaf) => {
       if (leaf?.id === this.leaf.id) {
         this.actionDelegates.onFocusRequested?.();
@@ -170,6 +182,51 @@ export class MFDIView extends ItemView {
       .forEach((el) => el.detach());
   }
 
+  private ensureSearchControl(): void {
+    if (this.activeSearchControlEl) return;
+
+    const searchSetting = new Setting(createDiv()).addSearch((search) => {
+      this.searchInputEl = search.inputEl;
+      search.setValue(this.state.searchQuery);
+      search.onChange((value) => {
+        this.state.searchQuery = value;
+        this.actionDelegates.onSearchQueryChange?.(value);
+      });
+
+      search.inputEl.addEventListener("blur", () => {
+        if (this.isSearchToggleFromAction) return;
+        this.actionDelegates.onSearchInputClose?.();
+        this.closeSearchInput();
+      });
+    });
+
+    this.activeSearchControlEl = searchSetting.controlEl;
+    this.activeSearchControlEl.setCssStyles({
+      display: "none",
+    });
+    this.actionsEl.prepend(searchSetting.controlEl);
+  }
+
+  public openSearchInput(): void {
+    this.ensureSearchControl();
+    if (!this.activeSearchControlEl) return;
+
+    this.activeSearchControlEl.setCssStyles({
+      display: "block",
+    });
+    window.setTimeout(() => {
+      this.searchInputEl?.focus();
+    });
+  }
+
+  public closeSearchInput(): void {
+    if (!this.activeSearchControlEl) return;
+
+    this.activeSearchControlEl.setCssStyles({
+      display: "none",
+    });
+  }
+
   private setupView(): void {
     this.cleanUpActions();
     const capabilities = getMFDIViewCapabilities(this.state);
@@ -181,34 +238,21 @@ export class MFDIView extends ItemView {
     }
 
     // 検索UIをトグル表示。既に開いていれば閉じる。
-    const searchActionEl = this.addAction("search", "検索", () => {
-      if (this.activeSearchControlEl) {
+    const searchActionEl = this.addAction("search", "検索切り替え", () => {
+      if (this.activeSearchControlEl?.style.display !== "none") {
         this.actionDelegates.onSearchInputClose?.();
-        this.activeSearchControlEl.isConnected && this.activeSearchControlEl.detach();
-        this.activeSearchControlEl = null;
+        this.closeSearchInput();
+        this.isSearchToggleFromAction = false;
         return;
       }
-
-      const searchSetting = new Setting(createDiv()).addSearch((search) => {
-        search.setValue(this.state.searchQuery);
-        search.onChange((value) => {
-          this.state.searchQuery = value;
-          this.actionDelegates.onSearchQueryChange?.(value);
-        });
-
-        search.inputEl.addEventListener("blur", () => {
-          this.actionDelegates.onSearchInputClose?.();
-          searchSetting.controlEl.isConnected && searchSetting.controlEl.detach();
-          this.activeSearchControlEl = null;
-        });
-
-        // フォーカスは少し待ってから
-        window.setTimeout(() => search.inputEl.focus());
-      });
-
-      this.activeSearchControlEl = searchSetting.controlEl;
       this.actionDelegates.onSearchInputOpen?.();
-      this.actionsEl.prepend(searchSetting.controlEl);
+      this.openSearchInput();
+      this.isSearchToggleFromAction = false;
+    });
+    searchActionEl.addEventListener("mousedown", () => {
+      if (this.activeSearchControlEl?.style.display !== "none") {
+        this.isSearchToggleFromAction = true;
+      }
     });
     searchActionEl.setAttr("data-mfdi-actions", "true");
 
@@ -326,7 +370,9 @@ export class MFDIView extends ItemView {
           .setTitle(isFocus ? "フォーカスモード" : "タイムラインモード")
           .setIcon(isFocus ? "toggle-left" : "toggle-right")
           .onClick(() =>
-            this.actionDelegates.onChangeDisplayMode?.(isFocus ? "timeline" : "focus"),
+            this.actionDelegates.onChangeDisplayMode?.(
+              isFocus ? "timeline" : "focus",
+            ),
           ),
       );
     }
@@ -335,7 +381,9 @@ export class MFDIView extends ItemView {
       item
         .setTitle(this.state.asTask ? "タスクモード" : "メッセージモード")
         .setIcon(this.state.asTask ? "toggle-left" : "toggle-right")
-        .onClick(() => this.actionDelegates.onChangeAsTask?.(!this.state.asTask)),
+        .onClick(() =>
+          this.actionDelegates.onChangeAsTask?.(!this.state.asTask),
+        ),
     );
   }
 

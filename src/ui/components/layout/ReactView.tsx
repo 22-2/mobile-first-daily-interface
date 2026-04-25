@@ -320,6 +320,8 @@ const ReactViewContent = () => {
     return bindSearchDelegates(component, {
       setSearchQuery,
       setSearchInputOpen,
+      openSearchInput: () => component.openSearchInput(),
+      closeSearchInput: () => component.closeSearchInput(),
     });
   }, [component, setSearchInputOpen, setSearchQuery]);
 
