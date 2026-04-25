@@ -3,6 +3,9 @@ import { PluginSettingTab, Setting, debounce } from "obsidian";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import type MFDIPlugin from "src/main";
+import { createLogger } from "./core/logger";
+
+const logger = createLogger("settings");
 
 export type OpenInNewWindowMode = "disabled" | "minimized_only" | "always";
 
@@ -10,6 +13,7 @@ export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
+  debugMode: boolean;
   // When true, posts become scrollable only after being clicked (activated).
   clickToActivateScroll: boolean;
   allowEditingPastNotes: boolean;
@@ -27,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "Thino",
   insertAfter: "## Thino",
   enabledCardView: false,
+  debugMode: false,
   clickToActivateScroll: true,
   allowEditingPastNotes: false,
   updateDateStrategy: "never",
@@ -81,6 +86,7 @@ export class MFDISettingTab extends PluginSettingTab {
   ): Promise<void> {
     this.plugin.settings = { ...this.plugin.settings, [key]: value };
     await this.plugin.saveSettings();
+    logger.debug("Setting updated", { key, value });
   }
 
   private addToggleSetting(
@@ -178,6 +184,13 @@ export class MFDISettingTab extends PluginSettingTab {
   }
 
   private addDisplaySettings(containerEl: HTMLElement): void {
+    this.addToggleSetting(
+      containerEl,
+      "デバッグモード",
+      "有効にすると CodeMirror の余白補正処理の詳細ログを consola に出します。",
+      "debugMode",
+    );
+
     this.addToggleSetting(
       containerEl,
       "リンクのカード表示",

@@ -6,6 +6,7 @@ import { activateBuiltins } from "src/core/builtin-registry";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
 import { WorkerClient } from "src/db/worker-client";
+import { extension as mfdiBottomPaddingExtension } from "src/extension";
 import { findExistingMFDILeaf } from "src/extensions/fixed-note-view-extension";
 import type { Settings } from "src/settings";
 import { DEFAULT_SETTINGS, MFDISettingTab } from "src/settings";
@@ -19,6 +20,7 @@ import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
 } from "src/ui/view/state";
+import { setConsolaLevel } from "src/core/logger";
 
 export default class MFDIPlugin extends Plugin {
   shell: ObsidianAppShell;
@@ -40,6 +42,10 @@ export default class MFDIPlugin extends Plugin {
     this.app.workspace.onLayoutReady(async () => {
       this.shell = new ObsidianAppShell(this.app);
       await this.loadSettings();
+
+      setConsolaLevel(this.settings.debugMode ? 4 : 0);
+
+      this.registerEditorExtension(mfdiBottomPaddingExtension);
 
       this.addSettingTab(new MFDISettingTab(this.app, this));
 
@@ -163,6 +169,7 @@ export default class MFDIPlugin extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+    setConsolaLevel(this.settings.debugMode ? 4 : 0);
   }
 
   async loadSettings(): Promise<void> {
