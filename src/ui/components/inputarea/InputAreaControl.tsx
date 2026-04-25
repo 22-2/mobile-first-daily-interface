@@ -12,6 +12,7 @@ import { useAppStore } from "src/ui/store/appStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import { isDefaultViewState } from "src/ui/utils/view-state";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
+import { Menu } from "obsidian";
 
 export const InputAreaControl: FC<{
   isReadOnly: boolean;
@@ -166,16 +167,6 @@ export const InputAreaControl: FC<{
       </HStack>
       <Box className="flex-1 flex justify-end gap-[0.5em]">
         <ObsidianIcon
-          name="minimize"
-          size="1.1em"
-          className={cn(
-            isMinimized
-              ? "text-[var(--text-accent)] hover:text-[var(--text-normal)] hover:bg-[var(--background-modifier-hover)]"
-              : "hover:bg-[var(--background-modifier-hover)]",
-          )}
-          onClick={onMinimize}
-        />
-        <ObsidianIcon
           name="maximize"
           size="1.1em"
           className={cn(
@@ -188,6 +179,17 @@ export const InputAreaControl: FC<{
           onClick={() => {
             if (isReadOnly) return;
             onMaximizeToMaxHeight();
+          }}
+          onContextMenu={(e) => {
+            const menu = new Menu();
+            menu.addItem((item) => {
+              item.setTitle("別ウィンドウで開く");
+              item.setIcon("picture-in-picture-2");
+              item.onClick(() => {
+                onMinimize();
+              });
+            });
+            menu.showAtPosition({ x: e.clientX, y: e.clientY });
           }}
         />
       </Box>
