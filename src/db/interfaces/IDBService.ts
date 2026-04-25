@@ -49,6 +49,16 @@ export interface IDBService {
   }): Promise<MemoRecord[]>;
 
   /**
+   * pinned のメモだけを取得する
+   */
+  getPinnedMemos(params: {
+    topicId?: string;
+    query?: string;
+    threadOnly?: boolean;
+    limit?: number;
+  }): Promise<MemoRecord[]>;
+
+  /**
    * 指定した条件のメモ総数を取得する
    */
   countMemos(topicId?: string): Promise<number>;

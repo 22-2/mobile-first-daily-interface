@@ -14,6 +14,7 @@ const setDateMock = vi.fn();
 const loadFileMock = vi.fn(async (_path: string) => "");
 const cachedReadFileMock = vi.fn(async () => "");
 const workerGetMock = vi.fn();
+const useSWRMock = vi.fn();
 
 const settingsState = {
   activeTopic: "topic-a",
@@ -26,13 +27,7 @@ const settingsState = {
 };
 
 vi.mock("swr", () => ({
-  default: (_key: unknown, _fetcher?: unknown) => ({
-    data: undefined,
-    mutate: vi.fn(),
-    isValidating: false,
-    isLoading: false,
-    error: undefined,
-  }),
+  default: (...args: unknown[]) => useSWRMock(...args),
   mutate: (...args: unknown[]) => mutateMock(...args),
 }));
 
@@ -116,6 +111,15 @@ describe("useInfiniteTimeline", () => {
     createTimelinePageFetcherMock.mockReturnValue(fetchPageMock);
     workerGetMock.mockReturnValue({
       getMemos: vi.fn().mockResolvedValue([]),
+      getPinnedMemos: vi.fn().mockResolvedValue([]),
+    });
+
+    useSWRMock.mockReturnValue({
+      data: undefined,
+      mutate: vi.fn(),
+      isValidating: false,
+      isLoading: false,
+      error: undefined,
     });
 
     useSWRInfiniteMock.mockReturnValue({
@@ -188,6 +192,31 @@ describe("useInfiniteTimeline", () => {
     ]);
 
     expect(getMemosMock).toHaveBeenCalled();
+  });
+
+  it("pinned 投稿は DB から別取得される", async () => {
+    const getPinnedMemosMock = vi.fn().mockResolvedValue([]);
+    workerGetMock.mockReturnValue({
+      getMemos: vi.fn().mockResolvedValue([]),
+      getPinnedMemos: getPinnedMemosMock,
+    });
+
+    renderHook(() => useInfiniteTimeline());
+
+    const fetcher = useSWRMock.mock.calls[0][1];
+    await fetcher([
+      "posts",
+      "timeline-pinned",
+      "topic-a",
+      "",
+      false,
+    ]);
+
+    expect(getPinnedMemosMock).toHaveBeenCalledWith({
+      topicId: "topic-a",
+      query: "",
+      threadOnly: false,
+    });
   });
 
   it("タイムライン表示中に日付が変わったら setDate を呼ぶ", () => {

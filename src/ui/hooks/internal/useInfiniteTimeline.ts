@@ -10,6 +10,7 @@ import { settingsStore, useSettingsStore } from "src/ui/store/settingsStore";
 import { refreshAllPosts } from "src/ui/utils/swr-utils";
 import { memoRecordToPost } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
+import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 import { useShallow } from "zustand/shallow";
 
@@ -34,10 +35,24 @@ export const useInfiniteTimeline = () => {
   // Use the view-mode check at runtime inside timers to avoid TDZ/closure
   // issues in some test environments where globals are stubbed differently.
   const shouldFetchDb = isTimelineView(displayMode);
+  const pinnedPostsKey = shouldFetchDb
+    ? ["posts", "timeline-pinned", activeTopic, searchQuery, threadOnly]
+    : null;
 
   const { addPaths } = useNoteStore(
     useShallow((s) => ({ addPaths: s.addPaths })),
   );
+
+  const { data: pinnedPosts } = useSWR(pinnedPostsKey, async () => {
+    const dbService = WorkerClient.get();
+    const records = await dbService.getPinnedMemos({
+      topicId: activeTopic,
+      query: searchQuery,
+      threadOnly,
+    });
+
+    return records.map(memoRecordToPost);
+  });
 
   useEffect(() => {
     // タイムラインを表示中であれば、現在の日付とタイムラインの基準日が同じか確認し、異なっていれば更新する
@@ -174,8 +189,20 @@ export const useInfiniteTimeline = () => {
   // ページデータを取得
   // ---------------------------------------------------------------------------
   const allPosts = useMemo(() => {
-    return infiniteData?.flatMap((p) => p.posts) ?? [];
-  }, [infiniteData]);
+    const timelinePosts = infiniteData?.flatMap((p) => p.posts) ?? [];
+    if (!pinnedPosts?.length) {
+      return timelinePosts;
+    }
+
+    const timelinePostIds = new Set(timelinePosts.map((post) => post.id));
+    const pinnedVisiblePosts = pinnedPosts.filter(
+      (post) => !timelinePostIds.has(post.id),
+    );
+
+    // 意図: pinned はスクロールに依存せず先頭へ出す。
+    // DB から別取得して、ページング結果の前に合成する。
+    return [...pinnedVisiblePosts, ...timelinePosts];
+  }, [infiniteData, pinnedPosts]);
 
   // ---------------------------------------------------------------------------
   // 次ページ読み込みトリガー

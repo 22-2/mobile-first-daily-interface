@@ -519,6 +519,34 @@ export class MFDIDatabase {
     });
   }
 
+  async getPinnedVisibleMemos(params: {
+    topicId?: string;
+    query?: string;
+    threadOnly?: boolean;
+    limit?: number;
+  }): Promise<MemoRecord[]> {
+    const { topicId, query, threadOnly = false, limit } = params;
+    const filter = buildMemoFilter({ query, threadOnly });
+    const effectiveLimit = limit || 300;
+
+    return this.withStoreCallback("memos", "readonly", async (store) => {
+      const { index, range } = buildVisibleMemoPinnedRange(store, {
+        topicId,
+        pinned: 1,
+      });
+
+      // 意図: pinned はタイムラインのスクロール位置に依存せず先頭へ出したい。
+      // DB の複合 index から pinned レコードだけを直接抜き出して返す。
+      return await cursorAll<MemoRecord>(
+        index,
+        range,
+        "prev",
+        filter,
+        effectiveLimit,
+      );
+    });
+  }
+
   private async getPinnedFirstVisibleMemos(params: {
     topicId?: string;
     startDate?: string;

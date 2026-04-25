@@ -165,6 +165,16 @@ export class DexieDBService implements IDBService {
     );
   }
 
+  async getPinnedMemos(params: {
+    topicId?: string;
+    query?: string;
+    threadOnly?: boolean;
+    limit?: number;
+  }): Promise<MemoRecord[]> {
+    if (!this.memoRepo) throw new Error("DB not initialized");
+    return await this.memoRepo.getPinnedVisibleMemos(params);
+  }
+
   async countMemos(topicId?: string): Promise<number> {
     if (!this.memoRepo) throw new Error("DB not initialized");
     return await this.memoRepo.countVisibleMemos(topicId);

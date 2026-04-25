@@ -146,4 +146,34 @@ describe("MFDIDatabase Search", () => {
     expect(results).toHaveLength(1);
     expect(results[0].content).toBe("apple root");
   });
+
+  test("getPinnedVisibleMemos returns pinned memos only", async () => {
+    const db = createDatabase();
+    await db.memos.bulkPut([
+      createMemo({
+        content: "pinned root",
+        noteDate: "2026-01-01",
+        pinned: 1,
+        metadataJson: JSON.stringify({ mfdiId: "root-1" }),
+      }),
+      createMemo({
+        content: "unpinned root",
+        noteDate: "2026-01-02",
+      }),
+      createMemo({
+        content: "pinned reply",
+        noteDate: "2026-01-03",
+        pinned: 1,
+        metadataJson: JSON.stringify({ mfdiId: "reply-1", parentId: "root-1" }),
+      }),
+    ]);
+
+    const results = await db.getPinnedVisibleMemos({
+      query: "pinned",
+      threadOnly: true,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].content).toBe("pinned root");
+  });
 });

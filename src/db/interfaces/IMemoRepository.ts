@@ -17,6 +17,16 @@ export interface IMemoRepository {
   ): Promise<MemoRecord[]>;
 
   /**
+   * pinned のメモだけを取得する
+   */
+  getPinnedVisibleMemos(params: {
+    topicId?: string;
+    query?: string;
+    threadOnly?: boolean;
+    limit?: number;
+  }): Promise<MemoRecord[]>;
+
+  /**
    * 未アーカイブ・未削除のメモ総数を取得する
    */
   countVisibleMemos(topicId?: string): Promise<number>;

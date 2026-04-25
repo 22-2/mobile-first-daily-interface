@@ -141,6 +141,12 @@ try {
         return res;
       }),
 
+    getPinnedMemos: (params) =>
+      withLogging("getPinnedMemos", { params }, async () => {
+        const res = await db().getPinnedMemos(params);
+        return res;
+      }),
+
     countMemos: (topicId) =>
       withLogging("countMemos", { topicId }, async () => {
         const res = await db().countMemos(topicId);
