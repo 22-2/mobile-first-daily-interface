@@ -144,6 +144,7 @@ export const createSettingsSlice: StateCreator<
   asTask: false,
   threadOnly: false,
   searchQuery: "",
+  searchInputOpen: false,
   threadFocusRootId: null,
   inputAreaSize: INPUT_AREA_SIZE.DEFAULT,
 
@@ -211,6 +212,10 @@ export const createSettingsSlice: StateCreator<
     set({ searchQuery });
   },
 
+  setSearchInputOpen: (searchInputOpen) => {
+    set({ searchInputOpen });
+  },
+
   setSidebarOpen: (sidebarOpen) => {
     set({ sidebarOpen });
     persistValue(get(), STORAGE_KEYS.SIDEBAR_OPEN, sidebarOpen);
@@ -254,7 +259,12 @@ export const createSettingsSlice: StateCreator<
   handleClickHome: () => {
     const now = window.moment();
     // 意図: home は表示条件だけでなく検索条件も初期化し、一覧を完全に既定状態へ戻す。
-    set({ ...DEFAULT_VIEW_STATE, date: now, searchQuery: "" });
+    set({
+      ...DEFAULT_VIEW_STATE,
+      date: now,
+      searchQuery: "",
+      searchInputOpen: false,
+    });
     const state = get();
     persistValue(
       state,

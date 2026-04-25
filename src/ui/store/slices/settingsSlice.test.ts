@@ -102,6 +102,7 @@ describe("settingsSlice", () => {
     settingsStore.setState((state) => ({
       ...state,
       searchQuery: "wanted",
+      searchInputOpen: true,
       activeTag: "IT",
       threadFocusRootId: "root-1",
       displayMode: DISPLAY_MODE.FOCUS,
@@ -111,6 +112,7 @@ describe("settingsSlice", () => {
 
     const state = settingsStore.getState();
     expect(state.searchQuery).toBe("");
+    expect(state.searchInputOpen).toBe(false);
     expect(state.activeTag).toBeNull();
     expect(state.threadFocusRootId).toBeNull();
     expect(state.displayMode).toBe(DISPLAY_MODE.TIMELINE);

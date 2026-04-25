@@ -284,9 +284,12 @@ const ReactViewContent = () => {
       displayMode: s.displayMode,
       threadFocusRootId: s.threadFocusRootId,
       searchQuery: s.searchQuery,
+      searchInputOpen: s.searchInputOpen,
+      setSearchInputOpen: s.setSearchInputOpen,
       inputAreaSize: s.inputAreaSize,
     })),
   );
+  const setSearchInputOpen = settings.setSearchInputOpen;
 
   const { posts } = useUnifiedPosts();
   const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
@@ -314,12 +317,16 @@ const ReactViewContent = () => {
   useEffect(() => {
     if (!("handlers" in component)) return;
     component.handlers.onSearchInputOpen = () => {
-
+      setSearchInputOpen(true);
+    };
+    component.handlers.onSearchInputClose = () => {
+      setSearchInputOpen(false);
     };
     return () => {
       component.handlers.onSearchInputOpen = undefined;
+      component.handlers.onSearchInputClose = undefined;
     };
-  }, [component]);
+  }, [component, setSearchInputOpen]);
 
   useEffect(() => {
     if (!("handlers" in component)) return;
@@ -345,8 +352,13 @@ const ReactViewContent = () => {
     settings.displayMode,
   ]);
 
-  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
-    settings;
+  const {
+    granularity,
+    asTask,
+    dateFilter,
+    sidebarOpen,
+    setSidebarOpen,
+  } = settings;
 
   const [containerWidth, setContainerWidth] = useState(1000);
   const containerRef = useRef<HTMLDivElement>(null);

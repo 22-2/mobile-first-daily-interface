@@ -34,4 +34,6 @@ export interface MFDIViewHandler {
     persistedInput: string;
     editorSnapshot: string | null;
   };
+  onSearchInputOpen?: () => void;
+  onSearchInputClose?: () => void;
 }

@@ -17,6 +17,7 @@ describe("view-state utilities", () => {
         activeTag: "IT",
         threadFocusRootId: null,
         searchQuery: "",
+        searchInputOpen: false,
       }),
     ).toBe(false);
   });
@@ -32,6 +33,23 @@ describe("view-state utilities", () => {
         activeTag: null,
         threadFocusRootId: null,
         searchQuery: "wanted",
+        searchInputOpen: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("検索入力が開いているだけでもデフォルト扱いにしない", () => {
+    expect(
+      isDefaultViewState({
+        displayMode: DISPLAY_MODE.TIMELINE,
+        granularity: "day",
+        dateFilter: "today",
+        timeFilter: "all",
+        asTask: false,
+        activeTag: null,
+        threadFocusRootId: null,
+        searchQuery: "",
+        searchInputOpen: true,
       }),
     ).toBe(false);
   });

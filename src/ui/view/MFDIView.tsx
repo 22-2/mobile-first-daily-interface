@@ -143,6 +143,9 @@ export class MFDIView extends ItemView {
       this.handlers.onSubmit?.();
       return false;
     });
+    this.scope.register(["Ctrl"], "f", () => {
+      this.handlers.onSearchInputOpen?.();
+    });
 
     this.scope.register(["Ctrl", "Shift", "Alt"], "o", () => {
       this.handlers.onEditorExpand?.();
@@ -180,6 +183,7 @@ export class MFDIView extends ItemView {
     // 検索UIをトグル表示。既に開いていれば閉じる。
     const searchActionEl = this.addAction("search", "検索", () => {
       if (this.activeSearchControlEl) {
+        this.handlers.onSearchInputClose?.();
         this.activeSearchControlEl.detach();
         this.activeSearchControlEl = null;
         return;
@@ -193,6 +197,7 @@ export class MFDIView extends ItemView {
         });
 
         search.inputEl.addEventListener("blur", () => {
+          this.handlers.onSearchInputClose?.();
           searchSetting.controlEl.detach();
           this.activeSearchControlEl = null;
         });
@@ -202,6 +207,7 @@ export class MFDIView extends ItemView {
       });
 
       this.activeSearchControlEl = searchSetting.controlEl;
+      this.handlers.onSearchInputOpen?.();
       this.actionsEl.prepend(searchSetting.controlEl);
     });
     searchActionEl.setAttr("data-mfdi-actions", "true");

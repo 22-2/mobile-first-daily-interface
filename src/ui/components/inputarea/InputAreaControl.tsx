@@ -40,6 +40,7 @@ export const InputAreaControl: FC<{
     displayMode,
     activeTag,
     searchQuery,
+    searchInputOpen,
     setDisplayMode,
     setActiveTag,
     setThreadFocusRootId,
@@ -54,6 +55,7 @@ export const InputAreaControl: FC<{
       displayMode: s.displayMode,
       activeTag: s.activeTag,
       searchQuery: s.searchQuery,
+      searchInputOpen: s.searchInputOpen,
       setDisplayMode: s.setDisplayMode,
       setActiveTag: s.setActiveTag,
       setThreadFocusRootId: s.setThreadFocusRootId,
@@ -79,6 +81,7 @@ export const InputAreaControl: FC<{
     activeTag,
     threadFocusRootId,
     searchQuery,
+    searchInputOpen,
   });
 
   const isStatusIndicatorVisible =

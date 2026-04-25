@@ -47,6 +47,7 @@ export interface SettingsSlice {
   asTask: boolean;
   threadOnly: boolean;
   searchQuery: string;
+  searchInputOpen: boolean;
   threadFocusRootId: string | null;
   inputAreaSize: InputAreaSize;
   setInputAreaSize: (size: InputAreaSize) => void;
@@ -57,6 +58,7 @@ export interface SettingsSlice {
   setTimeFilter: (f: TimeFilter) => void;
   setDateFilter: (f: DateFilter) => void;
   setSearchQuery: (q: string) => void;
+  setSearchInputOpen: (open: boolean) => void;
   setSidebarOpen: (o: boolean) => void;
   setDisplayMode: (m: DisplayMode) => void;
   setAsTask: (asTask: boolean) => void;
