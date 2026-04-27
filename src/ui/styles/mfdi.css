@@ -100,7 +100,7 @@
 }
 
 /* 最大化時 */
-[data-type="mfdi-view"] :not(.mod-maximized) .cm-content {
+[data-type="mfdi-view"] .mfdi-input-area:not(.mod-maxmized) .cm-content {
   padding-bottom: 0 !important;
 }
 
