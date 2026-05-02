@@ -8,6 +8,7 @@ import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { Box, Checkbox, HStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import type { Granularity, TimeFilter } from "src/ui/types";
+import { MarkedMarkdown } from "../common/MarkedMarkdown";
 
 export const TaskView = memo(
   ({
@@ -46,7 +47,8 @@ export const TaskView = memo(
                   )}
                 />
                 <Box className={cn("text-[93%] px-1 break-words flex-1")}>
-                  <ObsidianMarkdown content={displayText} />
+                  {/* <ObsidianMarkdown content={displayText} /> */}
+                  <MarkedMarkdown content={displayText} />
                 </Box>
               </HStack>
             )}

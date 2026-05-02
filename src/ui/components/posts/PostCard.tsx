@@ -15,6 +15,7 @@ import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 import { cn } from "src/ui/components/primitives/utils";
+import { MarkedMarkdown } from "../common/MarkedMarkdown";
 
 export type PostCardProps = {
   message: string;
@@ -159,10 +160,8 @@ export const PostCard = React.memo(
               >
                 {/* Message Body */}
                 <Box className="text-[93%] px-1 break-words">
-                  <ObsidianMarkdown
-                    content={displayText}
-                    sourcePath={sourcePath}
-                  />
+                  <MarkedMarkdown content={displayText} />
+                  {/* <ObsidianMarkdown content={displayText} /> */}
                 </Box>
 
                 {enabledCardView && (

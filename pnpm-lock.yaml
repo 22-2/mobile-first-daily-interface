@@ -20,6 +20,9 @@ importers:
       consola:
         specifier: ^3.4.2
         version: 3.4.2
+      marked-react:
+        specifier: ^4.0.0
+        version: 4.0.0(react@19.2.4)
       monkey-around:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2697,6 +2700,9 @@ packages:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
     engines: {node: '>=18'}
 
+  html-entities@2.6.0:
+    resolution: {integrity: sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ==}
+
   http-cache-semantics@4.2.0:
     resolution: {integrity: sha512-dTxcvPXqPvXBQpq5dUr6mEMJX4oIEFv6bwom3FDwKRDsuIjjJGANqhBuoAn9c1RQJIdAKav33ED65E2ys+87QQ==}
 
@@ -3211,9 +3217,19 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
+  marked-react@4.0.0:
+    resolution: {integrity: sha512-+Kp1FSK0gT6q6uKjXvwaIigj++BkyKFxiQlrhDTu10H/awBvs1K4K1Uenu/6N7Ci4u0FxYtFuZxtgAZkW6w8gg==}
+    peerDependencies:
+      react: ^16.8.0 || >=17.0.0
+
   marked@13.0.3:
     resolution: {integrity: sha512-rqRix3/TWzE9rIoFGIn8JmsVfhiuC8VIQ8IdX5TfzmeBucdY05/0UlzKaw0eVtpcN/OdVFpBk7CjKGo9iHJ/zA==}
     engines: {node: '>= 18'}
+    hasBin: true
+
+  marked@17.0.6:
+    resolution: {integrity: sha512-gB0gkNafnonOw0obSTEGZTT86IuhILt2Wfx0mWH/1Au83kybTayroZ/V6nS25mN7u8ASy+5fMhgB3XPNrOZdmA==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   matcher@3.0.0:
@@ -7569,6 +7585,8 @@ snapshots:
     dependencies:
       whatwg-encoding: 3.1.1
 
+  html-entities@2.6.0: {}
+
   http-cache-semantics@4.2.0: {}
 
   http-errors@2.0.1:
@@ -8025,7 +8043,15 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  marked-react@4.0.0(react@19.2.4):
+    dependencies:
+      html-entities: 2.6.0
+      marked: 17.0.6
+      react: 19.2.4
+
   marked@13.0.3: {}
+
+  marked@17.0.6: {}
 
   matcher@3.0.0:
     dependencies:
