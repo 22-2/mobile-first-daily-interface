@@ -258,7 +258,11 @@ export const FixedSessionSidebar: React.FC = () => {
       return buildFixedSessionSummaries({
         content,
         insertAfter: settings.insertAfter,
-        metaMap: readFixedSessionMeta(storage, normalizedFixedPath),
+        metaMap: await readFixedSessionMeta(
+          shell,
+          storage,
+          normalizedFixedPath,
+        ),
       });
     },
   );
@@ -275,7 +279,8 @@ export const FixedSessionSidebar: React.FC = () => {
 
   const handleTogglePin = useCallback(
     async (sessionNumber: number) => {
-      updateFixedSessionMeta(
+      await updateFixedSessionMeta(
+        shell,
         storage,
         normalizedFixedPath,
         sessionNumber,
@@ -287,7 +292,7 @@ export const FixedSessionSidebar: React.FC = () => {
       );
       await mutate();
     },
-    [mutate, normalizedFixedPath, storage],
+    [mutate, normalizedFixedPath, shell, storage],
   );
 
   const handleRenameSession = useCallback(
@@ -303,7 +308,8 @@ export const FixedSessionSidebar: React.FC = () => {
       }
 
       const trimmedValue = nextValue.trim();
-      updateFixedSessionMeta(
+      await updateFixedSessionMeta(
+        shell,
         storage,
         normalizedFixedPath,
         session.sessionNumber,
@@ -328,7 +334,7 @@ export const FixedSessionSidebar: React.FC = () => {
       );
       await mutate();
     },
-    [mutate, normalizedFixedPath, showTextInput, storage],
+    [mutate, normalizedFixedPath, shell, showTextInput, storage],
   );
 
   const handleDeleteSession = useCallback(
@@ -370,7 +376,12 @@ export const FixedSessionSidebar: React.FC = () => {
       }
 
       await shell.modifyVaultFile(note, nextContent);
-      removeFixedSessionMeta(storage, note.path, session.sessionNumber);
+      await removeFixedSessionMeta(
+        shell,
+        storage,
+        note.path,
+        session.sessionNumber,
+      );
 
       if (fixedSessionNumber === session.sessionNumber) {
         const remainingSessionNumbers = (sessions ?? [])
@@ -505,7 +516,7 @@ export const FixedSessionSidebar: React.FC = () => {
     const existingSessions = buildFixedSessionSummaries({
       content,
       insertAfter,
-      metaMap: readFixedSessionMeta(storage, note.path),
+      metaMap: await readFixedSessionMeta(shell, storage, note.path),
     });
     const nextSessionNumber =
       Math.max(1, ...existingSessions.map((s) => s.sessionNumber)) + 1;
@@ -521,11 +532,17 @@ export const FixedSessionSidebar: React.FC = () => {
       await shell.modifyVaultFile(note, nextContent);
     }
 
-    updateFixedSessionMeta(storage, note.path, nextSessionNumber, (prev) => ({
-      ...prev,
-      createdAt: prev.createdAt ?? window.moment().toISOString(),
-      pinned: prev.pinned ?? false,
-    }));
+    await updateFixedSessionMeta(
+      shell,
+      storage,
+      note.path,
+      nextSessionNumber,
+      (prev) => ({
+        ...prev,
+        createdAt: prev.createdAt ?? window.moment().toISOString(),
+        pinned: prev.pinned ?? false,
+      }),
+    );
 
     setFixedSessionNumber(nextSessionNumber);
     await mutate();

@@ -1,4 +1,5 @@
 import type { MFDIStorage } from "src/core/storage";
+import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 
 export interface FixedSessionLocalMeta {
@@ -9,6 +10,8 @@ export interface FixedSessionLocalMeta {
 
 export type FixedSessionMetaMap = Record<string, FixedSessionLocalMeta>;
 
+const FIXED_SESSION_META_FILE_SUFFIX = ".fixed-session-meta.json";
+
 function getFixedSessionMetaStorageKey(file: string | null): string {
   if (!file) {
     return STORAGE_KEYS.FIXED_SESSION_META;
@@ -17,58 +20,162 @@ function getFixedSessionMetaStorageKey(file: string | null): string {
   return `${STORAGE_KEYS.FIXED_SESSION_META}:${encodeURIComponent(file)}`;
 }
 
-export function readFixedSessionMeta(
+function getFixedSessionMetaFilePath(file: string): string {
+  if (file.toLowerCase().endsWith(".md")) {
+    return `${file.slice(0, -3)}${FIXED_SESSION_META_FILE_SUFFIX}`;
+  }
+
+  return `${file}${FIXED_SESSION_META_FILE_SUFFIX}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function sanitizeFixedSessionMetaMap(raw: unknown): FixedSessionMetaMap {
+  if (!isRecord(raw)) {
+    return {};
+  }
+
+  const next: FixedSessionMetaMap = {};
+
+  for (const [sessionKey, value] of Object.entries(raw)) {
+    if (!/^\d+$/.test(sessionKey) || !isRecord(value)) {
+      continue;
+    }
+
+    const meta: FixedSessionLocalMeta = {};
+
+    if (typeof value.createdAt === "string") {
+      meta.createdAt = value.createdAt;
+    }
+    if (typeof value.name === "string") {
+      meta.name = value.name;
+    }
+    if (typeof value.pinned === "boolean") {
+      meta.pinned = value.pinned;
+    }
+
+    next[sessionKey] = meta;
+  }
+
+  return next;
+}
+
+async function readFixedSessionMetaFromFile(
+  shell: ObsidianAppShell,
+  file: string,
+): Promise<FixedSessionMetaMap | null> {
+  const filePath = getFixedSessionMetaFilePath(file);
+
+  try {
+    const raw = await shell.loadFile(filePath);
+    const parsed = JSON.parse(raw) as unknown;
+    return sanitizeFixedSessionMetaMap(parsed);
+  } catch {
+    return null;
+  }
+}
+
+async function writeFixedSessionMetaToFile(
+  shell: ObsidianAppShell,
+  file: string,
+  nextMeta: FixedSessionMetaMap,
+): Promise<void> {
+  const filePath = getFixedSessionMetaFilePath(file);
+  const serialized = `${JSON.stringify(nextMeta, null, 2)}\n`;
+
+  // 意図: fixedSessionMeta は vault 内ファイルとして保持し、端末/同期先を跨いでも同じセッション表示情報を再現する。
+  await shell.writeFile(filePath, serialized);
+}
+
+async function readAndMigrateFromLegacyStorage(
+  shell: ObsidianAppShell,
   storage: MFDIStorage | null,
-  file: string | null,
-): FixedSessionMetaMap {
+  file: string,
+): Promise<FixedSessionMetaMap> {
   if (!storage) {
     return {};
   }
 
-  return storage.get<FixedSessionMetaMap>(
-    getFixedSessionMetaStorageKey(file),
-    {},
+  const legacyStorageKey = getFixedSessionMetaStorageKey(file);
+  const migrated = sanitizeFixedSessionMetaMap(
+    storage.get<FixedSessionMetaMap>(legacyStorageKey, {}),
   );
+
+  if (Object.keys(migrated).length === 0) {
+    return {};
+  }
+
+  // 意図: 初回読み込み時に旧 local storage から sidecar へ寄せ、以後はファイルを唯一の正にして二重管理を避ける。
+  await writeFixedSessionMetaToFile(shell, file, migrated);
+  storage.remove(legacyStorageKey);
+
+  return migrated;
 }
 
-export function writeFixedSessionMeta(
+export async function readFixedSessionMeta(
+  shell: ObsidianAppShell,
+  storage: MFDIStorage | null,
+  file: string | null,
+): Promise<FixedSessionMetaMap> {
+  if (!file) {
+    return {};
+  }
+
+  const fromFile = await readFixedSessionMetaFromFile(shell, file);
+  if (fromFile) {
+    return fromFile;
+  }
+
+  return readAndMigrateFromLegacyStorage(shell, storage, file);
+}
+
+export async function writeFixedSessionMeta(
+  shell: ObsidianAppShell,
   storage: MFDIStorage | null,
   file: string | null,
   nextMeta: FixedSessionMetaMap,
-): void {
-  if (!storage) {
+): Promise<void> {
+  if (!file) {
     return;
   }
 
-  storage.set(getFixedSessionMetaStorageKey(file), nextMeta);
+  await writeFixedSessionMetaToFile(shell, file, nextMeta);
+
+  if (storage) {
+    storage.remove(getFixedSessionMetaStorageKey(file));
+  }
 }
 
-export function updateFixedSessionMeta(
+export async function updateFixedSessionMeta(
+  shell: ObsidianAppShell,
   storage: MFDIStorage | null,
   file: string | null,
   sessionNumber: number,
   updater: (prev: FixedSessionLocalMeta) => FixedSessionLocalMeta,
-): FixedSessionMetaMap {
-  const current = readFixedSessionMeta(storage, file);
+): Promise<FixedSessionMetaMap> {
+  const current = await readFixedSessionMeta(shell, storage, file);
   const nextForSession = updater(current[String(sessionNumber)] ?? {});
   const next = {
     ...current,
     [String(sessionNumber)]: nextForSession,
   };
 
-  writeFixedSessionMeta(storage, file, next);
+  await writeFixedSessionMeta(shell, storage, file, next);
   return next;
 }
 
-export function removeFixedSessionMeta(
+export async function removeFixedSessionMeta(
+  shell: ObsidianAppShell,
   storage: MFDIStorage | null,
   file: string | null,
   sessionNumber: number,
-): FixedSessionMetaMap {
-  const current = readFixedSessionMeta(storage, file);
+): Promise<FixedSessionMetaMap> {
+  const current = await readFixedSessionMeta(shell, storage, file);
   const next = { ...current };
 
   delete next[String(sessionNumber)];
-  writeFixedSessionMeta(storage, file, next);
+  await writeFixedSessionMeta(shell, storage, file, next);
   return next;
 }
