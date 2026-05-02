@@ -9,7 +9,7 @@ import {
   useSettings,
   useTotalCount,
 } from "src/ui/components/statusbar/parts/hooks";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePosts } from "src/ui/hooks/usePosts";
 import { usePostsStore } from "src/ui/store/postsStore";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { getFixedNoteTitle } from "src/ui/view/state";
@@ -29,7 +29,7 @@ export const ResultCount: FC = () => {
   } = settings;
 
   const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
-  const { posts } = useUnifiedPosts();
+  const { posts } = usePosts();
 
   const dbTotalCount = useDbTotalCount(activeTopic);
   const totalCount = useTotalCount(displayMode, dbTotalCount, posts);

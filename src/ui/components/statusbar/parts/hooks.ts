@@ -1,11 +1,10 @@
 import { Menu } from "obsidian";
 import { useEffect, useMemo, useState } from "react";
 import { useMFDIDB } from "src/ui/hooks/useMFDIDB";
-import type { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { addGranularityMenuItems } from "src/ui/menus/granularityMenu";
 import { addPeriodMenuItems } from "src/ui/menus/periodMenu";
 import { useSettingsStore } from "src/ui/store/settingsStore";
-import type { DisplayMode } from "src/ui/types";
+import type { DisplayMode, Post } from "src/ui/types";
 import { isVisible } from "src/ui/utils/post-metadata";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
@@ -24,7 +23,7 @@ export function useDbTotalCount(activeTopic: string | undefined) {
 export function useTotalCount(
   displayMode: DisplayMode,
   dbTotalCount: number | undefined,
-  posts: ReturnType<typeof useUnifiedPosts>["posts"],
+  posts: Post[],
 ) {
   return useMemo(() => {
     if (isTimelineView(displayMode)) {

@@ -5,6 +5,7 @@ import { PopoutInputArea } from "src/ui/components/inputarea/PopoutInputArea";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import { ComponentContextProvider } from "src/ui/context/ComponentContext";
 import { EditorRefsProvider } from "src/ui/context/EditorRefsContext";
+import { PostsProvider } from "src/ui/hooks/usePosts";
 import {
   AppStoreProvider,
   createAppStore,
@@ -41,7 +42,9 @@ export const EditorOnlyReactView = ({
         <AppStoreProvider store={storeRef.current}>
           <EditorRefsProvider>
             <EditorOnlyAppRoot initialState={initialState}>
-              <PopoutInputArea />
+              <PostsProvider>
+                <PopoutInputArea />
+              </PostsProvider>
             </EditorOnlyAppRoot>
           </EditorRefsProvider>
         </AppStoreProvider>

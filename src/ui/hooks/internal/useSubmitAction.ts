@@ -6,7 +6,7 @@ import { toText } from "src/core/post-utils";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostHelpers } from "src/ui/hooks/internal/usePostHelpers";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePosts } from "src/ui/hooks/usePosts";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
@@ -37,7 +37,7 @@ export const useSubmitAction = () => {
     })),
   );
 
-  const { posts: allPosts } = useUnifiedPosts();
+  const { posts: allPosts } = usePosts();
 
   const editorState = useEditorStore(
     useShallow((s) => ({

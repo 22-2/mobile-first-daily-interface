@@ -9,7 +9,7 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
 import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePosts } from "src/ui/hooks/usePosts";
 import { DiscardConfirmModal } from "src/ui/modals/DiscardConfirmModal";
 import { useEditorStore } from "src/ui/store/editorStore";
 import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
@@ -41,7 +41,7 @@ export const PopoutInputArea: FC = memo(() => {
     useShallow((s) => ({ clearInput: s.clearInput })),
   );
 
-  const { posts } = useUnifiedPosts();
+  const { posts } = usePosts();
   const canSubmit = useEditorStore((s) => s.canSubmit(posts));
 
   const { handleSubmit } = usePostActions();

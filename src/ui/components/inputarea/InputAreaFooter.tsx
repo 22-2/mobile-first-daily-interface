@@ -8,14 +8,14 @@ import {
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
 import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePosts } from "src/ui/hooks/usePosts";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 
 export const InputAreaFooter: FC = memo(() => {
-  const { posts } = useUnifiedPosts();
+  const { posts } = usePosts();
 
   const { asTask, isReadOnly, inputAreaSize, editorExpansionMode } =
     useSettingsStore(

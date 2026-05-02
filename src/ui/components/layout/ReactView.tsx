@@ -32,10 +32,9 @@ import {
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { useCSSLoaded } from "src/ui/hooks/useCSSLoaded";
 import { useDbSync } from "src/ui/hooks/useDbSync";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { PostsProvider, usePosts } from "src/ui/hooks/usePosts";
 import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
 import type { AppStoreApi } from "src/ui/store/appStore";
 import {
@@ -86,7 +85,9 @@ export const ReactView = ({
         <AppStoreProvider store={storeRef.current}>
           <EditorRefsProvider>
             <MFDIAppRoot>
-              <ReactViewContent />
+              <PostsProvider>
+                <ReactViewContent />
+              </PostsProvider>
             </MFDIAppRoot>
           </EditorRefsProvider>
         </AppStoreProvider>
@@ -267,10 +268,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ReactViewContent = () => {
-  const {
-    shell,
-    settings: pluginSettings,
-  } = useAppContext();
+  const { shell, settings: pluginSettings } = useAppContext();
   const component = useObsidianComponent() as MFDIView;
   const isCSSLoaded = useCSSLoaded();
   const { viewNoteMode } = useAppStore(
@@ -304,7 +302,7 @@ const ReactViewContent = () => {
   const setSearchQuery = settings.setSearchQuery;
   const setSearchInputOpen = settings.setSearchInputOpen;
 
-  const { posts } = useUnifiedPosts();
+  const { filteredPosts, filteredPostsWithThreadReplies } = usePosts();
   const { tasks } = usePostsStore(useShallow((s) => ({ tasks: s.tasks })));
 
   const { currentDailyNote } = useNoteStore(
@@ -314,18 +312,6 @@ const ReactViewContent = () => {
   );
 
   const { scrollContainerRef } = useEditorRefs();
-
-  const filteredPosts = useFilteredPosts({
-    posts,
-    ...settings,
-  });
-
-  // スレッド内表示時は返信も含めて全メッセージをコピーするためのフィルタ
-  const filteredPostsWithThreadReplies = useFilteredPosts({
-    posts,
-    ...settings,
-    includeThreadReplies: true,
-  });
 
   useEffect(() => {
     return bindSearchDelegates(component, {

@@ -8,20 +8,16 @@ import { cn } from "src/ui/components/primitives/utils";
 import { DISPLAY_MODE, INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useEditorRefs } from "src/ui/context/EditorRefsContext";
-import { useCollapsedGroups } from "src/ui/hooks/internal/useCollapsedGroups";
 import { useDividerContextMenu } from "src/ui/hooks/internal/useDividerContextMenu";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { usePostContextMenu } from "src/ui/hooks/internal/usePostContextMenu";
-import { useTimelineItems } from "src/ui/hooks/internal/useTimelineItems";
-import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { usePostBacklinks } from "src/ui/hooks/usePostBacklinkCounts";
-import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import { usePosts } from "src/ui/hooks/usePosts";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MomentLike, Post } from "src/ui/types";
-import { isThreadView, isTimelineView } from "src/ui/utils/view-mode";
 import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { Virtualizer, type VirtualizerHandle } from "virtua";
 import { useShallow } from "zustand/shallow";
@@ -36,7 +32,7 @@ function isSamePostReference(left: Post, right: Post): boolean {
 }
 
 export const PostListView: React.FC = memo(() => {
-  const { shell, storage, settings: pluginSettings } = useAppContext();
+  const { shell, settings: pluginSettings } = useAppContext();
   const { showTextInput, confirmDeleteAction, openBacklinkPreview } =
     useObsidianUi();
   const settings = useSettingsStore(
@@ -50,7 +46,6 @@ export const PostListView: React.FC = memo(() => {
       setDisplayMode: s.setDisplayMode,
       setThreadFocusRootId: s.setThreadFocusRootId,
       asTask: s.asTask,
-      searchQuery: s.searchQuery,
       isReadOnly: s.isReadOnly(),
       timeFilter: s.timeFilter,
       threadFocusRootId: s.threadFocusRootId,
@@ -58,8 +53,6 @@ export const PostListView: React.FC = memo(() => {
       inputAreaSize: s.inputAreaSize,
     })),
   );
-
-  const { posts: allPosts, loadMore, hasMore } = useUnifiedPosts();
 
   const {
     editingPostOffset,
@@ -105,21 +98,27 @@ export const PostListView: React.FC = memo(() => {
     displayMode,
     dateFilter,
     isReadOnly,
-    searchQuery,
     setDate,
     setDisplayMode,
     threadFocusRootId,
     setThreadFocusRootId,
   } = settings;
 
-  const timelineView = isTimelineView(displayMode);
-  const threadView = isThreadView({ displayMode, threadFocusRootId });
-
-  const filteredPosts = useFilteredPosts({
-    posts: allPosts,
-    ...settings,
-    includeThreadReplies: true,
-  });
+  const {
+    posts,
+    filteredPosts,
+    loadMore,
+    hasMore,
+    timelineView,
+    threadView,
+    canCollapseDividers,
+    collapsedGroupSet,
+    toggleCollapsedGroup,
+    collapseGroups,
+    expandGroups,
+    timelineItems,
+    visibleDividerGroupKeys,
+  } = usePosts();
 
   const { countMap: backlinkCounts, postsMap: backlinkPosts } =
     usePostBacklinks(filteredPosts);
@@ -128,29 +127,6 @@ export const PostListView: React.FC = memo(() => {
     () => getMFDIViewCapabilities({ noteMode: settings.viewNoteMode }),
     [settings.viewNoteMode],
   );
-
-  // 意図: divider折りたたみはタイムライン通常表示時のみ有効にし、
-  // 他モードや検索中に投稿が見えなくなる混乱を防ぐ。
-  const canCollapseDividers =
-    timelineView && !threadView && searchQuery.trim().length === 0;
-
-  const {
-    collapsedGroupSet,
-    toggleCollapsedGroup,
-    collapseGroups,
-    expandGroups,
-  } = useCollapsedGroups({ storage, canCollapseDividers });
-
-  const { displayedPostsWithDividers, visibleDividerGroupKeys } =
-    useTimelineItems({
-      filteredPosts,
-      collapsedGroupSet,
-      canCollapseDividers,
-      displayMode,
-      granularity,
-      dateFilter,
-      viewNoteMode: settings.viewNoteMode,
-    });
 
   const hasVisibleDividers = visibleDividerGroupKeys.length > 0;
   const areAllVisibleDividersCollapsed =
@@ -286,11 +262,11 @@ export const PostListView: React.FC = memo(() => {
     if (editingPostOffset === null) return;
     if (editingPost && editingPost.startOffset === editingPostOffset) return;
 
-    const realPost = allPosts.find((p) => p.startOffset === editingPostOffset);
+    const realPost = posts.find((p) => p.startOffset === editingPostOffset);
     if (realPost) {
       setEditingPost(realPost);
     }
-  }, [allPosts, editingPostOffset, editingPost, setEditingPost]);
+  }, [posts, editingPostOffset, editingPost, setEditingPost]);
 
   useEffect(() => {
     shell.on("mfdi:scroll-to-top", scrollToTop);
@@ -302,7 +278,7 @@ export const PostListView: React.FC = memo(() => {
   useEffect(() => {
     if (!highlightedPost) return;
 
-    const targetIndex = displayedPostsWithDividers.findIndex(
+    const targetIndex = timelineItems.findIndex(
       (item) =>
         item.type === "post" && isSamePostReference(item.post, highlightedPost),
     );
@@ -315,23 +291,17 @@ export const PostListView: React.FC = memo(() => {
     return () => {
       window.clearTimeout(timer);
     };
-  }, [displayedPostsWithDividers, highlightedPost, highlightRequestId]);
+  }, [timelineItems, highlightedPost, highlightRequestId]);
 
   // 無限スクロールのトリガー (初期読み込みなどでリストが空の場合のケア)
   useEffect(() => {
     if (threadView) return;
     if (!timelineView || !hasMore) return;
 
-    if (displayedPostsWithDividers.length === 0) {
+    if (timelineItems.length === 0) {
       loadMore();
     }
-  }, [
-    timelineView,
-    hasMore,
-    loadMore,
-    displayedPostsWithDividers.length,
-    threadView,
-  ]);
+  }, [timelineView, hasMore, loadMore, timelineItems.length, threadView]);
 
   return (
     <Box className="list w-full relative">
@@ -340,7 +310,7 @@ export const PostListView: React.FC = memo(() => {
         scrollRef={scrollContainerRef}
         onScroll={(offset) => setShowScrollTop(offset > 200)}
       >
-        {displayedPostsWithDividers.map((item) => {
+        {timelineItems.map((item) => {
           if (item.type === "divider") {
             return (
               <Box key={item.key} style={{ paddingBottom: "1px" }}>

@@ -1,10 +1,8 @@
-import type { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
+import type { Post } from "src/ui/types";
 import { isVisible } from "src/ui/utils/post-metadata";
 import { countVisibleRootPosts } from "src/ui/utils/thread-utils";
 
-export function getVisibleRootCount(
-  posts: ReturnType<typeof useUnifiedPosts>["posts"],
-) {
+export function getVisibleRootCount(posts: Post[]) {
   return countVisibleRootPosts(posts.filter((p) => isVisible(p.metadata)));
 }
 

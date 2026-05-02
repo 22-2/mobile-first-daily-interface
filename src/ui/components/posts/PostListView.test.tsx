@@ -3,6 +3,8 @@ import { act, render, screen } from "@testing-library/react";
 import moment from "moment";
 import React from "react";
 import { PostListView } from "src/ui/components/posts/PostListView";
+import type { TimelineItem } from "src/ui/hooks/internal/useTimelineItems";
+import type { UsePostsOutput } from "src/ui/hooks/usePosts";
 import type { Post } from "src/ui/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,6 +40,33 @@ const mocked = vi.hoisted(() => {
     },
   };
 });
+
+function createUsePostsValue(posts: Post[]): UsePostsOutput {
+  const timelineItems: TimelineItem[] = posts.map((post) => ({
+    type: "post",
+    post,
+    key: `post-${post.id}`,
+  }));
+
+  return {
+    posts,
+    filteredPosts: posts,
+    filteredPostsWithThreadReplies: posts,
+    timelineItems,
+    visibleDividerGroupKeys: [],
+    collapsedGroupSet: new Set<string>(),
+    canCollapseDividers: false,
+    toggleCollapsedGroup: vi.fn(),
+    collapseGroups: vi.fn(),
+    expandGroups: vi.fn(),
+    loadMore: vi.fn(),
+    hasMore: false,
+    isLoading: false,
+    isValidating: false,
+    timelineView: false,
+    threadView: false,
+  };
+}
 
 function createPost(): Post {
   return {
@@ -111,18 +140,8 @@ vi.mock("src/ui/hooks/useObsidianUi", () => ({
   }),
 }));
 
-vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
-  useUnifiedPosts: () => ({
-    posts: mocked.posts,
-    loadMore: vi.fn(),
-    hasMore: false,
-    isLoading: false,
-    isValidating: false,
-  }),
-}));
-
-vi.mock("src/ui/hooks/useFilteredPosts", () => ({
-  useFilteredPosts: ({ posts }: { posts: Post[] }) => posts,
+vi.mock("src/ui/hooks/usePosts", () => ({
+  usePosts: () => createUsePostsValue(mocked.posts),
 }));
 
 vi.mock("src/ui/hooks/usePostBacklinkCounts", () => ({
