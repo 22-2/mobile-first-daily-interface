@@ -1,4 +1,4 @@
-interface ThinoEntry {
+export interface ThinoEntry {
   time: string;
   message: string;
   metadata: Record<string, string>;
@@ -11,6 +11,11 @@ interface ThinoEntry {
   /** Offset to the start of the next entry/heading (exclusive end) (0-based). */
   endOffset: number;
 }
+
+type ParseThinoEntriesOptions = {
+  headingMatcher?: (line: string) => boolean;
+  offsetBase?: number;
+};
 
 function getHeadingLevel(line: string): number | null {
   const m = line.match(/^(#{1,6})\s+/);
@@ -154,8 +159,13 @@ function deindentBodyLine(line: string): string {
   return line;
 }
 
-export function parseThinoEntries(content: string): ThinoEntry[] {
+export function parseThinoEntries(
+  content: string,
+  options: ParseThinoEntriesOptions = {},
+): ThinoEntry[] {
   const lines = content.split("\n");
+  const headingMatcher = options.headingMatcher ?? isThinoHeading;
+  const offsetBase = options.offsetBase ?? 0;
 
   let offset = 0;
   let thinoHeadingLevel: number | null = null;
@@ -186,10 +196,10 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
       time: current.time,
       message,
       metadata,
-      offset: current.offset,
-      startOffset: current.startOffset,
-      bodyStartOffset: current.bodyStartOffset,
-      endOffset,
+      offset: current.offset + offsetBase,
+      startOffset: current.startOffset + offsetBase,
+      bodyStartOffset: current.bodyStartOffset + offsetBase,
+      endOffset: endOffset + offsetBase,
     });
     current = null;
   };
@@ -198,7 +208,7 @@ export function parseThinoEntries(content: string): ThinoEntry[] {
     const line = rawLine.replace(/\r$/, "");
 
     if (!inThinoSection) {
-      if (isThinoHeading(line)) {
+      if (headingMatcher(line)) {
         inThinoSection = true;
         thinoHeadingLevel = getHeadingLevel(line) ?? 2;
       }

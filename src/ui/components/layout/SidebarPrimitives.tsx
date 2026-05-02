@@ -27,12 +27,14 @@ export const SidebarTextButton: React.FC<{
   isMuted?: boolean;
   className?: string;
   onClick?: () => void;
+  onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   children: React.ReactNode;
 }> = ({
   isSelected = false,
   isMuted = false,
   className,
   onClick,
+  onContextMenu,
   children,
 }) => {
   return (
@@ -50,13 +52,11 @@ export const SidebarTextButton: React.FC<{
             : "font-normal text-[var(--text-normal)]",
         isMuted && "sidebar-text-button--muted",
         onClick ? "cursor-pointer" : "cursor-default",
-        onClick &&
-          isSelected &&
-          "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_80%)]",
-        onClick && !isSelected && "hover:bg-[var(--background-modifier-hover)]",
+        onClick && "hover:bg-[var(--background-modifier-hover)]",
         className,
       )}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     >
       {children}
     </Box>

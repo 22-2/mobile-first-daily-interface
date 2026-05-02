@@ -1,0 +1,6 @@
+allowBuilds:
+  electron: true
+  msw: true
+  obsidian-typings: true
+publicHoistPattern:
+  - 'obsidian'

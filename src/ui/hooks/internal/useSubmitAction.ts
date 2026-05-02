@@ -1,5 +1,6 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
+import { ensureFixedSessionHeading } from "src/core/fixed-sessions";
 import { resolveNoteSource } from "src/core/note-source";
 import { toText } from "src/core/post-utils";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -29,6 +30,7 @@ export const useSubmitAction = () => {
       threadFocusRootId: s.threadFocusRootId,
       viewNoteMode: s.viewNoteMode,
       displayMode: s.displayMode,
+      fixedSessionNumber: s.fixedSessionNumber,
       getEffectiveDate: s.getEffectiveDate,
       setDate: s.setDate,
       setThreadFocusRootId: s.setThreadFocusRootId,
@@ -61,6 +63,31 @@ export const useSubmitAction = () => {
     notifyNotFoundAndRefresh,
     findLatestPost,
   } = usePostHelpers();
+
+  const ensureFixedSessionInsertMarker = useCallback(
+    async (note: TFile): Promise<string | null> => {
+      const insertAfter = settings.insertAfter.trim();
+      if (!insertAfter) {
+        new Notice("fixed session を使うには insertAfter 見出しの設定が必要です");
+        return null;
+      }
+
+      const content = await shell.loadFile(note.path);
+      const { nextContent, headingLine } = ensureFixedSessionHeading({
+        content,
+        insertAfter,
+        sessionNumber: settingsState.fixedSessionNumber,
+      });
+
+      if (nextContent !== content) {
+        // 意図: legacy heading を session 1 へ昇格しつつ、空 session でも実体見出しを先に作ってから投稿を挿入する。
+        await shell.modifyVaultFile(note, nextContent);
+      }
+
+      return headingLine;
+    },
+    [shell, settings.insertAfter, settingsState.fixedSessionNumber],
+  );
 
   // ── Sub-handlers ───────────────────────────────────────────────────────────
 
@@ -165,7 +192,15 @@ export const useSubmitAction = () => {
         return;
       }
 
-      await shell.insertTextAfter(noteFile, text, settings.insertAfter);
+      const insertMarker =
+        settingsState.viewNoteMode === "fixed"
+          ? await ensureFixedSessionInsertMarker(noteFile)
+          : settings.insertAfter;
+      if (insertMarker === null) {
+        return;
+      }
+
+      await shell.insertTextAfter(noteFile, text, insertMarker);
       await refreshPosts(rootPost.path);
 
       editorState.clearInput();
@@ -248,13 +283,22 @@ export const useSubmitAction = () => {
         return;
       }
 
-      // insertAfter マーカーが存在しない場合は末尾に追記しておく
-      const content = await shell.loadFile(note.path);
-      if (settings.insertAfter && !content.includes(settings.insertAfter)) {
-        await shell.insertTextAfter(note, settings.insertAfter, "");
+      let insertMarker = settings.insertAfter;
+      if (noteSource.mode === "fixed") {
+        const fixedInsertMarker = await ensureFixedSessionInsertMarker(note);
+        if (fixedInsertMarker === null) {
+          return;
+        }
+        insertMarker = fixedInsertMarker;
+      } else {
+        // insertAfter マーカーが存在しない場合は末尾に追記しておく
+        const content = await shell.loadFile(note.path);
+        if (settings.insertAfter && !content.includes(settings.insertAfter)) {
+          await shell.insertTextAfter(note, settings.insertAfter, "");
+        }
       }
 
-      await shell.insertTextAfter(note, text, settings.insertAfter);
+      await shell.insertTextAfter(note, text, insertMarker);
 
       if (
         isTimelineView(settingsState.displayMode) &&
@@ -287,6 +331,7 @@ export const useSubmitAction = () => {
       noteState,
       store,
       refreshPosts,
+      ensureFixedSessionInsertMarker,
     ],
   );
 

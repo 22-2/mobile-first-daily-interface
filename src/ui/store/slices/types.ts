@@ -38,6 +38,7 @@ export interface EnvironmentSlice {
 export interface SettingsSlice {
   activeTopic: string;
   activeTag: string | null;
+  fixedSessionNumber: number;
   granularity: Granularity;
   date: MomentLike;
   timeFilter: TimeFilter;
@@ -53,6 +54,7 @@ export interface SettingsSlice {
   setInputAreaSize: (size: InputAreaSize) => void;
   setActiveTopic: (topicId: string) => void;
   setActiveTag: (tag: string | null) => void;
+  setFixedSessionNumber: (sessionNumber: number) => void;
   setGranularity: (g: Granularity) => void;
   setDate: (d: MomentLike) => void;
   setTimeFilter: (f: TimeFilter) => void;

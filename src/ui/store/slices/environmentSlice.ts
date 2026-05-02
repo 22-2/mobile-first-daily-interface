@@ -1,4 +1,7 @@
-import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
+import {
+  getDraftMetadataStorageKey,
+  getInputStorageKey,
+} from "src/ui/store/slices/inputStorage";
 import type { EnvironmentSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
 
@@ -31,6 +34,7 @@ export const createEnvironmentSlice: StateCreator<
       storage,
       viewNoteMode,
       file: currentFixedNotePath,
+      fixedSessionNumber,
       getInputValue,
       replaceInput,
     } = get();
@@ -42,7 +46,11 @@ export const createEnvironmentSlice: StateCreator<
     if (storage && hasInputContextChanged) {
       // 意図: periodic/fixed で編集中テキストを汚染しないよう、切替直前に現在ビューの入力を退避する。
       storage.set(
-        getInputStorageKey(viewNoteMode, currentFixedNotePath),
+        getInputStorageKey(
+          viewNoteMode,
+          currentFixedNotePath,
+          fixedSessionNumber,
+        ),
         getInputValue(),
       );
     }
@@ -52,10 +60,21 @@ export const createEnvironmentSlice: StateCreator<
     if (storage && hasInputContextChanged) {
       // 意図: 切替先ビュー専用の入力だけを復元し、前ビューの未送信入力が混ざるのを防ぐ。
       const restoredInput = storage.get<string>(
-        getInputStorageKey(noteMode, file),
+        getInputStorageKey(noteMode, file, fixedSessionNumber),
         "",
       );
+      const restoredDraftMetadata = storage.get<{
+        draftMetadata: Record<string, string>;
+        draftMetadataBase: Record<string, string>;
+      }>(getDraftMetadataStorageKey(noteMode, file, fixedSessionNumber), {
+        draftMetadata: {},
+        draftMetadataBase: {},
+      });
       replaceInput(restoredInput);
+      set({
+        draftMetadata: restoredDraftMetadata.draftMetadata,
+        draftMetadataBase: restoredDraftMetadata.draftMetadataBase,
+      });
     }
   },
 

@@ -43,3 +43,7 @@
 - [-] ポップアウトするPostOnlyView（別にEditorOnlyでええか🥺）
 - [ ] InputAreaを更に小さくできるかもしれない（SNSみたいに、右下に投稿フローティングボタンを追加する、みたいな）
 > 下書き概念はsandboxノートでも使えるかも🤔
+
+- [ ] タブをリロードしたときもちゃんとマークダウンビューとして開くように
+- [ ] session view
+- [ ] useFilteredPosts、useUnifiedPostsをdocumentSliceに統一

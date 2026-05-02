@@ -12,24 +12,22 @@ import { useAppContext } from "src/ui/context/AppContext";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
 import {
+  buildFixedSessionPosts,
+  isThreadRootMetadata,
+} from "src/ui/utils/fixed-session-utils";
+import {
   buildPostFromEntry,
   memoRecordToPost,
 } from "src/ui/utils/thread-utils";
 import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
 
-function isThreadRootMetadata(metadata: Record<string, string>): boolean {
-  const threadId = metadata.mfdiId;
-  const parentId = metadata.parentId;
-  return !!threadId && !parentId;
-}
-
 /**
  * フォーカスモード（特定期間の1回読み切り）のデータ取得を担当するHook。
  * 常に IndexedDB から最新のデータを取得する。
  */
 export const useFocusPosts = () => {
-  const { shell } = useAppContext();
+  const { shell, settings } = useAppContext();
   const {
     activeTopic,
     date,
@@ -39,6 +37,7 @@ export const useFocusPosts = () => {
     threadOnly,
     viewNoteMode,
     file,
+    fixedSessionNumber,
   } = useSettingsStore(
     useShallow((s) => ({
       activeTopic: s.activeTopic,
@@ -51,6 +50,7 @@ export const useFocusPosts = () => {
       // 意図: ストア側の `file` を参照して固定ノートのパスを得る（Obsidian のファイル選択値）。
       // テストではこの `file` を直接書き換えて期待のファイルを渡す。
       file: s.file,
+      fixedSessionNumber: s.fixedSessionNumber,
     })),
   );
   const isFixedMode = viewNoteMode === "fixed";
@@ -98,6 +98,8 @@ export const useFocusPosts = () => {
       threadOnly,
       viewNoteMode,
       normalizedFixedPath,
+      fixedSessionNumber,
+      settings.insertAfter,
       periodicNoteFile?.path,
       date.toISOString(),
     ],
@@ -119,41 +121,15 @@ export const useFocusPosts = () => {
         // 実ランタイムで `"/n"` を含むことは想定していないが、テスト互換性を保つための暫定措置。
         const normalizedContent = content.replace(/\/n/g, "\n");
 
-        return parseThinoEntries(normalizedContent)
-          .filter((entry) => {
-            if (query && !entry.message.toLowerCase().includes(query)) {
-              return false;
-            }
-            if (threadOnly && !isThreadRootMetadata(entry.metadata)) {
-              return false;
-            }
-            return true;
-          })
-          .map((entry) => {
-            const timestamp = resolveTimestamp(
-              entry.time,
-              date,
-              entry.metadata,
-            );
-
-            return {
-              id:
-                entry.metadata.mfdiId ??
-                `${normalizedFixedPath}:${entry.startOffset}`,
-              threadRootId:
-                entry.metadata.parentId ?? entry.metadata.mfdiId ?? null,
-              timestamp,
-              noteDate: timestamp.clone().startOf("day"),
-              message: entry.message,
-              metadata: entry.metadata,
-              offset: entry.offset,
-              startOffset: entry.startOffset,
-              endOffset: entry.endOffset,
-              bodyStartOffset: entry.bodyStartOffset,
-              kind: "thino",
-              path: normalizedFixedPath,
-            } as Post;
-          });
+        return buildFixedSessionPosts({
+          content: normalizedContent,
+          insertAfter: settings.insertAfter,
+          path: normalizedFixedPath,
+          sessionNumber: fixedSessionNumber,
+          searchQuery: query,
+          threadOnly,
+          referenceDate: date,
+        });
       }
 
       // 月/年 granularity はノートファイルを直接読むことで常に最新の内容を反映する

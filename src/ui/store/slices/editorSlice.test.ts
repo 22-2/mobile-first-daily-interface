@@ -1,7 +1,10 @@
 import type { MFDIStorage } from "src/core/storage";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { createAppStore } from "src/ui/store/appStore";
-import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
+import {
+  getDraftMetadataStorageKey,
+  getInputStorageKey,
+} from "src/ui/store/slices/inputStorage";
 import type { Post } from "src/ui/types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -191,6 +194,46 @@ describe("editorSlice", () => {
     expect(setStorage).toHaveBeenCalledWith(
       getInputStorageKey("fixed", fixedPathA),
       "draft-a-modified",
+    );
+  });
+
+  it("fixed session 切替で draft と metadata を session 単位に分離する", () => {
+    const fixedPath = "MFDI/a.mfdi.md";
+    const store = createAppStore();
+    const { storage, set: setStorage } = createMockStorage({
+      [getInputStorageKey("fixed", fixedPath, 2)]: "draft-session-2",
+      [getDraftMetadataStorageKey("fixed", fixedPath, 2)]: {
+        draftMetadata: { pinned: "true" },
+        draftMetadataBase: { pinned: "true" },
+      },
+    });
+
+    store.setState({
+      storage,
+      viewNoteMode: "fixed",
+      file: fixedPath,
+      fixedSessionNumber: 1,
+      inputSnapshot: "draft-session-1",
+      draftMetadata: { tags: "alpha" },
+      draftMetadataBase: { tags: "alpha" },
+    });
+
+    store.getState().setFixedSessionNumber(2);
+
+    expect(store.getState().fixedSessionNumber).toBe(2);
+    expect(store.getState().inputSnapshot).toBe("draft-session-2");
+    expect(store.getState().draftMetadata).toEqual({ pinned: "true" });
+    expect(store.getState().draftMetadataBase).toEqual({ pinned: "true" });
+    expect(setStorage).toHaveBeenCalledWith(
+      getInputStorageKey("fixed", fixedPath, 1),
+      "draft-session-1",
+    );
+    expect(setStorage).toHaveBeenCalledWith(
+      getDraftMetadataStorageKey("fixed", fixedPath, 1),
+      {
+        draftMetadata: { tags: "alpha" },
+        draftMetadataBase: { tags: "alpha" },
+      },
     );
   });
 });

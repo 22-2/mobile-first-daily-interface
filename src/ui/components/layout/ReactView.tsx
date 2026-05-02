@@ -8,13 +8,13 @@ import {
   useState,
 } from "react";
 import type { Settings } from "src/settings";
-import { MiniCalendar } from "src/ui/components/calendar/MiniCalendar";
 import { EmptyState } from "src/ui/components/EmptyState";
 import { InputArea } from "src/ui/components/inputarea/InputArea";
-import { SidebarScales } from "src/ui/components/layout/SidebarScales";
-import { TagList } from "src/ui/components/layout/TagList";
+import { FixedSessionSidebar } from "src/ui/components/layout/FixedSessionSidebar";
+import { PeriodicSidebar } from "src/ui/components/layout/PeriodicSidebar";
+import { SidebarContainer } from "src/ui/components/layout/SidebarContainer";
 import { PostListView } from "src/ui/components/posts/PostListView";
-import { Box, Flex, Spinner } from "src/ui/components/primitives";
+import { Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
@@ -164,6 +164,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!("getState" in component)) return;
 
     const viewState = component.getState();
+    store.setState({
+      fixedSessionNumber:
+        viewState.noteMode === "fixed" ? viewState.fixedSessionNumber ?? 1 : 1,
+    });
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
       file: viewState.file,
@@ -183,6 +187,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         timeFilter: fixedDefaults.timeFilter,
         asTask: fixedDefaults.asTask,
         threadOnly: fixedDefaults.threadOnly,
+        fixedSessionNumber: viewState.fixedSessionNumber ?? 1,
         // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
         activeTag: null,
         threadFocusRootId: null,
@@ -362,7 +367,6 @@ const ReactViewContent = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastWidthRef = useRef(containerWidth);
 
-  const [sideBarViewDate, setSideBarViewDate] = useState(() => window.moment());
   const [isPopoutEditorOpen, setIsPopoutEditorOpen] = useState(false);
 
   useEffect(() => {
@@ -451,16 +455,9 @@ const ReactViewContent = () => {
 
       {/* Sidebar: MiniCalendar (Moved to Right) */}
       {capabilities.supportsSidebar && (
-        <Box
-          className={`${effectivelyOpen ? "flex w-[260px] min-w-[260px] ml-[var(--size-4-2)]" : "hidden w-0 min-w-0"} h-full flex-col py-[var(--size-4-2)] px-0 mr-[var(--size-4-2)] transition-all duration-200 overflow-hidden`}
-        >
-          <MiniCalendar onViewDateChange={setSideBarViewDate} />
-          <SidebarScales
-            viewedDate={sideBarViewDate}
-            onViewDateChange={setSideBarViewDate}
-          />
-          <TagList />
-        </Box>
+        <SidebarContainer isOpen={effectivelyOpen}>
+          {viewNoteMode === "fixed" ? <FixedSessionSidebar /> : <PeriodicSidebar />}
+        </SidebarContainer>
       )}
 
       {!isCSSLoaded && (
@@ -497,6 +494,7 @@ function useViewSync(view: MFDIView | null) {
     isReadOnly,
     sidebarOpen,
     searchQuery,
+    fixedSessionNumber,
     inputAreaSize,
     setGranularity,
     setTimeFilter,
@@ -520,6 +518,7 @@ function useViewSync(view: MFDIView | null) {
       isReadOnly: state.isReadOnly(),
       sidebarOpen: state.sidebarOpen,
       searchQuery: state.searchQuery,
+      fixedSessionNumber: state.fixedSessionNumber,
       inputAreaSize: state.inputAreaSize,
       setGranularity: state.setGranularity,
       setTimeFilter: state.setTimeFilter,
@@ -604,6 +603,11 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     view.setStatePartial({ searchQuery });
   }, [view, searchQuery]);
+
+  useEffect(() => {
+    if (!view) return;
+    view.setStatePartial({ fixedSessionNumber });
+  }, [view, fixedSessionNumber]);
 
   useEffect(() => {
     if (!view) return;
@@ -789,7 +793,11 @@ function useViewSync(view: MFDIView | null) {
         editingPostMessage: appState.editingPost?.message ?? null,
         persistedInput:
           appState.storage?.get<string>(
-            getInputStorageKey(appState.viewNoteMode, appState.file),
+            getInputStorageKey(
+              appState.viewNoteMode,
+              appState.file,
+              appState.fixedSessionNumber,
+            ),
             "",
           ) ?? "",
         editorSnapshot: inputRef.current?.getContentSnapshot() ?? null,

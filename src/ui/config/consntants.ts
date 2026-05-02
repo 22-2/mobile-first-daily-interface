@@ -19,11 +19,14 @@ export const STORAGE_KEYS = {
   INPUT: "input",
   INPUT_PERIODIC: "inputPeriodic",
   INPUT_FIXED: "inputFixed",
+  INPUT_FIXED_DRAFT_METADATA: "inputFixedDraftMetadata",
+  INPUT_PERIODIC_DRAFT_METADATA: "inputPeriodicDraftMetadata",
   // 編集中投稿のセッション情報を1オブジェクトにまとめて保存する
   EDITING_POST: "editingPost",
   THREAD_FOCUS_ROOT_ID: "threadFocusRootId",
   COLLAPSED_POST_GROUP_KEYS: "collapsedPostGroupKeys",
   INPUT_AREA_SIZE: "inputAreaSize",
+  FIXED_SESSION_META: "fixedSessionMeta",
   // ポップアウトエディタのキャンセル時に確認モーダルをスキップするかどうか
   SKIP_POPOUT_DISCARD_CONFIRM: "skipPopoutDiscardConfirm",
 } as const;

@@ -10,7 +10,7 @@ describe("MFDI view state", () => {
     expect(getMFDIViewCapabilities({ noteMode: "fixed" })).toEqual({
       supportsDateNavigation: false,
       supportsDisplayModeSwitch: false,
-      supportsSidebar: false,
+      supportsSidebar: true,
       supportsTopicSelection: false,
       supportsPeriodMenus: true,
       supportsMovePostBetweenDays: false,
@@ -23,6 +23,7 @@ describe("MFDI view state", () => {
       noteMode: "fixed",
       file: "Inbox.md",
       displayMode: "focus",
+      fixedSessionNumber: 1,
       dateFilter: "all",
       timeFilter: "all",
     });
@@ -43,6 +44,7 @@ describe("MFDI view state", () => {
     ).toMatchObject({
       noteMode: "fixed",
       file: "Inbox.md",
+      fixedSessionNumber: 1,
       dateFilter: "all",
     });
   });

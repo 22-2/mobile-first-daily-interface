@@ -7,6 +7,7 @@ import { createRefreshPosts } from "src/ui/hooks/internal/refreshPosts";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { Post } from "src/ui/types";
+import { buildFixedSessionPosts } from "src/ui/utils/fixed-session-utils";
 import { buildPostFromEntry } from "src/ui/utils/thread-utils";
 import { useShallow } from "zustand/shallow";
 
@@ -15,7 +16,7 @@ import { useShallow } from "zustand/shallow";
  * コンポーネントに公開せず、両 hook から呼び出す用途に限定する。
  */
 export const usePostHelpers = () => {
-  const { shell } = useAppContext();
+  const { shell, settings } = useAppContext();
 
   const settingsState = useSettingsStore(
     useShallow((s) => ({
@@ -25,6 +26,7 @@ export const usePostHelpers = () => {
       date: s.date,
       searchQuery: s.searchQuery,
       threadOnly: s.threadOnly,
+      viewNoteMode: s.viewNoteMode,
     })),
   );
 
@@ -94,12 +96,21 @@ export const usePostHelpers = () => {
 
   const getLatestPostsForPath = useCallback(
     async (path: string, noteDate: Post["noteDate"]) => {
-      const content = await shell.loadFile(path);
+      const content = (await shell.loadFile(path)).replace(/\/n/g, "\n");
+      if (settingsState.viewNoteMode === "fixed") {
+        return buildFixedSessionPosts({
+          content,
+          insertAfter: settings.insertAfter,
+          path,
+          referenceDate: noteDate,
+        });
+      }
+
       return parseThinoEntries(content).map((entry) =>
         buildPostFromEntry({ ...entry, path, noteDate, resolveTimestamp }),
       );
     },
-    [shell],
+    [shell, settings.insertAfter, settingsState.viewNoteMode],
   );
 
   const findLatestPost = useCallback(

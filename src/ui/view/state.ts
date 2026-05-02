@@ -23,6 +23,7 @@ export interface MFDIViewState extends Record<string, unknown> {
   granularity: Granularity;
   asTask: boolean;
   threadOnly: boolean;
+  fixedSessionNumber: number;
   timeFilter: TimeFilter;
   dateFilter: DateFilter;
   searchQuery: string;
@@ -36,6 +37,7 @@ export const DEFAULT_MFDI_VIEW_STATE: MFDIViewState = {
   granularity: "day",
   asTask: false,
   threadOnly: false,
+  fixedSessionNumber: 1,
   timeFilter: "all",
   dateFilter: "today",
   searchQuery: "",
@@ -57,6 +59,7 @@ export function createDefaultMFDIViewState(params?: {
       noteMode,
       file: file,
       displayMode: DISPLAY_MODE.FOCUS,
+      fixedSessionNumber: 1,
       dateFilter: "all",
     };
   }
@@ -75,7 +78,7 @@ export function getMFDIViewCapabilities(
     return {
       supportsDateNavigation: false,
       supportsDisplayModeSwitch: false,
-      supportsSidebar: false,
+      supportsSidebar: true,
       supportsTopicSelection: false,
       supportsPeriodMenus: true,
       supportsMovePostBetweenDays: false,

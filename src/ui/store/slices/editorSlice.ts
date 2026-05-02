@@ -1,5 +1,8 @@
 import { INPUT_AREA_SIZE, STORAGE_KEYS } from "src/ui/config/consntants";
-import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
+import {
+  getDraftMetadataStorageKey,
+  getInputStorageKey,
+} from "src/ui/store/slices/inputStorage";
 import type { EditorSlice, MFDIStore } from "src/ui/store/slices/types";
 import type { StateCreator } from "zustand/vanilla";
 
@@ -11,6 +14,10 @@ type UpdateSessionInputOptions = {
 };
 
 export type DraftMetadata = Record<string, string>;
+export type PersistedDraftMetadataState = {
+  draftMetadata: DraftMetadata;
+  draftMetadataBase: DraftMetadata;
+};
 
 // 編集中投稿のセッション情報を1オブジェクトにまとめて永続化する
 // settingsSlice が granularity / noteDateStr を参照するため両フィールドを含む
@@ -70,8 +77,16 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
 
   const persistInput = (input: string, mode: PersistMode) => {
-    const { viewNoteMode, file: file } = get();
-    const inputStorageKey = getInputStorageKey(viewNoteMode, file);
+    const {
+      viewNoteMode,
+      file: file,
+      fixedSessionNumber,
+    } = get();
+    const inputStorageKey = getInputStorageKey(
+      viewNoteMode,
+      file,
+      fixedSessionNumber,
+    );
 
     if (inputPersistTimer !== null) {
       clearTimeout(inputPersistTimer);
@@ -87,6 +102,19 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       get().storage?.set(inputStorageKey, input);
       inputPersistTimer = null;
     }, 50);
+  };
+
+  const persistDraftMetadata = (state: PersistedDraftMetadataState) => {
+    const {
+      storage,
+      viewNoteMode,
+      file,
+      fixedSessionNumber,
+    } = get();
+    storage?.set(
+      getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber),
+      state,
+    );
   };
 
   const updateSessionInput = (
@@ -133,14 +161,23 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
         persistMode: "immediate",
       });
       set({ draftMetadata: {}, draftMetadataBase: {} });
+      persistDraftMetadata({ draftMetadata: {}, draftMetadataBase: {} });
     },
 
     setDraftMetadata: (metadata) => {
       set({ draftMetadata: metadata });
+      persistDraftMetadata({
+        draftMetadata: metadata,
+        draftMetadataBase: get().draftMetadataBase,
+      });
     },
 
     setDraftMetadataBase: (metadata) => {
       set({ draftMetadataBase: metadata });
+      persistDraftMetadata({
+        draftMetadata: get().draftMetadata,
+        draftMetadataBase: metadata,
+      });
     },
 
     getInputValue: () => get().inputSnapshot,
@@ -173,6 +210,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
       setAsTask(false);
       set({ editingPost: post, editingPostOffset: post.startOffset });
       set({ draftMetadata: { ...post.metadata }, draftMetadataBase: { ...post.metadata } });
+      persistDraftMetadata({
+        draftMetadata: { ...post.metadata },
+        draftMetadataBase: { ...post.metadata },
+      });
 
       // 編集セッション情報を1キーにまとめて保存する
       const persisted: PersistedEditingPost = {
@@ -227,12 +268,24 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const { storage, viewNoteMode, file: file } = get();
+      const {
+        storage,
+        viewNoteMode,
+        file: file,
+        fixedSessionNumber,
+      } = get();
       if (!storage) return;
 
       const persistedInput = storage.get<string>(
-        getInputStorageKey(viewNoteMode, file),
+        getInputStorageKey(viewNoteMode, file, fixedSessionNumber),
         "",
+      );
+      const persistedDraftMetadata = storage.get<PersistedDraftMetadataState>(
+        getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber),
+        {
+          draftMetadata: {},
+          draftMetadataBase: {},
+        },
       );
 
       const persisted = storage.get<PersistedEditingPost | null>(
@@ -250,6 +303,14 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
         inputSnapshotVersion: state.inputSnapshotVersion + 1,
         editingPostOffset: state.editingPostOffset ?? persisted?.offset ?? null,
         editingPost: state.editingPost ?? reconstructedPost,
+        draftMetadata:
+          Object.keys(state.draftMetadata).length > 0
+            ? state.draftMetadata
+            : persistedDraftMetadata.draftMetadata,
+        draftMetadataBase:
+          Object.keys(state.draftMetadataBase).length > 0
+            ? state.draftMetadataBase
+            : persistedDraftMetadata.draftMetadataBase,
       }));
     },
   };

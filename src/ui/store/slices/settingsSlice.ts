@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import type { Settings } from "src/settings";
 import {
   DISPLAY_MODE,
@@ -7,6 +8,10 @@ import {
 } from "src/ui/config/consntants";
 import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
+import {
+  getDraftMetadataStorageKey,
+  getInputStorageKey,
+} from "src/ui/store/slices/inputStorage";
 import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
 import type {
   DateFilter,
@@ -95,6 +100,7 @@ function resolveInitialSettingsState(
     activeTopic: settings.activeTopic ?? "",
     activeTag:
       storage?.get<string | null>(STORAGE_KEYS.ACTIVE_TAG, null) ?? null,
+    fixedSessionNumber: 1,
     granularity,
     date: validDate,
     timeFilter:
@@ -134,6 +140,7 @@ export const createSettingsSlice: StateCreator<
 > = (set, get) => ({
   activeTopic: "",
   activeTag: null,
+  fixedSessionNumber: 1,
   granularity: GRANULARITY_CONFIG.day.unit,
   date: window.moment(),
   timeFilter: TIME_FILTER_IDS.ALL,
@@ -153,7 +160,7 @@ export const createSettingsSlice: StateCreator<
     if (size === INPUT_AREA_SIZE.MINIMIZED && get().getInputValue().trim().length > 0) {
       new Notice("編集中は最小化できません");
       return;
-    };
+    }
 
     set({ inputAreaSize: size });
     persistValue(get(), STORAGE_KEYS.INPUT_AREA_SIZE, size);
@@ -167,6 +174,73 @@ export const createSettingsSlice: StateCreator<
   setActiveTag: (activeTag) => {
     set({ activeTag });
     persistValue(get(), STORAGE_KEYS.ACTIVE_TAG, activeTag);
+  },
+
+  setFixedSessionNumber: (fixedSessionNumber) => {
+    const {
+      fixedSessionNumber: currentFixedSessionNumber,
+      viewNoteMode,
+      file,
+      storage,
+      editingPost,
+      getInputValue,
+      replaceInput,
+      draftMetadata,
+      draftMetadataBase,
+    } = get();
+
+    if (currentFixedSessionNumber === fixedSessionNumber) {
+      return;
+    }
+
+    if (editingPost) {
+      // 意図: 編集対象と session をまたいで混線すると submit 先が曖昧になるため、編集中の切替は止める。
+      new Notice("編集中はセッションを切り替えられません");
+      return;
+    }
+
+    if (storage && viewNoteMode === "fixed") {
+      storage.set(
+        getInputStorageKey(viewNoteMode, file, currentFixedSessionNumber),
+        getInputValue(),
+      );
+      storage.set(
+        getDraftMetadataStorageKey(
+          viewNoteMode,
+          file,
+          currentFixedSessionNumber,
+        ),
+        {
+          draftMetadata,
+          draftMetadataBase,
+        },
+      );
+    }
+
+    set({ fixedSessionNumber, threadFocusRootId: null });
+
+    if (storage && viewNoteMode === "fixed") {
+      const restoredInput = storage.get<string>(
+        getInputStorageKey(viewNoteMode, file, fixedSessionNumber),
+        "",
+      );
+      const restoredDraftMetadata = storage.get<{
+        draftMetadata: Record<string, string>;
+        draftMetadataBase: Record<string, string>;
+      }>(
+        getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber),
+        {
+          draftMetadata: {},
+          draftMetadataBase: {},
+        },
+      );
+
+      replaceInput(restoredInput);
+      set({
+        draftMetadata: restoredDraftMetadata.draftMetadata,
+        draftMetadataBase: restoredDraftMetadata.draftMetadataBase,
+      });
+    }
   },
 
   setGranularity: (granularity) => {
