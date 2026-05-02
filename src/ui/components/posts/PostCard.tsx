@@ -10,11 +10,10 @@ import { HTMLCard } from "src/ui/components/cards/HTMLCard";
 import { ImageCard } from "src/ui/components/cards/ImageCard";
 import { ReadMoreContent } from "src/ui/components/cards/ReadMoreContent";
 import { TwitterCard } from "src/ui/components/cards/TwitterCard";
-import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
-import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 import { cn } from "src/ui/components/primitives/utils";
+import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 import { MarkedMarkdown } from "../common/MarkedMarkdown";
 
 export type PostCardProps = {

@@ -144,9 +144,7 @@ describe("editorSlice", () => {
 
     const versionBefore = store.getState().inputSnapshotVersion;
 
-    store
-      .getState()
-      .setViewContext({ noteMode: "fixed", file: fixedPathA });
+    store.getState().setViewContext({ noteMode: "fixed", file: fixedPathA });
 
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().inputSnapshot).toBe("fixed draft");
@@ -181,9 +179,7 @@ describe("editorSlice", () => {
 
     const versionBefore = store.getState().inputSnapshotVersion;
 
-    store
-      .getState()
-      .setViewContext({ noteMode: "fixed", file: fixedPathB });
+    store.getState().setViewContext({ noteMode: "fixed", file: fixedPathB });
 
     expect(store.getState().viewNoteMode).toBe("fixed");
     expect(store.getState().file).toBe(fixedPathB);

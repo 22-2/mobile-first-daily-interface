@@ -4,7 +4,6 @@ import type { Task } from "src/core/task-text";
 import { CardContent } from "src/ui/components/cards/BaseCard";
 import { Card } from "src/ui/components/cards/Card";
 import { ReadMoreContent } from "src/ui/components/cards/ReadMoreContent";
-import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { Box, Checkbox, HStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import type { Granularity, TimeFilter } from "src/ui/types";

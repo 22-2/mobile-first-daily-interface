@@ -63,7 +63,11 @@ export class ItemView {
   constructor(leaf: WorkspaceLeaf) {
     this.leaf = leaf;
   }
-  getViewType() { return ""; }
-  getDisplayText() { return ""; }
+  getViewType() {
+    return "";
+  }
+  getDisplayText() {
+    return "";
+  }
 }
 export const setIcon = () => {};

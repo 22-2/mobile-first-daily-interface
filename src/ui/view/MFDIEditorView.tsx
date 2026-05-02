@@ -69,7 +69,7 @@ export class MFDIEditorView extends ItemView {
   }
 
   getState(): MFDIEditorViewState {
-    return this.state || {} as MFDIEditorViewState;
+    return this.state || ({} as MFDIEditorViewState);
   }
 
   // -----------------------------------------------------------------------

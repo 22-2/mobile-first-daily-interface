@@ -1,5 +1,6 @@
 import { type Extension } from "@codemirror/state";
-import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import type { EditorView} from "@codemirror/view";
+import { ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { createLogger } from "./core/logger";
 
 const TARGET_VIEW_SELECTOR =

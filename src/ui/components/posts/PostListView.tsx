@@ -204,7 +204,8 @@ export const PostListView: React.FC = memo(() => {
       const mode = pluginSettings?.openInNewWindowMode ?? "disabled";
       const shouldPopout =
         mode === "always" ||
-        (mode === "minimized_only" && inputAreaSize === INPUT_AREA_SIZE.MINIMIZED);
+        (mode === "minimized_only" &&
+          inputAreaSize === INPUT_AREA_SIZE.MINIMIZED);
 
       if (shouldPopout) {
         openEditorInNewWindow(post);

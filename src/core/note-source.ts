@@ -174,16 +174,14 @@ export async function createFixedNoteFromInput(
 function createFixedNoteSource(context: NoteSourceContext): NoteSource {
   return {
     mode: "fixed",
-    resolveCurrentNote: () =>
-      resolveFixedNote(context.shell, context.file),
+    resolveCurrentNote: () => resolveFixedNote(context.shell, context.file),
     ensureCurrentNote: async () => {
       if (!context.file) return null;
       return ensureFixedNote(context.shell, context.file);
     },
     matchesPath: (filePath, currentNote) => {
       const targetPath =
-        currentNote?.path ??
-        normalizeFixedNotePath(context.file ?? "");
+        currentNote?.path ?? normalizeFixedNotePath(context.file ?? "");
       return !!targetPath && filePath === targetPath;
     },
   };

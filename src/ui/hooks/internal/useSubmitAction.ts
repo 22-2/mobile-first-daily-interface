@@ -11,9 +11,9 @@ import { useCurrentAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
 import { useNoteStore } from "src/ui/store/noteStore";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { mergeDraftMetadataForSubmit } from "src/ui/store/slices/editorSlice";
 import { THREAD_METADATA_KEYS } from "src/ui/utils/thread-utils";
 import { isTimelineView } from "src/ui/utils/view-mode";
-import { mergeDraftMetadataForSubmit } from "src/ui/store/slices/editorSlice";
 import { useShallow } from "zustand/shallow";
 
 /** 新規投稿・編集確定のみを担う hook。InputArea / InputAreaFooter / ReactView が利用する。 */
@@ -68,7 +68,9 @@ export const useSubmitAction = () => {
     async (note: TFile): Promise<string | null> => {
       const insertAfter = settings.insertAfter.trim();
       if (!insertAfter) {
-        new Notice("fixed session を使うには insertAfter 見出しの設定が必要です");
+        new Notice(
+          "fixed session を使うには insertAfter 見出しの設定が必要です",
+        );
         return null;
       }
 

@@ -23,7 +23,9 @@ import { useShallow } from "zustand/shallow";
 export const InputArea: FC = memo(() => {
   // 意図: MFDIView と MFDIEditorView どちらから呼ばれても動くよう、
   // leaf だけを要求する最小限の構造型にキャストする。
-  const component = useObsidianComponent() as unknown as { leaf: WorkspaceLeaf };
+  const component = useObsidianComponent() as unknown as {
+    leaf: WorkspaceLeaf;
+  };
   const { shell } = useAppContext();
   const { inputRef } = useEditorRefs();
   const {

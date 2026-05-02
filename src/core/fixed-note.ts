@@ -28,7 +28,8 @@ export function resolveFixedNote(
   // それ以外はダックタイピングで `path` を持つオブジェクトを受け入れる。
   if (!file) return null;
   if (file instanceof TFile) return file;
-  if ((file as any).path && typeof (file as any).path === "string") return file as TFile;
+  if ((file as any).path && typeof (file as any).path === "string")
+    return file as TFile;
   return null;
 }
 
@@ -78,4 +79,7 @@ export function buildFixedNotePathFromName(
 }
 
 export const createNewFixedNote = (shell: ObsidianAppShell, folder: string) =>
-  ensureFixedNote(shell, buildFixedNotePathFromName(folder, UNTITLED_FILENAME, shell));
+  ensureFixedNote(
+    shell,
+    buildFixedNotePathFromName(folder, UNTITLED_FILENAME, shell),
+  );

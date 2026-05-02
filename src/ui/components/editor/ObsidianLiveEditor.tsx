@@ -108,10 +108,7 @@ export const ObsidianLiveEditor = forwardRef<
 
     return (
       <Box className={cn(className)} {...boxProps}>
-        <Box
-          ref={containerRef}
-          className="mfdi-live-editor-container"
-        />
+        <Box ref={containerRef} className="mfdi-live-editor-container" />
       </Box>
     );
   },

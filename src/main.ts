@@ -3,6 +3,7 @@ import type { WorkspaceLeaf } from "obsidian";
 import { Plugin } from "obsidian";
 import type { BuiltinMainContext } from "src/core/builtin-registry";
 import { activateBuiltins } from "src/core/builtin-registry";
+import { setConsolaLevel } from "src/core/logger";
 import { createFixedNoteFromInput } from "src/core/note-source";
 import type { Topic } from "src/core/topic";
 import { WorkerClient } from "src/db/worker-client";
@@ -20,7 +21,6 @@ import {
   createFixedNoteViewState,
   DEFAULT_MFDI_VIEW_STATE,
 } from "src/ui/view/state";
-import { setConsolaLevel } from "src/core/logger";
 
 export default class MFDIPlugin extends Plugin {
   shell: ObsidianAppShell;
@@ -72,10 +72,7 @@ export default class MFDIPlugin extends Plugin {
 
     const fixedNote = await createFixedNoteFromInput(this.shell, folder, name);
 
-    this.settings.files = [
-      ...this.settings.files,
-      { path: fixedNote.path },
-    ];
+    this.settings.files = [...this.settings.files, { path: fixedNote.path }];
     await this.saveSettings();
 
     const leaf = await this.attachMFDIView(

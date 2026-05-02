@@ -1,12 +1,12 @@
 import { parseFixedSessionSections } from "src/core/fixed-sessions";
 import { resolveTimestamp } from "src/core/post-utils";
 import type { MomentLike, Post } from "src/ui/types";
+import type { FixedSessionMetaMap } from "src/ui/utils/fixed-session-storage";
 import {
   buildPostFromEntry,
   resolvePostId,
   resolveThreadRootId,
 } from "src/ui/utils/thread-utils";
-import type { FixedSessionMetaMap } from "src/ui/utils/fixed-session-storage";
 
 export interface FixedSessionSummary {
   sessionNumber: number;
@@ -16,7 +16,9 @@ export interface FixedSessionSummary {
   pinned: boolean;
 }
 
-export function isThreadRootMetadata(metadata: Record<string, string>): boolean {
+export function isThreadRootMetadata(
+  metadata: Record<string, string>,
+): boolean {
   const threadId = metadata.mfdiId;
   const parentId = metadata.parentId;
   return !!threadId && !parentId;
@@ -32,7 +34,10 @@ function resolveSessionActivityIso(
     const posted = entry.metadata.posted?.trim();
     if (posted) {
       const postedTime = window.moment(posted);
-      if (postedTime.isValid() && (latestTimestamp == null || postedTime.valueOf() > latestTimestamp)) {
+      if (
+        postedTime.isValid() &&
+        (latestTimestamp == null || postedTime.valueOf() > latestTimestamp)
+      ) {
         latestTimestamp = postedTime.valueOf();
         latestIso = postedTime.toISOString();
       }
@@ -40,8 +45,15 @@ function resolveSessionActivityIso(
     }
 
     if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/.test(entry.time)) {
-      const fullTimestamp = window.moment(entry.time, "YYYY-MM-DD HH:mm:ss", true);
-      if (fullTimestamp.isValid() && (latestTimestamp == null || fullTimestamp.valueOf() > latestTimestamp)) {
+      const fullTimestamp = window.moment(
+        entry.time,
+        "YYYY-MM-DD HH:mm:ss",
+        true,
+      );
+      if (
+        fullTimestamp.isValid() &&
+        (latestTimestamp == null || fullTimestamp.valueOf() > latestTimestamp)
+      ) {
         latestTimestamp = fullTimestamp.valueOf();
         latestIso = fullTimestamp.toISOString();
       }
@@ -58,7 +70,9 @@ export function buildFixedSessionSummaries(params: {
 }): FixedSessionSummary[] {
   const { content, insertAfter, metaMap } = params;
   const sections = parseFixedSessionSections(content, insertAfter);
-  const sectionByNumber = new Map(sections.map((section) => [section.sessionNumber, section]));
+  const sectionByNumber = new Map(
+    sections.map((section) => [section.sessionNumber, section]),
+  );
   const sessionNumbers = new Set<number>([1]);
 
   sections.forEach((section) => {
@@ -113,7 +127,10 @@ export function buildFixedSessionPosts(params: {
   const query = searchQuery.trim().toLowerCase();
 
   return parseFixedSessionSections(content, insertAfter)
-    .filter((section) => sessionNumber == null || section.sessionNumber === sessionNumber)
+    .filter(
+      (section) =>
+        sessionNumber == null || section.sessionNumber === sessionNumber,
+    )
     .flatMap((section) => {
       return section.entries
         .filter((entry) => {
@@ -126,7 +143,11 @@ export function buildFixedSessionPosts(params: {
           return true;
         })
         .map((entry) => {
-          const timestamp = resolveTimestamp(entry.time, referenceDate, entry.metadata);
+          const timestamp = resolveTimestamp(
+            entry.time,
+            referenceDate,
+            entry.metadata,
+          );
           return buildPostFromEntry({
             ...entry,
             path,

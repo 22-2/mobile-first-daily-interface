@@ -5,5 +5,9 @@ interface Props {
 }
 
 export const MarkedMarkdown: React.FC<Props> = ({ content }) => {
-  return <Markdown breaks gfm>{content}</Markdown>;
+  return (
+    <Markdown breaks gfm>
+      {content}
+    </Markdown>
+  );
 };

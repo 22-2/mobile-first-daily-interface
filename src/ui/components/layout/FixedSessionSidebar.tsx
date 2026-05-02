@@ -1,7 +1,6 @@
-import type React from "react";
 import { Menu, Notice, TFile } from "obsidian";
+import type React from "react";
 import { useCallback, useMemo } from "react";
-import useSWR from "swr";
 import { normalizeFixedNotePath } from "src/core/fixed-note";
 import {
   ensureFixedSessionHeading,
@@ -30,14 +29,15 @@ import {
   getInputStorageKey,
 } from "src/ui/store/slices/inputStorage";
 import {
-  buildFixedSessionSummaries,
-  type FixedSessionSummary,
-} from "src/ui/utils/fixed-session-utils";
-import {
   readFixedSessionMeta,
   removeFixedSessionMeta,
   updateFixedSessionMeta,
 } from "src/ui/utils/fixed-session-storage";
+import {
+  buildFixedSessionSummaries,
+  type FixedSessionSummary,
+} from "src/ui/utils/fixed-session-utils";
+import useSWR from "swr";
 import { useShallow } from "zustand/shallow";
 
 // ---------------------------------------------------------------------------

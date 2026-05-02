@@ -72,9 +72,7 @@ export const PopoutInputArea: FC = memo(() => {
       return;
     }
 
-    const result = await new DiscardConfirmModal(
-      shell.getRawApp(),
-    ).show();
+    const result = await new DiscardConfirmModal(shell.getRawApp()).show();
 
     if (!result.confirmed) return;
 

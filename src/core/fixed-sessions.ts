@@ -14,7 +14,10 @@ function normalizeSessionHeading(line: string): string {
   return line.trim().replace(/\s+/g, " ");
 }
 
-function getSessionHeadingMatch(line: string, insertAfter: string): {
+function getSessionHeadingMatch(
+  line: string,
+  insertAfter: string,
+): {
   sessionNumber: number;
   isLegacyHeading: boolean;
 } | null {
@@ -184,7 +187,10 @@ export function ensureFixedSessionHeading(params: {
 
   let nextContent = normalizedContent;
   if (!hasSessionOne) {
-    nextContent = appendFixedSessionHeading(nextContent, explicitSessionOneHeading);
+    nextContent = appendFixedSessionHeading(
+      nextContent,
+      explicitSessionOneHeading,
+    );
   }
 
   if (sessionNumber === 1) {
@@ -221,9 +227,10 @@ export function removeFixedSessionSection(params: {
     };
   }
 
-  const nextContent = `${content.slice(0, targetSection.headingStartOffset)}${content.slice(targetSection.sectionEndOffset)}`
-    .replace(/\n{3,}/g, "\n\n")
-    .trimEnd();
+  const nextContent =
+    `${content.slice(0, targetSection.headingStartOffset)}${content.slice(targetSection.sectionEndOffset)}`
+      .replace(/\n{3,}/g, "\n\n")
+      .trimEnd();
 
   return {
     // 意図: section 削除後に過剰な空行だけ正規化し、他セクションの相対オフセットを壊さない最小編集に留める。

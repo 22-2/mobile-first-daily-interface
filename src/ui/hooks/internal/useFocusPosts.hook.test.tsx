@@ -1,9 +1,9 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import type moment from "moment";
 import React from "react";
+import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import moment from "moment";
-import { useFocusPosts } from "src/ui/hooks/internal/useFocusPosts";
 
 interface MockSettingsState {
   activeTopic: string;
@@ -25,7 +25,7 @@ const mocked = vi.hoisted(() => {
     searchQuery: "",
     threadOnly: false,
     viewNoteMode: "periodic",
-      file: null,
+    file: null,
   };
 
   return {

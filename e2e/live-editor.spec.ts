@@ -6,7 +6,7 @@ import { createStorageKey, getStorageKeyPrefix } from "src/core/storage";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { getInputStorageKey } from "src/ui/store/slices/inputStorage";
 import type { MFDIView } from "src/ui/view/MFDIView";
-import { fileURLToPath } from "url"
+import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

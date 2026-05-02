@@ -204,13 +204,7 @@ describe("useInfiniteTimeline", () => {
     renderHook(() => useInfiniteTimeline());
 
     const fetcher = useSWRMock.mock.calls[0][1];
-    await fetcher([
-      "posts",
-      "timeline-pinned",
-      "topic-a",
-      "",
-      false,
-    ]);
+    await fetcher(["posts", "timeline-pinned", "topic-a", "", false]);
 
     expect(getPinnedMemosMock).toHaveBeenCalledWith({
       topicId: "topic-a",

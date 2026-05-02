@@ -1,11 +1,11 @@
-import * as React from "react";
 import type { ReactNode } from "react";
+import React from "react";
 import { useAppContext } from "src/ui/context/AppContext";
+import { useCollapsedGroups } from "src/ui/hooks/internal/useCollapsedGroups";
 import {
   useTimelineItems,
   type TimelineItem,
 } from "src/ui/hooks/internal/useTimelineItems";
-import { useCollapsedGroups } from "src/ui/hooks/internal/useCollapsedGroups";
 import { useFilteredPosts } from "src/ui/hooks/useFilteredPosts";
 import { useUnifiedPosts } from "src/ui/hooks/useUnifiedPosts";
 import { useSettingsStore } from "src/ui/store/settingsStore";

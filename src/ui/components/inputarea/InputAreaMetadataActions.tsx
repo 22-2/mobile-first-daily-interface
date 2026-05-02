@@ -1,11 +1,14 @@
 import { memo, useCallback, type FC } from "react";
+import { TAG_METADATA_KEY, serializeMfdiTags } from "src/core/tags";
 import { InputAreaIcon } from "src/ui/components/inputarea/InputAreaIcon";
 import { HStack } from "src/ui/components/primitives";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { getRawTagMetadata, isPinned } from "src/ui/utils/post-metadata";
-import { PINNED_METADATA_KEY } from "src/ui/utils/post-metadata";
-import { TAG_METADATA_KEY, serializeMfdiTags } from "src/core/tags";
+import {
+  PINNED_METADATA_KEY,
+  getRawTagMetadata,
+  isPinned,
+} from "src/ui/utils/post-metadata";
 import { useShallow } from "zustand/shallow";
 
 type InputAreaMetadataActionsProps = {

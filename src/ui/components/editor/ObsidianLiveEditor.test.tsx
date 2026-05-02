@@ -1,10 +1,10 @@
 import { render } from "@testing-library/react";
+import React from "react";
 import {
   ObsidianLiveEditor,
   type ObsidianLiveEditorRef,
 } from "src/ui/components/editor/ObsidianLiveEditor";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import React from "react";
 
 type MockEditorApi = {
   focus: ReturnType<typeof vi.fn>;

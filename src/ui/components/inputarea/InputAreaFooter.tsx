@@ -1,4 +1,3 @@
-import { useShallow } from "zustand/shallow";
 import { Menu } from "obsidian";
 import { memo, type FC } from "react";
 import {
@@ -7,12 +6,13 @@ import {
 } from "src/ui/components/inputarea/constants";
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
 import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
+import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { usePosts } from "src/ui/hooks/usePosts";
 import { useAppStore } from "src/ui/store/appStore";
 import { useEditorStore } from "src/ui/store/editorStore";
-import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { useSettingsStore } from "src/ui/store/settingsStore";
+import { useShallow } from "zustand/shallow";
 
 export const InputAreaFooter: FC = memo(() => {
   const { posts } = usePosts();

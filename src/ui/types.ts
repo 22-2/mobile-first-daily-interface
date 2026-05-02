@@ -17,7 +17,8 @@ export type DateFilter = (typeof DATE_FILTER_OPTIONS)[number]["id"];
 
 export type DisplayMode = (typeof DISPLAY_MODE)[keyof typeof DISPLAY_MODE];
 
-export type InputAreaSize = (typeof INPUT_AREA_SIZE)[keyof typeof INPUT_AREA_SIZE];
+export type InputAreaSize =
+  (typeof INPUT_AREA_SIZE)[keyof typeof INPUT_AREA_SIZE];
 
 export interface Post {
   id: string;

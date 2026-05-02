@@ -16,7 +16,7 @@ type LeafWithState = WorkspaceLeaf & {
 type MFDIViewStateWrapper = {
   type: string;
   state: MFDIViewState;
-}
+};
 
 const MFDI_VIEW_TYPE = "mfdi-view";
 
@@ -74,14 +74,16 @@ function shouldConvertViewState(viewState: unknown): boolean {
 export function createFixedNoteViewExtension(): FixedNoteViewExtension {
   return {
     convertMarkdownViewState: (viewState) => {
-      if (!shouldConvertViewState(viewState)) return viewState as MFDIViewStateWrapper;
+      if (!shouldConvertViewState(viewState))
+        return viewState as MFDIViewStateWrapper;
       const candidate = viewState as {
         type?: string;
         state?: MFDIViewState;
       } as MFDIViewStateWrapper;
       const filePath =
         typeof candidate.state?.file === "string" ? candidate.state.file : "";
-      if (!isMFDIFixedNotePath(filePath)) return viewState as MFDIViewStateWrapper;
+      if (!isMFDIFixedNotePath(filePath))
+        return viewState as MFDIViewStateWrapper;
 
       // TODO: ここでファイルの存在チェックを入れたい
       // app.vault.adapter.exists(filePath) で存在チェックできるはずだが、app をこの関数に渡す必要があるため、実装が少し面倒。

@@ -55,8 +55,7 @@ describe("fixed note view extension", () => {
       {
         view: {
           file: { path: "MFDI/Inbox.mfdi.md" },
-          getState: () =>
-            ({ noteMode: "periodic", file: null }) as any,
+          getState: () => ({ noteMode: "periodic", file: null }) as any,
         },
       } as any,
     ];

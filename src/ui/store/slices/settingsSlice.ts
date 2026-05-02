@@ -157,7 +157,10 @@ export const createSettingsSlice: StateCreator<
 
   setInputAreaSize: (size) => {
     // 入力内容がある状態で最小化するのを防止
-    if (size === INPUT_AREA_SIZE.MINIMIZED && get().getInputValue().trim().length > 0) {
+    if (
+      size === INPUT_AREA_SIZE.MINIMIZED &&
+      get().getInputValue().trim().length > 0
+    ) {
       new Notice("編集中は最小化できません");
       return;
     }
@@ -227,13 +230,10 @@ export const createSettingsSlice: StateCreator<
       const restoredDraftMetadata = storage.get<{
         draftMetadata: Record<string, string>;
         draftMetadataBase: Record<string, string>;
-      }>(
-        getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber),
-        {
-          draftMetadata: {},
-          draftMetadataBase: {},
-        },
-      );
+      }>(getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber), {
+        draftMetadata: {},
+        draftMetadataBase: {},
+      });
 
       replaceInput(restoredInput);
       set({

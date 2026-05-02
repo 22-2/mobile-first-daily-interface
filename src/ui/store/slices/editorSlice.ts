@@ -77,11 +77,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   let inputPersistTimer: ReturnType<typeof setTimeout> | null = null;
 
   const persistInput = (input: string, mode: PersistMode) => {
-    const {
-      viewNoteMode,
-      file: file,
-      fixedSessionNumber,
-    } = get();
+    const { viewNoteMode, file: file, fixedSessionNumber } = get();
     const inputStorageKey = getInputStorageKey(
       viewNoteMode,
       file,
@@ -105,12 +101,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
   };
 
   const persistDraftMetadata = (state: PersistedDraftMetadataState) => {
-    const {
-      storage,
-      viewNoteMode,
-      file,
-      fixedSessionNumber,
-    } = get();
+    const { storage, viewNoteMode, file, fixedSessionNumber } = get();
     storage?.set(
       getDraftMetadataStorageKey(viewNoteMode, file, fixedSessionNumber),
       state,
@@ -209,7 +200,10 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
 
       setAsTask(false);
       set({ editingPost: post, editingPostOffset: post.startOffset });
-      set({ draftMetadata: { ...post.metadata }, draftMetadataBase: { ...post.metadata } });
+      set({
+        draftMetadata: { ...post.metadata },
+        draftMetadataBase: { ...post.metadata },
+      });
       persistDraftMetadata({
         draftMetadata: { ...post.metadata },
         draftMetadataBase: { ...post.metadata },
@@ -268,12 +262,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     },
 
     hydrateEditorState: () => {
-      const {
-        storage,
-        viewNoteMode,
-        file: file,
-        fixedSessionNumber,
-      } = get();
+      const { storage, viewNoteMode, file: file, fixedSessionNumber } = get();
       if (!storage) return;
 
       const persistedInput = storage.get<string>(

@@ -13,13 +13,14 @@ import { InputArea } from "src/ui/components/inputarea/InputArea";
 import { FixedSessionSidebar } from "src/ui/components/layout/FixedSessionSidebar";
 import { PeriodicSidebar } from "src/ui/components/layout/PeriodicSidebar";
 import { SidebarContainer } from "src/ui/components/layout/SidebarContainer";
+import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
 import { getSidebarAutoToggleState } from "src/ui/components/layout/sidebarAutoToggle";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
-import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { StatusBar } from "src/ui/components/statusbar/StatusBar";
 import { TaskListView } from "src/ui/components/tasks/TaskListView";
+import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
 import { AppContextProvider, useAppContext } from "src/ui/context/AppContext";
 import {
   ComponentContextProvider,
@@ -35,7 +36,6 @@ import { useDbSync } from "src/ui/hooks/useDbSync";
 import { useNoteSync } from "src/ui/hooks/useNoteSync";
 import { useObsidianUi } from "src/ui/hooks/useObsidianUi";
 import { PostsProvider, usePosts } from "src/ui/hooks/usePosts";
-import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
 import type { AppStoreApi } from "src/ui/store/appStore";
 import {
   AppStoreProvider,
@@ -168,7 +168,9 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const viewState = component.getState();
     store.setState({
       fixedSessionNumber:
-        viewState.noteMode === "fixed" ? viewState.fixedSessionNumber ?? 1 : 1,
+        viewState.noteMode === "fixed"
+          ? (viewState.fixedSessionNumber ?? 1)
+          : 1,
     });
     store.getState().setViewContext({
       noteMode: viewState.noteMode,
@@ -199,15 +201,7 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);
-  }, [
-    store,
-    shell,
-    date,
-    granularity,
-    activeTopic,
-    viewNoteMode,
-    file,
-  ]);
+  }, [store, shell, date, granularity, activeTopic, viewNoteMode, file]);
 
   // updatePostsFromDB is no longer needed here as SWR handles it
 
@@ -345,13 +339,8 @@ const ReactViewContent = () => {
     settings.displayMode,
   ]);
 
-  const {
-    granularity,
-    asTask,
-    dateFilter,
-    sidebarOpen,
-    setSidebarOpen,
-  } = settings;
+  const { granularity, asTask, dateFilter, sidebarOpen, setSidebarOpen } =
+    settings;
 
   const [containerWidth, setContainerWidth] = useState(1000);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -446,7 +435,11 @@ const ReactViewContent = () => {
       {/* Sidebar: MiniCalendar (Moved to Right) */}
       {capabilities.supportsSidebar && (
         <SidebarContainer isOpen={effectivelyOpen}>
-          {viewNoteMode === "fixed" ? <FixedSessionSidebar /> : <PeriodicSidebar />}
+          {viewNoteMode === "fixed" ? (
+            <FixedSessionSidebar />
+          ) : (
+            <PeriodicSidebar />
+          )}
         </SidebarContainer>
       )}
 
@@ -617,7 +610,9 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
-    view.actionDelegates.onChangeGranularity = (nextGranularity: Granularity) => {
+    view.actionDelegates.onChangeGranularity = (
+      nextGranularity: Granularity,
+    ) => {
       setGranularity(nextGranularity);
       if (nextGranularity !== "day") {
         setTimeFilter("all");
@@ -688,7 +683,9 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
-    view.actionDelegates.onChangeDisplayMode = (nextDisplayMode: DisplayMode) => {
+    view.actionDelegates.onChangeDisplayMode = (
+      nextDisplayMode: DisplayMode,
+    ) => {
       setDisplayMode(nextDisplayMode);
     };
     return () => {
@@ -757,7 +754,9 @@ function useViewSync(view: MFDIView | null) {
     if (!view) return;
     // テスト用: 外部から内容を設定するため replaceInput を使う
     // （syncInputSession はエディタ→ストア片方向専用）
-    view.actionDelegates.onSetLiveEditorContentForTesting = (content: string) => {
+    view.actionDelegates.onSetLiveEditorContentForTesting = (
+      content: string,
+    ) => {
       replaceInput(content);
     };
     view.actionDelegates.onGetLiveEditorContentForTesting = () => {

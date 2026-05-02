@@ -1,5 +1,5 @@
+import type { WorkspaceLeaf } from "obsidian";
 import { useCallback, useMemo } from "react";
-import { WorkspaceLeaf } from "obsidian";
 import { useAppContext } from "src/ui/context/AppContext";
 import {
   openBacklinkPreviewModal,
@@ -16,8 +16,8 @@ import { MFDIEditorModal } from "src/ui/modals/MFDIEditorModal";
 import { useCurrentAppStore } from "src/ui/store/appStore";
 import type { PersistedEditingPost } from "src/ui/store/slices/editorSlice";
 import type { Post } from "src/ui/types";
-import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIEditorViewState } from "src/ui/view/MFDIEditorView";
+import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 
 type DeleteConfirmArgs = Parameters<typeof showDeleteConfirmModal>[1];
 type InputModalArgs = Parameters<typeof showInputModal>[1];
@@ -39,7 +39,11 @@ export function useObsidianUi() {
       if (!openPopout) return false;
 
       const leaf = openPopout.call(app.workspace);
-      void leaf.setViewState({ type: VIEW_TYPE_MFDI_EDITOR, active: true, state });
+      void leaf.setViewState({
+        type: VIEW_TYPE_MFDI_EDITOR,
+        active: true,
+        state,
+      });
       return true;
     },
     [shell],

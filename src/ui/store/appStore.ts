@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { createDraftSlice } from "src/ui/store/slices/draftSlice";
 import { createEditorSlice } from "src/ui/store/slices/editorSlice";
 import { createEnvironmentSlice } from "src/ui/store/slices/environmentSlice";

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { bindSearchDelegates } from "src/ui/components/layout/searchDelegates";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("bindSearchDelegates", () => {
   type QuerySetter = ReturnType<typeof vi.fn> & ((query: string) => void);
