@@ -117,7 +117,10 @@ const SessionItem: React.FC<SessionItemProps> = ({
       isSelected={isSelected}
       className={cn(
         "!h-auto min-h-[48px] whitespace-normal rounded-[var(--radius-s)] px-3 py-2",
-        "bg-transparent",
+        {
+          "bg-transparent": !isSelected,
+          "bg-[var(--background-modifier-hover)]": isSelected,
+        },
       )}
       onClick={() => onSelect(session.sessionNumber)}
       onContextMenu={(event) => onOpenMenu(session, event)}
