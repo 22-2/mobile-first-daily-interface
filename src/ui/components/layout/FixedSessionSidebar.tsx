@@ -544,14 +544,15 @@ export const FixedSessionSidebar: React.FC = () => {
 
       <SidebarTextButton
         className={cn(
-          "mx-2 mt-3 !h-8 justify-center rounded-[var(--radius-s)]",
-          "bg-transparent text-[var(--text-muted)]",
+          "mx-2 mt-3 !h-8 py-4 justify-center rounded-[var(--radius-s)]",
+          "bg-[color-mix(in_srgb,var(--color-accent),transparent_88%)] text-[var(--color-accent)]",
+          "hover:bg-[color-mix(in_srgb,var(--color-accent),transparent_80%)]",
         )}
         onClick={() => {
           void handleCreateSession();
         }}
       >
-        <Text as="span" className="text-[12px] font-medium">
+        <Text as="span" className="text-[12px] font-medium text-[inherit]">
           New Session
         </Text>
       </SidebarTextButton>
