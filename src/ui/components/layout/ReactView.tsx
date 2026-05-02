@@ -84,11 +84,11 @@ export const ReactView = ({
       <ComponentContextProvider component={view}>
         <AppStoreProvider store={storeRef.current}>
           <EditorRefsProvider>
-            <MFDIAppRoot>
-              <PostsProvider>
+            <PostsProvider>
+              <MFDIAppRoot>
                 <ReactViewContent />
-              </PostsProvider>
-            </MFDIAppRoot>
+              </MFDIAppRoot>
+            </PostsProvider>
           </EditorRefsProvider>
         </AppStoreProvider>
       </ComponentContextProvider>
