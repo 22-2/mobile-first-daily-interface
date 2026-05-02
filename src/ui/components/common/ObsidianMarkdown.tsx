@@ -1,5 +1,5 @@
 import { MarkdownRenderer } from "obsidian";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Box } from "src/ui/components/primitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
@@ -14,7 +14,9 @@ export const ObsidianMarkdown: React.FC<Props> = ({ content, sourcePath }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const component = useObsidianComponent();
 
-  useEffect(() => {
+  // MarkdownRendererはDOMを直接操作するため、useLayoutEffectで描画する
+  // [Obsidianの別ウィンドウ表示遅延 - Claude](https://claude.ai/chat/5e582248-0edd-41bf-8cb7-3e2f491f8931)
+  useLayoutEffect(() => {
     if (!rootRef.current) return;
 
     rootRef.current.empty();
