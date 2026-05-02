@@ -1,5 +1,5 @@
 import { MarkdownRenderer } from "obsidian";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Box } from "src/ui/components/primitives";
 import { useAppContext } from "src/ui/context/AppContext";
 import { useObsidianComponent } from "src/ui/context/ComponentContext";
