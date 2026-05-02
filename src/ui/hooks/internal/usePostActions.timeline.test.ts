@@ -155,6 +155,8 @@ describe("timeline note resolution", () => {
         postFormatOption: "Thino",
         insertAfter: "## Thino",
         enabledCardView: true,
+        autoToggleSidebar: true,
+        debugMode: false,
         allowEditingPastNotes: false,
         updateDateStrategy: "never",
         topics: [],

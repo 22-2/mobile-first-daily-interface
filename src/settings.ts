@@ -13,6 +13,7 @@ export interface Settings {
   postFormatOption: PostFormatOption;
   insertAfter: string;
   enabledCardView: boolean;
+  autoToggleSidebar: boolean;
   debugMode: boolean;
   // When true, posts become scrollable only after being clicked (activated).
   clickToActivateScroll: boolean;
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: Settings = {
   postFormatOption: "Thino",
   insertAfter: "## Thino",
   enabledCardView: false,
+  autoToggleSidebar: true,
   debugMode: false,
   clickToActivateScroll: true,
   allowEditingPastNotes: false,
@@ -189,6 +191,13 @@ export class MFDISettingTab extends PluginSettingTab {
       "デバッグモード",
       "有効にすると CodeMirror の余白補正処理の詳細ログを consola に出します。",
       "debugMode",
+    );
+
+    this.addToggleSetting(
+      containerEl,
+      "サイドバーの自動開閉",
+      "有効にするとビュー幅に応じてサイドバーを自動で開閉します。無効にすると手動トグルだけで開閉します。",
+      "autoToggleSidebar",
     );
 
     this.addToggleSetting(

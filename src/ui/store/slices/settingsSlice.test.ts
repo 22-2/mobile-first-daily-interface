@@ -20,6 +20,8 @@ describe("settingsSlice", () => {
         postFormatOption: "Thino",
         insertAfter: "## Thino",
         enabledCardView: true,
+        autoToggleSidebar: true,
+        debugMode: false,
         allowEditingPastNotes: false,
         updateDateStrategy: "never",
         topics: [],

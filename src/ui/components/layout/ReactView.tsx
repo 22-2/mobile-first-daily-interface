@@ -13,6 +13,7 @@ import { InputArea } from "src/ui/components/inputarea/InputArea";
 import { FixedSessionSidebar } from "src/ui/components/layout/FixedSessionSidebar";
 import { PeriodicSidebar } from "src/ui/components/layout/PeriodicSidebar";
 import { SidebarContainer } from "src/ui/components/layout/SidebarContainer";
+import { getSidebarAutoToggleState } from "src/ui/components/layout/sidebarAutoToggle";
 import { PostListView } from "src/ui/components/posts/PostListView";
 import { Flex, Spinner } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
@@ -266,7 +267,10 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ReactViewContent = () => {
-  const { shell } = useAppContext();
+  const {
+    shell,
+    settings: pluginSettings,
+  } = useAppContext();
   const component = useObsidianComponent() as MFDIView;
   const isCSSLoaded = useCSSLoaded();
   const { viewNoteMode } = useAppStore(
@@ -394,13 +398,13 @@ const ReactViewContent = () => {
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         const newWidth = entries[0].contentRect.width;
-        // 1100px を跨いで狭くなった瞬間に一度だけ自動で閉じる（手動での再開は妨げない）
-        if (newWidth <= 1100 && lastWidthRef.current > 1100) {
-          setSidebarOpen(false);
-        }
-        // 1400px を跨いで広くなった瞬間に自動で開く
-        if (newWidth > 1400 && lastWidthRef.current <= 1400) {
-          setSidebarOpen(true);
+        const nextSidebarOpen = getSidebarAutoToggleState({
+          enabled: pluginSettings.autoToggleSidebar,
+          previousWidth: lastWidthRef.current,
+          nextWidth: newWidth,
+        });
+        if (nextSidebarOpen !== null) {
+          setSidebarOpen(nextSidebarOpen);
         }
         setContainerWidth(newWidth);
         lastWidthRef.current = newWidth;
@@ -408,7 +412,7 @@ const ReactViewContent = () => {
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [setSidebarOpen]);
+  }, [pluginSettings.autoToggleSidebar, setSidebarOpen]);
 
   const effectivelyOpen = sidebarOpen && capabilities.supportsSidebar;
 
