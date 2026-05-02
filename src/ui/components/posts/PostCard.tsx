@@ -14,7 +14,7 @@ import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
 import { cn } from "src/ui/components/primitives/utils";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
-import { ObsidianMarkdown } from "../common/ObsidianMarkdown";
+import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 
 export type PostCardProps = {
   message: string;

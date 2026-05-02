@@ -1,7 +1,7 @@
 import { type Extension } from "@codemirror/state";
 import type { EditorView} from "@codemirror/view";
 import { ViewPlugin, type ViewUpdate } from "@codemirror/view";
-import { createLogger } from "./core/logger";
+import { createLogger } from "src/core/logger";
 
 const TARGET_VIEW_SELECTOR =
   '[data-type="mfdi-view"], [data-type="mfdi-editor-view"]';

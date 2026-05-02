@@ -3,7 +3,7 @@ import { PluginSettingTab, Setting, debounce } from "obsidian";
 import type { Topic } from "src/core/topic";
 import { DEFAULT_TOPIC } from "src/core/topic";
 import type MFDIPlugin from "src/main";
-import { createLogger } from "./core/logger";
+import { createLogger } from "src/core/logger";
 
 const logger = createLogger("settings");
 
