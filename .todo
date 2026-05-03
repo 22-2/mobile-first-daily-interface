@@ -45,5 +45,8 @@
 > 下書き概念はsandboxノートでも使えるかも🤔
 
 - [ ] タブをリロードしたときもちゃんとマークダウンビューとして開くように
-- [ ] session view
-- [ ] useFilteredPosts、useUnifiedPostsをdocumentSliceに統一
+- [x] session view
+- [x] useFilteredPosts、useUnifiedPostsをdocumentSliceに統一
+
+- [ ] fixedノート存在、数を確認するまでローディング
+- [ ] fixedノート開いているセッション位置をviewStateに保存＆復元
