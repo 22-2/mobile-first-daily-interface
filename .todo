@@ -48,5 +48,5 @@
 - [x] session view
 - [x] useFilteredPosts、useUnifiedPostsをdocumentSliceに統一
 
-- [ ] fixedノート存在、数を確認するまでローディング
-- [ ] fixedノート開いているセッション位置をviewStateに保存＆復元
+- [x] fixedノート存在、数を確認するまでローディング
+- [x] fixedノート開いているセッション位置をviewStateに保存＆復元

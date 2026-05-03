@@ -36,6 +36,11 @@ export interface FixedNoteViewExtension {
   }) => Promise<void>;
 }
 
+export interface FixedNoteViewExtensionParams {
+  isFixedNoteAvailable?: (filePath: string) => boolean;
+  getPreferredFixedSessionNumber?: (filePath: string) => number | undefined;
+}
+
 // contribution の外側（main 等）が leaf 探索だけしたい場合に直接インポートできるよう standalone export にする。
 // extension インターフェースに載せると「contribution に渡すオブジェクト」と「main が直接呼ぶ関数」の二重管理になるため分離した。
 export function findExistingMFDILeaf(
@@ -71,7 +76,17 @@ function shouldConvertViewState(viewState: unknown): boolean {
   return true;
 }
 
-export function createFixedNoteViewExtension(): FixedNoteViewExtension {
+function resolveFixedSessionNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1
+    ? value
+    : null;
+}
+
+export function createFixedNoteViewExtension(
+  params: FixedNoteViewExtensionParams = {},
+): FixedNoteViewExtension {
+  const { isFixedNoteAvailable, getPreferredFixedSessionNumber } = params;
+
   return {
     convertMarkdownViewState: (viewState) => {
       if (!shouldConvertViewState(viewState))
@@ -85,8 +100,16 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
       if (!isMFDIFixedNotePath(filePath))
         return viewState as MFDIViewStateWrapper;
 
-      // TODO: ここでファイルの存在チェックを入れたい
-      // app.vault.adapter.exists(filePath) で存在チェックできるはずだが、app をこの関数に渡す必要があるため、実装が少し面倒。
+      // 意図: 削除済み固定ノートまで MFDI へ強制変換すると、空 state が復元されて誤解を招く。
+      // 存在確認が失敗した場合は markdown のまま返し、呼び出し側で通常の欠損ハンドリングに委ねる。
+      if (isFixedNoteAvailable && !isFixedNoteAvailable(filePath)) {
+        return viewState as MFDIViewStateWrapper;
+      }
+
+      const fixedSessionNumber =
+        resolveFixedSessionNumber(candidate.state?.fixedSessionNumber) ??
+        resolveFixedSessionNumber(getPreferredFixedSessionNumber?.(filePath)) ??
+        1;
 
       return {
         ...candidate,
@@ -94,6 +117,7 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
         state: {
           ...DEFAULT_MFDI_VIEW_STATE,
           ...createFixedNoteViewState(filePath),
+          fixedSessionNumber,
         },
       } as MFDIViewStateWrapper;
     },
@@ -104,7 +128,16 @@ export function createFixedNoteViewExtension(): FixedNoteViewExtension {
           ? (leaf.view.file?.path ?? "")
           : "";
         if (!isMFDIFixedNotePath(filePath)) continue;
-        await attachMFDIView(createFixedNoteViewState(filePath), leaf);
+        await attachMFDIView(
+          {
+            ...createFixedNoteViewState(filePath),
+            fixedSessionNumber:
+              resolveFixedSessionNumber(
+                getPreferredFixedSessionNumber?.(filePath),
+              ) ?? 1,
+          },
+          leaf,
+        );
       }
     },
   };

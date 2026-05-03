@@ -60,9 +60,10 @@ import { isTimelineView } from "src/ui/utils/view-mode";
 import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import {
-  createDefaultMFDIViewState,
   getMFDIViewCapabilities,
 } from "src/ui/view/state";
+import type { MFDIViewState } from "src/ui/view/state";
+import { syncStoreFromMFDIViewState } from "src/ui/view/sync-store-from-view-state";
 import { useShallow } from "zustand/shallow";
 
 export const ReactView = ({
@@ -75,8 +76,13 @@ export const ReactView = ({
   view: MFDIView;
 }) => {
   const storeRef = useRef<AppStoreApi | null>(null);
+  const initialViewStateRef = useRef({ ...view.getState() });
   if (!storeRef.current) {
-    storeRef.current = createAppStore();
+    const store = createAppStore();
+    // 意図: 復元直後の初回 render から fixed note / session を一致させ、
+    // periodic の既定状態を一瞬でも通さないことで restore 時の過剰な再同期を避ける。
+    syncStoreFromMFDIViewState(store, initialViewStateRef.current);
+    storeRef.current = store;
   }
 
   return (
@@ -85,7 +91,7 @@ export const ReactView = ({
         <AppStoreProvider store={storeRef.current}>
           <EditorRefsProvider>
             <PostsProvider>
-              <MFDIAppRoot>
+              <MFDIAppRoot initialViewState={initialViewStateRef.current}>
                 <ReactViewContent />
               </MFDIAppRoot>
             </PostsProvider>
@@ -96,7 +102,10 @@ export const ReactView = ({
   );
 };
 
-const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const MFDIAppRoot: React.FC<{
+  children: React.ReactNode;
+  initialViewState: MFDIViewState;
+}> = ({ children, initialViewState }) => {
   const { settings, storage, shell } = useAppContext();
   const component = useObsidianComponent() as MFDIView;
   const store = useCurrentAppStore();
@@ -111,6 +120,11 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
     [viewNoteMode],
   );
+  const componentViewState = component.getState();
+  const componentFixedSessionNumber =
+    componentViewState.noteMode === "fixed"
+      ? (componentViewState.fixedSessionNumber ?? 1)
+      : 1;
 
   useLayoutEffect(() => {
     // 意図: 子の live editor は mount 時の passive effect で初期化される。
@@ -120,6 +134,14 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         shell,
         settings,
         storage,
+        initialViewState: {
+          noteMode: initialViewState.noteMode,
+          file: initialViewState.file,
+          fixedSessionNumber:
+            initialViewState.noteMode === "fixed"
+              ? (initialViewState.fixedSessionNumber ?? 1)
+              : 1,
+        },
       },
       store,
     );
@@ -163,41 +185,13 @@ const MFDIAppRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useDbSync();
 
   useEffect(() => {
-    if (!("getState" in component)) return;
-
-    const viewState = component.getState();
-    store.setState({
-      fixedSessionNumber:
-        viewState.noteMode === "fixed"
-          ? (viewState.fixedSessionNumber ?? 1)
-          : 1,
-    });
-    store.getState().setViewContext({
-      noteMode: viewState.noteMode,
-      file: viewState.file,
-    });
-
-    // fixedビューでは periodic 側の永続状態を引き継がない
-    if (viewState.noteMode === "fixed") {
-      const fixedDefaults = createDefaultMFDIViewState({
-        noteMode: "fixed",
-        file: viewState.file,
-      });
-
-      store.setState({
-        displayMode: fixedDefaults.displayMode,
-        granularity: fixedDefaults.granularity,
-        dateFilter: fixedDefaults.dateFilter,
-        timeFilter: fixedDefaults.timeFilter,
-        asTask: fixedDefaults.asTask,
-        threadOnly: fixedDefaults.threadOnly,
-        fixedSessionNumber: viewState.fixedSessionNumber ?? 1,
-        // fixedノートではタグ絞り込みを許すと periodic 側の状態が見え方に混入する。
-        activeTag: null,
-        threadFocusRootId: null,
-      });
-    }
-  }, [store, component, viewNoteMode, file]);
+    syncStoreFromMFDIViewState(store, componentViewState);
+  }, [
+    store,
+    componentViewState.noteMode,
+    componentViewState.file,
+    componentFixedSessionNumber,
+  ]);
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);

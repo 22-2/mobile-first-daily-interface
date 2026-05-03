@@ -1,7 +1,11 @@
 import type { MFDIStorage } from "src/core/storage";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
-import { readFixedSessionMeta } from "src/ui/utils/fixed-session-storage";
+import {
+  readFixedSessionMeta,
+  readLastOpenedFixedSessionNumber,
+  writeLastOpenedFixedSessionNumber,
+} from "src/ui/utils/fixed-session-storage";
 import { describe, expect, it, vi } from "vitest";
 
 type MockStorageHandle = {
@@ -115,5 +119,26 @@ describe("fixed-session-storage", () => {
       `${JSON.stringify(result, null, 2)}\n`,
     );
     expect(remove).toHaveBeenCalledWith(legacyStorageKey);
+  });
+
+  it("ノートごとの last opened session を storage から読む", () => {
+    const filePath = "MFDI/Inbox.mfdi.md";
+    const { storage } = createMockStorage({
+      [`${STORAGE_KEYS.FIXED_SESSION_LAST_OPENED}:${encodeURIComponent(filePath)}`]: 7,
+    });
+
+    expect(readLastOpenedFixedSessionNumber(storage, filePath)).toBe(7);
+  });
+
+  it("ノートごとの last opened session を storage に書く", () => {
+    const filePath = "MFDI/Inbox.mfdi.md";
+    const { storage } = createMockStorage();
+
+    writeLastOpenedFixedSessionNumber(storage, filePath, 3);
+
+    expect(storage.set).toHaveBeenCalledWith(
+      `${STORAGE_KEYS.FIXED_SESSION_LAST_OPENED}:${encodeURIComponent(filePath)}`,
+      3,
+    );
   });
 });

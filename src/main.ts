@@ -27,6 +27,14 @@ export default class MFDIPlugin extends Plugin {
   settings: Settings;
   view?: MFDIView;
 
+  private createBootstrapSettings(): Settings {
+    return {
+      ...DEFAULT_SETTINGS,
+      topics: [...DEFAULT_SETTINGS.topics],
+      files: [...DEFAULT_SETTINGS.files],
+    };
+  }
+
   private async initializeWorker(): Promise<void> {
     // 意図: Worker 初期化は重くなりうるため、コマンド/ビュー登録をブロックしない。
     // lazy ロード直後に command wrapper から実コマンドへ到達できることを優先する。
@@ -39,19 +47,24 @@ export default class MFDIPlugin extends Plugin {
   }
 
   async onload() {
-    this.app.workspace.onLayoutReady(async () => {
-      this.shell = new ObsidianAppShell(this.app);
-      await this.loadSettings();
+    this.shell = new ObsidianAppShell(this.app);
+    // 意図: workspace 復元は plugin onload の await を待たずに進むケースがあるため、
+    // custom view の登録に必要な settings はまず default で即時に立てる。
+    this.settings = this.createBootstrapSettings();
 
-      setConsolaLevel(this.settings.debugMode ? 4 : 0);
+    this.registerEditorExtension(mfdiBottomPaddingExtension);
 
-      this.registerEditorExtension(mfdiBottomPaddingExtension);
+    this.addSettingTab(new MFDISettingTab(this.app, this));
 
-      this.addSettingTab(new MFDISettingTab(this.app, this));
+    // 意図: workspace 復元時に custom view/type 変換が既に登録済みでないと、
+    // 起動直後の leaf 復元で mfdi-view を解決できず、固定ノートタブを取りこぼす。
+    this.activateBuiltinRegistry();
 
-      // 先にコマンド/ビュー登録を済ませて、lazy コマンド初回呼び出しで実コマンドまで届くようにする。
-      this.activateBuiltinRegistry();
+    await this.loadSettings();
+    setConsolaLevel(this.settings.debugMode ? 4 : 0);
+    this.rerenderView();
 
+    this.app.workspace.onLayoutReady(() => {
       // Worker 初期化は非同期に開始（失敗はログのみ）。
       void this.initializeWorker();
     });

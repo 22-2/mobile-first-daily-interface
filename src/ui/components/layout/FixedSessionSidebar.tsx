@@ -1,6 +1,6 @@
 import { Menu, Notice, TFile } from "obsidian";
 import type React from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { normalizeFixedNotePath } from "src/core/fixed-note";
 import {
   ensureFixedSessionHeading,
@@ -32,6 +32,7 @@ import {
   readFixedSessionMeta,
   removeFixedSessionMeta,
   updateFixedSessionMeta,
+  writeLastOpenedFixedSessionNumber,
 } from "src/ui/utils/fixed-session-storage";
 import {
   buildFixedSessionSummaries,
@@ -173,6 +174,12 @@ interface SessionGroupProps {
   ) => void;
 }
 
+interface FixedSessionFetchResult {
+  noteExists: boolean;
+  sessionCount: number;
+  sessions: FixedSessionSummary[];
+}
+
 const SessionGroup: React.FC<SessionGroupProps> = ({
   title,
   sessions,
@@ -241,36 +248,74 @@ export const FixedSessionSidebar: React.FC = () => {
   );
 
   const {
-    data: sessions,
+    data: fixedSessionFetch,
     mutate,
     isLoading,
-  } = useSWR<FixedSessionSummary[]>(
-    ["posts", "fixed-sessions", normalizedFixedPath, settings.insertAfter],
+  } = useSWR<FixedSessionFetchResult>(
+    normalizedFixedPath
+      ? ["posts", "fixed-sessions", normalizedFixedPath, settings.insertAfter]
+      : null,
     async () => {
-      let content = "";
-      if (normalizedFixedPath) {
-        try {
-          content = await shell.loadFile(normalizedFixedPath);
-        } catch {
-          content = "";
-        }
+      const note = shell.getAbstractFileByPath(normalizedFixedPath);
+      if (!(note instanceof TFile)) {
+        return {
+          noteExists: false,
+          sessionCount: 0,
+          sessions: [],
+        };
       }
-      return buildFixedSessionSummaries({
+
+      let content = "";
+      try {
+        content = await shell.loadFile(note.path);
+      } catch {
+        return {
+          noteExists: false,
+          sessionCount: 0,
+          sessions: [],
+        };
+      }
+      const sessions = buildFixedSessionSummaries({
         content,
         insertAfter: settings.insertAfter,
-        metaMap: await readFixedSessionMeta(
-          shell,
-          storage,
-          normalizedFixedPath,
-        ),
+        metaMap: await readFixedSessionMeta(shell, storage, note.path),
       });
+
+      return {
+        noteExists: true,
+        sessionCount: sessions.length,
+        sessions,
+      };
     },
   );
 
+  const sessions = fixedSessionFetch?.sessions ?? [];
+  const shouldShowLoading =
+    normalizedFixedPath.length === 0 || isLoading || fixedSessionFetch == null;
+
   const groupedSessions = useMemo(
-    () => groupSessionsByActivity(sessions ?? []),
+    () => groupSessionsByActivity(sessions),
     [sessions],
   );
+
+  useEffect(() => {
+    if (!fixedSessionFetch?.noteExists) {
+      return;
+    }
+
+    // 意図: fixed ノートを reopen したときは新しい leaf に前回の viewState が無いことがある。
+    // session 選択をノート単位で退避しておくと、再オープンでも最後の位置から再開できる。
+    writeLastOpenedFixedSessionNumber(
+      storage,
+      normalizedFixedPath,
+      fixedSessionNumber,
+    );
+  }, [
+    fixedSessionFetch?.noteExists,
+    fixedSessionNumber,
+    normalizedFixedPath,
+    storage,
+  ]);
 
   const handleSelectSession = useCallback(
     (sessionNumber: number) => setFixedSessionNumber(sessionNumber),
@@ -384,7 +429,7 @@ export const FixedSessionSidebar: React.FC = () => {
       );
 
       if (fixedSessionNumber === session.sessionNumber) {
-        const remainingSessionNumbers = (sessions ?? [])
+        const remainingSessionNumbers = sessions
           .map((item) => item.sessionNumber)
           .filter((sessionNumber) => sessionNumber !== session.sessionNumber)
           .sort((left, right) => left - right);
@@ -558,7 +603,16 @@ export const FixedSessionSidebar: React.FC = () => {
 
   return (
     <VStack className="h-full items-stretch gap-0 overflow-y-auto">
-      <SidebarSectionHeader className="px-3 pt-2">
+      <SidebarSectionHeader
+        className="px-3 pt-2"
+        rightAddon={
+          !shouldShowLoading && fixedSessionFetch?.noteExists ? (
+            <Text className="text-[11px] font-medium text-[var(--text-muted)]">
+              {fixedSessionFetch.sessionCount}
+            </Text>
+          ) : null
+        }
+      >
         Sessions
       </SidebarSectionHeader>
 
@@ -577,7 +631,7 @@ export const FixedSessionSidebar: React.FC = () => {
         </Text>
       </SidebarTextButton>
 
-      {isLoading ? (
+      {shouldShowLoading ? (
         <HStack className="justify-center py-6">
           <Spinner className="size-4 text-[var(--text-faint)] [animation-duration:0.8s]" />
         </HStack>

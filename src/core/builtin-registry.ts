@@ -12,6 +12,7 @@ import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
 import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import type { MFDIViewState } from "src/ui/view/state";
+import { readLastOpenedFixedSessionNumber } from "src/ui/utils/fixed-session-storage";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -232,15 +233,28 @@ export function activateBuiltins(
   context: BuiltinMainContext,
   appId: string,
 ): void {
+  const storage = new MFDIStorage(appId);
+
   registerView(context);
   registerRibbon(context);
   registerCommands(context);
 
   setupTagIndexLifecycle(
     createTagIndexExtension(appId),
-    new MFDIStorage(appId),
+    storage,
     context,
   );
   setupFixedNoteRegistry(context);
-  setupFixedNoteViewLifecycle(createFixedNoteViewExtension(), context);
+  setupFixedNoteViewLifecycle(
+    createFixedNoteViewExtension({
+      // 意図: setViewState の同期経路で await できないため、存在確認は同期 API で完了させる。
+      isFixedNoteAvailable: (filePath) => {
+        return context.app.vault.getAbstractFileByPath(filePath) instanceof TFile;
+      },
+      getPreferredFixedSessionNumber: (filePath) => {
+        return readLastOpenedFixedSessionNumber(storage, filePath) ?? undefined;
+      },
+    }),
+    context,
+  );
 }

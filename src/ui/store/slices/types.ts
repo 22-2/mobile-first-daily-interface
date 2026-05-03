@@ -27,11 +27,17 @@ export interface EnvironmentSlice {
   setViewContext: (params: {
     noteMode: MFDINoteMode;
     file: string | null;
+    fixedSessionNumber?: number;
   }) => void;
   initializeAppStore: (params: {
     shell: ObsidianAppShell;
     settings: Settings;
     storage: MFDIStorage;
+    initialViewState?: {
+      noteMode: MFDINoteMode;
+      file: string | null;
+      fixedSessionNumber: number;
+    };
   }) => void;
 }
 

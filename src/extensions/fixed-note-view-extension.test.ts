@@ -19,6 +19,44 @@ describe("fixed note view extension", () => {
     expect(result.state.file).toBe("MFDI/Inbox.mfdi.md");
   });
 
+  it("restores fixedSessionNumber from incoming markdown state", () => {
+    const extension = createFixedNoteViewExtension();
+
+    const result = extension.convertMarkdownViewState({
+      type: "markdown",
+      state: { file: "MFDI/Inbox.mfdi.md", fixedSessionNumber: 4 },
+    });
+
+    expect(result.type).toBe("mfdi-view");
+    expect(result.state.fixedSessionNumber).toBe(4);
+  });
+
+  it("keeps markdown view when fixed note is unavailable", () => {
+    const extension = createFixedNoteViewExtension({
+      isFixedNoteAvailable: () => false,
+    });
+    const state = {
+      type: "markdown",
+      state: { file: "MFDI/Missing.mfdi.md" },
+    };
+
+    expect(extension.convertMarkdownViewState(state)).toBe(state);
+  });
+
+  it("uses persisted fixedSessionNumber when markdown state does not have one", () => {
+    const extension = createFixedNoteViewExtension({
+      getPreferredFixedSessionNumber: () => 6,
+    });
+
+    const result = extension.convertMarkdownViewState({
+      type: "markdown",
+      state: { file: "MFDI/Inbox.mfdi.md" },
+    });
+
+    expect(result.type).toBe("mfdi-view");
+    expect(result.state.fixedSessionNumber).toBe(6);
+  });
+
   it("keeps forced markdown opens untouched", () => {
     const extension = createFixedNoteViewExtension();
     const state = {
@@ -49,7 +87,9 @@ describe("fixed note view extension", () => {
   });
 
   it("replaces already-open fixed markdown leaves via attach callback", async () => {
-    const extension = createFixedNoteViewExtension();
+    const extension = createFixedNoteViewExtension({
+      getPreferredFixedSessionNumber: () => 5,
+    });
     const attachMFDIView = vi.fn(async () => undefined);
     const leaves = [
       {
@@ -66,6 +106,7 @@ describe("fixed note view extension", () => {
       expect.objectContaining({
         noteMode: "fixed",
         file: "MFDI/Inbox.mfdi.md",
+        fixedSessionNumber: 5,
       }),
       leaves[0],
     );

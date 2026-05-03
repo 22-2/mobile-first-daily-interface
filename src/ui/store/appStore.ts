@@ -49,6 +49,11 @@ export function initializeAppStore(
     shell: NonNullable<MFDIStore["shell"]>;
     settings: NonNullable<MFDIStore["pluginSettings"]>;
     storage: NonNullable<MFDIStore["storage"]>;
+    initialViewState?: {
+      noteMode: MFDIStore["viewNoteMode"];
+      file: string | null;
+      fixedSessionNumber: number;
+    };
   },
   store: AppStoreApi = appStore,
 ) {

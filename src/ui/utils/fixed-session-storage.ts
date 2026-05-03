@@ -20,6 +20,14 @@ function getFixedSessionMetaStorageKey(file: string | null): string {
   return `${STORAGE_KEYS.FIXED_SESSION_META}:${encodeURIComponent(file)}`;
 }
 
+function getFixedSessionLastOpenedStorageKey(file: string | null): string {
+  if (!file) {
+    return STORAGE_KEYS.FIXED_SESSION_LAST_OPENED;
+  }
+
+  return `${STORAGE_KEYS.FIXED_SESSION_LAST_OPENED}:${encodeURIComponent(file)}`;
+}
+
 function getFixedSessionMetaFilePath(file: string): string {
   if (file.toLowerCase().endsWith(".md")) {
     return `${file.slice(0, -3)}${FIXED_SESSION_META_FILE_SUFFIX}`;
@@ -178,4 +186,42 @@ export async function removeFixedSessionMeta(
   delete next[String(sessionNumber)];
   await writeFixedSessionMeta(shell, storage, file, next);
   return next;
+}
+
+export function readLastOpenedFixedSessionNumber(
+  storage: MFDIStorage | null,
+  file: string | null,
+): number | null {
+  if (!storage || !file) {
+    return null;
+  }
+
+  const rawValue = storage.get<unknown>(
+    getFixedSessionLastOpenedStorageKey(file),
+    null,
+  );
+
+  return typeof rawValue === "number" &&
+    Number.isInteger(rawValue) &&
+    rawValue >= 1
+    ? rawValue
+    : null;
+}
+
+export function writeLastOpenedFixedSessionNumber(
+  storage: MFDIStorage | null,
+  file: string | null,
+  sessionNumber: number,
+): void {
+  if (!storage || !file) {
+    return;
+  }
+
+  if (!Number.isInteger(sessionNumber) || sessionNumber < 1) {
+    return;
+  }
+
+  // 意図: タブを閉じて新しい leaf で fixed ノートを開き直しても、最後に見ていた session を復元したい。
+  // viewState が失われる reopen 経路に備えて、ノート単位で直近 session を軽量に永続化する。
+  storage.set(getFixedSessionLastOpenedStorageKey(file), sessionNumber);
 }

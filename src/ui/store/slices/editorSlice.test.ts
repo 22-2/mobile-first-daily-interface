@@ -1,4 +1,5 @@
 import type { MFDIStorage } from "src/core/storage";
+import { DEFAULT_SETTINGS } from "src/settings";
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import { createAppStore } from "src/ui/store/appStore";
 import {
@@ -231,5 +232,74 @@ describe("editorSlice", () => {
         draftMetadataBase: { tags: "alpha" },
       },
     );
+  });
+
+  it("setViewContext は fixed ノート restore 時に session もまとめて復元する", () => {
+    const fixedPath = "MFDI/a.mfdi.md";
+    const store = createAppStore();
+    const { storage, set: setStorage } = createMockStorage({
+      [getInputStorageKey("fixed", fixedPath, 4)]: "draft-session-4",
+      [getDraftMetadataStorageKey("fixed", fixedPath, 4)]: {
+        draftMetadata: { restored: "yes" },
+        draftMetadataBase: { restored: "yes" },
+      },
+    });
+
+    store.setState({
+      storage,
+      viewNoteMode: "periodic",
+      file: null,
+      fixedSessionNumber: 1,
+      inputSnapshot: "periodic in-memory",
+      draftMetadata: { tags: "alpha" },
+      draftMetadataBase: { tags: "alpha" },
+    });
+
+    store.getState().setViewContext({
+      noteMode: "fixed",
+      file: fixedPath,
+      fixedSessionNumber: 4,
+    });
+
+    expect(store.getState().viewNoteMode).toBe("fixed");
+    expect(store.getState().file).toBe(fixedPath);
+    expect(store.getState().fixedSessionNumber).toBe(4);
+    expect(store.getState().inputSnapshot).toBe("draft-session-4");
+    expect(store.getState().draftMetadata).toEqual({ restored: "yes" });
+    expect(store.getState().draftMetadataBase).toEqual({ restored: "yes" });
+    expect(setStorage).toHaveBeenCalledWith(
+      getInputStorageKey("periodic", null),
+      "periodic in-memory",
+    );
+  });
+
+  it("initializeAppStore は restore 済み fixed session の入力を直接 hydrate する", () => {
+    const fixedPath = "MFDI/a.mfdi.md";
+    const store = createAppStore();
+    const { storage } = createMockStorage({
+      [getInputStorageKey("fixed", fixedPath, 4)]: "draft-session-4",
+      [getDraftMetadataStorageKey("fixed", fixedPath, 4)]: {
+        draftMetadata: { restored: "yes" },
+        draftMetadataBase: { restored: "yes" },
+      },
+    });
+
+    store.getState().initializeAppStore({
+      shell: {} as never,
+      settings: DEFAULT_SETTINGS,
+      storage,
+      initialViewState: {
+        noteMode: "fixed",
+        file: fixedPath,
+        fixedSessionNumber: 4,
+      },
+    });
+
+    expect(store.getState().viewNoteMode).toBe("fixed");
+    expect(store.getState().file).toBe(fixedPath);
+    expect(store.getState().fixedSessionNumber).toBe(4);
+    expect(store.getState().inputSnapshot).toBe("draft-session-4");
+    expect(store.getState().draftMetadata).toEqual({ restored: "yes" });
+    expect(store.getState().draftMetadataBase).toEqual({ restored: "yes" });
   });
 });

@@ -27,6 +27,7 @@ export const STORAGE_KEYS = {
   COLLAPSED_POST_GROUP_KEYS: "collapsedPostGroupKeys",
   INPUT_AREA_SIZE: "inputAreaSize",
   FIXED_SESSION_META: "fixedSessionMeta",
+  FIXED_SESSION_LAST_OPENED: "fixedSessionLastOpened",
   // ポップアウトエディタのキャンセル時に確認モーダルをスキップするかどうか
   SKIP_POPOUT_DISCARD_CONFIRM: "skipPopoutDiscardConfirm",
 } as const;

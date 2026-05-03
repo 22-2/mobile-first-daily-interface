@@ -3,6 +3,7 @@ import {
   getInputStorageKey,
 } from "src/ui/store/slices/inputStorage";
 import type { EnvironmentSlice, MFDIStore } from "src/ui/store/slices/types";
+import { createDefaultMFDIViewState } from "src/ui/view/state";
 import type { StateCreator } from "zustand/vanilla";
 
 export const createEnvironmentSlice: StateCreator<
@@ -29,19 +30,23 @@ export const createEnvironmentSlice: StateCreator<
     set({ pluginSettings });
   },
 
-  setViewContext: ({ noteMode, file: file }) => {
+  setViewContext: ({ noteMode, file: file, fixedSessionNumber }) => {
     const {
       storage,
       viewNoteMode,
       file: currentFixedNotePath,
-      fixedSessionNumber,
+      fixedSessionNumber: currentFixedSessionNumber,
       getInputValue,
       replaceInput,
     } = get();
 
+    const nextFixedSessionNumber =
+      noteMode === "fixed" ? (fixedSessionNumber ?? currentFixedSessionNumber) : 1;
+
     const hasInputContextChanged =
       viewNoteMode !== noteMode ||
-      (noteMode === "fixed" && currentFixedNotePath !== file);
+      currentFixedNotePath !== file ||
+      currentFixedSessionNumber !== nextFixedSessionNumber;
 
     if (storage && hasInputContextChanged) {
       // 意図: periodic/fixed で編集中テキストを汚染しないよう、切替直前に現在ビューの入力を退避する。
@@ -49,24 +54,30 @@ export const createEnvironmentSlice: StateCreator<
         getInputStorageKey(
           viewNoteMode,
           currentFixedNotePath,
-          fixedSessionNumber,
+          currentFixedSessionNumber,
         ),
         getInputValue(),
       );
     }
 
-    set({ viewNoteMode: noteMode, file: file });
+    // 意図: restore 時は note/file/session を1回で切り替え、
+    // 中間状態（sessionだけ先に変わる等）で余計な復元や再計算が走るのを避ける。
+    set({
+      viewNoteMode: noteMode,
+      file: file,
+      fixedSessionNumber: nextFixedSessionNumber,
+    });
 
     if (storage && hasInputContextChanged) {
       // 意図: 切替先ビュー専用の入力だけを復元し、前ビューの未送信入力が混ざるのを防ぐ。
       const restoredInput = storage.get<string>(
-        getInputStorageKey(noteMode, file, fixedSessionNumber),
+        getInputStorageKey(noteMode, file, nextFixedSessionNumber),
         "",
       );
       const restoredDraftMetadata = storage.get<{
         draftMetadata: Record<string, string>;
         draftMetadataBase: Record<string, string>;
-      }>(getDraftMetadataStorageKey(noteMode, file, fixedSessionNumber), {
+      }>(getDraftMetadataStorageKey(noteMode, file, nextFixedSessionNumber), {
         draftMetadata: {},
         draftMetadataBase: {},
       });
@@ -78,15 +89,48 @@ export const createEnvironmentSlice: StateCreator<
     }
   },
 
-  initializeAppStore: ({ shell, settings, storage }) => {
+  initializeAppStore: ({ shell, settings, storage, initialViewState }) => {
+    const nextNoteMode = initialViewState?.noteMode ?? get().viewNoteMode;
+    const nextFile = initialViewState?.file ?? get().file;
+    const nextFixedSessionNumber =
+      nextNoteMode === "fixed"
+        ? (initialViewState?.fixedSessionNumber ?? get().fixedSessionNumber)
+        : 1;
+
     set({
       shell,
       pluginSettings: settings,
       storage,
-      viewNoteMode: "periodic",
-      file: null,
+      viewNoteMode: nextNoteMode,
+      file: nextFile,
     });
     get().hydrateSettingsState();
+
+    if (nextNoteMode === "fixed") {
+      const fixedDefaults = createDefaultMFDIViewState({
+        noteMode: "fixed",
+        file: nextFile,
+      });
+
+      // 意図: restore 済み fixed view は初回 hydration から正しい session/input を見る必要がある。
+      // 先に fixed defaults と session を確定させ、periodic 初期値を一瞬でも通らないようにする。
+      set({
+        viewNoteMode: nextNoteMode,
+        file: nextFile,
+        fixedSessionNumber: nextFixedSessionNumber,
+        displayMode: fixedDefaults.displayMode,
+        granularity: fixedDefaults.granularity,
+        dateFilter: fixedDefaults.dateFilter,
+        timeFilter: fixedDefaults.timeFilter,
+        asTask: fixedDefaults.asTask,
+        threadOnly: fixedDefaults.threadOnly,
+        activeTag: null,
+        threadFocusRootId: null,
+      });
+    } else {
+      set({ fixedSessionNumber: 1 });
+    }
+
     get().hydrateEditorState();
     get().hydrateDraftState();
   },
