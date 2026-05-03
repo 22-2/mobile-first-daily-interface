@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@22-2/obsidian-magical-editor':
-        specifier: 1.0.10
-        version: 1.0.10(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))
+        specifier: 1.0.11
+        version: 1.0.11(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -179,8 +179,8 @@ packages:
       vite:
         optional: true
 
-  '@22-2/obsidian-magical-editor@1.0.10':
-    resolution: {integrity: sha512-ckWBihNt9kBlu9n4S3kj2t5XVMcPKo9avPi5FE9epTfmuoiNlofevRT0uP4M+nCzq6BnMCggTMhIL/jIMYIq9Q==}
+  '@22-2/obsidian-magical-editor@1.0.11':
+    resolution: {integrity: sha512-yIFTUHTpjMGGAeejD5mqSFNVkKp06Aqh9NwAcQ3pzCRaEOTvXcwjtAeQqdoUb1RIhXI26MQrZ3FKETkXz95zDg==}
     peerDependencies:
       obsidian: '>=1.12.0'
 
@@ -4697,7 +4697,7 @@ snapshots:
     optionalDependencies:
       vite: 8.0.4(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.2)(@vitejs/devtools@0.1.13)(jiti@2.6.1)
 
-  '@22-2/obsidian-magical-editor@1.0.10(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))':
+  '@22-2/obsidian-magical-editor@1.0.11(obsidian@1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6))':
     dependencies:
       obsidian: 1.12.3(@codemirror/state@6.5.0)(@codemirror/view@6.38.6)
 
