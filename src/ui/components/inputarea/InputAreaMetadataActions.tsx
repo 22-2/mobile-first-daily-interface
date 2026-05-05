@@ -1,4 +1,4 @@
-import { memo, useCallback, type FC } from "react";
+import { memo, useCallback, useMemo, type FC } from "react";
 import { TAG_METADATA_KEY, serializeMfdiTags } from "src/core/tags";
 import { InputAreaIcon } from "src/ui/components/inputarea/InputAreaIcon";
 import { HStack } from "src/ui/components/primitives";
@@ -9,6 +9,7 @@ import {
   getRawTagMetadata,
   isPinned,
 } from "src/ui/utils/post-metadata";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { useShallow } from "zustand/shallow";
 
 type InputAreaMetadataActionsProps = {
@@ -18,11 +19,17 @@ type InputAreaMetadataActionsProps = {
 export const InputAreaMetadataActions: FC<InputAreaMetadataActionsProps> = memo(
   ({ isReadOnly }) => {
     const { showTextInput } = useObsidianUi();
-    const { draftMetadata, setDraftMetadata } = useEditorStore(
+    const { draftMetadata, setDraftMetadata, viewNoteMode } = useEditorStore(
       useShallow((s) => ({
         draftMetadata: s.draftMetadata,
         setDraftMetadata: s.setDraftMetadata,
+        viewNoteMode: s.viewNoteMode,
       })),
+    );
+
+    const capabilities = useMemo(
+      () => getMFDIViewCapabilities({ noteMode: viewNoteMode }),
+      [viewNoteMode],
     );
 
     const handleTogglePin = useCallback(() => {
@@ -69,12 +76,14 @@ export const InputAreaMetadataActions: FC<InputAreaMetadataActionsProps> = memo(
           onActivate={handleTogglePin}
           isDisabled={isReadOnly}
         />
-        <InputAreaIcon
-          name="tag"
-          ariaLabel="タグ編集"
-          onActivate={handleEditTags}
-          isDisabled={isReadOnly}
-        />
+        {capabilities.supportsTags && (
+          <InputAreaIcon
+            name="tag"
+            ariaLabel="タグ編集"
+            onActivate={handleEditTags}
+            isDisabled={isReadOnly}
+          />
+        )}
       </HStack>
     );
   },
