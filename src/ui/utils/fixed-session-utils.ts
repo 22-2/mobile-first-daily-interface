@@ -12,6 +12,7 @@ export interface FixedSessionSummary {
   sessionNumber: number;
   title: string;
   postCount: number;
+  createdAt: string | null;
   lastActiveAt: string | null;
   pinned: boolean;
 }
@@ -63,6 +64,45 @@ function resolveSessionActivityIso(
   return latestIso;
 }
 
+function resolveSessionCreatedAtIso(
+  entries: Array<{ time: string; metadata: Record<string, string> }>,
+): string | null {
+  let earliestTimestamp: number | null = null;
+  let earliestIso: string | null = null;
+
+  for (const entry of entries) {
+    const posted = entry.metadata.posted?.trim();
+    if (posted) {
+      const postedTime = window.moment(posted);
+      if (
+        postedTime.isValid() &&
+        (earliestTimestamp == null || postedTime.valueOf() < earliestTimestamp)
+      ) {
+        earliestTimestamp = postedTime.valueOf();
+        earliestIso = postedTime.toISOString();
+      }
+      continue;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/.test(entry.time)) {
+      const fullTimestamp = window.moment(
+        entry.time,
+        "YYYY-MM-DD HH:mm:ss",
+        true,
+      );
+      if (
+        fullTimestamp.isValid() &&
+        (earliestTimestamp == null || fullTimestamp.valueOf() < earliestTimestamp)
+      ) {
+        earliestTimestamp = fullTimestamp.valueOf();
+        earliestIso = fullTimestamp.toISOString();
+      }
+    }
+  }
+
+  return earliestIso;
+}
+
 export function buildFixedSessionSummaries(params: {
   content: string;
   insertAfter: string;
@@ -91,15 +131,20 @@ export function buildFixedSessionSummaries(params: {
     .map((sessionNumber) => {
       const section = sectionByNumber.get(sessionNumber);
       const meta = metaMap[String(sessionNumber)] ?? {};
+      const createdAt =
+        meta.createdAt ??
+        resolveSessionCreatedAtIso(section?.entries ?? []) ??
+        (sessionNumber === 1 ? window.moment().toISOString() : null);
       const lastActiveAt =
         resolveSessionActivityIso(section?.entries ?? []) ??
-        meta.createdAt ??
+        createdAt ??
         (sessionNumber === 1 ? window.moment().toISOString() : null);
 
       return {
         sessionNumber,
         title: meta.name?.trim() || `Session ${sessionNumber}`,
         postCount: section?.entries.length ?? 0,
+        createdAt,
         lastActiveAt,
         pinned: meta.pinned === true,
       };

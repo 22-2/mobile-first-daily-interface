@@ -49,8 +49,9 @@ function sortSessions(sessions: FixedSessionSummary[]): FixedSessionSummary[] {
   return [...sessions].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
 
-    const aTime = a.lastActiveAt ? window.moment(a.lastActiveAt).valueOf() : 0;
-    const bTime = b.lastActiveAt ? window.moment(b.lastActiveAt).valueOf() : 0;
+    // 意図: セッション並びは編集時刻の揺れに影響されないよう、作成時刻を唯一の基準に固定する。
+    const aTime = a.createdAt ? window.moment(a.createdAt).valueOf() : 0;
+    const bTime = b.createdAt ? window.moment(b.createdAt).valueOf() : 0;
     if (aTime !== bTime) return bTime - aTime;
 
     return a.sessionNumber - b.sessionNumber;
