@@ -18,6 +18,16 @@ export class DexieDBService implements IDBService {
   private tagStatsRepo: DexieTagStatsRepository | null = null;
   private channel: BroadcastChannel | null = null;
   private queue: Promise<void> = Promise.resolve();
+  // 意図: getTagStats等の読み取りメソッドが初期化前に呼ばれた場合、
+  // DBの初期化完了まで待機する。ただし、await時点のPromiseを別変数で参照することで、
+  // await中に initPromise が更新されても古い参照を待ち続けるため、race conditionを防ぐ。
+  // 初期値を Promise.resolve() にすると await が即座に完了するため、
+  // 最初の読み取り前に initialize が必ず呼ばれるか、または initPromise が
+  // 常に「呼び出し時点での」最新のPromiseを参照する仕組みが必要。
+  private _initResolve: (() => void) | null = null;
+  private initPromise: Promise<void> = new Promise<void>((resolve) => {
+    this._initResolve = resolve;
+  });
 
   private enqueue<T>(task: () => Promise<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
@@ -40,6 +50,10 @@ export class DexieDBService implements IDBService {
     this.tagStatsRepo = new DexieTagStatsRepository(this.db);
     this.channel = new BroadcastChannel("mfdi-db-updates");
     await this.db.open();
+    // initPromise を resolve して、待機中のメソッドを続行させる
+    if (this._initResolve) {
+      this._initResolve();
+    }
   }
 
   private notify(detail?: { path?: string }) {
@@ -120,16 +134,19 @@ export class DexieDBService implements IDBService {
   }
 
   async getAllActiveDates(): Promise<string[]> {
+    await this.initPromise;
     if (!this.memoRepo) throw new Error("DB not initialized");
     return await this.memoRepo.getAllActiveDates();
   }
 
   async getTagStats(): Promise<TagStatRecord[]> {
+    await this.initPromise;
     if (!this.db) throw new Error("DB not initialized");
     return await this.db.tagStats.toArray();
   }
 
   async getMeta(key: string): Promise<string | undefined> {
+    await this.initPromise;
     if (!this.db) throw new Error("DB not initialized");
     const rec = await this.db.meta.get(key);
     return rec ? (rec.value as string) : undefined;
@@ -143,6 +160,7 @@ export class DexieDBService implements IDBService {
     threadOnly?: boolean;
     limit?: number;
   }): Promise<MemoRecord[]> {
+    await this.initPromise;
     if (!this.memoRepo) throw new Error("DB not initialized");
     const { topicId, startDate, endDate, query, threadOnly, limit } = params;
 
@@ -171,16 +189,19 @@ export class DexieDBService implements IDBService {
     threadOnly?: boolean;
     limit?: number;
   }): Promise<MemoRecord[]> {
+    await this.initPromise;
     if (!this.memoRepo) throw new Error("DB not initialized");
     return await this.memoRepo.getPinnedVisibleMemos(params);
   }
 
   async countMemos(topicId?: string): Promise<number> {
+    await this.initPromise;
     if (!this.memoRepo) throw new Error("DB not initialized");
     return await this.memoRepo.countVisibleMemos(topicId);
   }
 
   async dispose(): Promise<void> {
+    await this.initPromise;
     if (this.db) {
       await this.db.close();
     }
