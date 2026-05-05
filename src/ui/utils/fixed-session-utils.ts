@@ -92,7 +92,8 @@ function resolveSessionCreatedAtIso(
       );
       if (
         fullTimestamp.isValid() &&
-        (earliestTimestamp == null || fullTimestamp.valueOf() < earliestTimestamp)
+        (earliestTimestamp == null ||
+          fullTimestamp.valueOf() < earliestTimestamp)
       ) {
         earliestTimestamp = fullTimestamp.valueOf();
         earliestIso = fullTimestamp.toISOString();

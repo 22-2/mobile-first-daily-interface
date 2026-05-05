@@ -84,14 +84,15 @@ describe("fixed-session-storage", () => {
         pinned: true,
       },
     });
-    expect(loadFile).toHaveBeenCalledWith("MFDI/Inbox.mfdi.fixed-session-meta.json");
+    expect(loadFile).toHaveBeenCalledWith(
+      "MFDI/Inbox.mfdi.fixed-session-meta.json",
+    );
     expect(get).not.toHaveBeenCalled();
   });
 
   it("sidecar が無い場合は旧 storage から移行してファイルへ保存する", async () => {
     const filePath = "MFDI/Inbox.mfdi.md";
-    const legacyStorageKey =
-      `${STORAGE_KEYS.FIXED_SESSION_META}:${encodeURIComponent(filePath)}`;
+    const legacyStorageKey = `${STORAGE_KEYS.FIXED_SESSION_META}:${encodeURIComponent(filePath)}`;
     const { shell, loadFile, writeFile } = createMockShell();
     const { storage, remove } = createMockStorage({
       [legacyStorageKey]: {

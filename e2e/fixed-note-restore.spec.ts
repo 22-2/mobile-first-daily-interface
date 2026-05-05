@@ -1,5 +1,5 @@
-import path from "node:path";
 import type { Page } from "@playwright/test";
+import path from "node:path";
 import type { ObsidianAPI } from "obsidian-e2e-toolkit";
 import { expect, test } from "obsidian-e2e-toolkit";
 import { fileURLToPath } from "url";

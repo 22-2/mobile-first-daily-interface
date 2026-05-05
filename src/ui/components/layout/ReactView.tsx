@@ -59,10 +59,8 @@ import type {
 import { isTimelineView } from "src/ui/utils/view-mode";
 import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
-import {
-  getMFDIViewCapabilities,
-} from "src/ui/view/state";
 import type { MFDIViewState } from "src/ui/view/state";
+import { getMFDIViewCapabilities } from "src/ui/view/state";
 import { syncStoreFromMFDIViewState } from "src/ui/view/sync-store-from-view-state";
 import { useShallow } from "zustand/shallow";
 

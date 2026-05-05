@@ -1,6 +1,6 @@
 import type { AppStoreApi } from "src/ui/store/appStore";
-import { createDefaultMFDIViewState } from "src/ui/view/state";
 import type { MFDIViewState } from "src/ui/view/state";
+import { createDefaultMFDIViewState } from "src/ui/view/state";
 
 export function syncStoreFromMFDIViewState(
   store: AppStoreApi,

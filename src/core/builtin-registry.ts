@@ -8,11 +8,11 @@ import type { TagIndexExtension } from "src/extensions/tag-index-extension";
 import { createTagIndexExtension } from "src/extensions/tag-index-extension";
 import type { Settings } from "src/settings";
 import type { ObsidianAppShell } from "src/shell/obsidian-shell";
+import { readLastOpenedFixedSessionNumber } from "src/ui/utils/fixed-session-storage";
 import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
 import { VIEW_TYPE_MFDI_EDITOR } from "src/ui/view/MFDIEditorView";
 import type { MFDIView } from "src/ui/view/MFDIView";
 import type { MFDIViewState } from "src/ui/view/state";
-import { readLastOpenedFixedSessionNumber } from "src/ui/utils/fixed-session-storage";
 
 const VIEW_TYPE_MFDI = "mfdi-view";
 
@@ -239,17 +239,15 @@ export function activateBuiltins(
   registerRibbon(context);
   registerCommands(context);
 
-  setupTagIndexLifecycle(
-    createTagIndexExtension(appId),
-    storage,
-    context,
-  );
+  setupTagIndexLifecycle(createTagIndexExtension(appId), storage, context);
   setupFixedNoteRegistry(context);
   setupFixedNoteViewLifecycle(
     createFixedNoteViewExtension({
       // 意図: setViewState の同期経路で await できないため、存在確認は同期 API で完了させる。
       isFixedNoteAvailable: (filePath) => {
-        return context.app.vault.getAbstractFileByPath(filePath) instanceof TFile;
+        return (
+          context.app.vault.getAbstractFileByPath(filePath) instanceof TFile
+        );
       },
       getPreferredFixedSessionNumber: (filePath) => {
         return readLastOpenedFixedSessionNumber(storage, filePath) ?? undefined;

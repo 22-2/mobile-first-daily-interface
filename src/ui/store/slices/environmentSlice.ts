@@ -41,7 +41,9 @@ export const createEnvironmentSlice: StateCreator<
     } = get();
 
     const nextFixedSessionNumber =
-      noteMode === "fixed" ? (fixedSessionNumber ?? currentFixedSessionNumber) : 1;
+      noteMode === "fixed"
+        ? (fixedSessionNumber ?? currentFixedSessionNumber)
+        : 1;
 
     const hasInputContextChanged =
       viewNoteMode !== noteMode ||

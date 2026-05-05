@@ -45,7 +45,6 @@ export const InputArea: FC = memo(() => {
       draftMetadataBase: s.draftMetadataBase,
     })),
   );
-
   // startEdit 後にエディタへフォーカスを移す
   const editingPostId = editingPost?.id ?? null;
 

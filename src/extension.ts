@@ -1,5 +1,5 @@
 import { type Extension } from "@codemirror/state";
-import type { EditorView} from "@codemirror/view";
+import type { EditorView } from "@codemirror/view";
 import { ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { createLogger } from "src/core/logger";
 
