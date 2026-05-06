@@ -304,6 +304,17 @@ export const PostListView: React.FC = memo(() => {
     }
   }, [timelineView, hasMore, loadMore, timelineItems.length, threadView]);
 
+  const countMap = useMemo(() => {
+    const map = new Map<string, number>();
+    Map.groupBy(filteredPosts, (post) => post.timestamp.format("YYYY-MM-DD")).forEach(
+      (group, date) => {
+        map.set(date, group.length);
+      },
+    );
+    map.set("pinned", filteredPosts.filter((post) => post.metadata.pinned).length);
+    return map;
+  }, [timelineItems]);
+
   return (
     <Box className="list w-full relative">
       <Virtualizer
@@ -312,11 +323,13 @@ export const PostListView: React.FC = memo(() => {
         onScroll={(offset) => setShowScrollTop(offset > 200)}
       >
         {timelineItems.map((item) => {
+
           if (item.type === "divider") {
             return (
               <Box key={item.key} style={{ paddingBottom: "1px" }}>
                 <DateDivider
                   date={item.date}
+                  count={countMap.get(item.date.format("YYYY-MM-DD"))}
                   onClick={() => toggleCollapsedGroup(item.groupKey)}
                   collapsed={item.collapsed}
                   showCollapseIcon={canCollapseDividers}
@@ -338,6 +351,7 @@ export const PostListView: React.FC = memo(() => {
                 <DateDivider
                   label="ピン留め"
                   leadingIconName="pin"
+                  count={countMap.get("pinned")}
                   collapsed={item.collapsed}
                   showCollapseIcon={canCollapseDividers}
                   onClick={

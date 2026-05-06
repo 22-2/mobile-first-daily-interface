@@ -6,6 +6,7 @@ import type { MomentLike } from "src/ui/types";
 
 interface DateDividerProps {
   date?: MomentLike;
+  count?: number;
   label?: string;
   leadingIconName?: string;
   collapsed?: boolean;
@@ -17,6 +18,7 @@ interface DateDividerProps {
 export const DateDivider: FC<DateDividerProps> = ({
   date,
   label,
+  count,
   leadingIconName,
   collapsed = false,
   showCollapseIcon = false,
@@ -70,6 +72,7 @@ export const DateDivider: FC<DateDividerProps> = ({
           />
         )}
         {title}
+        {count !== undefined && ` (${count})`}
       </Text>
       <Box className="flex-1 h-[1px] bg-[var(--background-modifier-border)] opacity-50" />
     </Flex>
