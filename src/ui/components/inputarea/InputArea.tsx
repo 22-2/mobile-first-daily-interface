@@ -58,6 +58,7 @@ export const InputArea: FC = memo(() => {
   const { handleSubmit } = usePostActions();
   const { openInputInNewWindow } = useObsidianUi();
   const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
+  const isMaximized = inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED;
   const [isEditorFocused, setIsEditorFocused] = useState(false);
 
   const handleExpandToMaxHeight = useCallback(() => {
@@ -130,7 +131,7 @@ export const InputArea: FC = memo(() => {
             readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
           />
           {/* mousedown で preventDefault することで、フッター操作時にエディタのフォーカスが外れるのを防ぐ */}
-          {isEditorFocused && (
+          {(isEditorFocused || isMaximized) && (
             <div onMouseDown={(e) => e.preventDefault()}>
               <InputAreaFooter />
             </div>

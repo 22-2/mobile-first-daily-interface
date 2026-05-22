@@ -1,9 +1,10 @@
 import { type FC, type ReactNode, memo } from "react";
 import { Box, Button, HStack } from "src/ui/components/primitives";
+import { cn } from "src/ui/components/primitives/utils";
 
 interface InputAreaFooterBaseProps {
   canSubmit: boolean;
-  submitLabel: string;
+  submitLabel: ReactNode;
   onSubmit: () => void;
   leadingActions?: ReactNode;
   /** 指定された場合のみキャンセルボタンを表示する */
@@ -54,7 +55,9 @@ export const InputAreaFooterBase: FC<InputAreaFooterBaseProps> = memo(
 
           <Button
             disabled={!canSubmit}
-            className="h-[2.4em]"
+            className={cn("h-[2.4em]", {
+              "text-[var(--text-on-accent)]": canSubmit,
+            })}
             variant="accent"
             onClick={onSubmit}
             onContextMenu={onSubmitContextMenu}

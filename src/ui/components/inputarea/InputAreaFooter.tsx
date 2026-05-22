@@ -1,5 +1,7 @@
 import { Menu } from "obsidian";
 import { memo, type FC } from "react";
+import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
+import { cn } from "src/ui/components/primitives/utils";
 import {
   DEFAULT_EXPANSION_STYLE,
   FULL_EXPANSION_STYLE,
@@ -17,10 +19,9 @@ import { useShallow } from "zustand/shallow";
 export const InputAreaFooter: FC = memo(() => {
   const { posts } = usePosts();
 
-  const { asTask, isReadOnly, inputAreaSize, editorExpansionMode } =
+  const { isReadOnly, inputAreaSize, editorExpansionMode } =
     useSettingsStore(
       useShallow((s) => ({
-        asTask: s.asTask,
         isReadOnly: s.isReadOnly(),
         inputAreaSize: s.inputAreaSize,
         editorExpansionMode: s.pluginSettings?.editorExpansionMode ?? "default",
@@ -51,13 +52,23 @@ export const InputAreaFooter: FC = memo(() => {
 
   const { handleSubmit } = usePostActions();
 
-  const submitLabel = isReadOnly
-    ? "閲覧モード"
-    : editingPost
-      ? "更新"
-      : asTask
-        ? "タスク追加"
-        : "投稿";
+  const submitLabel = isReadOnly ? (
+    // 閲覧モードはアイコンをグレーアウト表示
+    <ObsidianIcon
+      name="send-horizontal"
+      className="pointer-events-none cursor-default opacity-50"
+      size="1em"
+    />
+  ) : (
+    <ObsidianIcon
+      name="send-horizontal"
+      className={cn("pointer-events-none cursor-default", {
+        // ObsidianIcon の base に text-[var(--icon-color)] があるため twMerge で上書き
+        "text-[var(--text-on-accent)]": canSubmit,
+      })}
+      size="1em"
+    />
+  );
 
   return (
     <InputAreaFooterBase
