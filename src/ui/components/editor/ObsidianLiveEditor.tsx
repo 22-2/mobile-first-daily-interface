@@ -56,7 +56,6 @@ export const ObsidianLiveEditor = forwardRef<
     const containerRef = useRef<HTMLDivElement>(null);
     const lastExternalVersionRef = useRef(externalVersion ?? 0);
     const initialValueRef = useRef(initialValue);
-    initialValueRef.current = initialValue;
 
     const { editorRef, isSyncingRef } = useFakeEditor(containerRef, {
       app,

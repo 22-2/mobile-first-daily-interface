@@ -10,9 +10,7 @@ import { useCallback, useEffect, useRef } from "react";
  */
 function useLatestRef<T>(value: T) {
   const ref = useRef(value);
-  useEffect(() => {
-    ref.current = value;
-  });
+  ref.current = value;
   return ref;
 }
 
