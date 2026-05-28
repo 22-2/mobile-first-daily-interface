@@ -51,7 +51,10 @@ export const ObsidianLiveEditor = forwardRef<
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const lastExternalVersionRef = useRef(externalVersion ?? 0);
+    // externalVersion 経由で setContent する際、常に最新の initialValue を投入する必要がある。
+    // useRef(initialValue) はマウント時に固定されてしまうため、毎レンダーで最新値に同期する。
     const initialValueRef = useRef(initialValue);
+    initialValueRef.current = initialValue;
 
     const { editorRef, isSyncingRef } = useFakeEditor(containerRef, {
       app,
