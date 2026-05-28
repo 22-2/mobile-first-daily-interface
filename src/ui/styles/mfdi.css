@@ -29,9 +29,8 @@
    エディタ: 共通
    ============================================== */
 
-/* アクティブライン: CM6 がフォーカス中の .cm-editor に .cm-focused を付与するタイミングに限定する */
+/* アクティブライン */
 :is([data-type="mfdi-view"], .magical-editor-modal-editor-area)
-  .cm-editor.cm-focused
   .cm-line.cm-active {
   background-color: var(--active-line-bg);
   box-shadow:

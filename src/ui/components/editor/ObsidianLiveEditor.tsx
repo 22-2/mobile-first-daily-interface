@@ -21,8 +21,6 @@ interface ObsidianLiveEditorProps {
   externalVersion?: number;
   onChange: (text: string) => void;
   onSubmit?: () => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
   placeholder?: string;
   isReadOnly?: boolean;
   readonlyPlaceholder?: string;
@@ -43,8 +41,6 @@ export const ObsidianLiveEditor = forwardRef<
       externalVersion,
       onChange,
       onSubmit,
-      onFocus,
-      onBlur,
       placeholder,
       isReadOnly,
       readonlyPlaceholder,
@@ -78,41 +74,10 @@ export const ObsidianLiveEditor = forwardRef<
       setContent: (text) => {
         // プログラム的 setContent 中は onChange エコーを抑止する
         isSyncingRef.current = true;
-        try {
-          editorRef.current?.setContent(text);
-        } catch (error) {
-          console.error("Failed to set content in ObsidianLiveEditor:", error);
-        } finally {
-          setTimeout(() => {
-            isSyncingRef.current = false;
-          });
-        }
+        editorRef.current?.setContent(text);
+        isSyncingRef.current = false;
       },
     }));
-
-    useEffect(() => {
-      initialValueRef.current = initialValue;
-    }, [initialValue]);
-
-    // focusin/focusout を使うのは、CodeMirror が生成する DOM への focus/blur は
-    // バブリングしないため。containerRef 配下のどこにフォーカスが入っても検知できる。
-    const onFocusRef = useRef(onFocus);
-    onFocusRef.current = onFocus;
-    const onBlurRef = useRef(onBlur);
-    onBlurRef.current = onBlur;
-
-    useEffect(() => {
-      const el = containerRef.current;
-      if (!el) return;
-      const handleFocusIn = () => onFocusRef.current?.();
-      const handleFocusOut = () => onBlurRef.current?.();
-      el.addEventListener("focusin", handleFocusIn);
-      el.addEventListener("focusout", handleFocusOut);
-      return () => {
-        el.removeEventListener("focusin", handleFocusIn);
-        el.removeEventListener("focusout", handleFocusOut);
-      };
-    }, []);
 
     // Sync read-only state after mount
     useEffect(() => {

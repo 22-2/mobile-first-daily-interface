@@ -1,6 +1,6 @@
 import type { WorkspaceLeaf } from "obsidian";
 import type { FC } from "react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect } from "react";
 import { ObsidianLiveEditor } from "src/ui/components/editor/ObsidianLiveEditor";
 import { InputAreaControl } from "src/ui/components/inputarea/InputAreaControl";
 import { InputAreaFooter } from "src/ui/components/inputarea/InputAreaFooter";
@@ -58,8 +58,6 @@ export const InputArea: FC = memo(() => {
   const { handleSubmit } = usePostActions();
   const { openInputInNewWindow } = useObsidianUi();
   const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
-  const isMaximized = inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED;
-  const [isEditorFocused, setIsEditorFocused] = useState(false);
 
   const handleExpandToMaxHeight = useCallback(() => {
     // 意図: クラス付与のみで expand/collapse を切り替え、スタイル責務を CSS に寄せる。
@@ -99,7 +97,6 @@ export const InputArea: FC = memo(() => {
         "mfdi-input-area flex flex-col rounded-t-[22px] p-0 bg-[var(--background-secondary)] border border-[var(--table-border-color)]",
         {
           // 条件付きクラス
-          "pb-4": !isEditorFocused,
           "mod-read-only": isReadOnly,
           "mod-maxmized": inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED,
           "mod-minimized": inputAreaSize === INPUT_AREA_SIZE.MINIMIZED,
@@ -123,19 +120,12 @@ export const InputArea: FC = memo(() => {
             externalVersion={inputSnapshotVersion}
             onChange={syncInputSession}
             onSubmit={handleSubmit}
-            onFocus={() => setIsEditorFocused(true)}
-            onBlur={() => setIsEditorFocused(false)}
             className="mx-[var(--size-4-4)]"
             placeholder={PLACEHOLDER_TEXT}
             isReadOnly={isReadOnly}
             readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
           />
-          {/* mousedown で preventDefault することで、フッター操作時にエディタのフォーカスが外れるのを防ぐ */}
-          {(isEditorFocused || isMaximized) && (
-            <div onMouseDown={(e) => e.preventDefault()}>
-              <InputAreaFooter />
-            </div>
-          )}
+          <InputAreaFooter />
         </>
       )}
     </Flex>
