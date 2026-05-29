@@ -33,7 +33,7 @@ export const DateDivider: FC<DateDividerProps> = ({
 
   return (
     <Flex
-      className="mfdi-date-divider items-center py-[var(--size-4-2)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
+      className="mfdi-date-divider pointer-cursor items-center py-[var(--size-4-2)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={onClick}
