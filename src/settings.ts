@@ -26,6 +26,8 @@ export interface Settings {
   editorExpansionMode: "full" | "default";
   // 投稿の編集をポップアウトウィンドウで開くタイミング
   openInNewWindowMode: OpenInNewWindowMode;
+  // true のとき Ctrl+Enter で投稿を送信する。false のときはキーボードショートカットでの送信を無効化する
+  ctrlEnterSends: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -43,6 +45,7 @@ export const DEFAULT_SETTINGS: Settings = {
   fullScanIntervalHours: 24,
   editorExpansionMode: "default",
   openInNewWindowMode: "disabled",
+  ctrlEnterSends: false,
 };
 
 export const postFormatMap = {
@@ -182,6 +185,13 @@ export class MFDISettingTab extends PluginSettingTab {
       "投稿のクリックでスクロールを有効化",
       "有効にすると投稿をクリック（アクティベート）したときだけ内部がスクロール可能になります。",
       "clickToActivateScroll",
+    );
+
+    this.addToggleSetting(
+      containerEl,
+      "Ctrl+Enter で送信",
+      "有効にすると Ctrl+Enter で投稿を送信します。無効のときはキーボードショートカットでの送信を行いません。",
+      "ctrlEnterSends",
     );
   }
 

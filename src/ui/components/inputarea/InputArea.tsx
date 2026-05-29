@@ -48,13 +48,15 @@ export const InputArea: FC = memo(() => {
   // startEdit 後にエディタへフォーカスを移す
   const editingPostId = editingPost?.id ?? null;
 
-  const { isReadOnly, inputAreaSize, setInputAreaSize } = useSettingsStore(
-    useShallow((s) => ({
-      isReadOnly: s.isReadOnly(),
-      inputAreaSize: s.inputAreaSize,
-      setInputAreaSize: s.setInputAreaSize,
-    })),
-  );
+  const { isReadOnly, inputAreaSize, setInputAreaSize, ctrlEnterSends } =
+    useSettingsStore(
+      useShallow((s) => ({
+        isReadOnly: s.isReadOnly(),
+        inputAreaSize: s.inputAreaSize,
+        setInputAreaSize: s.setInputAreaSize,
+        ctrlEnterSends: s.pluginSettings?.ctrlEnterSends ?? false,
+      })),
+    );
   const { handleSubmit } = usePostActions();
   const { openInputInNewWindow } = useObsidianUi();
   const isMinimized = inputAreaSize === INPUT_AREA_SIZE.MINIMIZED;
@@ -124,6 +126,7 @@ export const InputArea: FC = memo(() => {
             placeholder={PLACEHOLDER_TEXT}
             isReadOnly={isReadOnly}
             readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}
+            ctrlEnterSends={ctrlEnterSends}
           />
           <InputAreaFooter />
         </>

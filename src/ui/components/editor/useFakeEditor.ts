@@ -61,6 +61,23 @@ function useCompositionGuard({
   return { handleChange, handleCompositionStart, handleCompositionEnd, reset };
 }
 
+/**
+ * Ctrl+Enter 送信キーバインドの有効/無効を反映する。
+ * view は ready 完了まで undefined になり得るため未準備時は何もしない。
+ * また FakeEditor の view は EmbeddableMarkdownEditor だが、型 union 上は
+ * MarkdownView も含むため `in` で絞り込んでから呼ぶ。
+ */
+function applyCtrlEnterKeyBinding(
+  editor: FakeEditor | null,
+  ctrlEnterSends: boolean | undefined,
+) {
+  const view = editor?.view;
+  if (view && "toggleCtrlEnterKeyBinding" in view) {
+    view.toggleCtrlEnterKeyBinding(ctrlEnterSends ?? false);
+  }
+  console.log(`Ctrl+Enter sends: ${ctrlEnterSends ? "enabled" : "disabled"}`);
+}
+
 // ─── Editor Initialization Hook ───────────────────────────────────────────────
 
 interface UseFakeEditorOptions {
@@ -72,6 +89,8 @@ interface UseFakeEditorOptions {
   readonlyPlaceholder?: string;
   onChange: (text: string) => void;
   onSubmit?: () => void;
+  // true のとき Ctrl+Enter で送信、false のときホットキー送信を無効化する
+  ctrlEnterSends?: boolean;
 }
 
 interface UseFakeEditorResult {
@@ -123,6 +142,11 @@ export function useFakeEditor(
             composition.handleChange(text);
         },
         onEnter: (_editor: unknown, mod: boolean, shift: boolean) => {
+          // ctrlEnterSends が false のときはホットキー送信を完全に無効化する。
+          // ライブラリの toggleCtrlEnterKeyBinding は Obsidian Scope ハンドラのみ
+          // 解除し、CodeMirror 側の Mod-Enter キーマップ（Prec.highest）は残るため、
+          // 送信判定の単一の真実をここに置いて明示的にガードする。
+          if (!optionsRef.current.ctrlEnterSends) return false;
           if (mod && !shift) {
             optionsRef.current.onSubmit?.();
             return true;
@@ -153,6 +177,11 @@ export function useFakeEditor(
       // BaseEditor.ready は、初期化中に setContent が走った場合の再同期まで含めて完了する。
       // ここで再投入を重ねると初回表示で不要なレイアウト揺れが発生するため行わない。
       isEditorReady = true;
+
+      // Ctrl+Enter 送信の有効/無効を初期適用する。
+      // editor.view は ready 完了まで undefined のため、ここまで待ってから安全に呼ぶ。
+      // （ready 前に呼ぶと undefined アクセスで throw し、エラー再描画でエディタが多重生成される）
+      applyCtrlEnterKeyBinding(editor, optionsRef.current.ctrlEnterSends);
 
       const editorContainer = editor.view?.containerEl;
       if (!editorContainer) return;
@@ -192,6 +221,12 @@ export function useFakeEditor(
       editor?.destroy();
     };
   }, []); // Intentionally empty: editor is initialized once per mount.
+
+  // 設定変更（Ctrl+Enter 送信トグル）をマウント済みエディタへ反映する。
+  // 初回マウント時は view 未準備のため no-op になり、init 内の初期適用に委ねる。
+  useEffect(() => {
+    applyCtrlEnterKeyBinding(editorRef.current, options.ctrlEnterSends);
+  }, [options.ctrlEnterSends]);
 
   return { editorRef, isSyncingRef };
 }

@@ -64,7 +64,7 @@
     "vitest": "^4.1.7"
   },
   "dependencies": {
-    "@22-2/obsidian-magical-editor": "1.0.12",
+    "@22-2/obsidian-magical-editor": "1.0.15",
     "clsx": "^2.1.1",
     "comlink": "^4.4.2",
     "consola": "^3.4.2",

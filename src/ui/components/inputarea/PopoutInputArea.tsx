@@ -12,6 +12,7 @@ import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { usePosts } from "src/ui/hooks/usePosts";
 import { DiscardConfirmModal } from "src/ui/modals/DiscardConfirmModal";
 import { useEditorStore } from "src/ui/store/editorStore";
+import { useSettingsStore } from "src/ui/store/settingsStore";
 import type { MFDIEditorView } from "src/ui/view/MFDIEditorView";
 import { useShallow } from "zustand/shallow";
 
@@ -45,6 +46,10 @@ export const PopoutInputArea: FC = memo(() => {
   const canSubmit = useEditorStore((s) => s.canSubmit(posts));
 
   const { handleSubmit } = usePostActions();
+
+  const ctrlEnterSends = useSettingsStore(
+    (s) => s.pluginSettings?.ctrlEnterSends ?? false,
+  );
 
   const closeView = useCallback(() => {
     view.leaf.detach();
@@ -109,6 +114,7 @@ export const PopoutInputArea: FC = memo(() => {
         className="mfdi-popout-editor__editor flex-1 min-h-0 mx-[var(--size-4-4)]"
         placeholder={PLACEHOLDER_TEXT}
         isReadOnly={false}
+        ctrlEnterSends={ctrlEnterSends}
       />
       <InputAreaFooterBase
         canSubmit={canSubmit}

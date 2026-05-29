@@ -25,6 +25,7 @@ interface ObsidianLiveEditorProps {
   isReadOnly?: boolean;
   readonlyPlaceholder?: string;
   className?: string;
+  ctrlEnterSends?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -45,6 +46,7 @@ export const ObsidianLiveEditor = forwardRef<
       isReadOnly,
       readonlyPlaceholder,
       className,
+      ctrlEnterSends,
       ...boxProps
     },
     ref,
@@ -65,6 +67,7 @@ export const ObsidianLiveEditor = forwardRef<
       readonlyPlaceholder,
       onChange,
       onSubmit,
+      ctrlEnterSends,
     });
 
     // Expose imperative API to parent
