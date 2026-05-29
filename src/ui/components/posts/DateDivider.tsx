@@ -3,6 +3,7 @@ import { replaceDayToJa } from "src/core/strings";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { Box, Flex, Text } from "src/ui/components/primitives";
 import type { MomentLike } from "src/ui/types";
+import { cn } from "src/ui/components/primitives/utils";
 
 interface DateDividerProps {
   date?: MomentLike;
@@ -33,7 +34,7 @@ export const DateDivider: FC<DateDividerProps> = ({
 
   return (
     <Flex
-      className="mfdi-date-divider pointer-cursor items-center py-[var(--size-4-2)] px-[var(--size-4-4)] gap-[var(--size-4-4)]"
+      className={cn("mfdi-date-divider items-center py-[var(--size-4-2)] px-[var(--size-4-4)] gap-[var(--size-4-4)]", { "cursor-pointer": clickable })}
       role={clickable ? "button" : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={onClick}
@@ -59,14 +60,12 @@ export const DateDivider: FC<DateDividerProps> = ({
       >
         {clickable && showCollapseIcon && (
           <ObsidianIcon
-            className="cursor-pointer"
             name={collapsed ? "chevron-right" : "chevron-down"}
             boxSize="0.95em"
           />
         )}
         {leadingIconName && (
           <ObsidianIcon
-            className="cursor-pointer"
             name={leadingIconName}
             boxSize="0.95em"
           />
