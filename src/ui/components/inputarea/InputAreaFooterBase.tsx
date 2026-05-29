@@ -13,6 +13,7 @@ interface InputAreaFooterBaseProps {
   /** 0 以下の場合は非表示 */
   characterCount: number;
   onSubmitContextMenu?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   className?: string;
   /** style タグの注入など、フッター内に追加する要素 */
   children?: ReactNode;
@@ -28,12 +29,14 @@ export const InputAreaFooterBase: FC<InputAreaFooterBaseProps> = memo(
     cancelLabel = "キャンセル",
     characterCount,
     onSubmitContextMenu,
+    onClick,
     className = "",
     children,
   }) => {
     return (
       <HStack
         className={`w-full justify-between items-center py-[0.5em] pb-[1em] px-[1.2em] gap-[0.5em] ${className}`}
+        onClick={onClick}
       >
         <Box className="flex items-center gap-[0.5em] min-w-0">
           {children}

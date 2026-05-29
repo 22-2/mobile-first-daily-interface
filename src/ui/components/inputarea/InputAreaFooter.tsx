@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { memo, type FC } from "react";
+import { memo, type FC, useCallback } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { cn } from "src/ui/components/primitives/utils";
 import {
@@ -9,6 +9,7 @@ import {
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
 import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
 import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
+import { useEditorRefs } from "src/ui/context/EditorRefsContext";
 import { usePostActions } from "src/ui/hooks/internal/usePostActions";
 import { usePosts } from "src/ui/hooks/usePosts";
 import { useAppStore } from "src/ui/store/appStore";
@@ -50,7 +51,12 @@ export const InputAreaFooter: FC = memo(() => {
     })),
   );
 
+  const { inputRef } = useEditorRefs();
   const { handleSubmit } = usePostActions();
+
+  const handleClick = useCallback(() => {
+    inputRef.current?.focus();
+  }, [inputRef]);
 
   const submitLabel = isReadOnly ? (
     // 閲覧モードはアイコンをグレーアウト表示
@@ -73,6 +79,7 @@ export const InputAreaFooter: FC = memo(() => {
   return (
     <InputAreaFooterBase
       className="mfdi-input-area-footer group"
+      onClick={handleClick}
       canSubmit={canSubmit}
       submitLabel={submitLabel}
       onSubmit={handleSubmit}
