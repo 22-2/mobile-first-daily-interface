@@ -234,12 +234,14 @@ const MFDIAppRoot: React.FC<{
   // Handle focus requested from View
   useEffect(() => {
     component.actionDelegates.onFocusRequested = () => {
+      // InputAreaはスクロールエリア内にあるため、フォーカス時にトップへ戻して表示する
+      scrollContainerRef.current?.scrollTo({ top: 0 });
       inputRef.current?.focus();
     };
     return () => {
       component.actionDelegates.onFocusRequested = undefined;
     };
-  }, [component, inputRef]);
+  }, [component, inputRef, scrollContainerRef]);
 
   // Initial scroll position when note changes
   useEffect(() => {
@@ -297,7 +299,7 @@ const ReactViewContent = () => {
     })),
   );
 
-  const { scrollContainerRef } = useEditorRefs();
+  const { scrollContainerRef, listHeaderRef } = useEditorRefs();
 
   useEffect(() => {
     return bindSearchDelegates(component, {
@@ -413,13 +415,21 @@ const ReactViewContent = () => {
           "max-content flex-col h-full relative flex-grow overflow-hidden",
         )}
       >
-        {isPopoutEditorOpen ? null : <InputArea />}
-        <StatusBar />
-
         <Flex
-          className="mfdi-scroll-container flex-col flex-grow overflow-y-scroll overflow-x-hidden"
+          className={cn(
+            "mfdi-scroll-container flex-col flex-grow overflow-x-hidden",
+            // 最大化時はスクロールをロックして入力エリアを全画面占有させる
+            settings.inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED
+              ? "overflow-y-hidden"
+              : "overflow-y-scroll",
+          )}
           ref={scrollContainerRef}
         >
+          {/* スクロールエリア内に置くことでポストリストと一緒にスクロールアウトできるようにする */}
+          <div ref={listHeaderRef}>
+            {isPopoutEditorOpen ? null : <InputArea />}
+            <StatusBar />
+          </div>
           {content}
         </Flex>
       </Flex>

@@ -72,7 +72,18 @@ export const PostListView: React.FC = memo(() => {
     })),
   );
 
-  const { scrollContainerRef } = useEditorRefs();
+  const { scrollContainerRef, listHeaderRef } = useEditorRefs();
+  const [listHeaderHeight, setListHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const el = listHeaderRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setListHeaderHeight(el.offsetHeight);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [listHeaderRef]);
 
   const {
     handleHighlightPost,
@@ -254,8 +265,9 @@ export const PostListView: React.FC = memo(() => {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const scrollToTop = useCallback(() => {
-    vRef.current?.scrollToIndex(0, { align: "start" });
-  }, []);
+    // InputArea/StatusBar がスクロールエリア内にあるため、先頭アイテムではなく top:0 に戻す
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [scrollContainerRef]);
 
   // 編集中のポストを現在のリストから再特定する
   // オフセットがズレている可能性があるので、IDなどで再特定して同期する
@@ -320,6 +332,7 @@ export const PostListView: React.FC = memo(() => {
       <Virtualizer
         ref={vRef}
         scrollRef={scrollContainerRef}
+        startMargin={listHeaderHeight}
         onScroll={(offset) => setShowScrollTop(offset > 200)}
       >
         {timelineItems.map((item) => {

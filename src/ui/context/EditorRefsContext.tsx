@@ -5,6 +5,8 @@ import type { ObsidianLiveEditorRef } from "src/ui/components/editor/ObsidianLiv
 interface EditorRefsContextValue {
   inputRef: RefObject<ObsidianLiveEditorRef | null>;
   scrollContainerRef: RefObject<HTMLDivElement | null>;
+  // Virtualizer の startMargin 計算用: InputArea + StatusBar を包む要素
+  listHeaderRef: RefObject<HTMLDivElement | null>;
 }
 
 const EditorRefsContext = createContext<EditorRefsContextValue | null>(null);
@@ -12,9 +14,12 @@ const EditorRefsContext = createContext<EditorRefsContextValue | null>(null);
 export function EditorRefsProvider({ children }: { children: ReactNode }) {
   const inputRef = useRef<ObsidianLiveEditorRef | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const listHeaderRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <EditorRefsContext.Provider value={{ inputRef, scrollContainerRef }}>
+    <EditorRefsContext.Provider
+      value={{ inputRef, scrollContainerRef, listHeaderRef }}
+    >
       {children}
     </EditorRefsContext.Provider>
   );
