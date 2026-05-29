@@ -75,7 +75,6 @@ function applyCtrlEnterKeyBinding(
   if (view && "toggleCtrlEnterKeyBinding" in view) {
     view.toggleCtrlEnterKeyBinding(ctrlEnterSends ?? false);
   }
-  console.log(`Ctrl+Enter sends: ${ctrlEnterSends ? "enabled" : "disabled"}`);
 }
 
 // ─── Editor Initialization Hook ───────────────────────────────────────────────
