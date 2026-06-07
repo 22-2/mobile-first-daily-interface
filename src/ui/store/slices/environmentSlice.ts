@@ -89,6 +89,10 @@ export const createEnvironmentSlice: StateCreator<
         draftMetadataBase: restoredDraftMetadata.draftMetadataBase,
       });
     }
+
+    if (hasInputContextChanged) {
+      get().reloadInputAreaSize();
+    }
   },
 
   initializeAppStore: ({ shell, settings, storage, initialViewState }) => {

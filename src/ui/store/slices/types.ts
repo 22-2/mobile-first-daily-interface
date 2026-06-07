@@ -83,6 +83,7 @@ export interface SettingsSlice {
   getMoveStep: () => number;
   getEffectiveDate: () => MomentLike;
   hydrateSettingsState: () => void;
+  reloadInputAreaSize: () => void;
 }
 
 export interface PostsSlice {

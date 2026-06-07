@@ -1,5 +1,6 @@
 import { STORAGE_KEYS } from "src/ui/config/consntants";
 import type { MFDINoteMode } from "src/ui/view/state";
+import type { Granularity } from "src/ui/types";
 
 function getFixedInputStorageKey(
   file: string | null,
@@ -29,6 +30,21 @@ export function getInputStorageKey(
   return noteMode === "fixed"
     ? getFixedInputStorageKey(file, fixedSessionNumber)
     : STORAGE_KEYS.INPUT_PERIODIC;
+}
+
+export function getInputAreaSizeStorageKey(
+  noteMode: MFDINoteMode,
+  file: string | null,
+  granularity: Granularity,
+  noteDateStr: string,
+): string {
+  if (noteMode === "fixed") {
+    if (!file) return STORAGE_KEYS.INPUT_AREA_SIZE;
+    // 意図: fixed ノートはファイルパス単位で expand 状態を分離し、ノートごとに異なる表示サイズを保持できるようにする。
+    return `${STORAGE_KEYS.INPUT_AREA_SIZE}:fixed:${encodeURIComponent(file)}`;
+  }
+  // 意図: periodic ノートは粒度と日付の組み合わせでファイルが決まるため、その組み合わせをキーにする。
+  return `${STORAGE_KEYS.INPUT_AREA_SIZE}:periodic:${granularity}:${noteDateStr}`;
 }
 
 export function getDraftMetadataStorageKey(

@@ -10,6 +10,7 @@ import { DATE_FILTER_IDS, TIME_FILTER_IDS } from "src/ui/config/filter-config";
 import { GRANULARITY_CONFIG } from "src/ui/config/granularity-config";
 import {
   getDraftMetadataStorageKey,
+  getInputAreaSizeStorageKey,
   getInputStorageKey,
 } from "src/ui/store/slices/inputStorage";
 import type { MFDIStore, SettingsSlice } from "src/ui/store/slices/types";
@@ -21,6 +22,7 @@ import type {
   MomentLike,
   TimeFilter,
 } from "src/ui/types";
+import type { MFDINoteMode } from "src/ui/view/state";
 import { isTimelineView } from "src/ui/utils/view-mode";
 import type { StateCreator } from "zustand/vanilla";
 
@@ -71,6 +73,8 @@ export function isViewReadOnly(params: {
 function resolveInitialSettingsState(
   settings: Settings,
   storage: MFDIStore["storage"],
+  viewNoteMode: MFDINoteMode,
+  file: string | null,
 ) {
   // 編集中投稿が復元できる場合はその粒度・日付を優先する
   const editingPost =
@@ -126,7 +130,12 @@ function resolveInitialSettingsState(
       null,
     inputAreaSize:
       storage?.get<InputAreaSize>(
-        STORAGE_KEYS.INPUT_AREA_SIZE,
+        getInputAreaSizeStorageKey(
+          viewNoteMode,
+          file,
+          granularity,
+          validDate.format("YYYY-MM-DD"),
+        ),
         INPUT_AREA_SIZE.DEFAULT,
       ) ?? INPUT_AREA_SIZE.DEFAULT,
   };
@@ -166,7 +175,31 @@ export const createSettingsSlice: StateCreator<
     }
 
     set({ inputAreaSize: size });
-    persistValue(get(), STORAGE_KEYS.INPUT_AREA_SIZE, size);
+    const { storage, viewNoteMode, file, granularity, date } = get();
+    storage?.set(
+      getInputAreaSizeStorageKey(
+        viewNoteMode,
+        file,
+        granularity,
+        date.format("YYYY-MM-DD"),
+      ),
+      size,
+    );
+  },
+
+  reloadInputAreaSize: () => {
+    const { storage, viewNoteMode, file, granularity, date } = get();
+    if (!storage) return;
+    const size = storage.get<InputAreaSize>(
+      getInputAreaSizeStorageKey(
+        viewNoteMode,
+        file,
+        granularity,
+        date.format("YYYY-MM-DD"),
+      ),
+      INPUT_AREA_SIZE.DEFAULT,
+    );
+    set({ inputAreaSize: size });
   },
 
   setActiveTopic: (activeTopic) => {
@@ -263,6 +296,7 @@ export const createSettingsSlice: StateCreator<
     const state = get();
     persistValue(state, STORAGE_KEYS.DATE, date.toISOString());
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    get().reloadInputAreaSize();
   },
 
   setTimeFilter: (timeFilter) => {
@@ -381,6 +415,7 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.DATE, now.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.TIMELINE);
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    get().reloadInputAreaSize();
   },
 
   getMoveStep: () => {
@@ -407,6 +442,7 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    get().reloadInputAreaSize();
   },
 
   handleClickMoveNext: () => {
@@ -424,6 +460,7 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    get().reloadInputAreaSize();
   },
 
   handleChangeCalendarDate: (value) => {
@@ -438,6 +475,7 @@ export const createSettingsSlice: StateCreator<
     persistValue(state, STORAGE_KEYS.DATE, nextDate.toISOString());
     persistValue(state, STORAGE_KEYS.DISPLAY_MODE, DISPLAY_MODE.FOCUS);
     persistValue(state, STORAGE_KEYS.THREAD_FOCUS_ROOT_ID, null);
+    get().reloadInputAreaSize();
   },
 
   isToday: () => {
@@ -479,8 +517,8 @@ export const createSettingsSlice: StateCreator<
   },
 
   hydrateSettingsState: () => {
-    const { pluginSettings, storage } = get();
+    const { pluginSettings, storage, viewNoteMode, file } = get();
     if (!pluginSettings || !storage) return;
-    set(resolveInitialSettingsState(pluginSettings, storage));
+    set(resolveInitialSettingsState(pluginSettings, storage, viewNoteMode, file));
   },
 });
