@@ -97,7 +97,7 @@ export const createEditorSlice: StateCreator<MFDIStore, [], [], EditorSlice> = (
     inputPersistTimer = setTimeout(() => {
       get().storage?.set(inputStorageKey, input);
       inputPersistTimer = null;
-    }, 50);
+    }, 200);
   };
 
   const persistDraftMetadata = (state: PersistedDraftMetadataState) => {
