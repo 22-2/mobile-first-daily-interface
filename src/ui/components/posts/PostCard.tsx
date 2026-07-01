@@ -13,7 +13,6 @@ import { TwitterCard } from "src/ui/components/cards/TwitterCard";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { ObsidianMarkdown } from "src/ui/components/common/ObsidianMarkdown";
 import { Box, HStack, Tag, VStack } from "src/ui/components/primitives";
-import { cn } from "src/ui/components/primitives/utils";
 import type { DateFilter, Granularity, MomentLike } from "src/ui/types";
 
 export type PostCardProps = {
@@ -149,11 +148,9 @@ export const PostCard = React.memo(
           footerRightAddon={footerRightAddon}
         >
           <ReadMoreContent text={message}>
-            {(displayText, context) => (
+            {(displayText) => (
               <VStack
-                className={cn("content-container", {
-                  "overflow-y-auto": context.isOverflowing && context.expanded,
-                })}
+                className="content-container flex-1 min-h-0 overflow-y-auto"
                 align="stretch"
                 gap={3}
               >
