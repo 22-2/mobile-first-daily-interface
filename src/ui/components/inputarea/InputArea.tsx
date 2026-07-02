@@ -122,7 +122,7 @@ export const InputArea: FC = memo(() => {
             externalVersion={inputSnapshotVersion}
             onChange={syncInputSession}
             onSubmit={handleSubmit}
-            className="mx-[var(--size-4-4)]"
+            className="mfdi-editor-wrapper mx-[var(--size-4-4)]"
             placeholder={PLACEHOLDER_TEXT}
             isReadOnly={isReadOnly}
             readonlyPlaceholder={READONLY_PLACEHOLDER_TEXT}

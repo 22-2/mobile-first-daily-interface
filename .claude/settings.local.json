@@ -1,10 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpx tsc:*)",
-      "Bash(pnpx vitest:*)",
-      "Bash(pnpm tsc:*)",
-      "Bash(pnpm vitest:*)"
+      "Bash(pnpx *)",
+      "Bash(pnpm *)",
+      "Bash(git *)"
     ]
   }
 }

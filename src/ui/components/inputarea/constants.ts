@@ -22,14 +22,4 @@ export const FULL_EXPANSION_STYLE = `
   .mfdi-input-area {
     margin-right: 0!important;
   }
-
-  [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
-    height: calc(100dvh - 123px) !important;
-  }
-`;
-
-export const DEFAULT_EXPANSION_STYLE = `
-  [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
-    height: calc(100dvh - 224px) !important;
-  }
 `;

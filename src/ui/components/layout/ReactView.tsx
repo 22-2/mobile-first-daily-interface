@@ -426,7 +426,7 @@ const ReactViewContent = () => {
           ref={scrollContainerRef}
         >
           {/* スクロールエリア内に置くことでポストリストと一緒にスクロールアウトできるようにする */}
-          <div ref={listHeaderRef}>
+          <div ref={listHeaderRef} className="mfdi-list-header">
             {isPopoutEditorOpen ? null : <InputArea />}
             <StatusBar />
           </div>

@@ -105,9 +105,54 @@
   padding-bottom: 0 !important;
 }
 
+/* 意図: 100dvh からツールバー等の高さを引く固定値をやめ、flexbox に高さ配分を
+   委ねることで、タブバー非表示（zen mode）などの可変な余白にも自動追従させる */
+[data-type="mfdi-view"]
+  .mfdi-scroll-container:has(.mfdi-input-area.mod-maxmized)
+  > .mfdi-list-header {
+  display: flex;
+  flex-direction: column;
+  /* 意図: flex: 1 (basis 0) だと後続のポストリストに空間を奪われて潰れるため、
+     コンテナ高さぴったりの basis 100% で確保し、ポストリストを画面外へ押し出す */
+  flex: 0 0 100%;
+  /* 意図: min-height: auto (デフォルト) だとエディタ内容の min-content 高さより
+     縮めなくなり、ウィンドウ縮小時に入力エリアが画面からはみ出す */
+  min-height: 0;
+}
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-maxmized {
+  flex: 1;
+  min-height: 0;
+}
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .mfdi-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* 意図: CodeMirror マウント用の中間コンテナを box tree から除去し、
+   .cm-editor を直接 flex 配分の対象にする（CodeMirror 自身が
+   .cm-editor { display:flex } / .cm-scroller { flex:1 } を持つため） */
+[data-type="mfdi-view"]
+  .mfdi-input-area.mod-maxmized
+  .mfdi-live-editor-container {
+  display: contents;
+}
+
+[data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-editor {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 意図: .cm-scroller は .cm-editor (flex column) の flex アイテムなので、
+   min-height: auto のままだと行数分の高さより縮めず親からあふれる。
+   flex + overflow でエディタ内スクロールに収める */
 [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .cm-scroller {
-  /* 画面が狭い時も入力エリア全体が収まるように抑える */
-  height: calc(100dvh - 123px) !important;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ==============================================

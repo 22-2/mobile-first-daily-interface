@@ -2,10 +2,7 @@ import { Menu } from "obsidian";
 import { memo, type FC, useCallback } from "react";
 import { ObsidianIcon } from "src/ui/components/common/ObsidianIcon";
 import { cn } from "src/ui/components/primitives/utils";
-import {
-  DEFAULT_EXPANSION_STYLE,
-  FULL_EXPANSION_STYLE,
-} from "src/ui/components/inputarea/constants";
+import { FULL_EXPANSION_STYLE } from "src/ui/components/inputarea/constants";
 import { InputAreaFooterBase } from "src/ui/components/inputarea/InputAreaFooterBase";
 import { InputAreaMetadataActions } from "src/ui/components/inputarea/InputAreaMetadataActions";
 import { INPUT_AREA_SIZE } from "src/ui/config/consntants";
@@ -111,12 +108,8 @@ export const InputAreaFooter: FC = memo(() => {
         menu.showAtMouseEvent(e.nativeEvent);
       }}
     >
-      {isMaximized && (
-        <style>
-          {editorExpansionMode === "full"
-            ? FULL_EXPANSION_STYLE
-            : DEFAULT_EXPANSION_STYLE}
-        </style>
+      {isMaximized && editorExpansionMode === "full" && (
+        <style>{FULL_EXPANSION_STYLE}</style>
       )}
     </InputAreaFooterBase>
   );
