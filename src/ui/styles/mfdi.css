@@ -123,6 +123,9 @@
 [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized {
   flex: 1;
   min-height: 0;
+  /* 意図: 画面下端に入力エリアが張り付くのを避ける。flex アイテムの margin は
+     配分計算に含まれるため、固定値を引く必要なく cm-scroller 側が自動で縮む */
+  margin-bottom: var(--size-4-3);
 }
 
 [data-type="mfdi-view"] .mfdi-input-area.mod-maxmized .mfdi-editor-wrapper {

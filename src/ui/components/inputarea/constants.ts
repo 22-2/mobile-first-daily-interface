@@ -22,4 +22,9 @@ export const FULL_EXPANSION_STYLE = `
   .mfdi-input-area {
     margin-right: 0!important;
   }
+
+  /* フル展開時は画面を余すことなく使うため、下の余白を打ち消す */
+  .mfdi-input-area.mod-maxmized {
+    margin-bottom: 0!important;
+  }
 `;
