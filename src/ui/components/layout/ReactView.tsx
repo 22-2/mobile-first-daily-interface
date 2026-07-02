@@ -428,7 +428,10 @@ const ReactViewContent = () => {
           {/* スクロールエリア内に置くことでポストリストと一緒にスクロールアウトできるようにする */}
           <div ref={listHeaderRef} className="mfdi-list-header">
             {isPopoutEditorOpen ? null : <InputArea />}
-            <StatusBar />
+            {/* 最大化時は入力エリアが画面を専有するため、ステータスバー分の高さを渡さない */}
+            {settings.inputAreaSize === INPUT_AREA_SIZE.MAXIMIZED ? null : (
+              <StatusBar />
+            )}
           </div>
           {content}
         </Flex>
