@@ -99,9 +99,12 @@ export const extension: Extension = ViewPlugin.fromClass(
 
       const lineBottom = line.getBoundingClientRect().bottom;
       const scrollerBottom = scroller.getBoundingClientRect().bottom;
+      // 意図: flex レイアウト由来で scroller の高さは小数になり得るため、
+      // ceil だと padding が実際の余白を最大1px上回り、
+      // sizer > scroller となって不要なスクロールバーが出る。floor で切り捨てる。
       const measuredPadding = Math.max(
         0,
-        Math.ceil(scrollerBottom - lineBottom),
+        Math.floor(scrollerBottom - lineBottom),
       );
 
       logger.debug("measure", {
