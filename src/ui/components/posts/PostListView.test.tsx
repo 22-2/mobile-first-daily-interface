@@ -102,6 +102,7 @@ vi.mock("src/ui/context/EditorRefsContext", () => ({
   useEditorRefs: () => ({
     inputRef: { current: null },
     scrollContainerRef: { current: null },
+    listHeaderRef: { current: null },
   }),
   EditorRefsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));

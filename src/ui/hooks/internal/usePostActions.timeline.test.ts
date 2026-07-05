@@ -19,6 +19,21 @@ vi.mock("src/ui/context/EditorRefsContext", () => ({
   EditorRefsProvider: ({ children }: { children: any }) => children,
 }));
 
+// 意図: usePosts は PostsProvider 必須になったため、renderHook 単体では
+// provider ツリーを組まずに postsStore の内容をそのまま返すモックで代替する。
+vi.mock("src/ui/hooks/usePosts", () => ({
+  usePosts: () => ({
+    posts: (postsStore.getState() as any).posts ?? [],
+  }),
+  PostsProvider: ({ children }: { children: any }) => children,
+}));
+
+// 意図: submit 直後の write-through インデックス（WorkerClient 経由）は
+// このテストの関心外なので無効化する。
+vi.mock("src/db/indexer/tag-indexer", () => ({
+  indexNoteContent: vi.fn(async () => {}),
+}));
+
 vi.mock("src/ui/hooks/useUnifiedPosts", () => ({
   useUnifiedPosts: vi.fn(() => ({
     posts: (postsStore.getState() as any).posts ?? [],
@@ -76,6 +91,8 @@ describe("timeline note resolution", () => {
   let mockApp: any;
 
   const mockInsertTextAfter = vi.fn();
+  // 新規投稿はマーカー保証込みの 1 write 経路（insertTextAfterEnsuringMarker）を通る
+  const mockInsertTextAfterEnsuringMarker = vi.fn();
   const mockOpenFile = vi.fn();
   const mockRefreshPosts = vi.fn();
   const mockCreateNoteWithInsertAfter = vi.fn();
@@ -139,6 +156,7 @@ describe("timeline note resolution", () => {
         ...mockApp,
         trigger: vi.fn(),
         insertTextAfter: mockInsertTextAfter,
+        insertTextAfterEnsuringMarker: mockInsertTextAfterEnsuringMarker,
         replaceRange: vi.fn(),
         loadFile: vi.fn(async () => ""),
       },
@@ -190,6 +208,7 @@ describe("timeline note resolution", () => {
       scrollContainerRef: {
         current: { scrollTo: mockScrollTo } as unknown as HTMLDivElement,
       },
+      listHeaderRef: { current: null },
     });
 
     noteStore.setState({
@@ -205,7 +224,7 @@ describe("timeline note resolution", () => {
   it("タイムライン投稿では過去ノートを見ていても今日のノートを作成して投稿する", async () => {
     vi.mocked(dailyNotes.getTopicNote).mockReturnValue(null);
     mockCreateNoteWithInsertAfter.mockResolvedValue(todayNote);
-    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockInsertTextAfterEnsuringMarker.mockResolvedValue("");
     mockRefreshPosts.mockResolvedValue(undefined);
 
     const { result } = renderHook(() => usePostActions());
@@ -218,7 +237,7 @@ describe("timeline note resolution", () => {
     expect(
       mockCreateNoteWithInsertAfter.mock.calls[0][2].isSame(today, "day"),
     ).toBe(true);
-    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+    expect(mockInsertTextAfterEnsuringMarker).toHaveBeenCalledWith(
       todayNote,
       expect.stringContaining("timeline post"),
       "## Thino",
@@ -231,7 +250,7 @@ describe("timeline note resolution", () => {
     vi.mocked(dailyNotes.getTopicNote).mockImplementation((_app, date) =>
       date.isSame(today, "day") ? todayNote : null,
     );
-    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockInsertTextAfterEnsuringMarker.mockResolvedValue("");
     mockRefreshPosts.mockResolvedValue(undefined);
 
     editorStore.setState({
@@ -244,7 +263,7 @@ describe("timeline note resolution", () => {
       await result.current.handleSubmit();
     });
 
-    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+    expect(mockInsertTextAfterEnsuringMarker).toHaveBeenCalledWith(
       todayNote,
       [
         `- ${today.format("HH:mm:ss")}`,
@@ -270,7 +289,7 @@ describe("timeline note resolution", () => {
     vi.mocked(dailyNotes.getTopicNote).mockImplementation((_app, date) =>
       date.isSame(today, "day") ? todayNote : null,
     );
-    mockInsertTextAfter.mockResolvedValue(undefined);
+    mockInsertTextAfterEnsuringMarker.mockResolvedValue("");
     mockRefreshPosts.mockResolvedValue(undefined);
 
     editorStore.setState({
@@ -283,7 +302,7 @@ describe("timeline note resolution", () => {
       await result.current.handleSubmit();
     });
 
-    expect(mockInsertTextAfter).toHaveBeenCalledWith(
+    expect(mockInsertTextAfterEnsuringMarker).toHaveBeenCalledWith(
       todayNote,
       expect.stringContaining("snapshot-post"),
       "## Thino",

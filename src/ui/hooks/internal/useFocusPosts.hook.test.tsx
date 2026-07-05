@@ -38,6 +38,8 @@ const mocked = vi.hoisted(() => {
 
 vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: () => ({
+    // 意図: useFocusPosts が SWR キーに settings.insertAfter を含めるようになったため必須。
+    settings: { insertAfter: "## Thino" },
     shell: {
       loadFile: mocked.loadFile,
       getCommunityPlugin: () => undefined,

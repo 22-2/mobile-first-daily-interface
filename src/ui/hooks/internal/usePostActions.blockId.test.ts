@@ -22,10 +22,23 @@ vi.mock("src/ui/context/AppContext", () => ({
   useAppContext: vi.fn(),
 }));
 
+// 意図: usePosts は PostsProvider 必須になったため、provider ツリーを組まずに
+// 空の posts を返すモックで代替する（copyBlockIdLink は posts を参照しない）。
+vi.mock("src/ui/hooks/usePosts", () => ({
+  usePosts: () => ({ posts: [] }),
+  PostsProvider: ({ children }: { children: any }) => children,
+}));
+
+// 意図: submit 直後の write-through インデックスはこのテストの関心外なので無効化する。
+vi.mock("src/db/indexer/tag-indexer", () => ({
+  indexNoteContent: vi.fn(async () => {}),
+}));
+
 vi.mock("src/ui/context/EditorRefsContext", () => ({
   useEditorRefs: () => ({
     inputRef: { current: null },
     scrollContainerRef: { current: null },
+    listHeaderRef: { current: null },
   }),
   EditorRefsProvider: ({ children }: { children: any }) => children,
 }));
