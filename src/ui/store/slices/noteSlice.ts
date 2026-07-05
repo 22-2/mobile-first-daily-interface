@@ -53,7 +53,7 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
     set({ weekNotePaths: new Set() });
   },
 
-  createNoteWithInsertAfter: async (shell, settings, targetDate) => {
+  createNoteWithInsertAfter: async (shell, settings, targetDate, options) => {
     const {
       granularity,
       activeTopic,
@@ -74,7 +74,14 @@ export const createNoteSlice: StateCreator<MFDIStore, [], [], NoteSlice> = (
       noteSource.resolveCurrentNote() ?? (await noteSource.ensureCurrentNote());
     if (!note) return null;
 
-    if (noteSource.mode === "periodic" && settings.insertAfter) {
+    // 意図: 投稿(submit)経路では直後の insertTextAfterEnsuringMarker が
+    // マーカー保証込みで 1 write するため、ここで別 write を挟むと
+    // vault イベントが余計に発火してタイムラインがガクつく。スキップ可能にする。
+    if (
+      noteSource.mode === "periodic" &&
+      settings.insertAfter &&
+      (options?.ensureInsertAfter ?? true)
+    ) {
       const content = await shell.readVaultFile(note);
       if (!content.includes(settings.insertAfter)) {
         await shell.modifyVaultFile(

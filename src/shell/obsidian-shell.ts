@@ -120,12 +120,14 @@ export class ObsidianAppShell {
     startOffset: number,
     endOffset: number,
     replacement: string,
-  ): Promise<void> {
+  ): Promise<string> {
     const origin = await this.loadFile(path);
-    await this.writeFile(
-      path,
-      origin.slice(0, startOffset) + replacement + origin.slice(endOffset),
-    );
+    const newContent =
+      origin.slice(0, startOffset) + replacement + origin.slice(endOffset);
+    await this.writeFile(path, newContent);
+    // 意図: 書き込み後の全文を返すことで、呼び出し側が再読込なしで
+    // DB インデックスの即時反映（write-through）に使えるようにする。
+    return newContent;
   }
 
   async setCheckMark(
@@ -141,34 +143,58 @@ export class ObsidianAppShell {
     );
   }
 
-  async insertTextAfter(file: TFile, text: string, after: string) {
-    const content = await this.loadFile(file.path);
-
+  private buildContentWithInsertedText(
+    content: string,
+    text: string,
+    after: string,
+  ): string {
     if (!after) {
-      // 意図: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
-      // path ベース書き込みだと adapter.write へ落ちて変更イベントを取りこぼす。
-      // insertTextAfter は TFile を受け取っているため、常に vault.modify を使う。
-      await this.modifyVaultFile(
-        file,
-        joinWithSingleBoundaryNewline(content, text),
-      );
-      return;
+      return joinWithSingleBoundaryNewline(content, text);
     }
 
     const index = content.indexOf(after);
     if (index === -1) {
-      await this.modifyVaultFile(
-        file,
-        joinWithSingleBoundaryNewline(content, text),
-      );
-      return;
+      return joinWithSingleBoundaryNewline(content, text);
     }
 
     const insertIndex = skipImmediateLineBreak(content, index + after.length);
-    const newContent =
+    return (
       joinWithSingleBoundaryNewline(content.slice(0, insertIndex), text) +
-      content.slice(insertIndex);
+      content.slice(insertIndex)
+    );
+  }
+
+  async insertTextAfter(
+    file: TFile,
+    text: string,
+    after: string,
+  ): Promise<string> {
+    const content = await this.loadFile(file.path);
+    const newContent = this.buildContentWithInsertedText(content, text, after);
+
+    // 意図: 新規作成直後のノートは path 解決が一瞬遅れる場合があり、
+    // path ベース書き込みだと adapter.write へ落ちて変更イベントを取りこぼす。
+    // insertTextAfter は TFile を受け取っているため、常に vault.modify を使う。
     await this.modifyVaultFile(file, newContent);
+    return newContent;
+  }
+
+  async insertTextAfterEnsuringMarker(
+    file: TFile,
+    text: string,
+    after: string,
+  ): Promise<string> {
+    // 意図: 「マーカー追記」と「本文挿入」を別々に書き込むと vault の
+    // modify イベントが多重発火し、インデックス・SWR 再検証が連鎖して
+    // タイムラインがガクつく。1 read + 1 write に畳んで発火を最小化する。
+    const content = await this.loadFile(file.path);
+    const base =
+      after && !content.includes(after)
+        ? joinWithSingleBoundaryNewline(content, after)
+        : content;
+    const newContent = this.buildContentWithInsertedText(base, text, after);
+    await this.modifyVaultFile(file, newContent);
+    return newContent;
   }
 
   async cachedReadFile(file: TFile): Promise<string> {

@@ -104,6 +104,7 @@ export interface NoteSlice {
     shell: ObsidianAppShell,
     settings: Settings,
     targetDate?: MomentLike,
+    options?: { ensureInsertAfter?: boolean },
   ) => Promise<TFile | null>;
   handleClickOpenDailyNote: (
     shell: ObsidianAppShell,

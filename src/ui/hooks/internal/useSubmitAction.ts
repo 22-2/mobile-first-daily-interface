@@ -1,6 +1,7 @@
 import { Notice, TFile } from "obsidian";
 import { useCallback } from "react";
 import { ensureFixedSessionHeading } from "src/core/fixed-sessions";
+import { indexNoteContent } from "src/db/indexer/tag-indexer";
 import { resolveNoteSource } from "src/core/note-source";
 import { toText } from "src/core/post-utils";
 import { useAppContext } from "src/ui/context/AppContext";
@@ -130,13 +131,20 @@ export const useSubmitAction = () => {
         metadata,
       );
 
-      await shell.replaceRange(
+      const newContent = await shell.replaceRange(
         latestPost.path,
         latestPost.startOffset,
         latestPost.endOffset,
         text,
       );
       editorState.cancelEdit();
+      // 意図: vault イベント経由の非同期インデックスを待たず、書き込んだ内容で
+      // 即インデックスしてから再検証する。refreshPosts 時点で DB が古いままになり
+      // 反映が1テンポ遅れるレースを防ぐ。
+      const noteFile = shell.getAbstractFileByPath(latestPost.path);
+      if (noteFile instanceof TFile) {
+        await indexNoteContent(shell, noteFile, settings, newContent);
+      }
       await refreshPosts(latestPost.path);
     },
     [
@@ -202,7 +210,13 @@ export const useSubmitAction = () => {
         return;
       }
 
-      await shell.insertTextAfter(noteFile, text, insertMarker);
+      const newContent = await shell.insertTextAfter(
+        noteFile,
+        text,
+        insertMarker,
+      );
+      // 意図: 書き込んだ内容で即インデックスし、直後の再検証で確実に返信が載るようにする。
+      await indexNoteContent(shell, noteFile, settings, newContent);
       await refreshPosts(rootPost.path);
 
       editorState.clearInput();
@@ -271,12 +285,15 @@ export const useSubmitAction = () => {
 
       if (!note) {
         // 存在しない場合はノートを作成してから再度解決する（特にタイムラインモード）
+        // 意図: マーカーは後段の insertTextAfterEnsuringMarker が同一 write 内で
+        // 保証するため、ここでの追記 write を省いて vault イベントの多重発火を防ぐ。
         note = await store
           .getState()
           .createNoteWithInsertAfter(
             shell,
             settings,
             noteSource.mode === "fixed" ? undefined : targetDate,
+            { ensureInsertAfter: false },
           );
       }
 
@@ -285,22 +302,28 @@ export const useSubmitAction = () => {
         return;
       }
 
-      let insertMarker = settings.insertAfter;
+      let newContent: string;
       if (noteSource.mode === "fixed") {
         const fixedInsertMarker = await ensureFixedSessionInsertMarker(note);
         if (fixedInsertMarker === null) {
           return;
         }
-        insertMarker = fixedInsertMarker;
+        newContent = await shell.insertTextAfter(note, text, fixedInsertMarker);
       } else {
-        // insertAfter マーカーが存在しない場合は末尾に追記しておく
-        const content = await shell.loadFile(note.path);
-        if (settings.insertAfter && !content.includes(settings.insertAfter)) {
-          await shell.insertTextAfter(note, settings.insertAfter, "");
-        }
+        // 意図: 「マーカー追記」と「本文挿入」を 1 read + 1 write に畳む。
+        // 別々に書くと modify イベントが多重発火し、インデックスと SWR 再検証が
+        // 連鎖してタイムラインがガクつく。
+        newContent = await shell.insertTextAfterEnsuringMarker(
+          note,
+          text,
+          settings.insertAfter,
+        );
       }
 
-      await shell.insertTextAfter(note, text, insertMarker);
+      // 意図: vault イベント経由の非同期インデックス完了を待たず、
+      // 書き込んだ内容で即インデックスする。これで直後の refreshPosts の
+      // 再検証時点で必ず新しい投稿が DB から読め、「反映が遅れる」レースが消える。
+      await indexNoteContent(shell, note, settings, newContent);
 
       if (
         isTimelineView(settingsState.displayMode) &&

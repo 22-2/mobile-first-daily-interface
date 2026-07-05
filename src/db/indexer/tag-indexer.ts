@@ -24,6 +24,43 @@ export interface TagIndexerOptions {
 }
 
 // ---------------------------------------------------------------------------
+// Direct indexing
+// ---------------------------------------------------------------------------
+
+/**
+ * ノートの内容を指定して直接 DB インデックスへ反映する。
+ *
+ * 意図: 投稿の書き込み直後に vault イベント経由の非同期インデックスを待つと、
+ * refreshPosts 時点で DB が古いままになり「投稿が遅れて反映される」レースが起きる。
+ * 書き込み側が確定済みの content を渡して await することで、
+ * 次の SWR 再検証で必ず新しい投稿が読めることを保証する
+ * （cachedRead の stale 読みも回避できる）。
+ */
+export async function indexNoteContent(
+  shell: ObsidianAppShell,
+  file: TFile,
+  settings: Settings,
+  content: string,
+): Promise<void> {
+  const identity = inferNoteIdentityFromFile(
+    file,
+    normalizeTopics(settings.topics),
+    shell,
+  );
+  if (!identity) return;
+
+  const dbService = WorkerClient.get();
+  await dbService.onFileChanged({
+    path: file.path,
+    noteName: file.basename,
+    topicId: identity.topicId,
+    noteGranularity: identity.granularity,
+    noteDate: identity.noteDate.toISOString(),
+    content,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // TagIndexer
 // ---------------------------------------------------------------------------
 
@@ -69,6 +106,7 @@ export class TagIndexer {
     file: TFile,
     settings: Settings,
   ): Promise<void> {
+    // 意図: 対象外ファイルで無駄な read をしないよう、identity 判定を read より先に行う。
     const identity = inferNoteIdentityFromFile(
       file,
       normalizeTopics(settings.topics),
@@ -77,16 +115,7 @@ export class TagIndexer {
     if (!identity) return;
 
     const content = await shell.cachedReadFile(file);
-
-    const dbService = WorkerClient.get();
-    await dbService.onFileChanged({
-      path: file.path,
-      noteName: file.basename,
-      topicId: identity.topicId,
-      noteGranularity: identity.granularity,
-      noteDate: identity.noteDate.toISOString(),
-      content,
-    });
+    await indexNoteContent(shell, file, settings, content);
   }
 
   async onFileDeleted(path: string): Promise<void> {
