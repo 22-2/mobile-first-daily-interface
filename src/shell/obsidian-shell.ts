@@ -1,6 +1,6 @@
 import type { App, Editor, TAbstractFile, WorkspaceLeaf } from "obsidian";
 import { MarkdownView, TFile } from "obsidian";
-import type { Commands } from "obsidian-typings";
+import type { Commands } from "@obsidian-typings/obsidian-public-latest";
 import {
   joinWithSingleBoundaryNewline,
   skipImmediateLineBreak,

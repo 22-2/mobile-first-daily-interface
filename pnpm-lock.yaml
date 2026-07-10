@@ -66,6 +66,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.6.0(jiti@2.7.0))
+      '@obsidian-typings/obsidian-public-latest':
+        specifier: ^6.22.0
+        version: 6.22.0(@types/node@26.1.1)
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.61.1
@@ -129,9 +132,6 @@ importers:
       obsidian-e2e-toolkit:
         specifier: github:22-2/obsidian-e2e-toolkit#1.0.3
         version: https://codeload.github.com/22-2/obsidian-e2e-toolkit/tar.gz/0350d73ee4006871bcf3fe9efadb3ab1056f5a4a(@playwright/test@1.61.1)(electron@42.5.0)(playwright@1.61.1)
-      obsidian-typings:
-        specifier: ^6.18.0
-        version: 6.18.0(@types/node@26.1.1)
       playwright:
         specifier: ^1.61.1
         version: 1.61.1
@@ -771,13 +771,13 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@obsidian-typings/obsidian-public-1.12.7@6.20.0':
-    resolution: {integrity: sha512-z5b7n7niCfkcg65+9D4MM333U1pgiVmJTbtU0jU3V62hcTHTSEqscyvOV6iISpdl4ecuOcssUGWljsBCBEzX9g==}
+  '@obsidian-typings/obsidian-public-1.12.7@6.24.0':
+    resolution: {integrity: sha512-Ktlvsen9jVDhDgupZp2UYjs14eJw0ESZCu28+iZZ1lVN7KBnsGM7xnq/3bPNrVE3FO1UniFRkDwMFcyrH44M2g==}
     peerDependencies:
       '@types/node': '>=16.0.0'
 
-  '@obsidian-typings/obsidian-public-latest@6.18.0':
-    resolution: {integrity: sha512-Vjvw1V5VccZQHurz5KlyrKNsQ5akOZZUSVKj1u1k7gt5+qhNBH/Zo5TPOr2Vv7KrqGgY9ckHG0SAOarhLMUMjg==}
+  '@obsidian-typings/obsidian-public-latest@6.22.0':
+    resolution: {integrity: sha512-n9Bfwu3e+j8iMsTrF3EXs3W5KwnnIkmLZldohd2DCKg6NbZP9UmQeCi56aVX+7UgJRDPa3erd1XopWLANhoHyw==}
 
   '@open-draft/deferred-promise@2.2.0':
     resolution: {integrity: sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA==}
@@ -3108,9 +3108,6 @@ packages:
       electron: ^41.0.3
       playwright: ^1.56.0
 
-  obsidian-typings@6.18.0:
-    resolution: {integrity: sha512-KLKFi+b/qKzQ8tKzgiUnFi10h3xacVNyOI2U63boHQAZ7BV+NAG5Q93RhfSWz2qGDmzHKHfoiZBe8K7nfGAzWg==}
-
   obsidian@1.12.3:
     resolution: {integrity: sha512-HxWqe763dOqzXjnNiHmAJTRERN8KILBSqxDSEqbeSr7W8R8Jxezzbca+nz1LiiqXnMpM8lV2jzAezw3CZ4xNUw==}
     peerDependencies:
@@ -4947,13 +4944,13 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@obsidian-typings/obsidian-public-1.12.7@6.20.0(@types/node@26.1.1)':
+  '@obsidian-typings/obsidian-public-1.12.7@6.24.0(@types/node@26.1.1)':
     dependencies:
       '@types/node': 26.1.1
 
-  '@obsidian-typings/obsidian-public-latest@6.18.0(@types/node@26.1.1)':
+  '@obsidian-typings/obsidian-public-latest@6.22.0(@types/node@26.1.1)':
     dependencies:
-      '@obsidian-typings/obsidian-public-1.12.7': 6.20.0(@types/node@26.1.1)
+      '@obsidian-typings/obsidian-public-1.12.7': 6.24.0(@types/node@26.1.1)
     transitivePeerDependencies:
       - '@types/node'
 
@@ -7455,12 +7452,6 @@ snapshots:
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
       - supports-color
-
-  obsidian-typings@6.18.0(@types/node@26.1.1):
-    dependencies:
-      '@obsidian-typings/obsidian-public-latest': 6.18.0(@types/node@26.1.1)
-    transitivePeerDependencies:
-      - '@types/node'
 
   obsidian@1.12.3(@codemirror/state@6.7.1)(@codemirror/view@6.43.6):
     dependencies:
