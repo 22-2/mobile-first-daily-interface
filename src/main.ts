@@ -112,6 +112,9 @@ export default class MFDIPlugin extends Plugin {
       addRibbonIcon: (icon, title, callback) =>
         this.addRibbonIcon(icon, title, callback),
       addCommand: (command) => this.addCommand(command),
+      getMFDISubmitCallback: () => this.view?.actionDelegates.onSubmit,
+      getMFDIInputSnapshot: () =>
+        this.view?.actionDelegates.onGetInputSnapshot?.() ?? "",
       createMFDIView: (leaf) => {
         this.view = new MFDIView(leaf, this.settings);
         this.setupViewCallbacks(this.view);

@@ -23,6 +23,7 @@ export interface MFDIActionDelegate {
   onToggleSidebar?: () => void;
   onCopyAllPosts?: () => void;
   onOpenDraftList?: () => void;
+  onGetInputSnapshot?: () => string;
   onSetLiveEditorContentForTesting?: (content: string) => void;
   onGetLiveEditorContentForTesting?: () => string;
   onGetDebugStateForTesting?: () => {

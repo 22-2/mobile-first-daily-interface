@@ -87,6 +87,8 @@ describe("builtin registry", () => {
     const registerView = vi.fn();
     const addRibbonIcon = vi.fn();
     const addCommand = vi.fn((command) => command);
+    const getMFDISubmitCallback = vi.fn(() => undefined);
+    const getMFDIInputSnapshot = vi.fn(() => "");
     const createMFDIView = vi.fn((leaf) => ({ leaf }));
     const createMFDIEditorView = vi.fn((leaf) => ({ leaf }));
     const createAndOpenFixedNote = vi.fn(async () => {});
@@ -136,6 +138,8 @@ describe("builtin registry", () => {
       registerView,
       addRibbonIcon,
       addCommand,
+      getMFDISubmitCallback,
+      getMFDIInputSnapshot,
       createMFDIView,
       createMFDIEditorView,
       createAndOpenFixedNote,
@@ -167,7 +171,7 @@ describe("builtin registry", () => {
       "Mobile First Daily Interface",
       expect.any(Function),
     );
-    expect(addCommand).toHaveBeenCalledTimes(2);
+    expect(addCommand).toHaveBeenCalledTimes(3);
 
     const ribbonCallback = addRibbonIcon.mock.calls[0]?.[2] as () => void;
     ribbonCallback();

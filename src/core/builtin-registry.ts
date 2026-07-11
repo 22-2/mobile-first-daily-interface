@@ -35,6 +35,8 @@ export interface BuiltinMainContext {
     callback: () => void,
   ) => HTMLElement;
   addCommand: (command: Command) => Command;
+  getMFDISubmitCallback: () => (() => Promise<void>) | undefined;
+  getMFDIInputSnapshot: () => string;
   createMFDIView: (leaf: WorkspaceLeaf) => MFDIView;
   createMFDIEditorView: (leaf: WorkspaceLeaf) => MFDIEditorView;
   createAndOpenFixedNote: () => Promise<void>;
@@ -72,6 +74,27 @@ function registerCommands(context: BuiltinMainContext): void {
     name: "Create New MFDI Fixed Note",
     callback: () => {
       void context.createAndOpenFixedNote();
+    },
+  });
+
+  // 意図: ctrlEnterSends=off のときでもキーボードのみで投稿できるようにする。
+  // Obsidian のホットキー設定から任意のショートカットを割り当てられる。
+  context.addCommand({
+    id: "mfdi-submit-post",
+    name: "MFDI: 投稿を送信",
+    checkCallback: (checking) => {
+      const activeView = context.app.workspace.activeLeaf?.view;
+      if (activeView?.getViewType() !== VIEW_TYPE_MFDI) {
+        return false;
+      }
+
+      if (checking) {
+        const inputSnapshot = context.getMFDIInputSnapshot();
+        return inputSnapshot.trim().length > 0;
+      }
+
+      const submitFn = context.getMFDISubmitCallback();
+      void submitFn?.();
     },
   });
 }

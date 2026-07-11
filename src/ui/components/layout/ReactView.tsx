@@ -776,6 +776,17 @@ function useViewSync(view: MFDIView | null) {
 
   useEffect(() => {
     if (!view) return;
+    view.actionDelegates.onGetInputSnapshot = () => {
+      return store.getState().getInputValue();
+    };
+
+    return () => {
+      view.actionDelegates.onGetInputSnapshot = undefined;
+    };
+  }, [view, store]);
+
+  useEffect(() => {
+    if (!view) return;
     view.actionDelegates.onGetDebugStateForTesting = () => {
       const state = settingsStore.getState();
       const appState = store.getState();
