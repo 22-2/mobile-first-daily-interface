@@ -1,5 +1,5 @@
 import { DEFAULT_TOPIC } from "src/core/topic";
-import { TagIndexer } from "src/db/indexer/tag-indexer";
+import { indexNoteContent, TagIndexer } from "src/db/indexer/tag-indexer";
 import { WorkerClient } from "src/db/worker-client";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -84,6 +84,49 @@ describe("TagIndexer", () => {
     await indexer.onFileDeleted("daily/2026-03-23.md");
 
     expect(api.onFileDeleted).toHaveBeenCalledWith("daily/2026-03-23.md");
+  });
+
+  test("遅延した cachedRead が明示インデックスを巻き戻さない（パス単位直列化）", async () => {
+    // 再現シナリオ: vault.create 発火時の cachedRead（空内容）が遅延し、
+    // 投稿直後の indexNoteContent(新内容) より後に worker へ届くと、
+    // DB が空内容へ巻き戻って「投稿が反映されない」状態になっていた。
+    const indexer = new TagIndexer("vault-1");
+    const file = {
+      path: "daily/2026-03-23.md",
+      basename: "2026-03-23",
+    } as any;
+    const settings = { topics: [DEFAULT_TOPIC] } as any;
+
+    let releaseRead: (() => void) | undefined;
+    const shell = createShell({
+      cachedReadFile: vi.fn(
+        () =>
+          new Promise<string>((resolve) => {
+            releaseRead = () => resolve("");
+          }),
+      ),
+    });
+
+    // create イベント相当（read が保留のまま）
+    const eventIndexing = indexer.onFileChanged(shell, file, settings);
+    // 投稿直後の明示インデックス（新内容が確定済み）
+    const explicitIndexing = indexNoteContent(
+      shell,
+      file,
+      settings,
+      "- 10:00:00 new post",
+    );
+
+    // 保留中の read をここで解決 → 直列化がなければ空内容が後着して上書きする
+    await Promise.resolve();
+    releaseRead?.();
+    await Promise.all([eventIndexing, explicitIndexing]);
+
+    const contents = api.onFileChanged.mock.calls.map(
+      (call: any[]) => call[0].content,
+    );
+    // 最後に worker へ届くのは必ず新しい内容であること
+    expect(contents).toEqual(["", "- 10:00:00 new post"]);
   });
 
   test("scanAllNotes delegates to api", async () => {

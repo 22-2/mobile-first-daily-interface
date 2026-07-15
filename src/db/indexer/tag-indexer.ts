@@ -24,6 +24,49 @@ export interface TagIndexerOptions {
 }
 
 // ---------------------------------------------------------------------------
+// Per-path serialization
+// ---------------------------------------------------------------------------
+
+// 意図: 同一パスに対する「read → worker 送信」を直列化する。
+// vault の create / modify / metadataCache.changed は 1 回の書き込みで多重発火し、
+// ハンドラ内の cachedRead は開始順と完了順が入れ替わることがある。
+// 古い内容（特に新規作成直後の空内容）の送信が、投稿直後の明示インデックスより
+// 後に worker へ届くと、DB が古い内容で巻き戻り
+// 「投稿が消える／遅れて反映される」原因になっていた。
+// パス単位で直列化すると、各タスクの read は直前のタスク完了後に実行されるため
+// 常に最新以上の内容を読み、巻き戻しが構造的に起きなくなる。
+const pathChains = new Map<string, Promise<void>>();
+
+function enqueueForPath<T>(path: string, task: () => Promise<T>): Promise<T> {
+  const prev = pathChains.get(path) ?? Promise.resolve();
+  const result = prev.then(task);
+  // エラーで後続タスクを止めないよう、チェーンには握りつぶした Promise を積む
+  const tail = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  pathChains.set(path, tail);
+  void tail.then(() => {
+    // 自分がチェーン末尾のままなら Map から掃除してリークを防ぐ
+    if (pathChains.get(path) === tail) pathChains.delete(path);
+  });
+  return result;
+}
+
+type NoteIdentity = NonNullable<ReturnType<typeof inferNoteIdentityFromFile>>;
+
+function toWorkerNote(file: TFile, identity: NoteIdentity, content: string) {
+  return {
+    path: file.path,
+    noteName: file.basename,
+    topicId: identity.topicId,
+    noteGranularity: identity.granularity,
+    noteDate: identity.noteDate.toISOString(),
+    content,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Direct indexing
 // ---------------------------------------------------------------------------
 
@@ -49,14 +92,9 @@ export async function indexNoteContent(
   );
   if (!identity) return;
 
-  const dbService = WorkerClient.get();
-  await dbService.onFileChanged({
-    path: file.path,
-    noteName: file.basename,
-    topicId: identity.topicId,
-    noteGranularity: identity.granularity,
-    noteDate: identity.noteDate.toISOString(),
-    content,
+  await enqueueForPath(file.path, async () => {
+    const dbService = WorkerClient.get();
+    await dbService.onFileChanged(toWorkerNote(file, identity, content));
   });
 }
 
@@ -114,8 +152,14 @@ export class TagIndexer {
     );
     if (!identity) return;
 
-    const content = await shell.cachedReadFile(file);
-    await indexNoteContent(shell, file, settings, content);
+    // 意図: read はチェーン内で行う。イベント発火時点ではなく実行順が来た
+    // 時点の内容を読むことで、先行タスク（＝先行する書き込みのインデックス）
+    // より古い内容を worker へ送らないことを保証する。
+    await enqueueForPath(file.path, async () => {
+      const content = await shell.cachedReadFile(file);
+      const dbService = WorkerClient.get();
+      await dbService.onFileChanged(toWorkerNote(file, identity, content));
+    });
   }
 
   async onFileDeleted(path: string): Promise<void> {
@@ -136,19 +180,15 @@ export class TagIndexer {
     );
     if (!identity) return;
 
-    const content = await shell.cachedReadFile(file);
-    const dbService = WorkerClient.get();
-    await dbService.onFileRenamed(
-      {
-        path: file.path,
-        noteName: file.basename,
-        topicId: identity.topicId,
-        noteGranularity: identity.granularity,
-        noteDate: identity.noteDate.toISOString(),
-        content,
-      },
-      oldPath,
-    );
+    // rename も新パスのチェーンに乗せ、他イベントとの順序入れ替わりを防ぐ。
+    await enqueueForPath(file.path, async () => {
+      const content = await shell.cachedReadFile(file);
+      const dbService = WorkerClient.get();
+      await dbService.onFileRenamed(
+        toWorkerNote(file, identity, content),
+        oldPath,
+      );
+    });
   }
 
   // -------------------------------------------------------------------------
