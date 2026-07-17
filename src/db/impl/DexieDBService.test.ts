@@ -10,6 +10,27 @@ describe("DexieDBService", () => {
     await service.initialize({ appId: "test-app" });
   });
 
+
+  it("initialization queues writes that arrive before the database is ready", async () => {
+    const uninitializedService = new DexieDBService();
+    const note = {
+      path: "queued.md",
+      noteName: "queued",
+      topicId: "topic1",
+      noteGranularity: "day" as const,
+      noteDate: "2026-03-31",
+      content: "## Thino\n- 12:00:00 queued write",
+    };
+
+    const write = uninitializedService.onFileChanged(note);
+    await uninitializedService.initialize({ appId: "queued-write-test" });
+    await write;
+
+    const memos = await uninitializedService.getMemos({ topicId: "topic1" });
+    expect(memos.map((memo) => memo.content)).toContain("queued write");
+
+    await uninitializedService.dispose();
+  });
   it("should scan and retrieve memos", async () => {
     const note = {
       path: "test.md",
