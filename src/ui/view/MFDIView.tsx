@@ -24,6 +24,7 @@ export class MFDIView extends ItemView {
   private root: Root | null = null;
   private settings: Settings;
   private state: MFDIViewState = { ...DEFAULT_MFDI_VIEW_STATE };
+  private externalStateRevision = 0;
 
   // 検索入力用コントロール
   private activeSearchControlEl: HTMLElement | null = null;
@@ -88,6 +89,10 @@ export class MFDIView extends ItemView {
     return this.state;
   }
 
+  getExternalStateRevision(): number {
+    return this.externalStateRevision;
+  }
+
   setStatePartial(patch: Partial<MFDIViewState>): void {
     this.state = {
       ...this.state,
@@ -99,6 +104,10 @@ export class MFDIView extends ItemView {
 
   async setState(state: MFDIViewState): Promise<void> {
     this.setStatePartial(state);
+    // Obsidian から復元・適用された state だけを React store への入力として扱う。
+    // React 側の setStatePartial まで入力扱いすると、session 切替時に古い値が
+    // store へ戻され、双方向同期が往復し続ける可能性がある。
+    this.externalStateRevision += 1;
 
     if (state.activeTopic !== undefined) {
       this.state.activeTopic = state.activeTopic;

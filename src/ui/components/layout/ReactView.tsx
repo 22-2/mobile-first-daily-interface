@@ -119,10 +119,7 @@ const MFDIAppRoot: React.FC<{
     [viewNoteMode],
   );
   const componentViewState = component.getState();
-  const componentFixedSessionNumber =
-    componentViewState.noteMode === "fixed"
-      ? (componentViewState.fixedSessionNumber ?? 1)
-      : 1;
+  const externalStateRevision = component.getExternalStateRevision();
 
   useLayoutEffect(() => {
     // 意図: 子の live editor は mount 時の passive effect で初期化される。
@@ -183,13 +180,10 @@ const MFDIAppRoot: React.FC<{
   useDbSync();
 
   useEffect(() => {
+    // 通常の UI 操作では store が正となり、useViewSync から viewState へ片方向に書く。
+    // Obsidian が setState で復元した場合だけ逆方向に同期し、古い session 番号との競合を防ぐ。
     syncStoreFromMFDIViewState(store, componentViewState);
-  }, [
-    store,
-    componentViewState.noteMode,
-    componentViewState.file,
-    componentFixedSessionNumber,
-  ]);
+  }, [store, externalStateRevision]);
 
   useEffect(() => {
     store.getState().updateCurrentDailyNote(shell);

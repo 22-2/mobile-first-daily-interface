@@ -145,6 +145,40 @@ async function getFixedSessionSnapshot(obsidian: ObsidianAPI) {
 }
 
 test.describe("fixed note restore", () => {
+  test("repeated session switching does not bounce between stale states", async ({
+    obsidian,
+  }) => {
+    await waitForPluginReady(obsidian, obsidian.page);
+    await ensureFixedNoteFixture(obsidian);
+    await openFixedNoteView(obsidian, 1);
+
+    const sessionOne = obsidian.page.getByText("Session 1", { exact: true });
+    const sessionTwo = obsidian.page.getByText("Session 2", { exact: true });
+    await expect(sessionOne).toBeVisible();
+    await expect(sessionTwo).toBeVisible();
+
+    for (let index = 0; index < 6; index += 1) {
+      await sessionTwo.click();
+      await sessionOne.click();
+    }
+    await sessionTwo.click();
+
+    await expect.poll(async () => {
+      return await getFixedSessionSnapshot(obsidian);
+    }).toMatchObject({
+      fixedSessionNumber: 2,
+      noteMode: "fixed",
+      file: FIXED_NOTE_PATH,
+    });
+    await expect.poll(async () => {
+      return (await getFixedSessionSnapshot(obsidian)).listText;
+    }).toContain("session-two");
+
+    // 競合が継続していないことを、状態を少し観測した後の安定値でも確認する。
+    await obsidian.page.waitForTimeout(300);
+    expect((await getFixedSessionSnapshot(obsidian)).fixedSessionNumber).toBe(2);
+  });
+
   test("restored fixed leaf keeps session selection and stays responsive", async ({
     obsidian,
   }) => {
